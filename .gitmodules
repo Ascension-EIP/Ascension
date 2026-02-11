@@ -1,0 +1,15 @@
+[submodule "ai"]
+	path = ai
+	url = git@github.com:Ascension-EIP/ai.git
+[submodule "server"]
+	path = server
+	url = git@github.com:Ascension-EIP/server.git
+[submodule "docs"]
+	path = docs
+	url = git@github.com:Ascension-EIP/docs.git
+[submodule "mobile"]
+	path = mobile
+	url = git@github.com:Ascension-EIP/mobile.git
+[submodule "benchmark"]
+	path = benchmark
+	url = git@github.com:Ascension-EIP/benchmark.git
