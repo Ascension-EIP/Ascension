@@ -1,0 +1,5 @@
+#!/bin/bash
+
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+.github/scripts/check_commit "$COMMIT_MSG"

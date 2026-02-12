@@ -1,0 +1,21 @@
+#!/bin/bash
+
+branch="$(git rev-parse --abbrev-ref HEAD)"
+
+if [ "$branch" = "main" ]; then
+    parent_branch=$(git show -s --pretty=%P HEAD)
+
+    if [[ "$(git branch --contains $parent_branch | grep dev)" != "" ]]; then
+        echo "✔ Merge 'dev' into 'main' accepted."
+        exit 0
+    fi
+
+    echo "❌ Push on 'main' branch is forbidden !"
+    exit 1
+fi
+
+.github/scripts/check_branch "$branch"
+.github/scripts/check_push || exit 1
+
+git pull
+exit 0

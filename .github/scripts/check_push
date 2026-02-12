@@ -1,0 +1,13 @@
+#!/bin/bash
+
+VALID=true
+
+# TODO
+
+if [ "$VALID" = true ]; then
+    echo "✔ All checks passed. Ready to push."
+    exit 0
+else
+    echo "❌ Some checks failed. Please fix the issues before pushing."
+    exit 1
+fi
