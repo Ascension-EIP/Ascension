@@ -1,4 +1,11 @@
+> **Last updated:** 12th February 2026  
+> **Version:** 1.1  
+> **Authors:** Gianni TUERO  
+> **Status:** In Progress (can be improved)
+> {.is-warning}
+
 # Ascension
+
 This repository is an overview of all the other subprojects of the Ascension project.
 
 ## Setup
