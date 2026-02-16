@@ -18,7 +18,7 @@ stop:
 
 # Update all submodules to latest
 pull:
-    git submodule update --remote --merge
+    git pull && git submodule update --remote --merge
 
 push:
     git push && git submodule foreach git push
