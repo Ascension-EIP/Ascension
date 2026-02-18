@@ -23,13 +23,17 @@ tasks:
       - 'src/**/*'
       - 'Cargo.toml'
       - 'Cargo.lock'
+    deps:
+      - 'lint'
 
   dev:
     command: 'cargo'
     args: ['run']
     local: true
-    deps:
-      - 'build'
+    env:
+      RUST_LOG: 'debug'
+    options:
+      envFile: true
 
   test:
     command: 'cargo'

@@ -19,6 +19,10 @@ tasks:
     args: ['main.py']
     deps:
       - 'install'
+    env:
+      LOG_LEVEL: 'debug'
+    options:
+      envFile: true
 
   build:
     command: 'python'

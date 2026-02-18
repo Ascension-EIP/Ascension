@@ -34,6 +34,8 @@ tasks:
     local: true
     deps:
       - 'install'
+    options:
+      envFile: true
 
   test:
     command: 'flutter'
