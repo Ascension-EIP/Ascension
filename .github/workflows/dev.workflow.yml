@@ -2,7 +2,7 @@ name: ascension-server-merge-dev-to-main
 
 on:
   workflow_run:
-    workflows: ["ascension-server-default-check"]
+    workflows: ["ascension"]
     types:
       - completed
     branches:
