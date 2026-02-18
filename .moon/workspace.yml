@@ -4,8 +4,11 @@ $schema: './cache/schemas/workspace.json'
 # extends: './shared/workspace.yml'
 
 projects:
-  - 'apps/*'
-  - 'packages/*'
+  mobile: 'apps/mobile'
+  server: 'apps/server'
+  ai: 'apps/ai'
+
+
 vcs:
   manager: 'git'
   defaultBranch: 'dev'

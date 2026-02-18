@@ -1,0 +1,52 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+language: 'unknown'
+type: 'application'
+platform: 'unknown'
+
+project:
+  name: 'mobile'
+  description: 'Flutter mobile app for Ascension'
+
+tasks:
+  install:
+    command: 'flutter'
+    args: ['pub', 'get']
+    inputs:
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+
+  build-android:
+    command: 'flutter'
+    args: ['build', 'apk']
+    deps:
+      - 'install'
+
+  build-ios:
+    command: 'flutter'
+    args: ['build', 'ios', '--no-codesign']
+    deps:
+      - 'install'
+
+  dev:
+    command: 'flutter'
+    args: ['run']
+    local: true
+    deps:
+      - 'install'
+
+  test:
+    command: 'flutter'
+    args: ['test']
+    deps:
+      - 'install'
+
+  lint:
+    command: 'flutter'
+    args: ['analyze']
+    deps:
+      - 'install'
+
+  format:
+    command: 'dart'
+    args: ['format', '.']
