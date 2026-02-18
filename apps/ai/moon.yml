@@ -1,21 +1,28 @@
 $schema: 'https://moonrepo.dev/schemas/project.json'
 
 language: 'python'
-type: 'application'
 
 project:
   name: 'ai'
   description: 'AI service for Ascension'
 
 tasks:
-  install:
-    command: 'pip'
-    args: ['install', '-r', 'requirements.txt']
+  setup:
+    command: 'python'
+    args: ['-m', 'venv', 'venv']
     inputs:
       - 'requirements.txt'
 
+  install:
+    command: 'venv/bin/pip'
+    args: ['install', '-r', 'requirements.txt']
+    inputs:
+      - 'requirements.txt'
+    deps:
+      - 'setup'
+
   dev:
-    command: 'python'
+    command: 'venv/bin/python'
     args: ['main.py']
     deps:
       - 'install'
@@ -25,18 +32,18 @@ tasks:
       envFile: true
 
   build:
-    command: 'python'
+    command: 'venv/bin/python'
     args: ['-m', 'build']
     deps:
       - 'install'
 
   lint:
-    command: 'ruff'
+    command: 'venv/bin/ruff'
     args: ['check', '.']
     deps:
       - 'install'
 
   test:
-    command: 'pytest'
+    command: 'venv/bin/pytest'
     deps:
       - 'install'

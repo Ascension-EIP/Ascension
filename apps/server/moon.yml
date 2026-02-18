@@ -1,7 +1,4 @@
-$schema: 'https://moonrepo.dev/schemas/project.json'
-
 language: 'rust'
-type: 'application'
 
 project:
   name: 'server'
@@ -29,7 +26,6 @@ tasks:
   dev:
     command: 'cargo'
     args: ['run']
-    local: true
     env:
       RUST_LOG: 'debug'
     options:

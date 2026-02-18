@@ -7,8 +7,3 @@ projects:
   mobile: 'apps/mobile'
   server: 'apps/server'
   ai: 'apps/ai'
-
-
-vcs:
-  manager: 'git'
-  defaultBranch: 'dev'

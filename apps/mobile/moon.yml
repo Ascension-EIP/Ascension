@@ -1,8 +1,6 @@
 $schema: 'https://moonrepo.dev/schemas/project.json'
 
 language: 'unknown'
-type: 'application'
-platform: 'unknown'
 
 project:
   name: 'mobile'
@@ -31,7 +29,6 @@ tasks:
   dev:
     command: 'flutter'
     args: ['run']
-    local: true
     deps:
       - 'install'
     options:
