@@ -49,3 +49,5 @@ tasks:
   format:
     command: 'dart'
     args: ['format', '--set-exit-if-changed', '.']
+    deps:
+      - 'install'
