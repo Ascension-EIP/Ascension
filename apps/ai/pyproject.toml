@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ascension-ai"
+version = "1.0.0"
+description = "AI component for Ascension EIP"
+dependencies = [
+    "ruff",
+    "pytest",
+    "build",
+]
+
+[tool.setuptools]
+py-modules = ["main"]
