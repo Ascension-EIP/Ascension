@@ -31,6 +31,7 @@ jobs:
           .github/scripts/check_commit "$COMMIT_NAME"
 
       - name: Launch branch checker
+        if: github.ref_type != 'tag'
         run: |
           if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
               BRANCH_NAME="${GITHUB_HEAD_REF}"
@@ -180,6 +181,14 @@ jobs:
           key: ${{ runner.os }}-moon-ai-${{ hashFiles('apps/ai/requirements.txt', 'apps/ai/moon.yml') }}
           restore-keys: |
             ${{ runner.os }}-moon-ai-
+
+      - name: Cache Python venv
+        uses: actions/cache@v4
+        with:
+          path: apps/ai/venv
+          key: ${{ runner.os }}-venv-ai-${{ hashFiles('apps/ai/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-venv-ai-
 
       - name: Install dependencies
         run: moon run ai:install
