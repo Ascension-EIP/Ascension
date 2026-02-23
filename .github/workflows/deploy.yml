@@ -1,0 +1,19 @@
+############################ CONFIGURATION ####################################
+name: Deploy to Production
+
+on:
+  push:
+    tags:
+      - "*"
+
+env:
+  GITHUB_ACTIONS: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+###############################################################################
+
+
+
+###############################################################################

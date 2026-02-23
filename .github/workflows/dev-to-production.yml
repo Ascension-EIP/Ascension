@@ -1,12 +1,16 @@
-name: ascension-server-merge-dev-to-main
+name: ascension-dev-to-production
 
 on:
   workflow_run:
-    workflows: ["ascension"]
+    workflows: ["ascension-ci"]
     types:
       - completed
     branches:
       - 'dev'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
 
@@ -35,3 +39,24 @@ jobs:
         source_ref: ${{ github.event.workflow_run.head_branch }}
         target_branch: 'main'
         commit_message_template: 'merge: `{source_ref}` into `{target_branch}`'
+
+          ########################## MIRROR REPOSITORY ################################
+   mirror_repository:
+     runs-on: ubuntu-latest
+     needs: check_commit_and_branch
+     if: github.ref == 'refs/heads/main' &&
+       github.repository == 'Ascension-EIP/Ascension'
+
+     ######################## STEPS ############################################
+     steps:
+       - name: Checkout main repo
+         uses: actions/checkout@v4.1.1
+         with:
+           fetch-depth: 0
+           ref: main
+
+       - uses: pixta-dev/repository-mirroring-action@v1
+         with:
+           target_repo_url: ${{ vars.MIRROR_REPOSITORY_URL }}
+           ssh_private_key: ${{ secrets.MIRROR_SSH_KEY }}
+  #############################################################################
