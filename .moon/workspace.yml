@@ -7,3 +7,8 @@ projects:
   mobile: 'apps/mobile'
   server: 'apps/server'
   ai: 'apps/ai'
+
+vcs:
+  defaultBranch: 'main'
+  remoteCandidates:
+    - 'origin'
