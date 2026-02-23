@@ -48,4 +48,4 @@ tasks:
 
   format:
     command: 'dart'
-    args: ['format', '.']
+    args: ['format', '--set-exit-if-changed', '.']

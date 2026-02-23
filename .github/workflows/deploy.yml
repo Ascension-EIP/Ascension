@@ -1,13 +1,15 @@
 ############################ CONFIGURATION ####################################
-name: Deploy to Production
+name: ascension-deploy
 
 on:
   push:
     tags:
-      - "*"
+      - "v*"
 
 env:
   GITHUB_ACTIONS: true
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}
@@ -15,5 +17,147 @@ concurrency:
 ###############################################################################
 
 
+
+############################ JOBS #############################################
+jobs:
+  ########################## SERVER (RUST) ####################################
+  build_and_push_server:
+    runs-on: ubuntu-latest
+
+    ######################## STEPS ############################################
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+
+      - name: Extract tag version
+        id: version
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push server image
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/server
+          file: apps/server/Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}/ascension-server:${{ steps.version.outputs.tag }}
+            ${{ env.IMAGE_PREFIX }}/ascension-server:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+  #############################################################################
+
+
+  ########################## AI (PYTHON) ######################################
+  build_and_push_ai:
+    runs-on: ubuntu-latest
+
+    ######################## STEPS ############################################
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+
+      - name: Extract tag version
+        id: version
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push AI image
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/ai
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}/ascension-ai:${{ steps.version.outputs.tag }}
+            ${{ env.IMAGE_PREFIX }}/ascension-ai:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+  #############################################################################
+
+
+  ########################## MOBILE (FLUTTER) #################################
+  build_and_push_mobile:
+    runs-on: ubuntu-latest
+
+    ######################## STEPS ############################################
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+
+      - name: Extract tag version
+        id: version
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        working-directory: apps/mobile
+        run: flutter pub get
+
+      - name: Build Android APK
+        working-directory: apps/mobile
+        run: flutter build apk --release
+
+      - name: Upload Android artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ascension-android-${{ steps.version.outputs.tag }}
+          path: apps/mobile/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+  #############################################################################
+
+
+  ########################## CREATE GITHUB RELEASE ############################
+  create_release:
+    runs-on: ubuntu-latest
+    needs: [build_and_push_server, build_and_push_ai, build_and_push_mobile]
+
+    ######################## STEPS ############################################
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 0
+
+      - name: Extract tag version
+        id: version
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Download Android artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ascension-android-${{ steps.version.outputs.tag }}
+          path: release-assets
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "Ascension ${{ steps.version.outputs.tag }}"
+          generate_release_notes: true
+          files: release-assets/app-release.apk
+  #############################################################################
 
 ###############################################################################

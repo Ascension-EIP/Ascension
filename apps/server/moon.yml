@@ -47,4 +47,4 @@ tasks:
 
   format:
     command: 'cargo'
-    args: ['fmt', '--check']
+    args: ['fmt', '--all', '--', '--check']
