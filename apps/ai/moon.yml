@@ -7,17 +7,21 @@ project:
   description: 'AI service for Ascension'
 
 tasks:
-  setup:
+setup:
     command: 'python'
     args: ['-m', 'venv', 'venv']
     inputs:
       - 'requirements.txt'
+    outputs:
+      - 'venv'
 
   install:
     command: 'venv/bin/pip'
     args: ['install', '-r', 'requirements.txt']
     inputs:
       - 'requirements.txt'
+    outputs:
+      - 'venv'
     deps:
       - 'setup'
 
