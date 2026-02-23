@@ -1,0 +1,56 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+language: 'python'
+
+project:
+  name: 'ai'
+  description: 'AI service for Ascension'
+
+tasks:
+  setup:
+    command: 'python'
+    args: ['-m', 'venv', 'venv']
+    inputs:
+      - 'requirements.txt'
+    outputs:
+      - 'venv'
+
+  install:
+    command: 'venv/bin/pip'
+    args: ['install', '-r', 'requirements.txt']
+    inputs:
+      - 'requirements.txt'
+    outputs:
+      - 'venv'
+    deps:
+      - 'setup'
+
+  dev:
+    command: 'venv/bin/python'
+    args: ['main.py']
+    deps:
+      - 'install'
+    env:
+      LOG_LEVEL: 'debug'
+    options:
+      envFile: true
+
+  build:
+    command: 'venv/bin/python'
+    args: ['-m', 'build']
+    deps:
+      - 'install'
+
+  lint:
+    command: 'venv/bin/ruff'
+    args: ['check', '--exclude', 'venv', '.']
+    deps:
+      - 'install'
+
+  test:
+    command: 'venv/bin/pytest'
+    args: ['--ignore=venv', '-p', 'no:cacheprovider']
+    deps:
+      - 'install'
+    options:
+      allowFailure: true

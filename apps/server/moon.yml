@@ -1,0 +1,50 @@
+language: 'rust'
+
+project:
+  name: 'server'
+  description: 'Rust/Axum backend server for Ascension'
+
+tasks:
+  build:
+    command: 'cargo'
+    args: ['build']
+    inputs:
+      - 'src/**/*'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+
+  build-release:
+    command: 'cargo'
+    args: ['build', '--release']
+    inputs:
+      - 'src/**/*'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+    deps:
+      - 'lint'
+
+  dev:
+    command: 'cargo'
+    args: ['run']
+    env:
+      RUST_LOG: 'debug'
+    options:
+      envFile: true
+
+  test:
+    command: 'cargo'
+    args: ['test']
+    inputs:
+      - 'src/**/*'
+      - 'Cargo.toml'
+
+  lint:
+    command: 'cargo'
+    args: ['clippy', '--', '-D', 'warnings']
+    inputs:
+      - 'src/**/*'
+      - 'Cargo.toml'
+
+  format:
+    command: 'cargo'
+    args: ['fmt', '--all', '--', '--check']

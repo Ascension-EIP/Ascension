@@ -1,0 +1,14 @@
+# https://moonrepo.dev/docs/config/workspace
+$schema: './cache/schemas/workspace.json'
+
+# extends: './shared/workspace.yml'
+
+projects:
+  mobile: 'apps/mobile'
+  server: 'apps/server'
+  ai: 'apps/ai'
+
+vcs:
+  defaultBranch: 'main'
+  remoteCandidates:
+    - 'origin'
