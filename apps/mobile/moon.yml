@@ -1,6 +1,6 @@
 $schema: 'https://moonrepo.dev/schemas/project.json'
 
-language: 'unknown'
+language: 'dart'
 
 project:
   name: 'mobile'
@@ -25,6 +25,8 @@ tasks:
     args: ['build', 'ios', '--no-codesign']
     deps:
       - 'install'
+    options:
+      runInCI: true
 
   dev:
     command: 'flutter'
