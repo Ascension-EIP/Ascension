@@ -7,7 +7,7 @@ project:
   description: 'AI service for Ascension'
 
 tasks:
-setup:
+  setup:
     command: 'python'
     args: ['-m', 'venv', 'venv']
     inputs:
