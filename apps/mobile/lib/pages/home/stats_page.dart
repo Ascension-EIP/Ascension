@@ -5,10 +5,6 @@ class statsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('Stats coming soon!'),
-      ),
-    );
+    return const Scaffold(body: Center(child: Text('Stats coming soon!')));
   }
 }

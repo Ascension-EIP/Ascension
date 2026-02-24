@@ -5,10 +5,6 @@ class uploadPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('Upload coming soon!'),
-      ),
-    );
+    return const Scaffold(body: Center(child: Text('Upload coming soon!')));
   }
 }
