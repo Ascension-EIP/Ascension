@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class uploadPage extends StatelessWidget {
-  const uploadPage({super.key});
+class UploadPage extends StatelessWidget {
+  const UploadPage({super.key});
 
   @override
   Widget build(BuildContext context) {
