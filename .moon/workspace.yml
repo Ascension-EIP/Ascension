@@ -9,6 +9,7 @@ projects:
   ai: 'apps/ai'
 
 vcs:
-  manager: 'git'
+  client: 'git'
   defaultBranch: 'main'
-  syncStrategy: 'pull'
+  remoteCandidates:
+    - 'origin'
