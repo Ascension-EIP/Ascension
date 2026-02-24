@@ -27,11 +27,11 @@ class AscensionApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.black,
           brightness: Brightness.dark,
-          surface: Colors.black,
+          surface: Color(0xFF0E1626),
           onSurface: Colors.white,
         ),
       ),
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.dark,
       home: MobileLayout(),
     );
   }
