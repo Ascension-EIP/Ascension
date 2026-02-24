@@ -21,7 +21,6 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
             'Visualiser l\'invisible',
             style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.w300,
               color: Color(0xFF00B5D3),
             ),
           ),
