@@ -17,8 +17,8 @@ class _MobileLayoutState extends State<MobileLayout> {
 
   static const List<Widget> _pages = [
     HomePage(),
-    uploadPage(),
-    statsPage(),
+    UploadPage(),
+    StatsPage(),
     ProfilePage(),
   ];
 
