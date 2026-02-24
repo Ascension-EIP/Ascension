@@ -1,36 +1,66 @@
 import 'package:flutter/material.dart';
 
 class Header extends StatelessWidget implements PreferredSizeWidget {
-  const Header({super.key});
+  final String title;
+  final Color? titleColor;
+  final bool centerTitle;
+  final String? description;
+  final Color? descriptionColor;
+  final String? logoPath;
+
+  const Header({
+    super.key,
+    required this.title,
+    this.titleColor,
+    this.centerTitle = false,
+    this.description,
+    this.descriptionColor,
+    this.logoPath,
+  });
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize =>
+      Size.fromHeight(description != null ? 100 : kToolbarHeight);
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      centerTitle: false,
+      centerTitle: centerTitle,
+      toolbarHeight: description != null ? 100 : kToolbarHeight,
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Ascension',
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            'Visualiser l\'invisible',
+            title,
             style: TextStyle(
-              fontSize: 18,
-              color: Color(0xFF00B5D3),
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: titleColor ?? Colors.white,
             ),
+            softWrap: true,
+            overflow: TextOverflow.visible,
           ),
+          if (description != null)
+            SizedBox(
+              height: 46,
+              child: Text(
+                description!,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: descriptionColor ?? Colors.white,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
         ],
       ),
       actions: [
-        Padding(
-          padding: EdgeInsets.only(right: 16),
-          child: Image.asset('assets/images/logo.png', width: 75, height: 75),
-        ),
+        if (logoPath != null)
+          Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: Image.asset(logoPath!, width: 75, height: 75),
+          ),
       ],
     );
   }

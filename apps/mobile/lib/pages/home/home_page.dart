@@ -7,7 +7,12 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Header(),
+      appBar: Header(
+        title: 'Ascension',
+        description: 'Visualiser l\'invisible',
+        descriptionColor: Color(0xFF00B5D3),
+        logoPath: 'assets/images/logo.png',
+      ),
       body: Center(child: Text('Home coming soon!')),
     );
   }
