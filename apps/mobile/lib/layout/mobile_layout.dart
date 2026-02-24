@@ -13,7 +13,7 @@ class MobileLayout extends StatefulWidget {
 }
 
 class _MobileLayoutState extends State<MobileLayout> {
-  int _currentIndex = 1; // Home is the default page
+  int _currentIndex = 0; // Home is the default page
 
   static const List<Widget> _pages = [
     HomePage(),
