@@ -47,7 +47,9 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
                 description!,
                 style: TextStyle(
                   fontSize: 18,
-                  color: descriptionColor ?? Theme.of(context).colorScheme.onSurface,
+                  color:
+                      descriptionColor ??
+                      Theme.of(context).colorScheme.onSurface,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
