@@ -177,6 +177,7 @@ jobs:
         uses: moonrepo/setup-toolchain@v0
         with:
           auto-install: true
+          cache: false
       #- name: Cache moon store
       #  uses: actions/cache@v4
       #  with:
@@ -197,6 +198,8 @@ jobs:
 
       - name: Install dependencies
         run: moon run ai:install
+        env:
+          MOON_DEBUG: true
 
       - name: Lint
         run: moon run ai:lint
