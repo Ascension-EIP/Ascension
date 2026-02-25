@@ -177,15 +177,15 @@ jobs:
         uses: moonrepo/setup-toolchain@v0
         with:
           auto-install: true
-      - name: Cache moon store
-        uses: actions/cache@v4
-        with:
-          path: .moon/cache
-          key: ${{ runner.os }}-moon-ai-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-moon-ai-
-      - name: Clean moon stale states
-        run: rm -rf .moon/cache/states
+      #- name: Cache moon store
+      #  uses: actions/cache@v4
+      #  with:
+      #    path: .moon/cache
+      #    key: ${{ runner.os }}-moon-ai-${{ github.sha }}
+      #    restore-keys: |
+      #      ${{ runner.os }}-moon-ai-
+      - name: Nuke moon cache
+        run: rm -rf .moon/cache
 
       - name: Cache Python venv
         uses: actions/cache@v4
