@@ -87,16 +87,16 @@ jobs:
       #      ${{ runner.os }}-moon-server-
 
       - name: Format check
-        run: moon run server:format
+        run: moon run server:format --affected --base HEAD~1
 
       - name: Lint
-        run: moon run server:lint
+        run: moon run server:lint --affected --base HEAD~1
 
       - name: Build
-        run: moon run server:build-release
+        run: moon run server:build-release --affected --base HEAD~1
 
       - name: Test
-        run: moon run server:test
+        run: moon run server:test --affected --base HEAD~1
   #############################################################################
 
 
