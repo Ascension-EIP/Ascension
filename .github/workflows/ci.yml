@@ -81,9 +81,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .moon/cache
-          key: ${{ runner.os }}-moon-server-${{ hashFiles('apps/server/Cargo.lock', 'apps/server/moon.yml') }}
+          key: ${{ runner.os }}-moon-server-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-moon-server-
+      - name: Nuke moon git states
+        run: rm -rf .moon/cache/states
 
       - name: Format check
         run: moon run server:format --affected --base refs/remotes/origin/main
@@ -136,9 +138,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .moon/cache
-          key: ${{ runner.os }}-moon-mobile-${{ hashFiles('apps/mobile/pubspec.lock', 'apps/mobile/moon.yml') }}
+          key: ${{ runner.os }}-moon-mobile-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-moon-mobile-
+      - name: Clean moon stale states
+        run: rm -rf .moon/cache/states
 
       - name: Format check
         run: moon run mobile:format
@@ -178,9 +182,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .moon/cache
-          key: ${{ runner.os }}-moon-ai-${{ hashFiles('apps/ai/requirements.txt', 'apps/ai/moon.yml') }}
+          key: ${{ runner.os }}-moon-ai-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-moon-ai-
+      - name: Clean moon stale states
+        run: rm -rf .moon/cache/states
 
       - name: Cache Python venv
         uses: actions/cache@v4
