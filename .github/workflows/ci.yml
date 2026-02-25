@@ -86,16 +86,16 @@ jobs:
             ${{ runner.os }}-moon-server-
 
       - name: Format check
-        run: moon run server:format
+        run: moon run server:format --affected --base refs/remotes/origin/main
 
       - name: Lint
-        run: moon run server:lint
+        run: moon run server:lint --affected --base refs/remotes/origin/main
 
       - name: Build
-        run: moon run server:build-release
+        run: moon run server:build-release --affected --base refs/remotes/origin/main
 
       - name: Test
-        run: moon run server:test
+        run: moon run server:test --affected --base refs/remotes/origin/main
   #############################################################################
 
 
