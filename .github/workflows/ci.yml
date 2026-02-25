@@ -66,6 +66,7 @@ jobs:
         uses: moonrepo/setup-toolchain@v0
         with:
           auto-install: true
+          cache: false
       - name: Cache Cargo registry
         uses: actions/cache@v4
         with:
