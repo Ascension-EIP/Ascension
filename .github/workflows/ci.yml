@@ -77,19 +77,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      - name: Cache moon store
-        uses: actions/cache@v4
-        with:
-          path: .moon/cache
-          key: ${{ runner.os }}-moon-server-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-moon-server-
-      - name: Purge moon volatile metadata
-        run: |
-          if [ -d ".moon/cache" ]; then
-            find .moon/cache -maxdepth 1 -not -name 'hashes' -not -name 'outputs' -not -name 'cache' -type d -exec rm -rf {} +
-            rm -f .moon/cache/*.json
-          fi
+      #- name: Cache moon store
+      #  uses: actions/cache@v4
+      #  with:
+      #    path: .moon/cache
+      #    key: ${{ runner.os }}-moon-server-${{ github.sha }}
+      #    restore-keys: |
+      #      ${{ runner.os }}-moon-server-
 
       - name: Format check
         run: moon run server:format --affected --status-force-refresh
