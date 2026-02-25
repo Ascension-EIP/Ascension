@@ -66,7 +66,6 @@ jobs:
         uses: moonrepo/setup-toolchain@v0
         with:
           auto-install: true
-          cache: false
       - name: Cache Cargo registry
         uses: actions/cache@v4
         with:
@@ -78,13 +77,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      #- name: Cache moon store
-      #  uses: actions/cache@v4
-      #  with:
-      #    path: .moon/cache
-      #    key: ${{ runner.os }}-moon-server-${{ github.sha }}
-      #    restore-keys: |
-      #      ${{ runner.os }}-moon-server-
+      - name: Cache moon store
+        uses: actions/cache@v4
+        with:
+          path: .moon/cache
+          key: ${{ runner.os }}-moon-server-${{ hashFiles('apps/server/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-moon-server-
 
       - name: Format check
         run: moon run server:format --affected --base HEAD~1
@@ -137,20 +136,18 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .moon/cache
-          key: ${{ runner.os }}-moon-mobile-${{ github.sha }}
+          key: ${{ runner.os }}-moon-mobile-${{ hashFiles('apps/mobile/pubspec.lock') }}
           restore-keys: |
             ${{ runner.os }}-moon-mobile-
-      - name: Clean moon stale states
-        run: rm -rf .moon/cache/states
 
       - name: Format check
-        run: moon run mobile:format
+        run: moon run mobile:format --affected --base HEAD~1
 
       - name: Lint
-        run: moon run mobile:lint
+        run: moon run mobile:lint --affected --base HEAD~1
 
       - name: Test
-        run: moon run mobile:test
+        run: moon run mobile:test --affected --base HEAD~1
   #############################################################################
 
 
@@ -178,15 +175,13 @@ jobs:
         with:
           auto-install: true
           cache: false
-      #- name: Cache moon store
-      #  uses: actions/cache@v4
-      #  with:
-      #    path: .moon/cache
-      #    key: ${{ runner.os }}-moon-ai-${{ github.sha }}
-      #    restore-keys: |
-      #      ${{ runner.os }}-moon-ai-
-      - name: Nuke moon cache
-        run: rm -rf .moon/cache
+      - name: Cache moon store
+        uses: actions/cache@v4
+        with:
+          path: .moon/cache
+          key: ${{ runner.os }}-moon-ai-${{ hashFiles('apps/ai/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-moon-ai-
 
       - name: Cache Python venv
         uses: actions/cache@v4
@@ -197,15 +192,13 @@ jobs:
             ${{ runner.os }}-venv-ai-
 
       - name: Install dependencies
-        run: moon run ai:install
-        env:
-          MOON_DEBUG: true
+        run: moon run ai:install --affected --base HEAD~1
 
       - name: Lint
-        run: moon run ai:lint
+        run: moon run ai:lint --affected --base HEAD~1
 
       - name: Test
-        run: moon run ai:test
+        run: moon run ai:test --affected --base HEAD~1
   #############################################################################
 
 ###############################################################################
