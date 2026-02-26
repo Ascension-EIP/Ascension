@@ -87,16 +87,16 @@ jobs:
             ${{ runner.os }}-moon-server-
 
       - name: Format check
-        run: moon run server:format --affected --base HEAD~1
+        run: moon run server:format
 
       - name: Lint
-        run: moon run server:lint --affected --base HEAD~1
+        run: moon run server:lint
 
       - name: Build
-        run: moon run server:build-release --affected --base HEAD~1
+        run: moon run server:build-release
 
       - name: Test
-        run: moon run server:test --affected --base HEAD~1
+        run: moon run server:test
   #############################################################################
 
 
@@ -143,13 +143,13 @@ jobs:
             ${{ runner.os }}-moon-mobile-
 
       - name: Format check
-        run: moon run mobile:format --affected --base HEAD~1
+        run: moon run mobile:format
 
       - name: Lint
-        run: moon run mobile:lint --affected --base HEAD~1
+        run: moon run mobile:lint
 
       - name: Test
-        run: moon run mobile:test --affected --base HEAD~1
+        run: moon run mobile:test
   #############################################################################
 
 
@@ -195,13 +195,13 @@ jobs:
             ${{ runner.os }}-venv-ai-
 
       - name: Install dependencies
-        run: moon run ai:install --affected --base HEAD~1
+        run: moon run ai:install
 
       - name: Lint
-        run: moon run ai:lint --affected --base HEAD~1
+        run: moon run ai:lint
 
       - name: Test
-        run: moon run ai:test --affected --base HEAD~1
+        run: moon run ai:test
   #############################################################################
 
 ###############################################################################
