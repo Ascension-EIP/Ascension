@@ -1,0 +1,11 @@
+#!/bin/bash
+
+SUBMODULE_PATH="docs"
+
+if git diff --quiet HEAD -- "$SUBMODULE_PATH"; then
+    exit 0
+fi
+
+echo "--- Update docs submodule ---"
+
+git add "$SUBMODULE_PATH"
