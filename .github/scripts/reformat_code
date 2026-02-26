@@ -1,0 +1,5 @@
+#!/bin/bash
+
+moon run server:format
+moon run mobile:format
+#moon run ai:format

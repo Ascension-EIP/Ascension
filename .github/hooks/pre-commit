@@ -2,10 +2,17 @@
 
 SUBMODULE_PATH="docs"
 
-if git diff --quiet HEAD -- "$SUBMODULE_PATH"; then
+if ! git diff --quiet HEAD -- "$SUBMODULE_PATH"; then
+    git add "$SUBMODULE_PATH"
+    echo "✔ Update docs submodule."
+fi
+
+FILES=$(git diff --cached --name-only --diff-filter=ACM)
+if [ -z "$FILES" ]; then
     exit 0
 fi
 
-echo "--- Update docs submodule ---"
+.github/scripts/reformat_code
+echo "$FILES" | xargs git add
 
-git add "$SUBMODULE_PATH"
+echo "✔ Files formatted and updated in commit."
