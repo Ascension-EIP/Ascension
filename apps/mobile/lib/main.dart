@@ -20,6 +20,7 @@ class AscensionApp extends StatelessWidget {
           brightness: Brightness.light,
           surface: Colors.white,
           onSurface: Colors.black,
+          secondary: const Color(0xFF00B5D3),
         ),
       ),
       darkTheme: ThemeData(
@@ -29,6 +30,7 @@ class AscensionApp extends StatelessWidget {
           brightness: Brightness.dark,
           surface: Color(0xFF0E1626),
           onSurface: Colors.white,
+          secondary: const Color(0xFF00B5D3),
         ),
       ),
       themeMode: ThemeMode.dark,
