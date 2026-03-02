@@ -1,16 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/layout/mobile_layout.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(const AscensionApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class AscensionApp extends StatelessWidget {
+  const AscensionApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(body: Center(child: Text('Hello World!'))),
+    return MaterialApp(
+      title: 'Ascension',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.grey,
+          brightness: Brightness.light,
+          surface: Colors.white,
+          onSurface: Colors.black,
+        ),
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.black,
+          brightness: Brightness.dark,
+          surface: Color(0xFF0E1626),
+          onSurface: Colors.white,
+        ),
+      ),
+      themeMode: ThemeMode.dark,
+      home: MobileLayout(),
     );
   }
 }

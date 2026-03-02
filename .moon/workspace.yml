@@ -9,6 +9,7 @@ projects:
   ai: 'apps/ai'
 
 vcs:
+  client: 'git'
   defaultBranch: 'main'
   remoteCandidates:
     - 'origin'
