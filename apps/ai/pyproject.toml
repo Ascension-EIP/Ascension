@@ -27,7 +27,7 @@ dev = [
 ascension-worker = "consumer:main"
 
 [tool.setuptools]
-py-modules = ["consumer", "main"]
+py-modules = ["consumer", "main", "pose_analysis"]
 
 [tool.ruff]
 exclude = ["venv"]
