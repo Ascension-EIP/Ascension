@@ -12,7 +12,6 @@ from mediapipe.tasks.python import vision
 import json
 import numpy as np
 import os
-import sys
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "pose_landmarker.task")
