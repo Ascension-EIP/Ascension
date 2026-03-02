@@ -226,7 +226,9 @@ class _VideoUploadState extends State<VideoUpload> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(color: Theme.of(context).colorScheme.secondary),
+            CircularProgressIndicator(
+              color: Theme.of(context).colorScheme.secondary,
+            ),
             const SizedBox(height: 24),
             Text(
               'Envoi en cours... ${(_uploadProgress * 100).toInt()}%',
@@ -273,7 +275,9 @@ class _VideoUploadState extends State<VideoUpload> {
             const SizedBox(height: 32),
             FilledButton(
               onPressed: _reset,
-              style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.secondary),
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.secondary,
+              ),
               child: const Text('Uploader une autre vidéo'),
             ),
           ],
@@ -302,12 +306,19 @@ class _PickerButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 24),
         decoration: BoxDecoration(
-          border: Border.all(color: Theme.of(context).colorScheme.secondary, width: 1.5),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.secondary,
+            width: 1.5,
+          ),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           children: [
-            Icon(icon, size: 36, color: Theme.of(context).colorScheme.secondary),
+            Icon(
+              icon,
+              size: 36,
+              color: Theme.of(context).colorScheme.secondary,
+            ),
             const SizedBox(height: 8),
             Text(
               label,
