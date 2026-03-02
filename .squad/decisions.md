@@ -1,5 +1,21 @@
 # Decisions
 
+## 2026-03-02: vision.skeleton pipeline integration in consumer.py
+**By:** Quentin (AI Dev)  
+**Date:** 2025-07-25  
+**What:** Implemented the full vision.skeleton pipeline flow in `apps/ai/consumer.py`.  
+**Why:** The consumer was a skeleton with placeholder comments. Needed to wire up S3 download, MediaPipe analysis, PostgreSQL persistence, and event publishing to make the pipeline functional end-to-end.  
+**How:**
+- Single `on_message` callback handles the full job lifecycle: download → analyze → save → publish → ack.
+- Uses `boto3` for MinIO/S3, `psycopg2` for PostgreSQL, `pika` for RabbitMQ.
+- Connection retry loop (12 × 5s) for RabbitMQ startup races.
+- Temp files cleaned in `finally` block. DB connections opened per-job and closed after.
+- `ascension.events` topic exchange declared at startup for event publishing.
+- Errors nack (requeue) + update analysis status to `failed` (best-effort).
+- docker-compose.yml updated to pass MinIO and Postgres env vars to ai-worker.
+
+**Impact:** Other pipelines (hold_detection, advice, ghost, training.program) should follow the same pattern — download, process, persist, publish, ack/nack.
+
 ## 2026-03-02: Squad PR Review Workflow
 **By:** Arthur (DevOps)
 **What:** Added automated PR review routing via `.github/workflows/squad-pr-review.yml` and a `CODEOWNERS` file at repo root.
