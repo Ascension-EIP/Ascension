@@ -8,13 +8,13 @@
 #     Create teams at: https://github.com/orgs/Ascension-EIP/teams
 #
 # Squad routing reference:
-#   Gandalf  → AI / Python      → @Ascension-EIP/ai
-#   Boromir  → Rust / API       → @Ascension-EIP/backend
-#   Legolas  → Flutter / Mobile  → @Ascension-EIP/mobile
-#   Samwise  → DevOps / CI      → @Ascension-EIP/devops
-#   Gimli    → DB / Infra       → @Ascension-EIP/infra
-#   Bilbo    → Documentation    → @Ascension-EIP/docs
-#   Aragorn  → Architecture     → @Ascension-EIP/leads
+#   Quentin  → AI / Python      → @Ascension-EIP/ai
+#   Renaud  → Rust / API       → @Ascension-EIP/backend
+#   Romaric  → Flutter / Mobile  → @Ascension-EIP/mobile
+#   Arthur  → DevOps / CI      → @Ascension-EIP/devops
+#   Alexandra    → DB / Infra       → @Ascension-EIP/infra
+#   Darius    → Documentation    → @Ascension-EIP/docs
+#   Eric  → Architecture     → @Ascension-EIP/leads
 # ──────────────────────────────────────────────────────────────
 
 # Default: repo owner reviews anything not matched below

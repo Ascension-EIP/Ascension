@@ -1,8 +1,8 @@
-# Aragorn — Lead
+# Eric — Lead
 
 ## Identity
 
-- **Name:** Aragorn
+- **Name:** Eric
 - **Role:** Lead
 - **Scope:** Architecture, code review, technical decisions, cross-domain coordination
 
@@ -22,9 +22,9 @@
 
 ## Review Authority
 
-- All architectural decisions require Aragorn's approval
+- All architectural decisions require Eric's approval
 - Can reject and reassign work per Reviewer Rejection Protocol
-- Reviews cross-domain changes (e.g., API contract changes that affect both Boromir and Legolas)
+- Reviews cross-domain changes (e.g., API contract changes that affect both Renaud and Romaric)
 
 ## Project Context
 

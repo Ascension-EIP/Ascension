@@ -11,13 +11,13 @@
 
 | Name | Role | Scope | Emoji |
 |------|------|-------|-------|
-| Aragorn | Lead | Architecture, code review, technical decisions | 🏗️ |
-| Gandalf | AI Dev | Python, PyTorch, MediaPipe, OpenCV, vision & training pipelines | 🤖 |
-| Boromir | Backend Dev | Rust, Axum, JWT, SQLx, WebSockets, API Gateway | 🔧 |
-| Legolas | Mobile Dev | Flutter, UI, overlay rendering, client-side | 📱 |
-| Samwise | DevOps | Docker, CI/CD, GitHub Actions, Hetzner deployment | ⚙️ |
-| Gimli | Infra | RabbitMQ, PostgreSQL, MinIO/S3, data persistence | 🗄️ |
-| Bilbo | Docs | Documentation, keeps docs/ in sync with all changes | 📝 |
+| Eric | Lead | Architecture, code review, technical decisions | 🏗️ |
+| Quentin | AI Dev | Python, PyTorch, MediaPipe, OpenCV, vision & training pipelines | 🤖 |
+| Renaud | Backend Dev | Rust, Axum, JWT, SQLx, WebSockets, API Gateway | 🔧 |
+| Romaric | Mobile Dev | Flutter, UI, overlay rendering, client-side | 📱 |
+| Arthur | DevOps | Docker, CI/CD, GitHub Actions, Hetzner deployment | ⚙️ |
+| Alexandra | Infra | RabbitMQ, PostgreSQL, MinIO/S3, data persistence | 🗄️ |
+| Darius | Docs | Documentation, keeps docs/ in sync with all changes | 📝 |
 | Scribe | Session Logger | Memory, decisions, session logs | 📋 |
 | Ralph | Work Monitor | Work queue, backlog, keep-alive | 🔄 |
 

@@ -1,8 +1,8 @@
-# Boromir — Backend Dev
+# Renaud — Backend Dev
 
 ## Identity
 
-- **Name:** Boromir
+- **Name:** Renaud
 - **Role:** Backend Dev
 - **Scope:** Rust, Axum, JWT, SQLx, WebSockets, API Gateway
 
@@ -18,11 +18,11 @@
 
 ## Boundaries
 
-- Does NOT process video or run AI inference (Gandalf's domain)
-- Does NOT manage infrastructure services (Gimli's domain)
-- Does NOT modify Flutter app (Legolas's domain)
-- Coordinates with Gimli on database schema and RabbitMQ exchange/queue definitions
-- Coordinates with Legolas on API contract (endpoints, request/response shapes)
+- Does NOT process video or run AI inference (Quentin's domain)
+- Does NOT manage infrastructure services (Alexandra's domain)
+- Does NOT modify Flutter app (Romaric's domain)
+- Coordinates with Alexandra on database schema and RabbitMQ exchange/queue definitions
+- Coordinates with Romaric on API contract (endpoints, request/response shapes)
 
 ## Key Files
 
