@@ -124,7 +124,7 @@ def analyze(video_path: str) -> dict:
 
     fps = cap.get(cv2.CAP_PROP_FPS)
     if fps <= 0:
-        fps = 30
+        fps = 60
 
     n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     print(f"[mediapipe] Vidéo chargée : {n_frames} frames à {fps} FPS")
