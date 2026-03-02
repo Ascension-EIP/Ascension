@@ -1,0 +1,17 @@
+[
+  {
+    "assignment_id": "ascension-init-2026-03-02",
+    "universe": "lord-of-the-rings",
+    "created_at": "2026-03-02T13:48:52Z",
+    "agents": [
+      { "name": "Aragorn", "role": "Lead" },
+      { "name": "Gandalf", "role": "AI Dev" },
+      { "name": "Boromir", "role": "Backend Dev" },
+      { "name": "Legolas", "role": "Mobile Dev" },
+      { "name": "Samwise", "role": "DevOps" },
+      { "name": "Gimli", "role": "Infra" },
+      { "name": "Bilbo", "role": "Docs" }
+    ],
+    "reason": "Initial team formation for Ascension project"
+  }
+]

@@ -1,0 +1,58 @@
+[
+  {
+    "persistent_name": "Aragorn",
+    "role": "Lead",
+    "universe": "lord-of-the-rings",
+    "created_at": "2026-03-02T13:48:52Z",
+    "legacy_named": false,
+    "status": "active"
+  },
+  {
+    "persistent_name": "Gandalf",
+    "role": "AI Dev",
+    "universe": "lord-of-the-rings",
+    "created_at": "2026-03-02T13:48:52Z",
+    "legacy_named": false,
+    "status": "active"
+  },
+  {
+    "persistent_name": "Boromir",
+    "role": "Backend Dev",
+    "universe": "lord-of-the-rings",
+    "created_at": "2026-03-02T13:48:52Z",
+    "legacy_named": false,
+    "status": "active"
+  },
+  {
+    "persistent_name": "Legolas",
+    "role": "Mobile Dev",
+    "universe": "lord-of-the-rings",
+    "created_at": "2026-03-02T13:48:52Z",
+    "legacy_named": false,
+    "status": "active"
+  },
+  {
+    "persistent_name": "Samwise",
+    "role": "DevOps",
+    "universe": "lord-of-the-rings",
+    "created_at": "2026-03-02T13:48:52Z",
+    "legacy_named": false,
+    "status": "active"
+  },
+  {
+    "persistent_name": "Gimli",
+    "role": "Infra",
+    "universe": "lord-of-the-rings",
+    "created_at": "2026-03-02T13:48:52Z",
+    "legacy_named": false,
+    "status": "active"
+  },
+  {
+    "persistent_name": "Bilbo",
+    "role": "Docs",
+    "universe": "lord-of-the-rings",
+    "created_at": "2026-03-02T13:48:52Z",
+    "legacy_named": false,
+    "status": "active"
+  }
+]
