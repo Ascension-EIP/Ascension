@@ -1,0 +1,34 @@
+<type>(<scope>): <short description>
+
+# --- BODY (Optional) ---
+# Motivation behind the change, how it works, potential impacts.
+# Separate paragraphs with a blank line.
+
+# --- FOOTER (Optional) ---
+# BREAKING CHANGE: <description>
+# Closes #<issue_number>
+
+# ----------------------------------------------------------------------
+# COMMIT GUIDELINES (Ascension - v1.0 - 2026-02-10):
+# 1. Language: English / Case: lowercase / No period at the end.
+# 2. Scopes (Examples): core, engine, network, ui, docs, ia, utils.
+# 3. Main Types:
+#    feat     : New feature
+#    fix      : Bug fix
+#    docs     : Documentation
+#    style    : Formatting (no logic change)
+#    refactor : Code refactoring
+#    test     : Adding or modifying tests
+#    build    : Build or dependency changes
+#    perf     : Performance improvements
+#    ci       : Continuous Integration changes
+#    chore    : Maintenance tasks
+#    revert   : Reverting a previous commit
+#    add      : Adding new files
+#    remove   : Removing files or dead code
+#    rename   : Renaming files/classes
+#    move     : Moving files
+#    merge    : Merging branches
+#    init     : Initialization
+#    details  : Detailed multi-line commits
+# ----------------------------------------------------------------------
