@@ -12,7 +12,6 @@ from mediapipe.tasks.python import vision
 import json
 import numpy as np
 import os
-import sys
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "pose_landmarker.task")
@@ -124,8 +123,7 @@ def analyze(video_path: str) -> dict:
 
     fps = cap.get(cv2.CAP_PROP_FPS)
     if fps <= 0:
-        fps = 30
-
+        fps = 60
     n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     print(f"[mediapipe] Vidéo chargée : {n_frames} frames à {fps} FPS")
 
