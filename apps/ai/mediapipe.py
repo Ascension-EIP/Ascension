@@ -6,8 +6,6 @@ import json
 import numpy as np
 import os
 
-# --- Config ---
-# Utilise le chemin absolu pour éviter les surprises selon d'où tu lances pixi
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 VIDEO_PATH  = os.path.join(BASE_DIR, "vid.mp4")
 MODEL_PATH  = os.path.join(BASE_DIR, "pose_landmarker.task")
@@ -30,7 +28,6 @@ def process_pose(landmarks_raw):
     lm = {}
     for idx, name in LANDMARKS.items():
         l = landmarks_raw[idx]
-        # On baisse le seuil à 0.3 car l'escalade cache souvent des membres
         if l.presence < 0.3: continue
         lm[name] = {"x": round(l.x, 5), "y": round(l.y, 5), "z": round(l.z, 5), "presence": round(l.presence, 3)}
     
@@ -44,19 +41,19 @@ def process_pose(landmarks_raw):
 
 def analyze():
     if not os.path.exists(VIDEO_PATH):
-        print(f"❌ Fichier vidéo introuvable : {VIDEO_PATH}")
+        print(f"Fichier vidéo introuvable : {VIDEO_PATH}")
         return
 
     cap = cv2.VideoCapture(VIDEO_PATH)
     if not cap.isOpened():
-        print(f"❌ OpenCV ne peut pas ouvrir la vidéo. Vérifie tes codecs (ffmpeg).")
+        print(f"OpenCV ne peut pas ouvrir la vidéo. Vérifie tes codecs (ffmpeg).")
         return
 
     fps = cap.get(cv2.CAP_PROP_FPS)
-    if fps <= 0: fps = 30 # Fallback si le header est mal lu
+    if fps <= 0: fps = 30
     
     n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    print(f"🎬 Vidéo chargée : {n_frames} frames à {fps} FPS")
+    print(f"Vidéo chargée : {n_frames} frames à {fps} FPS")
 
     base_options = python.BaseOptions(model_asset_path=MODEL_PATH)
     options = vision.PoseLandmarkerOptions(
@@ -70,10 +67,9 @@ def analyze():
         for i in range(n_frames):
             ret, frame = cap.read()
             if not ret:
-                print(f"⚠️  Lecture interrompue à la frame {i}")
+                print(f"Lecture interrompue à la frame {i}")
                 break
             
-            # Conversion pour MediaPipe
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
             
@@ -95,7 +91,7 @@ def analyze():
         cap.release()
         with open(OUTPUT_PATH, "w") as f:
             json.dump(output, f, indent=2)
-        print(f"✅ Terminé ! {len(output['frames'])} frames sauvées dans {OUTPUT_PATH}")
+        print(f"Terminé ! {len(output['frames'])} frames sauvées dans {OUTPUT_PATH}")
 
 if __name__ == "__main__":
     analyze()
