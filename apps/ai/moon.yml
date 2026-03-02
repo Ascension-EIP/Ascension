@@ -11,15 +11,15 @@ tasks:
     command: 'python'
     args: ['-m', 'venv', 'venv']
     inputs:
-      - 'requirements.txt'
+      - 'pyproject.toml'
     outputs:
       - 'venv'
 
   install:
     command: 'venv/bin/pip'
-    args: ['install', '-r', 'requirements.txt']
+    args: ['install', '-e', '.[dev]']
     inputs:
-      - 'requirements.txt'
+      - 'pyproject.toml'
     outputs:
       - 'venv'
     deps:
@@ -27,11 +27,12 @@ tasks:
 
   dev:
     command: 'venv/bin/python'
-    args: ['main.py']
+    args: ['consumer.py']
     deps:
       - 'install'
     env:
       LOG_LEVEL: 'debug'
+      PYTHONUNBUFFERED: '1'
     options:
       envFile: true
 
@@ -43,7 +44,7 @@ tasks:
 
   lint:
     command: 'venv/bin/ruff'
-    args: ['check', '--exclude', 'venv', '.']
+    args: ['check', '.']
     deps:
       - 'install'
 
