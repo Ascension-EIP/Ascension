@@ -8,13 +8,14 @@
 #     Create teams at: https://github.com/orgs/Ascension-EIP/teams
 #
 # Squad routing reference:
-#   Quentin  → AI / Python      → @Ascension-EIP/ai
-#   Renaud  → Rust / API       → @Ascension-EIP/backend
-#   Romaric  → Flutter / Mobile  → @Ascension-EIP/mobile
-#   Arthur  → DevOps / CI      → @Ascension-EIP/devops
-#   Alexandra    → DB / Infra       → @Ascension-EIP/infra
+#   Quentin   → AI / Python      → @Ascension-EIP/ai
+#   Renaud    → Rust / API       → @Ascension-EIP/backend
+#   Romaric   → Flutter / Mobile → @Ascension-EIP/mobile
+#   Arthur    → DevOps / CI      → @Ascension-EIP/devops
+#   Alexandra → DB / Infra       → @Ascension-EIP/infra
 #   Darius    → Documentation    → @Ascension-EIP/docs
-#   Eric  → Architecture     → @Ascension-EIP/leads
+#   Eric      → Architecture     → @Ascension-EIP/leads
+#   Ridjan    → Testing          → @Ascension-EIP/testers
 # ──────────────────────────────────────────────────────────────
 
 # Default: repo owner reviews anything not matched below
@@ -39,3 +40,6 @@ Dockerfile*             @Ascension-EIP/devops
 
 # Infrastructure (DB migrations, queue config, storage)
 **/migrations/          @Ascension-EIP/infra
+
+# Tests
+apps/**/tests/          @Ascension-EIP/testers
