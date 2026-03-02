@@ -28,3 +28,8 @@
 **By:** Gianni TUERO
 **What:** Team created with 7 agents: Eric (Lead), Quentin (AI), Renaud (Backend), Romaric (Mobile), Arthur (DevOps), Alexandra (Infra), Darius (Docs). Named from Lord of the Rings universe.
 **Why:** Matches project domains — AI pipelines, Rust API, Flutter mobile, Docker/deployment, RabbitMQ/PostgreSQL/MinIO infra, and documentation sync.
+
+## 2026-03-02: No Auto-Commit
+**By:** Gianni TUERO
+**What:** Les agents ne doivent PAS faire de git commit automatiquement après chaque feature. Les commits sont gérés manuellement par l'utilisateur ou sur demande explicite.
+**Why:** Préférence utilisateur — le contrôle des commits reste humain.
