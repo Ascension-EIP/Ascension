@@ -1,16 +1,16 @@
 # Decisions
 
 ## 2026-03-02: AI Layer Documentation Created (Informational)
-**By:** Darius (Docs)  
-**Triggered by:** feat(ai): implement vision.skeleton pipeline  
-**What:** Created `docs/developer_guide/ai/README.md` covering the consumer pattern, `vision.skeleton` pipeline flow, `pose_analysis` module output format, environment variables, and error handling strategy. Updated `docs/developer_guide/architecture/system-overview.md` — replaced conceptual `AscensionWorker` pseudocode in Layer 4 with the actual per-pipeline consumer pattern and implementation status table.  
+**By:** Darius (Docs)
+**Triggered by:** feat(ai): implement vision.skeleton pipeline
+**What:** Created `docs/developer_guide/ai/README.md` covering the consumer pattern, `vision.skeleton` pipeline flow, `pose_analysis` module output format, environment variables, and error handling strategy. Updated `docs/developer_guide/architecture/system-overview.md` — replaced conceptual `AscensionWorker` pseudocode in Layer 4 with the actual per-pipeline consumer pattern and implementation status table.
 **Note:** No architectural decisions were made by Darius. This entry records documentation work only; all architectural decisions were made during the implementation phase by Quentin (AI Dev).
 
 ## 2026-03-02: vision.skeleton pipeline integration in consumer.py
-**By:** Quentin (AI Dev)  
-**Date:** 2025-07-25  
-**What:** Implemented the full vision.skeleton pipeline flow in `apps/ai/consumer.py`.  
-**Why:** The consumer was a skeleton with placeholder comments. Needed to wire up S3 download, MediaPipe analysis, PostgreSQL persistence, and event publishing to make the pipeline functional end-to-end.  
+**By:** Quentin (AI Dev)
+**Date:** 2025-07-25
+**What:** Implemented the full vision.skeleton pipeline flow in `apps/ai/consumer.py`.
+**Why:** The consumer was a skeleton with placeholder comments. Needed to wire up S3 download, MediaPipe analysis, PostgreSQL persistence, and event publishing to make the pipeline functional end-to-end.
 **How:**
 - Single `on_message` callback handles the full job lifecycle: download → analyze → save → publish → ack.
 - Uses `boto3` for MinIO/S3, `psycopg2` for PostgreSQL, `pika` for RabbitMQ.
