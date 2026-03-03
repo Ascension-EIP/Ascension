@@ -11,7 +11,7 @@
       { "name": "Arthur", "role": "DevOps" },
       { "name": "Alexandra", "role": "Infra" },
       { "name": "Darius", "role": "Docs" },
-      { "name": "Ridjan", "role": "Testing" }
+      { "name": "Ridjan", "role": "Tester" }
     ],
     "reason": "Initial team formation for Ascension project"
   }
