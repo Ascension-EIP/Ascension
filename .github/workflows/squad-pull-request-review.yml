@@ -1,4 +1,4 @@
-# Squad PR Review — Automatic domain routing for pull requests
+# Squad Pull Request Review — Automatic domain routing for pull requests
 #
 # Analyzes changed files in a PR and labels it with the appropriate
 # squad:{agent} labels so the right domain experts review the code.
@@ -9,11 +9,13 @@
 #   apps/mobile/**       → squad:romaric    (Flutter / Mobile)
 #   .github/** | docker* → squad:arthur     (DevOps / CI)
 #   docs/**              → squad:darius     (Documentation)
+#   **/test*/**          → squad:ridjan     (Testing)
 #   **/migrations/**     → squad:alexandra  (Database / Infra)
 #   queue/storage config → squad:alexandra  (Database / Infra)
 #   Multi-domain changes → squad:eric       (Architecture / Lead)
 
-name: Squad PR Review
+############################ CONFIGURATION ####################################
+name: ascension-squad-pull-request-review
 
 on:
   pull_request:
@@ -22,15 +24,23 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  issues: write          # needed for label creation
+  issues: write
 
 concurrency:
   group: squad-pr-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
+###############################################################################
 
+
+
+############################ JOBS #############################################
 jobs:
+
+  ########################## ROUTE REVIEW ######################################
   route-review:
     runs-on: ubuntu-latest
+
+    ######################## STEPS ############################################
     steps:
       - name: Analyze PR and assign squad reviewers
         uses: actions/github-script@v7
@@ -40,21 +50,22 @@ jobs:
             // Each rule maps a file-path pattern to a squad agent label.
             // Order matters: first match wins per file.
             const ROUTING_RULES = [
-              { pattern: /^apps\/ai\//,                          agent: 'quentin',  domain: 'AI / Python' },
-              { pattern: /^apps\/server\//,                      agent: 'renaud',  domain: 'Rust / API' },
-              { pattern: /^apps\/mobile\//,                      agent: 'romaric',  domain: 'Flutter / Mobile' },
-              { pattern: /^\.github\//,                          agent: 'arthur',  domain: 'DevOps / CI' },
-              { pattern: /^docker-compose\.yml$/,                agent: 'arthur',  domain: 'DevOps / CI' },
-              { pattern: /Dockerfile/,                           agent: 'arthur',  domain: 'DevOps / CI' },
-              { pattern: /^docs\//,                              agent: 'darius',    domain: 'Documentation' },
-              { pattern: /migrations?\//,                        agent: 'alexandra',    domain: 'Database / Infra' },
-              { pattern: /rabbitmq|minio|\.env\.example/i,      agent: 'alexandra',    domain: 'Database / Infra' },
+              { pattern: /^apps\/ai\//,                    agent: 'quentin',   domain: 'AI / Python' },
+              { pattern: /^apps\/server\//,                agent: 'renaud',    domain: 'Rust / API' },
+              { pattern: /^apps\/mobile\//,                agent: 'romaric',   domain: 'Flutter / Mobile' },
+              { pattern: /^\.github\//,                    agent: 'arthur',    domain: 'DevOps / CI' },
+              { pattern: /^docker-compose\.yml$/,          agent: 'arthur',    domain: 'DevOps / CI' },
+              { pattern: /Dockerfile/,                     agent: 'arthur',    domain: 'DevOps / CI' },
+              { pattern: /^docs\//,                        agent: 'darius',    domain: 'Documentation' },
+              { pattern: /(^|\/)test(s)?\//,               agent: 'ridjan',    domain: 'Testing' },
+              { pattern: /migrations?\//,                  agent: 'alexandra', domain: 'Database / Infra' },
+              { pattern: /rabbitmq|minio|\.env\.example/i, agent: 'alexandra', domain: 'Database / Infra' },
             ];
 
             const LABEL_COLOR  = '9B8FCC';   // matches existing squad label palette
             const REVIEW_EMOJI = {
-              quentin: '🤖', renaud: '🔧', romaric: '📱',
-              arthur: '⚙️', darius: '📝', alexandra: '🗄️', eric: '🏗️'
+              quentin: '🤖', renaud: '🔧', romaric: '📱', arthur: '⚙️', 
+              darius: '📝', ridjan: '🧪', alexandra: '🗄️', eric: '🏗️'
             };
 
             // ── 1. Fetch changed files ───────────────────────────────
@@ -216,3 +227,6 @@ jobs:
             }
 
             core.info(`PR review routing complete — ${labelsToApply.length} labels applied`);
+  #############################################################################
+
+###############################################################################
