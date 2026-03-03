@@ -1,5 +1,5 @@
 {
-  "universes": ["lord-of-the-rings"],
+  "universes": ["epitech"],
   "max_agents_per_universe": 15,
   "overflow_strategy": "diegetic-expansion"
 }
