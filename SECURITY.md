@@ -1,4 +1,22 @@
+> **Last updated:** 3rd March 2026  
+> **Version:** 1.0  
+> **Authors:** Nicolas TORO  
+> **Status:** Done  
+> {.is-success}
+
+---
+
 # Security Policy
+
+---
+
+## Table of Contents
+
+- [Supported Versions](#supported-versions)
+- [Reporting a Vulnerability](#reporting-a-vulnerability)
+- [Security Architecture](#security-architecture)
+
+---
 
 ## Supported Versions
 

@@ -1,6 +1,24 @@
+> **Last updated:** 3rd March 2026  
+> **Version:** 1.0  
+> **Authors:** Nicolas TORO  
+> **Status:** Done  
+> {.is-success}
+
+---
+
 # Contributing to Ascension
 
 Thank you for taking the time to contribute. Please read this guide before opening issues or pull requests.
+
+---
+
+## Table of Contents
+
+- [Branching](#branching)
+- [Commits](#commits)
+- [Pull Requests](#pull-requests)
+- [Local Setup](#local-setup)
+- [Code Style](#code-style)
 
 ---
 
@@ -31,13 +49,13 @@ See the full CI/CD pipeline and hook details in the [GitHub Actions & Hooks Guid
 
 ---
 
-## Local setup
+## Local Setup
 
 Follow the [Development Environment Setup](docs/developer_guide/architecture/deployment/development.md) guide to get everything running locally before submitting code.
 
 ---
 
-## Code style
+## Code Style
 
 - **Rust:** `cargo fmt` + `cargo clippy` (enforced by CI).
 - **Python:** `ruff` for linting and formatting (enforced by CI).

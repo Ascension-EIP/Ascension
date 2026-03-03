@@ -1,4 +1,22 @@
+> **Last updated:** 3rd March 2026  
+> **Version:** 1.0  
+> **Authors:** Nicolas TORO  
+> **Status:** Done  
+> {.is-success}
+
+---
+
 # Code of Conduct
+
+---
+
+## Table of Contents
+
+- [Our Pledge](#our-pledge)
+- [Our Standards](#our-standards)
+- [Enforcement](#enforcement)
+
+---
 
 ## Our Pledge
 

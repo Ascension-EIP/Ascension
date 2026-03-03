@@ -8,6 +8,11 @@ WIKI_DIR = "wiki"
 SPECIAL_FILES = {
     "README.md": ["Home", ".md"],
     "CONTRIBUTING.md": ["HOW-TO-CONTRIBUTE", ".md"],
+    "CODE_OF_CONDUCT.md": ["CODE-OF-CONDUCT", ".md"],
+    "LICENSE.md": ["LICENSE", ".md"],
+    "CHANGELOG.md": ["CHANGELOG", ".md"],
+    "SUPPORT.md": ["SUPPORT", ".md"],
+    "SECURITY.md": ["SECURITY", ".md"],
 }
 
 if os.path.isdir(WIKI_DIR):
