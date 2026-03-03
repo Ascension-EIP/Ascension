@@ -174,13 +174,13 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Set up Conda
+        uses: conda-incubator/setup-miniconda@v3
         with:
-          python-version: "3.12"
-          cache: pip
-          cache-dependency-path: apps/ai/requirements.txt
+          python-version: 3.11
+
+      - name: Export CONDA_EXE for moon tasks
+        run: echo "CONDA_EXE=$(command -v conda)" >> "$GITHUB_ENV"
 
       - name: Install moon
         uses: moonrepo/setup-toolchain@v0
@@ -191,15 +191,15 @@ jobs:
         uses: actions/cache@v5
         with:
           path: .moon/cache
-          key: ${{ runner.os }}-moon-ai-${{ hashFiles('apps/ai/requirements.txt') }}
+          key: ${{ runner.os }}-moon-ai-${{ hashFiles('apps/ai/environment.yml', 'apps/ai/pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-moon-ai-
 
-      - name: Cache Python venv
+      - name: Cache conda environment
         uses: actions/cache@v5
         with:
-          path: apps/ai/venv
-          key: ${{ runner.os }}-venv-ai-${{ hashFiles('apps/ai/requirements.txt') }}
+          path: apps/ai/ai-env
+          key: ${{ runner.os }}-venv-ai-${{ hashFiles('apps/ai/environment.yml', 'apps/ai/pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-venv-ai-
 
