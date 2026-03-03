@@ -197,7 +197,7 @@ def main():
             os.getenv("RABBITMQ_DEFAULT_USER", "guest"),
             os.getenv("RABBITMQ_DEFAULT_PASS", "guest"),
         ),
-        heartbeat=600,
+        # heartbeat=600,
     )
 
     connection = None

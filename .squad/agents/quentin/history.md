@@ -13,3 +13,6 @@
 - **pyproject.toml py-modules**: Must list all top-level modules (`consumer`, `main`, `pose_analysis`) for setuptools to package them.
 - **docker-compose.yml env vars**: ai-worker now receives MinIO (`MINIO_ENDPOINT`, `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`) and Postgres (`POSTGRES_HOST`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `DB_URI`) vars. (Updated by Quentin 2026-03-02)
 
+- **LANDMARKS dict étendu à 33 points** — Le dict `LANDMARKS` dans `pose_analysis.py` ne contenait que 12 landmarks (épaules, coudes, poignets, hanches, genoux, chevilles). Remplacé par la liste complète des 33 landmarks MediaPipe Pose (nez, yeux, oreilles, bouche, épaules, coudes, poignets, doigts, hanches, genoux, chevilles, talons, orteils). (2026-03-02, demandé par Gianni)
+- **Docstring corrigée** — La docstring du module référençait encore l'ancien nom `mediapipe_utils.py`. Corrigé en `pose_analysis.py`. (2026-03-02)
+- **Variable de boucle `l` renommée en `lnd`** — Dans `_process_pose`, la variable `l` était visuellement ambiguë avec le chiffre `1`. Renommée en `lnd` dans toutes ses occurrences. (2026-03-02)
