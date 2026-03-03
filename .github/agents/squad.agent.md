@@ -968,7 +968,7 @@ Ralph always appears in `team.md`: `| Ralph | Work Monitor | — | 🔄 Monitor 
 | "Ralph, check every N minutes" | Set idle-watch polling interval |
 | "Ralph, idle" / "Take a break" / "Stop monitoring" | Fully deactivate (stop loop + idle-watch) |
 | "Ralph, scope: just issues" / "Ralph, skip CI" | Adjust what Ralph monitors this session |
-| References PR feedback or changes requested | Spawn concerned squad member(s) to add review comments only (no fix implementation) |
+| References PR feedback or changes requested | Ask concerned squad member(s) to propose a clear fix patch/plan and wait for explicit user confirmation before any implementation |
 | "merge PR #N" / "merge it" (recent context) | Merge via `gh pr merge` |
 
 These are intent signals, not exact strings — match meaning, not words.
@@ -995,11 +995,11 @@ gh pr list --state open --draft --json number,title,author,labels,checks --limit
 
 | Category | Signal | Action |
 |----------|--------|--------|
-| **PRs to review** | Open PR has one or more `squad:{member}` labels | Spawn each labeled squad member to post `gh pr review --comment` feedback on that PR (comments only) |
+| **PRs to review** | Open PR has one or more `squad:{member}` labels | Spawn each labeled squad member to post `gh pr review --comment` feedback on that PR |
 | **Untriaged issues** | `squad` label, no `squad:{member}` label | Lead triages: reads issue, assigns `squad:{member}` label |
 | **Assigned but unstarted** | `squad:{member}` label, no assignee or no PR | Spawn the assigned agent to pick it up |
 | **Draft PRs** | PR in draft from squad member | Check if agent needs to continue; if stalled, nudge |
-| **Review feedback** | PR has `CHANGES_REQUESTED` review | Ask labeled squad reviewer(s) for follow-up comments only; do not trigger fixes automatically |
+| **Review feedback** | PR has `CHANGES_REQUESTED` review | Ask labeled squad reviewer(s) to propose a clear suggested patch/plan (Copilot-style suggestions), then wait for explicit user confirmation before any fix implementation |
 | **CI failures** | PR checks failing | Notify assigned agent to fix, or create a fix issue |
 | **Approved PRs** | PR approved, CI green, ready to merge | Merge and close related issue |
 | **No work found** | All clear | Report: "📋 Board is clear. Ralph is idling." Suggest `npx github:bradygaster/squad watch` for persistent polling. |
@@ -1008,7 +1008,7 @@ gh pr list --state open --draft --json number,title,author,labels,checks --limit
 - Process one category at a time, highest priority first (untriaged > assigned > CI failures > review feedback > approved PRs)
 - For "Ralph, go", prioritize PR review pass first (`PRs to review` > untriaged > assigned > CI failures > review feedback > approved PRs)
 - Spawn agents as needed, collect results
-- **PR review mode is comment-only:** Ralph must not spawn implementation/fix agents from PR review outcomes; only squad review comments are requested/postable.
+- **`CHANGES_REQUESTED` handling:** Ralph requests a suggested patch/plan first (Copilot-style suggestion workflow). Ralph must NOT auto-implement fixes, must NOT auto-commit, and must NOT auto-push. Implementation actions only start after explicit user confirmation.
 - **⚡ CRITICAL: After results are collected, DO NOT stop. DO NOT wait for user input. IMMEDIATELY go back to Step 1 and scan again.** This is a loop — Ralph keeps cycling until the board is clear or the user says "idle". Each cycle is one "round".
 - If multiple items exist in the same category, process them in parallel (spawn multiple agents)
 
