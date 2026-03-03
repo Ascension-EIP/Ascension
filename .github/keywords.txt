@@ -17,3 +17,4 @@ merge
 init
 details
 dependabot
+agents
