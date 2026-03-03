@@ -42,4 +42,4 @@ Dockerfile*             @Ascension-EIP/devops
 **/migrations/          @Ascension-EIP/infra
 
 # Tests
-apps/**/tests/          @Ascension-EIP/testers
+apps/**/test*/          @Ascension-EIP/testers
