@@ -16,3 +16,4 @@ move
 merge
 init
 details
+dependabot
