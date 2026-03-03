@@ -1,20 +1,11 @@
-> **Last updated:** 18th February 2026  
-> **Version:** 1.2  
-> **Authors:** Gianni TUERO  
-> **Status:** Done  
-> {.is-success}
-
+---
+title: README
+description: 
+published: true
+date: 2026-03-03T17:16:44.750Z
+tags: 
+editor: markdown
+dateCreated: 2026-03-02T13:38:50.490Z
 ---
 
-# Ascension - Documentation
-
----
-
-## Table of Contents
-
-- [Developer Guide](developer_guide/architecture/README.md)
-- [Git Standards](git/git-commit-standards-guide.md)
-- [AI Pre-Prompt](ai/pre-prompt-en.md)
-- [Markdown Guidelines](guidelines/markdown-guidelines.md)
-
-This project contains all the general documentation and resources of the project.
+\> \*\*Last updated:\*\* 18th February 2026 > \*\*Version:\*\* 1.2 > \*\*Authors:\*\* Gianni TUERO > \*\*Status:\*\* Done > {.is-success} --- # Ascension - Documentation --- ## Table of Contents - \[Developer Guide\](developer\_guide/architecture/README.md) - \[Git Standards\](git/git-commit-standards-guide.md) - \[AI Pre-Prompt\](ai/pre-prompt-en.md) - \[Markdown Guidelines\](guidelines/markdown-guidelines.md) This project contains all the general documentation and resources of the project.
