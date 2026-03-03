@@ -26,7 +26,7 @@ jobs:
     ######################## STEPS ############################################
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -69,7 +69,7 @@ jobs:
     ######################## STEPS ############################################
   #  steps:
   #    - name: Checkout
-  #      uses: actions/checkout@v4.1.1
+  #      uses: actions/checkout@v6
 
   #    - name: Extract tag version
   #      id: version
@@ -109,7 +109,7 @@ jobs:
     ######################## STEPS ############################################
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -148,7 +148,7 @@ jobs:
     ######################## STEPS ############################################
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
