@@ -11,6 +11,7 @@
 | RabbitMQ, PostgreSQL, MinIO, S3, database, schema, queues, exchanges, buckets, storage | Alexandra | Eric (review) |
 | Documentation, docs/, README, guides, specs, architecture docs | Darius | — |
 | Architecture, system design, code review, technical decisions | Eric | — |
+| Tests unitaires, tests d'intégration, couverture, qualité, edge cases, régression, mocks, fixtures | Ridjan | agent de domaine concerné |
 
 ## Cross-Cutting Rules
 

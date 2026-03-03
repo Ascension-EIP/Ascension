@@ -1,5 +1,5 @@
-> **Last updated:** 10th February 2026  
-> **Version:** 1.0  
+> **Last updated:** 3rd March 2026  
+> **Version:** 1.1  
 > **Authors:** Nicolas  
 > **Status:** Done  
 > {.is-success}
@@ -111,26 +111,28 @@ BREAKING CHANGE: changed the serialization format for packets
 
 ### 2.1 Main types (Conventional Commits)
 
-| Type       | Description                                       | Example                                              |
-| ---------- | ------------------------------------------------- | ---------------------------------------------------- |
-| `feat`     | New feature                                       | `feat(network): add packet serialization`            |
-| `fix`      | Bug fix                                           | `fix(parser): handle null pointer case`              |
-| `docs`     | Documentation                                     | `docs(core): update public API documentation`        |
-| `style`    | Formatting, code style, no logic change           | `style: apply clang-format to all files`             |
-| `refactor` | Code refactoring                                  | `refactor(engine): simplify update loop`             |
-| `test`     | Adding or modifying tests                         | `test(renderer): add unit tests for sprite batching` |
-| `build`    | Build or dependency changes                       | `build: update cmake for multi-platform support`     |
-| `perf`     | Performance improvements                          | `perf(audio): optimize buffer allocation`            |
-| `ci`       | Continuous Integration changes                    | `ci: add linux/mac/windows workflows`                |
-| `chore`    | Maintenance tasks not affecting code logic        | `chore: clean unused scripts`                        |
-| `revert`   | Reverting a previous commit                       | `revert: revert "feat(network): add compression"`    |
-| `add`      | Adding new files                                  | `add(utils): add string helpers file`                |
-| `remove`   | Removing files or dead code                       | `remove(core): remove deprecated math module`        |
-| `rename`   | Renaming files/classes                            | `rename: rename Logger to LogService`                |
-| `move`     | Moving files                                      | `move: move headers to include/ directory`           |
-| `merge`    | Merging branches                                  | `merge: merge "feature/ui" into "dev"`               |
-| `init`     | Initialization of components or project structure | `init: initialize core project modules`              |
-| `details`  | Detailed multi-line commits                       | `details:\nfix: correct memory leak in allocator`    |
+| Type         | Description                                       | Example                                                |
+| ------------ | ------------------------------------------------- | ------------------------------------------------------ |
+| `feat`       | New feature                                       | `feat(network): add packet serialization`              |
+| `fix`        | Bug fix                                           | `fix(parser): handle null pointer case`                |
+| `docs`       | Documentation                                     | `docs(core): update public API documentation`          |
+| `style`      | Formatting, code style, no logic change           | `style: apply clang-format to all files`               |
+| `refactor`   | Code refactoring                                  | `refactor(engine): simplify update loop`               |
+| `test`       | Adding or modifying tests                         | `test(renderer): add unit tests for sprite batching`   |
+| `build`      | Build or dependency changes                       | `build: update cmake for multi-platform support`       |
+| `perf`       | Performance improvements                          | `perf(audio): optimize buffer allocation`              |
+| `ci`         | Continuous Integration changes                    | `ci: add linux/mac/windows workflows`                  |
+| `chore`      | Maintenance tasks not affecting code logic        | `chore: clean unused scripts`                          |
+| `revert`     | Reverting a previous commit                       | `revert: revert "feat(network): add compression"`      |
+| `add`        | Adding new files                                  | `add(utils): add string helpers file`                  |
+| `remove`     | Removing files or dead code                       | `remove(core): remove deprecated math module`          |
+| `rename`     | Renaming files/classes                            | `rename: rename Logger to LogService`                  |
+| `move`       | Moving files                                      | `move: move headers to include/ directory`             |
+| `merge`      | Merging branches                                  | `merge: merge "feature/ui" into "dev"`                 |
+| `init`       | Initialization of components or project structure | `init: initialize core project modules`                |
+| `details`    | Detailed multi-line commits                       | `details:\nfix: correct memory leak in allocator`      |
+| `dependabot` | Automated dependency update by Dependabot         | `dependabot: bump actions/checkout from 3 to 4`        |
+| `agents`     | Changes related to AI agents or automation agents | `agents(ai): update pose analysis agent configuration` |
 
 ---
 

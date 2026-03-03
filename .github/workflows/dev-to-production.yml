@@ -30,7 +30,7 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Checkout
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6
         with:
           token: ${{ steps.generate_token.outputs.token }}
           fetch-depth: 0
@@ -61,7 +61,7 @@ jobs:
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: Checkout main
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6
         with:
           token: ${{ steps.generate_token.outputs.token }}
           fetch-depth: 0
@@ -100,7 +100,7 @@ jobs:
     ######################## STEPS ############################################
     steps:
       - name: Checkout main
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: main

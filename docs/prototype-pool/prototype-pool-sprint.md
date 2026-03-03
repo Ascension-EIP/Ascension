@@ -142,7 +142,7 @@ All toolchain versions are pinned in `.moon/toolchain.yml` and must be used cons
 
 | Tool     | Version | Install                                                   |
 | -------- | ------- | --------------------------------------------------------- |
-| moonrepo | latest  | `curl -fsSL https://moonrepo.dev/install/moon.sh \| bash` |
+| moonrepo | `2.0.3` | `curl -fsSL https://moonrepo.dev/install/moon.sh \| bash` |
 
 #### Backend — Rust
 
@@ -159,9 +159,9 @@ All toolchain versions are pinned in `.moon/toolchain.yml` and must be used cons
 | Tool / Package | Version   | Notes                             |
 | -------------- | --------- | --------------------------------- |
 | Python         | `3.14.2`  | Pinned via `.moon/toolchain.yml`  |
-| ruff           | latest    | Linter & formatter                |
-| pytest         | latest    | Test runner                       |
-| build          | latest    | Package builder                   |
+| ruff           | `0.15.4`  | Linter & formatter                |
+| pytest         | `9.0.2`   | Test runner                       |
+| build          | `1.4.0`   | Package builder                   |
 | mediapipe      | TBD       | Pose estimation (33 keypoints)    |
 | opencv-python  | TBD       | Computer vision / video decoding  |
 | pika           | TBD       | RabbitMQ client (AMQP)            |
@@ -181,13 +181,13 @@ All toolchain versions are pinned in `.moon/toolchain.yml` and must be used cons
 
 #### Infrastructure — Docker & Services
 
-| Service        | Image          | Version | Ports            |
-| -------------- | -------------- | ------- | ---------------- |
-| Docker         | Docker Engine  | ≥ 24.x  | —                |
-| Docker Compose | Compose plugin | ≥ 2.x   | —                |
-| PostgreSQL     | `postgres`     | latest  | `5432`           |
-| RabbitMQ       | `rabbitmq`     | latest  | `5672` / `15672` |
-| MinIO          | `minio/minio`  | latest  | `9000` / `9001`  |
+| Service        | Image          | Version                        | Ports            |
+| -------------- | -------------- | ------------------------------ | ---------------- |
+| Docker         | Docker Engine  | ≥ 24.x                         | —                |
+| Docker Compose | Compose plugin | ≥ 2.x                          | —                |
+| PostgreSQL     | `postgres`     | `18`                           | `5432`           |
+| RabbitMQ       | `rabbitmq`     | `4.2.4`                        | `5672` / `15672` |
+| MinIO          | `minio/minio`  | `RELEASE.2025-09-07T16-13-09Z` | `9000` / `9001`  |
 
 ### 4.4 Development Workflow
 

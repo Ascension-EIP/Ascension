@@ -1,7 +1,7 @@
-> **Last updated:** 12th February 2026
-> **Version:** 1.0
-> **Authors:** Gianni TUERO
-> **Status:** Done
+> **Last updated:** 12th February 2026  
+> **Version:** 1.0  
+> **Authors:** Gianni TUERO  
+> **Status:** Done  
 > {.is-success}
 
 ---

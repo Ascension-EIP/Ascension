@@ -1,4 +1,5 @@
-name: Squad Triage
+############################ CONFIGURATION ####################################
+name: ascension-squad-triage
 
 on:
   issues:
@@ -8,12 +9,23 @@ permissions:
   issues: write
   contents: read
 
+env:
+  GITHUB_ACTIONS: true
+###############################################################################
+
+
+
+############################ JOBS #############################################
 jobs:
+
+  ########################## SQUAD TRIAGE ######################################
   triage:
     if: github.event.label.name == 'squad'
     runs-on: ubuntu-latest
+
+    ######################## STEPS ############################################
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Triage issue via Lead agent
         uses: actions/github-script@v7
@@ -258,3 +270,6 @@ jobs:
             });
 
             core.info(`Triaged issue #${issue.number} → ${assignedMember.name} (${assignLabel})`);
+  #############################################################################
+
+  ###############################################################################

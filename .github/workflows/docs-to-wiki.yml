@@ -1,0 +1,50 @@
+############################ CONFIGURATION ####################################
+name: ascension-docs-to-wiki
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+
+env:
+  GITHUB_ACTIONS: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+###############################################################################
+
+############################ JOBS #############################################
+jobs:
+
+  ########################## WIKI #############################################
+  update_wiki:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    ######################## STEPS ############################################
+    steps:
+      - name: Checkout main repo
+        uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Generate wiki files
+        run: .github/scripts/generate_wiki
+
+      - name: Install GitHub CLI
+        run: |
+          sudo apt update
+          sudo apt install -y gh
+      - name: Set up Wiki
+        uses: Andrew-Chen-Wang/github-wiki-action@v5.0.3
+  #############################################################################
+###############################################################################

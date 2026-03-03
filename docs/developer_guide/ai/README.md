@@ -1,7 +1,7 @@
-> **Last updated:** 2nd March 2026
-> **Version:** 1.0
-> **Authors:** Darius
-> **Status:** Done
+> **Last updated:** 2nd March 2026  
+> **Version:** 1.0  
+> **Authors:** Darius  
+> **Status:** Done  
 > {.is-success}
 
 ---
