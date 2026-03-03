@@ -1,5 +1,5 @@
 > **Last updated:** 3rd March 2026
-> **Version:** 1.1
+> **Version:** 1.2
 > **Authors:** Darius
 > **Status:** Done
 > {.is-success}
@@ -52,7 +52,7 @@ apps/ai/
 ├── pose_landmarker.task # MediaPipe model asset (bundled)
 ├── environment.yml      # Conda environment definition
 ├── pyproject.toml
-└── moon.yml             # moon tasks run via `conda run -n ascension-ai ...`
+└── moon.yml             # moon tasks run via `conda run --prefix ./ai-env ...`
 ```
 
 ---
@@ -84,12 +84,16 @@ The `ai-worker` Docker service requires the following environment variables:
 ## Local Environment Setup (Conda + moon)
 
 The canonical local workflow is defined in `apps/ai/moon.yml` and uses a conda
-environment named `ascension-ai`.
+environment at prefix `./ai-env`.
+
+`moon run ai:setup` is intentionally idempotent for local refreshes: it runs
+`conda env create --file environment.yml -p ./ai-env --force`, so re-running it
+refreshes the same local environment path.
 
 ```bash
 cd apps/ai
 
-# Create / refresh conda env from environment.yml
+# Create / refresh conda env at ./ai-env from environment.yml
 moon run ai:setup
 
 # Install editable package + dev dependencies
@@ -107,9 +111,9 @@ moon run ai:build
 Equivalent raw commands from `apps/ai/moon.yml`:
 
 ```bash
-conda env create --name ascension-ai --file environment.yml --force
-conda run --name ascension-ai python -m pip install -e .[dev]
-conda run --name ascension-ai python consumer.py
+conda env create --file environment.yml -p ./ai-env --force
+conda run --prefix ./ai-env python -m pip install -e .[dev]
+conda run --prefix ./ai-env python consumer.py
 ```
 
 ---
