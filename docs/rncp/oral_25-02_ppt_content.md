@@ -2,10 +2,10 @@
 title: Oral 25/02
 description: 
 published: true
-date: 2026-03-02T10:16:08.259Z
+date: 2026-03-03T09:50:48.617Z
 tags: 
 editor: markdown
-dateCreated: 2026-03-02T10:16:08.259Z
+dateCreated: 2026-03-02T13:39:39.882Z
 ---
 
 # Ascension - Analyse biomécanique pour l'escalade
@@ -563,7 +563,6 @@ Hetzner    ████████ 96€
 OVH        ████████████ 140€
 DO         ██████████████████ 207€
 AWS        ███████████████████████████████ 312€
-           0        50       100      150      200      250      300
 ```
 
 ### Justification choix Hetzner
