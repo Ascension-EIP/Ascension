@@ -5,6 +5,17 @@
 
 ## Learnings
 
+### 2026-03-03: AI docs aligned to moon prefix-based conda contract
+- Confirmed `apps/ai/moon.yml` is prefix-based (`-p ./ai-env` and `conda run --prefix ./ai-env`) and should remain the source of truth.
+- Updated `docs/developer_guide/ai/README.md` to remove named-env wording (`ascension-ai`) and align setup/run examples with `./ai-env`.
+- Documented idempotent setup expectation for `moon run ai:setup` (`conda env create ... --force`) so refresh behavior matches task semantics.
+
+### 2026-03-03: PR #70 Docs Review — Conda setup convention mismatch
+- Performed a review-only pass on PR #70 focused on documentation clarity, accuracy, and maintainability.
+- Identified an ambiguity between documentation and task runner commands: docs examples use `conda --name ascension-ai` while `apps/ai/moon.yml` executes with `--prefix ./ai-env`.
+- Posted one consolidated PR review comment requesting a single canonical environment convention and aligned setup/run snippets.
+- Noted that the requested artifact `apps/ai/README.md` does not exist in the repository; AI docs are currently centralized in `docs/developer_guide/ai/README.md`.
+
 ### 2026-03-03: AI Environment Documentation Migrated from venv to conda
 - Updated AI setup and execution docs to use conda-based commands and environment lifecycle (`environment.yml` + `conda run`).
 - Synchronized documentation examples with current moon tasks in `apps/ai/moon.yml`: `ai:setup`, `ai:install`, `ai:dev`, `ai:build`, `ai:lint`, `ai:test`.
