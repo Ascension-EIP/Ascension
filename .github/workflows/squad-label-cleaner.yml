@@ -8,6 +8,9 @@ on:
 permissions:
   issues: write
   contents: read
+
+env:
+  GITHUB_ACTIONS: true
 ###############################################################################
 
 
