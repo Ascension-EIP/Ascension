@@ -9,7 +9,7 @@
 # Closes #<issue_number>
 
 # ----------------------------------------------------------------------
-# COMMIT GUIDELINES (Ascension - v1.0 - 2026-02-10):
+# COMMIT GUIDELINES (Ascension - v1.1 - 2026-03-03):
 # 1. Language: English / Case: lowercase / No period at the end.
 # 2. Scopes (Examples): core, engine, network, ui, docs, ia, utils.
 # 3. Main Types:
