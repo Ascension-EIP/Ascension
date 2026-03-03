@@ -1,4 +1,5 @@
-name: Squad Issue Assign
+############################ CONFIGURATION ####################################
+name: ascension-squad-issue-assign
 
 on:
   issues:
@@ -8,11 +9,22 @@ permissions:
   issues: write
   contents: read
 
+env:
+  GITHUB_ACTIONS: true
+###############################################################################
+
+
+
+############################# JOBS #############################################
 jobs:
+
+  ########################### LABEL ASSIGNER ################################
   assign-work:
     # Only trigger on squad:{member} labels (not the base "squad" label)
     if: startsWith(github.event.label.name, 'squad:')
     runs-on: ubuntu-latest
+
+    ######################## STEPS ############################################
     steps:
       - uses: actions/checkout@v4
 
@@ -159,3 +171,6 @@ jobs:
                 core.warning(`Fallback also failed: ${err2.message}`);
               }
             }
+  #################################################################################
+
+###################################################################################
