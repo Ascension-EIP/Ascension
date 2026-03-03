@@ -2,64 +2,73 @@
   {
     "persistent_name": "Eric",
     "role": "Lead",
-    "universe": "custom",
+    "universe": "epitech",
     "created_at": "2026-03-02T14:08:00Z",
-    "legacy_named": true,
+    "legacy_named": false,
     "status": "active",
-    "previous_name": "Aragorn"
+    "previous_name": "Bocal"
   },
   {
     "persistent_name": "Quentin",
     "role": "AI Dev",
-    "universe": "custom",
+    "universe": "epitech",
     "created_at": "2026-03-02T14:08:00Z",
-    "legacy_named": true,
+    "legacy_named": false,
     "status": "active",
-    "previous_name": "Gandalf"
+    "previous_name": "Babel"
   },
   {
     "persistent_name": "Renaud",
     "role": "Backend Dev",
-    "universe": "custom",
+    "universe": "epitech",
     "created_at": "2026-03-02T14:08:00Z",
-    "legacy_named": true,
+    "legacy_named": false,
     "status": "active",
-    "previous_name": "Boromir"
+    "previous_name": "Corewar"
   },
   {
     "persistent_name": "Romaric",
     "role": "Mobile Dev",
-    "universe": "custom",
+    "universe": "epitech",
     "created_at": "2026-03-02T14:08:00Z",
-    "legacy_named": true,
+    "legacy_named": false,
     "status": "active",
-    "previous_name": "Legolas"
+    "previous_name": "Arcade"
   },
   {
     "persistent_name": "Arthur",
     "role": "DevOps",
-    "universe": "custom",
+    "universe": "epitech",
     "created_at": "2026-03-02T14:08:00Z",
-    "legacy_named": true,
+    "legacy_named": false,
     "status": "active",
-    "previous_name": "Samwise"
+    "previous_name": "Marvin"
   },
   {
     "persistent_name": "Alexandra",
     "role": "Infra",
-    "universe": "custom",
+    "universe": "epitech",
     "created_at": "2026-03-02T14:08:00Z",
-    "legacy_named": true,
+    "legacy_named": false,
     "status": "active",
-    "previous_name": "Gimli"
+    "previous_name": "Hub"
   },
   {
     "persistent_name": "Darius",
     "role": "Docs",
-    "universe": "custom",
+    "universe": "epitech",
     "created_at": "2026-03-02T14:08:00Z",
-    "legacy_named": true,
+    "legacy_named": false,
     "status": "active",
-    "previous_name": "Bilbo"
+    "previous_name": "Intra"
+  },
+  {
+    "persistent_name": "Ridjan",
+    "role": "Tester",
+    "universe": "epitech",
+    "created_at": "2026-03-02T19:45:00Z",
+    "legacy_named": false,
+    "status": "active",
+    "previous_name": "Zappy"
   }
 ]

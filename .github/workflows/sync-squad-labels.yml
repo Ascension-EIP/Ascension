@@ -1,4 +1,5 @@
-name: Sync Squad Labels
+############################ CONFIGURATION ####################################
+name: ascension-sync-squad-labels
 
 on:
   push:
@@ -11,9 +12,25 @@ permissions:
   issues: write
   contents: read
 
+env:
+  GITHUB_ACTIONS: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+###############################################################################
+
+
+
+############################ JOBS #############################################
 jobs:
+  
+  ########################## SYNC LABELS ######################################
   sync-labels:
     runs-on: ubuntu-latest
+    if: github.repository == 'Ascension-EIP/Ascension'
+
+    ######################## STEPS ############################################
     steps:
       - uses: actions/checkout@v6
 
@@ -167,3 +184,6 @@ jobs:
             }
 
             core.info(`Label sync complete: ${labels.length} labels synced`);
+  #############################################################################
+
+###############################################################################
