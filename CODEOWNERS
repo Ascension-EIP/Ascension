@@ -1,0 +1,41 @@
+# ──────────────────────────────────────────────────────────────
+# CODEOWNERS — Ascension
+# ──────────────────────────────────────────────────────────────
+# Maps file paths to GitHub teams for automatic PR review requests.
+#
+# ⚠️  Teams must exist under the @Ascension-EIP org for this to work.
+#     If a team doesn't exist yet, GitHub silently ignores the rule.
+#     Create teams at: https://github.com/orgs/Ascension-EIP/teams
+#
+# Squad routing reference:
+#   Quentin  → AI / Python      → @Ascension-EIP/ai
+#   Renaud  → Rust / API       → @Ascension-EIP/backend
+#   Romaric  → Flutter / Mobile  → @Ascension-EIP/mobile
+#   Arthur  → DevOps / CI      → @Ascension-EIP/devops
+#   Alexandra    → DB / Infra       → @Ascension-EIP/infra
+#   Darius    → Documentation    → @Ascension-EIP/docs
+#   Eric  → Architecture     → @Ascension-EIP/leads
+# ──────────────────────────────────────────────────────────────
+
+# Default: repo owner reviews anything not matched below
+*                       @Ascension-EIP/leads
+
+# AI pipeline (Python, PyTorch, MediaPipe, OpenCV)
+apps/ai/                @Ascension-EIP/ai
+
+# Backend API (Rust, Axum)
+apps/server/            @Ascension-EIP/backend
+
+# Mobile app (Flutter)
+apps/mobile/            @Ascension-EIP/mobile
+
+# Documentation
+docs/                   @Ascension-EIP/docs
+
+# DevOps & CI/CD
+docker-compose.yml      @Ascension-EIP/devops
+.github/                @Ascension-EIP/devops
+Dockerfile*             @Ascension-EIP/devops
+
+# Infrastructure (DB migrations, queue config, storage)
+**/migrations/          @Ascension-EIP/infra

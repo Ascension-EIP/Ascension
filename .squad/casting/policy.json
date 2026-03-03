@@ -1,0 +1,5 @@
+{
+  "universes": ["lord-of-the-rings"],
+  "max_agents_per_universe": 15,
+  "overflow_strategy": "diegetic-expansion"
+}

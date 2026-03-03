@@ -1,0 +1,37 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: monday
+      time: "09:00"
+      timezone: Europe/Paris
+    target-branch: "dev"
+
+  - package-ecosystem: "cargo"
+    directory: "/apps/server"
+    schedule:
+      interval: "weekly"
+      day: monday
+      time: "09:00"
+      timezone: Europe/Paris
+    target-branch: "dev"
+
+  - package-ecosystem: "pub"
+    directory: "/apps/mobile"
+    schedule:
+      interval: "weekly"
+      day: monday
+      time: "09:00"
+      timezone: Europe/Paris
+    target-branch: "dev"
+
+  - package-ecosystem: "pip"
+    directory: "/apps/ai"
+    schedule:
+      interval: "weekly"
+      day: monday
+      time: "09:00"
+      timezone: Europe/Paris
+    target-branch: "dev"

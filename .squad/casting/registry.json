@@ -1,0 +1,65 @@
+[
+  {
+    "persistent_name": "Eric",
+    "role": "Lead",
+    "universe": "custom",
+    "created_at": "2026-03-02T14:08:00Z",
+    "legacy_named": true,
+    "status": "active",
+    "previous_name": "Aragorn"
+  },
+  {
+    "persistent_name": "Quentin",
+    "role": "AI Dev",
+    "universe": "custom",
+    "created_at": "2026-03-02T14:08:00Z",
+    "legacy_named": true,
+    "status": "active",
+    "previous_name": "Gandalf"
+  },
+  {
+    "persistent_name": "Renaud",
+    "role": "Backend Dev",
+    "universe": "custom",
+    "created_at": "2026-03-02T14:08:00Z",
+    "legacy_named": true,
+    "status": "active",
+    "previous_name": "Boromir"
+  },
+  {
+    "persistent_name": "Romaric",
+    "role": "Mobile Dev",
+    "universe": "custom",
+    "created_at": "2026-03-02T14:08:00Z",
+    "legacy_named": true,
+    "status": "active",
+    "previous_name": "Legolas"
+  },
+  {
+    "persistent_name": "Arthur",
+    "role": "DevOps",
+    "universe": "custom",
+    "created_at": "2026-03-02T14:08:00Z",
+    "legacy_named": true,
+    "status": "active",
+    "previous_name": "Samwise"
+  },
+  {
+    "persistent_name": "Alexandra",
+    "role": "Infra",
+    "universe": "custom",
+    "created_at": "2026-03-02T14:08:00Z",
+    "legacy_named": true,
+    "status": "active",
+    "previous_name": "Gimli"
+  },
+  {
+    "persistent_name": "Darius",
+    "role": "Docs",
+    "universe": "custom",
+    "created_at": "2026-03-02T14:08:00Z",
+    "legacy_named": true,
+    "status": "active",
+    "previous_name": "Bilbo"
+  }
+]

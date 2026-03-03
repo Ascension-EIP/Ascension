@@ -1,0 +1,218 @@
+# Squad PR Review — Automatic domain routing for pull requests
+#
+# Analyzes changed files in a PR and labels it with the appropriate
+# squad:{agent} labels so the right domain experts review the code.
+#
+# Routing table:
+#   apps/ai/**           → squad:quentin    (AI / Python)
+#   apps/server/**       → squad:renaud     (Rust / API)
+#   apps/mobile/**       → squad:romaric    (Flutter / Mobile)
+#   .github/** | docker* → squad:arthur     (DevOps / CI)
+#   docs/**              → squad:darius     (Documentation)
+#   **/migrations/**     → squad:alexandra  (Database / Infra)
+#   queue/storage config → squad:alexandra  (Database / Infra)
+#   Multi-domain changes → squad:eric       (Architecture / Lead)
+
+name: Squad PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write          # needed for label creation
+
+concurrency:
+  group: squad-pr-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  route-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Analyze PR and assign squad reviewers
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // ── Domain routing rules ──────────────────────────────────
+            // Each rule maps a file-path pattern to a squad agent label.
+            // Order matters: first match wins per file.
+            const ROUTING_RULES = [
+              { pattern: /^apps\/ai\//,                          agent: 'quentin',  domain: 'AI / Python' },
+              { pattern: /^apps\/server\//,                      agent: 'renaud',  domain: 'Rust / API' },
+              { pattern: /^apps\/mobile\//,                      agent: 'romaric',  domain: 'Flutter / Mobile' },
+              { pattern: /^\.github\//,                          agent: 'arthur',  domain: 'DevOps / CI' },
+              { pattern: /^docker-compose\.yml$/,                agent: 'arthur',  domain: 'DevOps / CI' },
+              { pattern: /Dockerfile/,                           agent: 'arthur',  domain: 'DevOps / CI' },
+              { pattern: /^docs\//,                              agent: 'darius',    domain: 'Documentation' },
+              { pattern: /migrations?\//,                        agent: 'alexandra',    domain: 'Database / Infra' },
+              { pattern: /rabbitmq|minio|\.env\.example/i,      agent: 'alexandra',    domain: 'Database / Infra' },
+            ];
+
+            const LABEL_COLOR  = '9B8FCC';   // matches existing squad label palette
+            const REVIEW_EMOJI = {
+              quentin: '🤖', renaud: '🔧', romaric: '📱',
+              arthur: '⚙️', darius: '📝', alexandra: '🗄️', eric: '🏗️'
+            };
+
+            // ── 1. Fetch changed files ───────────────────────────────
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+                per_page: 100
+              }
+            );
+
+            const filePaths = files.map(f => f.filename);
+            core.info(`PR #${context.payload.pull_request.number}: ${filePaths.length} files changed`);
+
+            // ── 2. Route files to agents ──────────────────────────────
+            // Map: agent → [files]
+            const agentFiles = {};
+            const unrouted = [];
+
+            for (const file of filePaths) {
+              let matched = false;
+              for (const rule of ROUTING_RULES) {
+                if (rule.pattern.test(file)) {
+                  if (!agentFiles[rule.agent]) agentFiles[rule.agent] = [];
+                  agentFiles[rule.agent].push(file);
+                  matched = true;
+                  break;
+                }
+              }
+              if (!matched) unrouted.push(file);
+            }
+
+            const affectedAgents = Object.keys(agentFiles);
+
+            // If more than 2 domains are touched, also flag Eric for arch review
+            if (affectedAgents.length > 2 && !affectedAgents.includes('eric')) {
+              agentFiles['eric'] = ['(cross-domain review)'];
+              affectedAgents.push('eric');
+            }
+
+            // If no routing matched at all, flag Eric
+            if (affectedAgents.length === 0) {
+              agentFiles['eric'] = unrouted.length ? unrouted : ['(no specific domain)'];
+              affectedAgents.push('eric');
+            }
+
+            core.info(`Affected agents: ${affectedAgents.join(', ')}`);
+
+            // ── 3. Ensure labels exist, then apply ────────────────────
+            const labelsToApply = affectedAgents.map(a => `squad:${a}`);
+
+            for (const labelName of labelsToApply) {
+              try {
+                await github.rest.issues.getLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: labelName
+                });
+              } catch (err) {
+                if (err.status === 404) {
+                  const agent = labelName.replace('squad:', '');
+                  await github.rest.issues.createLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: labelName,
+                    color: LABEL_COLOR,
+                    description: `PR review domain: ${agent}`
+                  });
+                  core.info(`Created missing label: ${labelName}`);
+                }
+              }
+            }
+
+            // Remove stale squad: labels from previous runs
+            const currentLabels = context.payload.pull_request.labels.map(l => l.name);
+            const staleLabels = currentLabels.filter(
+              l => l.startsWith('squad:') && !labelsToApply.includes(l)
+            );
+            for (const stale of staleLabels) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.payload.pull_request.number,
+                  name: stale
+                });
+                core.info(`Removed stale label: ${stale}`);
+              } catch (e) { /* label might already be gone */ }
+            }
+
+            // Apply new labels
+            if (labelsToApply.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                labels: labelsToApply
+              });
+            }
+
+            // ── 4. Post review-routing comment ────────────────────────
+            const COMMENT_MARKER = '<!-- squad-pr-review -->';
+
+            // Build summary table
+            let body = `${COMMENT_MARKER}\n`;
+            body += `### 🏔️ Squad PR Review Routing\n\n`;
+            body += `| Agent | Domain | Files |\n`;
+            body += `|-------|--------|-------|\n`;
+
+            for (const agent of affectedAgents) {
+              const emoji = REVIEW_EMOJI[agent] || '📋';
+              const domain = ROUTING_RULES.find(r => r.agent === agent)?.domain
+                || (agent === 'eric' ? 'Architecture / Lead' : 'Unknown');
+              const fileList = agentFiles[agent].length <= 5
+                ? agentFiles[agent].map(f => `\`${f}\``).join(', ')
+                : `${agentFiles[agent].slice(0, 5).map(f => `\`${f}\``).join(', ')} (+${agentFiles[agent].length - 5} more)`;
+              body += `| ${emoji} **${agent.charAt(0).toUpperCase() + agent.slice(1)}** | ${domain} | ${fileList} |\n`;
+            }
+
+            if (unrouted.length > 0) {
+              body += `\n<details><summary>📁 ${unrouted.length} file(s) not matching any domain</summary>\n\n`;
+              body += unrouted.map(f => `- \`${f}\``).join('\n');
+              body += `\n</details>\n`;
+            }
+
+            body += `\n> _Routed automatically by Squad PR Review. Labels: ${labelsToApply.map(l => `\`${l}\``).join(', ')}_`;
+
+            // Upsert: find existing comment or create new
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                per_page: 100
+              }
+            );
+
+            const existing = comments.find(c => c.body && c.body.includes(COMMENT_MARKER));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: body
+              });
+              core.info('Updated existing review-routing comment');
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: body
+              });
+              core.info('Created review-routing comment');
+            }
+
+            core.info(`PR review routing complete — ${labelsToApply.length} labels applied`);

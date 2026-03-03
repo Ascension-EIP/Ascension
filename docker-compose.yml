@@ -5,35 +5,46 @@ services:
     ports:
       - "9000:9000"
       - "9001:9001"
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    env_file: .env
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
 
   rabbitmq:
-    image: rabbitmq:latest
+    image: rabbitmq:management
     container_name: rabbitMQ
     ports:
       - "5672:5672"
       - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    env_file: .env
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   postgresql:
     image: postgres:latest
     container_name: postgreSQL
     ports:
       - "5432:5432"
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+    env_file: .env
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
+
+  ai-worker:
+    build: ./apps/ai
+    container_name: aiWorker
+    profiles:
+      - prod
+    env_file: .env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
 volumes:
   minio_data:
   postgres_data:
+  rabbitmq_data:
