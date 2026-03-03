@@ -26,7 +26,7 @@ jobs:
 
     ######################## STEPS ############################################
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Identify assigned member and trigger work
         uses: actions/github-script@v7

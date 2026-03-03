@@ -1,7 +1,7 @@
-> **Last updated:** 12th February 2026  
-> **Version:** 1.0  
-> **Authors:** Gianni TUERO  
-> **Status:** Done  
+> **Last updated:** 12th February 2026
+> **Version:** 1.0
+> **Authors:** Gianni TUERO
+> **Status:** Done
 > {.is-success}
 
 ---
@@ -273,100 +273,40 @@ This pipeline does **not** require GPU or video processing. It runs as a lightwe
 
 #### Worker Architecture
 
-```python
-import pika
-import json
-from pipelines.vision import HoldDetector, SkeletonExtractor, AdviceGenerator, GhostGenerator
-from pipelines.training import ProgramGenerator
+Each pipeline is implemented as a **dedicated consumer module** — one process per queue.
+This contrasts with a monolithic router approach and allows independent scaling and
+deployment of each pipeline.
 
-class AscensionWorker:
-    """Single worker service that routes jobs to the correct pipeline."""
+The canonical pipeline pattern (as implemented in `apps/ai/consumer.py` for
+`vision.skeleton`) is:
 
-    PIPELINE_MAP = {
-        'vision.hold_detection': 'handle_hold_detection',
-        'vision.skeleton':       'handle_skeleton',
-        'vision.advice':         'handle_advice',
-        'vision.ghost':          'handle_ghost',
-        'training.program':      'handle_training_program',
-    }
-
-    def __init__(self):
-        self.connection = pika.BlockingConnection(
-            pika.ConnectionParameters('rabbitmq')
-        )
-        self.channel = self.connection.channel()
-        self.s3 = S3Client()
-        self.db = PostgresClient()
-
-        # Declare all queues
-        for queue_name in self.PIPELINE_MAP:
-            self.channel.queue_declare(queue=queue_name, durable=True)
-
-    def run(self):
-        for queue_name, handler_name in self.PIPELINE_MAP.items():
-            handler = getattr(self, handler_name)
-            self.channel.basic_consume(
-                queue=queue_name,
-                on_message_callback=self._wrap(handler),
-                auto_ack=False
-            )
-        self.channel.start_consuming()
-
-    def _wrap(self, handler):
-        def callback(ch, method, properties, body):
-            job = json.loads(body)
-            try:
-                handler(job)
-                ch.basic_ack(delivery_tag=method.delivery_tag)
-            except Exception:
-                ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
-        return callback
-
-    # --- Pipeline 1: Vision ---
-    def handle_hold_detection(self, job):
-        photo = self.s3.download(job['photo_url'])
-        holds = HoldDetector().detect(photo)
-        self.db.save_holds(job['route_id'], holds)
-        self._notify(job, 'hold_detection.completed')
-
-    def handle_skeleton(self, job):
-        video = self.s3.download(job['video_url'])
-        skeleton = SkeletonExtractor().extract(video)  # JSON per frame
-        self.db.save_skeleton(job['analysis_id'], skeleton)
-        self._notify(job, 'skeleton.completed')
-
-    def handle_advice(self, job):
-        skeleton = self.db.get_skeleton(job['analysis_id'])
-        holds = self.db.get_holds(job['route_id'])
-        advice = AdviceGenerator().generate(skeleton, holds)
-        self.db.save_advice(job['analysis_id'], advice)
-        self._notify(job, 'advice.completed')
-
-    def handle_ghost(self, job):
-        skeleton = self.db.get_skeleton(job['analysis_id'])
-        holds = self.db.get_holds(job['route_id'])
-        ghost = GhostGenerator().generate(skeleton, holds, job['user_morphology'])
-        self.db.save_ghost(job['analysis_id'], ghost)
-        self._notify(job, 'ghost.completed')
-
-    # --- Pipeline 2: Training ---
-    def handle_training_program(self, job):
-        program = ProgramGenerator().generate(
-            user_id=job['user_id'],
-            goals=job['goals'],
-            injuries=job.get('injuries', []),
-        )
-        self.db.save_program(job['user_id'], program)
-        self._notify(job, 'training.completed')
-
-    # --- Helpers ---
-    def _notify(self, job, event_type):
-        self.channel.basic_publish(
-            exchange='ascension.events',
-            routing_key=f"{event_type}.{job.get('job_id', '')}",
-            body=json.dumps({'job_id': job.get('job_id'), 'status': 'completed'})
-        )
 ```
+1. DOWNLOAD  — fetch asset from MinIO/S3 via boto3
+2. PROCESS   — run the AI/algorithm module
+3. PERSIST   — UPDATE the relevant table in PostgreSQL (psycopg2)
+4. PUBLISH   — basic_publish to ascension.events with routing key {pipeline}.completed.{job_id}
+5. ACK/NACK  — basic_ack on success; basic_nack(requeue=True) on exception
+```
+
+Each consumer module:
+
+- Declares its queue as **durable** at startup.
+- Declares `ascension.events` as a **topic + durable** exchange at startup.
+- Sets `prefetch_count=1` (one job at a time per worker instance).
+- Retries the initial RabbitMQ connection up to **12 × 5 s** to handle Docker Compose
+  startup race conditions.
+
+**Implementation status:**
+
+| Queue | Module | Status |
+|---|---|---|
+| `vision.skeleton` | `apps/ai/consumer.py` | ✅ Implemented |
+| `vision.hold_detection` | — | Planned |
+| `vision.advice` | — | Planned |
+| `vision.ghost` | — | Planned |
+| `training.program` | — | Planned |
+
+See `docs/developer_guide/ai/README.md` for the full AI layer documentation.
 
 #### Typical Vision Pipeline Flow
 
