@@ -68,7 +68,7 @@ jobs:
         with:
           auto-install: true
       - name: Cache Cargo registry
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry
@@ -79,7 +79,7 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Cache moon store
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .moon/cache
           key: ${{ runner.os }}-moon-server-${{ hashFiles('apps/server/Cargo.lock') }}
@@ -121,7 +121,7 @@ jobs:
           cache: true
 
       - name: Cache pub dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.pub-cache
@@ -135,7 +135,7 @@ jobs:
         with:
           auto-install: true
       - name: Cache moon store
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .moon/cache
           key: ${{ runner.os }}-moon-mobile-${{ hashFiles('apps/mobile/pubspec.lock') }}
@@ -179,7 +179,7 @@ jobs:
           auto-install: true
           cache: false
       - name: Cache moon store
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .moon/cache
           key: ${{ runner.os }}-moon-ai-${{ hashFiles('apps/ai/requirements.txt') }}
@@ -187,7 +187,7 @@ jobs:
             ${{ runner.os }}-moon-ai-
 
       - name: Cache Python venv
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: apps/ai/venv
           key: ${{ runner.os }}-venv-ai-${{ hashFiles('apps/ai/requirements.txt') }}
