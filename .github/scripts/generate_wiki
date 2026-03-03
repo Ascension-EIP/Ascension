@@ -3,7 +3,7 @@ import os
 import shutil
 import re
 
-DOCS_DIR = "."
+DOCS_DIR = "docs"
 WIKI_DIR = "wiki"
 SPECIAL_FILES = {
     "README.md": ["Home", ".md"],
