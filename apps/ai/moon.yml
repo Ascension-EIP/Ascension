@@ -9,7 +9,7 @@ project:
 tasks:
   setup:
     command: '$CONDA_EXE'
-    args: ['env', 'create', '--force', '--file', 'environment.yml', "-p", "./ai-env"]
+    args: ['env', 'create', '--file', 'environment.yml', "-p", "./ai-env"]
     inputs:
       - 'environment.yml'
       - 'pyproject.toml'
