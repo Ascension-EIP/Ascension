@@ -4,13 +4,14 @@
     "universe": "epitech",
     "created_at": "2026-03-02T13:48:52Z",
     "agents": [
-      { "name": "Aragorn", "role": "Lead" },
-      { "name": "Gandalf", "role": "AI Dev" },
-      { "name": "Boromir", "role": "Backend Dev" },
-      { "name": "Legolas", "role": "Mobile Dev" },
-      { "name": "Samwise", "role": "DevOps" },
-      { "name": "Gimli", "role": "Infra" },
-      { "name": "Bilbo", "role": "Docs" }
+      { "name": "Eric", "role": "Lead" },
+      { "name": "Quentin", "role": "AI Dev" },
+      { "name": "Renaud", "role": "Backend Dev" },
+      { "name": "Romaric", "role": "Mobile Dev" },
+      { "name": "Arthur", "role": "DevOps" },
+      { "name": "Alexandra", "role": "Infra" },
+      { "name": "Darius", "role": "Docs" },
+      { "name": "Ridjan", "role": "Testing" }
     ],
     "reason": "Initial team formation for Ascension project"
   }
