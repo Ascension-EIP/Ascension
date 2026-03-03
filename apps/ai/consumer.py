@@ -44,8 +44,8 @@ def _s3_client():
     return boto3.client(
         "s3",
         endpoint_url=endpoint,
-        aws_access_key_id=os.getenv("MINIO_ROOT_USER", "minioadmin"),
-        aws_secret_access_key=os.getenv("MINIO_ROOT_PASSWORD", "minioadmin"),
+        aws_access_key_id=os.getenv("MINIO_ROOT_USER", "ascension"),
+        aws_secret_access_key=os.getenv("MINIO_ROOT_PASSWORD", "ascension"),
         region_name="us-east-1",
     )
 
@@ -58,8 +58,8 @@ def _pg_conn():
     return psycopg2.connect(
         host=os.getenv("POSTGRES_HOST", "postgresql"),
         port=int(os.getenv("POSTGRES_PORT", "5432")),
-        user=os.getenv("POSTGRES_USER", "postgres"),
-        password=os.getenv("POSTGRES_PASSWORD", "postgres"),
+        user=os.getenv("POSTGRES_USER", "ascension"),
+        password=os.getenv("POSTGRES_PASSWORD", "ascension"),
         dbname=os.getenv("POSTGRES_DB", "ascension"),
     )
 
@@ -191,11 +191,11 @@ def on_message(ch, method, _properties, body):
 def main():
     """Connect to RabbitMQ with retries and start consuming."""
     params = pika.ConnectionParameters(
-        host=os.getenv("RABBITMQ_HOST", "localhost"),
+        host=os.getenv("RABBITMQ_HOST", "rabbitmq"),
         port=int(os.getenv("RABBITMQ_PORT", "5672")),
         credentials=pika.PlainCredentials(
-            os.getenv("RABBITMQ_DEFAULT_USER", "guest"),
-            os.getenv("RABBITMQ_DEFAULT_PASS", "guest"),
+            os.getenv("RABBITMQ_DEFAULT_USER", "ascension"),
+            os.getenv("RABBITMQ_DEFAULT_PASS", "ascension"),
         ),
         # heartbeat=600,
     )
@@ -236,5 +236,7 @@ def main():
 
 
 if __name__ == "__main__":
+    print("Starting Ascension AI Worker…")
     logger.info("Starting AI worker…")
+    logger.info("Environment:\n%s", "\n".join(f"  {k}={v}" for k, v in sorted(os.environ.items())))
     main()

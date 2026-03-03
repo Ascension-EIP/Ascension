@@ -8,26 +8,23 @@ project:
 
 tasks:
   setup:
-    command: 'python'
-    args: ['-m', 'venv', 'venv']
+    command: '$CONDA_EXE'
+    args: ['env', 'create', '--file', 'environment.yml', "-p", "./ai-env"]
     inputs:
+      - 'environment.yml'
       - 'pyproject.toml'
-    outputs:
-      - 'venv'
 
   install:
-    command: 'venv/bin/pip'
-    args: ['install', '-e', '.[dev]']
+    command: '$CONDA_EXE'
+    args: ['run', '--prefix', './ai-env', 'python', '-m', 'pip', 'install', '-e', '.[dev]']
     inputs:
       - 'pyproject.toml'
-    outputs:
-      - 'venv'
     deps:
       - 'setup'
 
   dev:
-    command: 'venv/bin/python'
-    args: ['consumer.py']
+    command: '$CONDA_EXE'
+    args: ['run', '--prefix', './ai-env', 'python', 'consumer.py']
     deps:
       - 'install'
     env:
@@ -37,20 +34,20 @@ tasks:
       envFile: true
 
   build:
-    command: 'venv/bin/python'
-    args: ['-m', 'build']
+    command: '$CONDA_EXE'
+    args: ['run', '--prefix', './ai-env', 'python', '-m', 'build']
     deps:
       - 'install'
 
   lint:
-    command: 'venv/bin/ruff'
-    args: ['check', '.']
+    command: '$CONDA_EXE'
+    args: ['run', '--prefix', './ai-env', 'ruff', 'check', '.']
     deps:
       - 'install'
 
   test:
-    command: 'venv/bin/pytest'
-    args: ['--ignore=venv', '-p', 'no:cacheprovider']
+    command: '$CONDA_EXE'
+    args: ['run', '--prefix', './ai-env', 'pytest', '-p', 'no:cacheprovider']
     deps:
       - 'install'
     options:
