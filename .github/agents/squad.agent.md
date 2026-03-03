@@ -995,7 +995,7 @@ gh pr list --state open --draft --json number,title,author,labels,checks --limit
 
 | Category | Signal | Action |
 |----------|--------|--------|
-| **PRs to review** | Open PR has one or more `squad:{member}` labels | Spawn each labeled squad member to post `gh pr review --comment` feedback on that PR |
+| **PRs to review** | Open PR has one or more `squad:{member}` labels | Spawn each labeled squad member to post `gh pr review --comment` feedback on that PR using the required review output format |
 | **Untriaged issues** | `squad` label, no `squad:{member}` label | Lead triages: reads issue, assigns `squad:{member}` label |
 | **Assigned but unstarted** | `squad:{member}` label, no assignee or no PR | Spawn the assigned agent to pick it up |
 | **Draft PRs** | PR in draft from squad member | Check if agent needs to continue; if stalled, nudge |
@@ -1009,6 +1009,7 @@ gh pr list --state open --draft --json number,title,author,labels,checks --limit
 - For "Ralph, go", prioritize PR review pass first (`PRs to review` > untriaged > assigned > CI failures > review feedback > approved PRs)
 - Spawn agents as needed, collect results
 - **`CHANGES_REQUESTED` handling:** Ralph requests a suggested patch/plan first (Copilot-style suggestion workflow). Ralph must NOT auto-implement fixes, must NOT auto-commit, and must NOT auto-push. Implementation actions only start after explicit user confirmation.
+- **Review output format (required):** reviewer comments must start with a Markdown H1 title: `# {ReviewerName} — Review` (or `# {RoleEmoji} {ReviewerName} — Review` with at most one emoji). Keep body text plain and actionable, and include suggested patch/plan blocks when applicable.
 - **⚡ CRITICAL: After results are collected, DO NOT stop. DO NOT wait for user input. IMMEDIATELY go back to Step 1 and scan again.** This is a loop — Ralph keeps cycling until the board is clear or the user says "idle". Each cycle is one "round".
 - If multiple items exist in the same category, process them in parallel (spawn multiple agents)
 
