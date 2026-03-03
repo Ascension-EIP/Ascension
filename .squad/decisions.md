@@ -1,5 +1,22 @@
 # Decisions
 
+## 2026-03-03: Declare AI worker runtime deps in pyproject (conda + pip flow)
+**By:** Quentin (AI Dev)
+**Context:** `apps/ai/moon.yml` installs Python packages with `conda run --name ascension-ai python -m pip install -e .[dev]`.
+**Decision:** Runtime imports used by `apps/ai/consumer.py` must be declared in `apps/ai/pyproject.toml` under `[project.dependencies]`.
+**Applied:** Added `boto3`, `pika`, and `psycopg2-binary`.
+**Why:** `environment.yml` provisions Python + pip base only. Package resolution for the worker runtime happens in `pip install -e .[dev]`; undeclared imports trigger `ModuleNotFoundError` during `moon run ai:dev` on fresh setup.
+
+## 2026-03-03: Standardize AI docs on conda-based moon workflow
+**By:** Darius (Docs)
+**Context:** `apps/ai/moon.yml` runs AI tasks through conda (`conda run --name ascension-ai ...`) with setup from `environment.yml`.
+**Decision:** Documentation references for AI local setup and execution must use conda workflows, not venv-oriented paths or legacy Python dependency wording.
+**Applied to:**
+- AI setup steps in `docs/developer_guide/ai/README.md`
+- Python stack/package wording in `docs/rncp/audit/stack-summary.md`
+- Prototype dependency note in `docs/rncp/prototype-pool.md`
+**Rationale:** Keeps onboarding docs aligned with executable moon tasks and avoids environment drift.
+
 ## 2026-03-02: AI Layer Documentation Created (Informational)
 **By:** Darius (Docs)
 **Triggered by:** feat(ai): implement vision.skeleton pipeline
