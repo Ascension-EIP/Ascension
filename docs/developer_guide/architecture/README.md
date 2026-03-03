@@ -1,7 +1,7 @@
-> **Last updated:** 18th February 2026  
-> **Version:** 1.2  
-> **Authors:** Gianni TUERO  
-> **Status:** Done  
+> **Last updated:** 3rd March 2026
+> **Version:** 1.3
+> **Authors:** Gianni TUERO
+> **Status:** Done
 > {.is-success}
 
 ---
@@ -243,8 +243,9 @@ Ascension/                      # Monorepo root
     │
     ├── ai/                     # Python AI Workers
     │   ├── moon.yml
-    │   ├── requirements.txt
-    │   └── main.py
+    │   ├── environment.yml
+    │   ├── pyproject.toml
+    │   └── consumer.py
     │
     └── mobile/                 # Flutter Mobile App
         ├── moon.yml

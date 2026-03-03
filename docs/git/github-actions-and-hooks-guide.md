@@ -1,7 +1,7 @@
-> **Last updated:** 3rd March 2026  
-> **Version:** 1.1  
-> **Authors:** Nicolas TORO  
-> **Status:** Done  
+> **Last updated:** 26th February 2026
+> **Version:** 1.1
+> **Authors:** Nicolas TORO
+> **Status:** Done
 > {.is-success}
 
 ---
@@ -215,7 +215,7 @@ They can be invoked both locally (by hooks) and remotely (by GitHub Actions).
 
 ### 4.1 `check_branch`
 
-**Language:** Python 3  
+**Language:** Python 3
 **Usage:** `.github/scripts/check_branch <branch_name>`
 
 Validates that a branch name follows the project conventions:
@@ -236,7 +236,7 @@ The script is GitHub Actions-aware: when run inside a workflow (`GITHUB_ACTIONS=
 
 ### 4.2 `check_commit`
 
-**Language:** Python 3  
+**Language:** Python 3
 **Usage:** `.github/scripts/check_commit "<commit_message>"`
 
 Validates that a commit message follows the Conventional Commits format:
@@ -261,7 +261,7 @@ Like `check_branch`, the script outputs GitHub Actions annotations when run insi
 
 ### 4.3 `check_push`
 
-**Language:** Bash  
+**Language:** Bash
 **Usage:** `.github/scripts/check_push`
 
 A placeholder script intended for additional pre-push validations (e.g., running tests locally before pushing).
@@ -271,7 +271,7 @@ Currently always exits with `0` (all checks pass).
 
 ### 4.4 `reformat_code`
 
-**Language:** Bash  
+**Language:** Bash
 **Usage:** `.github/scripts/reformat_code`
 
 Runs the code formatters for each application using the `moon` task runner:
@@ -286,7 +286,7 @@ This script is called automatically by the `pre-commit` hook and can also be run
 
 ### 4.5 `get_commits_list`
 
-**Language:** Bash  
+**Language:** Bash
 **Usage:** `.github/scripts/get_commits_list`
 
 A utility script that prints the list of commits between `origin/dev` and the current branch.
@@ -301,7 +301,7 @@ Commits between dev and feat/my-feature:
 
 ### 4.6 `generate_wiki`
 
-**Language:** Python 3  
+**Language:** Python 3
 **Usage:** `.github/scripts/generate_wiki`
 
 Converts the contents of the `docs/` directory into flat wiki pages in a `wiki/` directory, ready to be published to GitHub Wiki.
@@ -329,8 +329,8 @@ The project has two categories of workflows:
 
 ### 5.1 CI workflow (`ci.yml`)
 
-**Name:** `ascension-ci`  
-**Triggers:** Every `push` and `pull_request` event, **excluding** changes to `docs/**` and `*.md` files.
+**Name:** `ascension-ci`
+**Triggers:** Every `push` and `pull_request` event.
 
 This workflow enforces code quality across all services. It is composed of four jobs:
 
@@ -387,7 +387,7 @@ Validates the Python AI application.
 | Set up Python           | Installs Python 3.12 with pip cache                |
 | Install moon            | Sets up the moon task runner (no cache)            |
 | Cache moon store        | Caches `.moon/cache`                               |
-| Cache Python venv       | Caches `apps/ai/venv`                              |
+| Cache conda env/packages | Caches conda packages and the `ascension-ai` environment |
 | Install dependencies    | `moon run ai:install`                              |
 | Lint                    | `moon run ai:lint`                                 |
 | Test                    | `moon run ai:test`                                 |
@@ -405,7 +405,7 @@ server mobile  ai
 
 ### 5.2 Deploy workflow (`deploy.yml`)
 
-**Name:** `ascension-deploy`  
+**Name:** `ascension-deploy`
 **Triggers:** Push of a tag matching the pattern `v*` (e.g., `v0.1.0`).
 
 This workflow builds and publishes production artifacts. It is composed of three jobs:
@@ -463,7 +463,7 @@ build_and_push_server  build_and_push_mobile
 
 ### 5.3 Dev-to-production workflow (`dev-to-production.yml`)
 
-**Name:** `ascension-dev-to-production`  
+**Name:** `ascension-dev-to-production`
 **Triggers:** Manual dispatch (`workflow_dispatch`) only.
 
 This workflow promotes the `dev` branch to production by performing three sequential operations:
@@ -523,7 +523,7 @@ create_tag  mirror_repository
 
 ### 5.4 Docs-to-wiki workflow (`docs-to-wiki.yml`)
 
-**Name:** `ascension-docs-to-wiki`  
+**Name:** `ascension-docs-to-wiki`
 **Triggers:**
 - `push` to `main` touching `docs/**`.
 - `pull_request` targeting `main` touching `docs/**`.
@@ -549,7 +549,7 @@ push to main (docs/** changed)
 
 ### 5.5 Squad triage workflow (`squad-triage.yml`)
 
-**Name:** `ascension-squad-triage`  
+**Name:** `ascension-squad-triage`
 **Triggers:** `issues` event — `labeled` type, only when the label `squad` is applied.
 
 #### Job: `triage`
@@ -563,7 +563,7 @@ Reads the team roster from `.squad/team.md` (falls back to `.ai-team/team.md`) a
 
 ### 5.6 Squad issue assign workflow (`squad-issue-assign.yml`)
 
-**Name:** `ascension-squad-issue-assign`  
+**Name:** `ascension-squad-issue-assign`
 **Triggers:** `issues` event — `labeled` type, only for labels starting with `squad:`.
 
 #### Job: `assign-work`
@@ -577,7 +577,7 @@ Reads the team roster, finds the member matching the applied `squad:<member>` la
 
 ### 5.7 Squad label cleaner workflow (`squad-label-cleaner.yml`)
 
-**Name:** `ascension-squad-label-cleaner`  
+**Name:** `ascension-squad-label-cleaner`
 **Triggers:** `issues` event — `labeled` type, for any label.
 
 #### Job: `clean_labels`
@@ -594,7 +594,7 @@ Enforces mutual exclusivity within the following label namespaces: `go:`, `relea
 
 ### 5.8 Squad pull request review workflow (`squad-pull-request-review.yml`)
 
-**Name:** `ascension-squad-pull-request-review`  
+**Name:** `ascension-squad-pull-request-review`
 **Triggers:** `pull_request` event — `opened`, `synchronize`, `reopened`.
 
 #### Job: `route-review`
@@ -620,7 +620,7 @@ Routing table:
 
 ### 5.9 Sync squad labels workflow (`sync-squad-labels.yml`)
 
-**Name:** `ascension-sync-squad-labels`  
+**Name:** `ascension-sync-squad-labels`
 **Triggers:**
 - `push` touching `.squad/team.md` or `.ai-team/team.md`.
 - Manual dispatch (`workflow_dispatch`).

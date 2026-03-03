@@ -1,8 +1,8 @@
-> **Last updated:** 26th February 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas  
-> **Status:** In Progress  
-> {.is-warning}  
+> **Last updated:** 26th February 2026
+> **Version:** 1.0
+> **Authors:** Nicolas
+> **Status:** In Progress
+> {.is-warning}
 
 ---
 
@@ -19,7 +19,7 @@ Ce document donne une vue d'ensemble concise de la stack technique utilisée dan
 **Langages & frameworks principaux**
 - **Backend (server)**: Rust — `apps/server/` (avec `Cargo.toml`). Langage choisi pour performance et sécurité mémoire.
 - **Mobile**: Flutter — `apps/mobile/` (avec `pubspec.yaml`). Application mobile multiplateforme.
-- **AI / ML**: Python — `apps/ai/` (avec `requirements.txt`). Workers organisés en 2 pipelines : Pipeline Vision (détection de prises, squelettisation MediaPipe, conseils, mode fantôme) et Pipeline Entraînement (programmes personnalisés).
+- **AI / ML**: Python — `apps/ai/` (avec `environment.yml`, `pyproject.toml` et tâches moon conda). Workers organisés en 2 pipelines : Pipeline Vision (détection de prises, squelettisation MediaPipe, conseils, mode fantôme) et Pipeline Entraînement (programmes personnalisés).
 
 **Infrastructure & Conteneurisation**
 - **Docker & Compose**: `docker-compose.yml` à la racine de `Ascension/` pour orchestrer les services locaux (PostgreSQL, RabbitMQ, MinIO, API, Worker).
@@ -31,7 +31,7 @@ Ce document donne une vue d'ensemble concise de la stack technique utilisée dan
   - Tester tous les projets : `moon run :test`
   - Tester les projets affectés uniquement : `moon run :test --affected`
 - **Toolchain**: Les versions de Rust et Python sont fixées dans `.moon/toolchain.yml`.
-- **Package managers**: `Cargo.toml` pour Rust ; `pubspec.yaml` pour Flutter ; `requirements.txt` pour Python.
+- **Package managers**: `Cargo.toml` pour Rust ; `pubspec.yaml` pour Flutter ; `environment.yml` + `pip` (`pyproject.toml`) pour Python.
 
 **Observabilité & workflows**
 - **Workflows**: Flows métiers et pipelines (ex. `workflows/video-analysis-flow.md`) décrivant la chaîne d'analyse vidéo.

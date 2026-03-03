@@ -1,9 +1,9 @@
 ---
 title: prototype-pool
-description: 
+description:
 published: true
 date: 2026-03-02T11:19:15.625Z
-tags: 
+tags:
 editor: markdown
 dateCreated: 2026-03-02T11:17:35.272Z
 ---
@@ -166,7 +166,7 @@ All toolchain versions are pinned in `.moon/toolchain.yml` and must be used cons
 | opencv-python  | TBD       | Computer vision / video decoding  |
 | pika           | TBD       | RabbitMQ client (AMQP)            |
 
-> **Note:** `mediapipe`, `opencv-python`, and `pika` are to be added to `requirements.txt` during the sprint as they are the core prototype dependencies.
+> **Note:** `mediapipe`, `opencv-python`, and `pika` are managed in the conda-based AI environment (`apps/ai/environment.yml`) with editable install from `pyproject.toml` via `apps/ai/moon.yml`.
 
 #### Mobile — Flutter / Dart
 

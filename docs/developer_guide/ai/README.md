@@ -1,7 +1,7 @@
-> **Last updated:** 2nd March 2026  
-> **Version:** 1.0  
-> **Authors:** Darius  
-> **Status:** Done  
+> **Last updated:** 3rd March 2026
+> **Version:** 1.2
+> **Authors:** Darius
+> **Status:** Done
 > {.is-success}
 
 ---
@@ -16,6 +16,7 @@
   - [Overview](#overview)
   - [Repository Location](#repository-location)
   - [Environment Variables](#environment-variables)
+    - [Local Environment Setup (Conda + moon)](#local-environment-setup-conda--moon)
   - [The vision.skeleton Pipeline](#the-visionskeleton-pipeline)
     - [Job Message Format](#job-message-format)
     - [End-to-End Flow](#end-to-end-flow)
@@ -49,8 +50,9 @@ apps/ai/
 ├── consumer.py          # RabbitMQ consumer — vision.skeleton pipeline
 ├── pose_analysis.py     # MediaPipe pose landmark extraction module
 ├── pose_landmarker.task # MediaPipe model asset (bundled)
+├── environment.yml      # Conda environment definition
 ├── pyproject.toml
-└── requirements.txt
+└── moon.yml             # moon tasks run via `conda run --prefix ./ai-env ...`
 ```
 
 ---
@@ -76,6 +78,43 @@ The `ai-worker` Docker service requires the following environment variables:
 | `POSTGRES_PASSWORD` | `postgres` | PostgreSQL password |
 | `POSTGRES_DB` | `ascension` | Database name |
 | `DB_URI` | _(none)_ | Full connection URI — overrides individual `POSTGRES_*` vars if set |
+
+---
+
+## Local Environment Setup (Conda + moon)
+
+The canonical local workflow is defined in `apps/ai/moon.yml` and uses a conda
+environment at prefix `./ai-env`.
+
+`moon run ai:setup` is intentionally idempotent for local refreshes: it runs
+`conda env create --file environment.yml -p ./ai-env --force`, so re-running it
+refreshes the same local environment path.
+
+```bash
+cd apps/ai
+
+# Create / refresh conda env at ./ai-env from environment.yml
+moon run ai:setup
+
+# Install editable package + dev dependencies
+moon run ai:install
+
+# Run worker locally
+moon run ai:dev
+
+# Additional tasks
+moon run ai:lint
+moon run ai:test
+moon run ai:build
+```
+
+Equivalent raw commands from `apps/ai/moon.yml`:
+
+```bash
+conda env create --file environment.yml -p ./ai-env --force
+conda run --prefix ./ai-env python -m pip install -e .[dev]
+conda run --prefix ./ai-env python consumer.py
+```
 
 ---
 
