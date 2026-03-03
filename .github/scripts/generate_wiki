@@ -15,28 +15,35 @@ os.makedirs(WIKI_DIR, exist_ok=True)
 def remove_front_matter(text):
     return re.sub(r'\A---.*?---\n?', '', text, flags=re.DOTALL).strip()
 
+path_mapping = {}
+
 for src, dst in SPECIAL_FILES.items():
     if os.path.exists(src):
-        shutil.copy(src, os.path.join(WIKI_DIR, "".join(dst)))
+        new_name = "".join(dst)
+        shutil.copy(src, os.path.join(WIKI_DIR, new_name))
+        path_mapping[src] = new_name.replace(".md", "")
 
-docs_files = []
 for root, dirs, files in os.walk(DOCS_DIR):
-    if WIKI_DIR in dirs:
-        dirs.remove(WIKI_DIR)
-    if ".git" in dirs:
-        dirs.remove(".git")
+    if WIKI_DIR in dirs: dirs.remove(WIKI_DIR)
+    if ".git" in dirs: dirs.remove(".git")
+    
     for file in files:
-        if file in SPECIAL_FILES:
-            continue
+        if file in SPECIAL_FILES: continue
+        
         src_path = os.path.join(root, file)
-        docs_files.append(src_path)
+        
         if file.endswith(".md"):
-            new_name = file.replace("_", "-")
-            dst_path = os.path.join(WIKI_DIR, new_name)
+            relative_path = os.path.relpath(src_path, start=DOCS_DIR)
+            
+            flat_name = relative_path.replace(os.sep, "-").replace("_", "-")
+            
+            dst_path = os.path.join(WIKI_DIR, flat_name)
             shutil.copy(src_path, dst_path)
+            
+            path_mapping[src_path] = flat_name.replace(".md", "")
+            path_mapping[file] = flat_name.replace(".md", "")
 
 for wiki_file in os.listdir(WIKI_DIR):
-    print(f"Processing {wiki_file}...")
     wiki_path = os.path.join(WIKI_DIR, wiki_file)
     if os.path.isfile(wiki_path) and wiki_file.endswith(".md"):
         with open(wiki_path, "r", encoding="utf-8") as f:
@@ -44,14 +51,9 @@ for wiki_file in os.listdir(WIKI_DIR):
 
         content = remove_front_matter(content)
 
-        for src, dst in SPECIAL_FILES.items():
-            content = content.replace(src, dst[0])
-
-        for src_path in docs_files:
-            base = os.path.basename(src_path)
-            simple_name = base.replace("_", "-").replace(".md", "")
-            content = content.replace(src_path, simple_name)
-            content = content.replace(base, simple_name)
+        for old_path in sorted(path_mapping.keys(), key=len, reverse=True):
+            new_name = path_mapping[old_path]
+            content = content.replace(old_path, new_name)
 
         with open(wiki_path, "w", encoding="utf-8") as f:
             f.write(content)
