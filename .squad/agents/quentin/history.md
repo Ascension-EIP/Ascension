@@ -16,3 +16,6 @@
 - **LANDMARKS dict étendu à 33 points** — Le dict `LANDMARKS` dans `pose_analysis.py` ne contenait que 12 landmarks (épaules, coudes, poignets, hanches, genoux, chevilles). Remplacé par la liste complète des 33 landmarks MediaPipe Pose (nez, yeux, oreilles, bouche, épaules, coudes, poignets, doigts, hanches, genoux, chevilles, talons, orteils). (2026-03-02, demandé par Gianni)
 - **Docstring corrigée** — La docstring du module référençait encore l'ancien nom `mediapipe_utils.py`. Corrigé en `pose_analysis.py`. (2026-03-02)
 - **Variable de boucle `l` renommée en `lnd`** — Dans `_process_pose`, la variable `l` était visuellement ambiguë avec le chiffre `1`. Renommée en `lnd` dans toutes ses occurrences. (2026-03-02)
+
+- **Docs AI alignées sur le workflow conda de `apps/ai/moon.yml`** — Les guides docs utilisent désormais explicitement `environment.yml` + `conda run --name ascension-ai ...` et les tâches moon `ai:setup/install/dev/lint/test/build`. À garder comme source de vérité pour l'onboarding. (2026-03-03)
+- **Runtime deps du worker doivent vivre dans `pyproject.toml`** — `consumer.py` importe `boto3`, `pika` et `psycopg2`; ces paquets doivent être déclarés dans `[project.dependencies]` pour que `moon run ai:install` (`pip install -e .[dev]` dans l'env conda) rende `moon run ai:dev` exécutable sur setup frais. (2026-03-03, demandé par Gianni)

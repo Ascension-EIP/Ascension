@@ -1,5 +1,5 @@
-> **Last updated:** 2nd March 2026
-> **Version:** 1.0
+> **Last updated:** 3rd March 2026
+> **Version:** 1.1
 > **Authors:** Darius
 > **Status:** Done
 > {.is-success}
@@ -16,6 +16,7 @@
   - [Overview](#overview)
   - [Repository Location](#repository-location)
   - [Environment Variables](#environment-variables)
+    - [Local Environment Setup (Conda + moon)](#local-environment-setup-conda--moon)
   - [The vision.skeleton Pipeline](#the-visionskeleton-pipeline)
     - [Job Message Format](#job-message-format)
     - [End-to-End Flow](#end-to-end-flow)
@@ -49,8 +50,9 @@ apps/ai/
 ├── consumer.py          # RabbitMQ consumer — vision.skeleton pipeline
 ├── pose_analysis.py     # MediaPipe pose landmark extraction module
 ├── pose_landmarker.task # MediaPipe model asset (bundled)
+├── environment.yml      # Conda environment definition
 ├── pyproject.toml
-└── requirements.txt
+└── moon.yml             # moon tasks run via `conda run -n ascension-ai ...`
 ```
 
 ---
@@ -76,6 +78,39 @@ The `ai-worker` Docker service requires the following environment variables:
 | `POSTGRES_PASSWORD` | `postgres` | PostgreSQL password |
 | `POSTGRES_DB` | `ascension` | Database name |
 | `DB_URI` | _(none)_ | Full connection URI — overrides individual `POSTGRES_*` vars if set |
+
+---
+
+## Local Environment Setup (Conda + moon)
+
+The canonical local workflow is defined in `apps/ai/moon.yml` and uses a conda
+environment named `ascension-ai`.
+
+```bash
+cd apps/ai
+
+# Create / refresh conda env from environment.yml
+moon run ai:setup
+
+# Install editable package + dev dependencies
+moon run ai:install
+
+# Run worker locally
+moon run ai:dev
+
+# Additional tasks
+moon run ai:lint
+moon run ai:test
+moon run ai:build
+```
+
+Equivalent raw commands from `apps/ai/moon.yml`:
+
+```bash
+conda env create --name ascension-ai --file environment.yml --force
+conda run --name ascension-ai python -m pip install -e .[dev]
+conda run --name ascension-ai python consumer.py
+```
 
 ---
 

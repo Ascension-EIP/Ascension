@@ -1,7 +1,7 @@
-> **Last updated:** 26th February 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas TORO  
-> **Status:** Done  
+> **Last updated:** 3rd March 2026
+> **Version:** 1.0
+> **Authors:** Nicolas TORO
+> **Status:** Done
 > {.is-success}
 
 ---
@@ -190,7 +190,7 @@ They can be invoked both locally (by hooks) and remotely (by GitHub Actions).
 
 ### 4.1 `check_branch`
 
-**Language:** Python 3  
+**Language:** Python 3
 **Usage:** `.github/scripts/check_branch <branch_name>`
 
 Validates that a branch name follows the project conventions:
@@ -211,7 +211,7 @@ The script is GitHub Actions-aware: when run inside a workflow (`GITHUB_ACTIONS=
 
 ### 4.2 `check_commit`
 
-**Language:** Python 3  
+**Language:** Python 3
 **Usage:** `.github/scripts/check_commit "<commit_message>"`
 
 Validates that a commit message follows the Conventional Commits format:
@@ -236,7 +236,7 @@ Like `check_branch`, the script outputs GitHub Actions annotations when run insi
 
 ### 4.3 `check_push`
 
-**Language:** Bash  
+**Language:** Bash
 **Usage:** `.github/scripts/check_push`
 
 A placeholder script intended for additional pre-push validations (e.g., running tests locally before pushing).
@@ -246,7 +246,7 @@ Currently always exits with `0` (all checks pass).
 
 ### 4.4 `reformat_code`
 
-**Language:** Bash  
+**Language:** Bash
 **Usage:** `.github/scripts/reformat_code`
 
 Runs the code formatters for each application using the `moon` task runner:
@@ -261,7 +261,7 @@ This script is called automatically by the `pre-commit` hook and can also be run
 
 ### 4.5 `get_commits_list`
 
-**Language:** Bash  
+**Language:** Bash
 **Usage:** `.github/scripts/get_commits_list`
 
 A utility script that prints the list of commits between `origin/dev` and the current branch.
@@ -285,7 +285,7 @@ All workflows are in `.github/workflows/`. They share the following common confi
 
 ### 5.1 CI workflow (`ci.yml`)
 
-**Name:** `ascension-ci`  
+**Name:** `ascension-ci`
 **Triggers:** Every `push` and `pull_request` event.
 
 This workflow enforces code quality across all services. It is composed of four jobs:
@@ -343,7 +343,7 @@ Validates the Python AI application.
 | Set up Python           | Installs Python 3.12 with pip cache                |
 | Install moon            | Sets up the moon task runner (no cache)            |
 | Cache moon store        | Caches `.moon/cache`                               |
-| Cache Python venv       | Caches `apps/ai/venv`                              |
+| Cache conda env/packages | Caches conda packages and the `ascension-ai` environment |
 | Install dependencies    | `moon run ai:install`                              |
 | Lint                    | `moon run ai:lint`                                 |
 | Test                    | `moon run ai:test`                                 |
@@ -361,7 +361,7 @@ server mobile  ai
 
 ### 5.2 Deploy workflow (`deploy.yml`)
 
-**Name:** `ascension-deploy`  
+**Name:** `ascension-deploy`
 **Triggers:** Push of a tag matching the pattern `v*` (e.g., `v0.1.0`).
 
 This workflow builds and publishes production artifacts. It is composed of three jobs:
@@ -419,7 +419,7 @@ build_and_push_server  build_and_push_mobile
 
 ### 5.3 Dev-to-production workflow (`dev-to-production.yml`)
 
-**Name:** `ascension-dev-to-production`  
+**Name:** `ascension-dev-to-production`
 **Triggers:** Manual dispatch (`workflow_dispatch`) only.
 
 This workflow promotes the `dev` branch to production by performing three sequential operations:

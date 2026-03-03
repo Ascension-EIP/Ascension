@@ -84,3 +84,4 @@ __pycache__/
 *.pyi
 *.egg-info
 apps/ai/pose_landmarker.task
+apps/ai/ai-env

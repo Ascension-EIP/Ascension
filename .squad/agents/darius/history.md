@@ -5,6 +5,12 @@
 
 ## Learnings
 
+### 2026-03-03: AI Environment Documentation Migrated from venv to conda
+- Updated AI setup and execution docs to use conda-based commands and environment lifecycle (`environment.yml` + `conda run`).
+- Synchronized documentation examples with current moon tasks in `apps/ai/moon.yml`: `ai:setup`, `ai:install`, `ai:dev`, `ai:build`, `ai:lint`, `ai:test`.
+- Replaced CI cache wording that referenced `apps/ai/venv` with conda-compatible cache language.
+- Added explicit conda + moon local setup section in `docs/developer_guide/ai/README.md` and aligned RNCP docs wording from `requirements.txt` to `environment.yml` + `pyproject.toml`.
+
 ### 2026-03-02: CODEOWNERS File Created
 - Arthur created `CODEOWNERS` at repo root for GitHub-native path-to-team mapping.
 - Documentation paths (`docs/**`) now route to `@Ascension-EIP/docs` team for automated review assignment.

@@ -1,7 +1,7 @@
-> **Last updated:** 18th February 2026  
-> **Version:** 2.0  
-> **Authors:** Gianni TUERO  
-> **Status:** Done  
+> **Last updated:** 3rd March 2026
+> **Version:** 2.1
+> **Authors:** Gianni TUERO
+> **Status:** Done
 > {.is-success}
 
 ---
@@ -77,9 +77,10 @@ Ascension/ (Monorepo)
     │
     ├── ai/                  # Python AI workers
     │   ├── moon.yml         # moon project config
-    │   ├── requirements.txt
+    │   ├── environment.yml
+    │   ├── pyproject.toml
     │   ├── Dockerfile
-    │   └── main.py
+    │   └── consumer.py
     │
     └── mobile/              # Flutter mobile app
         ├── moon.yml         # moon project config
@@ -202,31 +203,48 @@ project:
 
 tasks:
   setup:
-    command: 'python'
-    args: ['-m', 'venv', 'venv']
+    command: 'conda'
+    args: ['env', 'create', '--name', 'ascension-ai', '--file', 'environment.yml', '--force']
+    inputs:
+      - 'environment.yml'
+      - 'pyproject.toml'
 
   install:
-    command: 'venv/bin/pip'
-    args: ['install', '-r', 'requirements.txt']
+    command: 'conda'
+    args: ['run', '--name', 'ascension-ai', 'python', '-m', 'pip', 'install', '-e', '.[dev]']
+    inputs:
+      - 'pyproject.toml'
     deps:
       - 'setup'
 
   dev:
-    command: 'venv/bin/python'
-    args: ['main.py']
+    command: 'conda'
+    args: ['run', '--name', 'ascension-ai', 'python', 'consumer.py']
     deps:
       - 'install'
+    env:
+      LOG_LEVEL: 'debug'
+      PYTHONUNBUFFERED: '1'
     options:
       envFile: true
 
-  test:
-    command: 'venv/bin/pytest'
+  build:
+    command: 'conda'
+    args: ['run', '--name', 'ascension-ai', 'python', '-m', 'build']
     deps:
       - 'install'
 
+  test:
+    command: 'conda'
+    args: ['run', '--name', 'ascension-ai', 'pytest', '-p', 'no:cacheprovider']
+    deps:
+      - 'install'
+    options:
+      allowFailure: true
+
   lint:
-    command: 'venv/bin/ruff'
-    args: ['check', '.']
+    command: 'conda'
+    args: ['run', '--name', 'ascension-ai', 'ruff', 'check', '.']
     deps:
       - 'install'
 ```
@@ -506,6 +524,7 @@ export PATH="$HOME/.moon/bin:$PATH"
 Ensure dependencies are installed first:
 
 ```bash
+moon run ai:setup
 moon run ai:install
 moon run ai:dev
 ```
@@ -536,5 +555,5 @@ moon toolchain --list
 
 ---
 
-**Last Updated**: 2026-02-18
+**Last Updated**: 2026-03-03
 **Maintainer**: Ascension DevOps Team
