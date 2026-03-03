@@ -28,6 +28,7 @@ jobs:
   ########################## SYNC LABELS ######################################
   sync-labels:
     runs-on: ubuntu-latest
+    if: github.repository == 'Ascension-EIP/Ascension'
 
     ######################## STEPS ############################################
     steps:
