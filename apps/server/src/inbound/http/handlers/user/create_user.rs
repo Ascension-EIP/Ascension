@@ -19,15 +19,24 @@ impl From<CreateUserError> for ApiError {
             CreateUserError::DuplicateEmail { email } => {
                 Self::UnprocessableEntity(format!("email {} already exists", email))
             }
-            CreateUserError::NotFoundUser { id } => {
-                Self::NotFound(format!("user id {} not found", id))
-            }
             CreateUserError::Unknown(_cause) => {
                 // tracing::error!("{:?}\n{}", cause, cause.backtrace());
                 Self::InternalServerError("Internal server error".to_string())
             }
         }
     }
+}
+
+#[derive(Debug, Clone, Error)]
+enum ParseCreateUserHttpRequestError {
+    #[error(transparent)]
+    Username(#[from] UsernameInvalidError),
+    #[error(transparent)]
+    EmailAddress(#[from] EmailAddressInvalidError),
+    #[error(transparent)]
+    Password(#[from] PasswordInvalidError),
+    #[error(transparent)]
+    Role(#[from] RoleInvalidError),
 }
 
 impl From<ParseCreateUserHttpRequestError> for ApiError {
@@ -51,25 +60,13 @@ impl From<ParseCreateUserHttpRequestError> for ApiError {
     }
 }
 
-/// The body of an [User] creation request.
+/// The body of a [User] creation request.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct CreateUserHttpRequestBody {
     username: String,
     email: String,
     password: String,
     role: String,
-}
-
-#[derive(Debug, Clone, Error)]
-enum ParseCreateUserHttpRequestError {
-    #[error(transparent)]
-    Username(#[from] UsernameInvalidError),
-    #[error(transparent)]
-    EmailAddress(#[from] EmailAddressInvalidError),
-    #[error(transparent)]
-    Password(#[from] PasswordInvalidError),
-    #[error(transparent)]
-    Role(#[from] RoleInvalidError),
 }
 
 impl CreateUserHttpRequestBody {
