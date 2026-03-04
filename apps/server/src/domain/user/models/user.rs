@@ -131,6 +131,8 @@ impl Role {
     }
 }
 
+/// ======================== Create User ===========================================================
+
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
 pub struct CreateUserInput {
     pub username: Username,
@@ -164,13 +166,23 @@ impl CreateUserOutput {
 pub enum CreateUserError {
     #[error("user with email address {email} already exists")]
     DuplicateEmail { email: EmailAddress },
-    #[error("user id not found")]
-    NotFoundUser { id: Uuid },
+    //#[error("user id not found")]
+    //NotFoundUser { id: Uuid },
     #[error(transparent)]
     Unknown(#[from] anyhow::Error),
 }
 
+impl From<UserRepositoryError> for CreateUserError {
+    fn from(err: UserRepositoryError) -> Self {
+        match err {
+            UserRepositoryError::DuplicateEmail { email } => Self::DuplicateEmail { email },
+            UserRepositoryError::Unknown(cause) => Self::Unknown(cause),
+            _ => Self::Unknown(anyhow::Error::from(err)),
+        }
+    }
+}
 
+/// ======================== List User =============================================================
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
 pub struct ListUsersInput {
@@ -212,6 +224,8 @@ impl From<UserRepositoryError> for ListUsersError {
     }
 }
 
+/// ======================== Get User ==============================================================
+
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
 pub struct GetUserInput {
     pub id: Uuid,
@@ -251,6 +265,7 @@ impl From<UserRepositoryError> for GetUserError {
     }
 }
 
+/// ======================== Update User ===========================================================
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
 pub struct UpdateUserInput {
@@ -300,7 +315,6 @@ pub enum UpdateUserError {
     Unknown(#[from] anyhow::Error),
 }
 
-
 impl From<UserRepositoryError> for UpdateUserError {
     fn from(err: UserRepositoryError) -> Self {
         match err {
@@ -310,6 +324,8 @@ impl From<UserRepositoryError> for UpdateUserError {
         }
     }
 }
+
+/// ======================== Delete User ===========================================================
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
 pub struct DeleteUserInput {
