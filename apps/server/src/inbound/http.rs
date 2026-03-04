@@ -2,11 +2,15 @@ use std::sync::Arc;
 
 use anyhow::Context;
 use axum::Router;
-use axum::routing::{get, post};
+use axum::routing::{delete, get, post, put};
 use tokio::net;
 
 use crate::domain::user::ports::UserService;
-use crate::inbound::http::handlers::create_user::create_user;
+use crate::inbound::http::handlers::user::create_user::create_user;
+use crate::inbound::http::handlers::user::delete_user::delete_user;
+use crate::inbound::http::handlers::user::edit_user::edit_user;
+use crate::inbound::http::handlers::user::get_user::get_user;
+use crate::inbound::http::handlers::user::list_users::list_users;
 use crate::inbound::http::handlers::status::api_status;
 
 mod handlers;
@@ -65,5 +69,9 @@ impl HttpServer {
 }
 
 fn api_routes<US: UserService>() -> Router<AppState<US>> {
-    Router::new().route("/users", post(create_user::<US>))
+    Router::new().route("/users", get(list_users::<US>))
+                 .route("/users/:id", get(get_user::<US>))
+                 .route("/users", post(create_user::<US>))
+                 .route("/users", put(edit_user::<US>))
+                 .route("/users/:id", delete(delete_user::<US>))
 }
