@@ -10,7 +10,7 @@ use crate::domain::user::ports::UserRepositoryError;
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct User {
-    pub id: uuid::Uuid,
+    pub id: Uuid,
     pub username: Username,
     pub email: EmailAddress,
     pub password: Password,
@@ -217,6 +217,18 @@ impl UpdateUserOutput {
     }
 }
 
+
+#[derive(Debug, Error)]
+pub enum UpdateUserError {
+    #[error("user with email address {email} already exists")]
+    DuplicateEmail { email: EmailAddress },
+    #[error("user id not found")]
+    NotFoundUser { id: Uuid },
+    #[error(transparent)]
+    Unknown(#[from] anyhow::Error),
+}
+
+
 impl From<UserRepositoryError> for UpdateUserError {
     fn from(err: UserRepositoryError) -> Self {
         match err {
@@ -227,12 +239,42 @@ impl From<UserRepositoryError> for UpdateUserError {
     }
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
+pub struct ListUsersInput {
+    pub page: usize,
+    pub per_page: usize,
+}
+
+impl ListUsersInput {
+    pub fn new(page: usize, per_page: usize) -> Self {
+        Self { page, per_page }
+    }
+}
+
+pub struct ListUsersOutput {
+    pub users: Vec<User>,
+}
+
+impl ListUsersOutput {
+    pub fn new(users: Vec<User>) -> Self {
+        Self { users }
+    }
+    pub fn into_users(self) -> Vec<User> {
+        self.users
+    }
+}
+
 #[derive(Debug, Error)]
-pub enum UpdateUserError {
-    #[error("user with email address {email} already exists")]
-    DuplicateEmail { email: EmailAddress },
-    #[error("user id not found")]
-    NotFoundUser { id: Uuid },
+pub enum ListUsersError {
     #[error(transparent)]
     Unknown(#[from] anyhow::Error),
+}
+
+impl From<UserRepositoryError> for ListUsersError {
+    fn from(err: UserRepositoryError) -> Self {
+        match err {
+            UserRepositoryError::Unknown(cause) => Self::Unknown(cause),
+            _ => Self::Unknown(anyhow::Error::from(err)),
+        }
+    }
 }
