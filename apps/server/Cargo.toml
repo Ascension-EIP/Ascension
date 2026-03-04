@@ -4,6 +4,29 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-axum = "0.8.8"
-dotenv = "0.15.0"
-tokio = { version = "1.49.0", features = ["full"] }
+#http
+axum = { version = "0.8", features = ["macros", "http2", "multipart", "ws"] }
+
+#db
+sqlx = { version = "0.8", features = [ "postgres", "runtime-tokio", "macros" ] }
+
+# async
+tokio = { version = "1.49", features = ["full"] }
+
+# config
+dotenv = "0.15"
+
+# serialization
+serde = { version = "1.0", features = ["derive"] }
+
+# tools
+uuid = { version = "1.21", features = ["v4", "fast-rng"] }
+env_logger = "0.9"
+async-trait = "0.1"
+anyhow = "1.0"
+thiserror = "2.0"
+derive_more = { version = "2.1", features = ["full"] }
+minio = "0.3"
+regex = "1.12"
+
+openssl = { version = "0.10", features = ["vendored"] }
