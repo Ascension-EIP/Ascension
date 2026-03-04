@@ -3,6 +3,7 @@ use std::{str::FromStr, sync::LazyLock};
 use uuid::Uuid;
 
 use derive_more::{Display, From, FromStr};
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::domain::user::ports::UserRepositoryError;
@@ -177,4 +178,61 @@ impl From<UserRepositoryError> for CreateUserError {
             UserRepositoryError::Unknown(cause) => Self::Unknown(cause),
         }
     }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
+pub struct UpdateUserInput {
+    pub id: Uuid,
+    pub username: Username,
+    pub email: EmailAddress,
+    pub password: Password,
+    pub role: Role,
+}
+
+impl UpdateUserInput {
+    pub fn new(
+        id: Uuid,
+        username: Username,
+        email: EmailAddress,
+        password: Password,
+        role: Role,
+    ) -> Self {
+        Self {
+            id,
+            username,
+            email,
+            password,
+            role,
+        }
+    }
+}
+
+pub struct UpdateUserOutput {
+    pub id: Uuid,
+}
+
+impl UpdateUserOutput {
+    pub fn new(id: Uuid) -> Self {
+        Self { id }
+    }
+}
+
+impl From<UserRepositoryError> for UpdateUserError {
+    fn from(err: UserRepositoryError) -> Self {
+        match err {
+            UserRepositoryError::DuplicateEmail { email } => Self::DuplicateEmail { email },
+            UserRepositoryError::NotFoundId { id } => Self::NotFoundUser { id },
+            UserRepositoryError::Unknown(cause) => Self::Unknown(cause),
+        }
+    }
+}
+
+#[derive(Debug, Error)]
+pub enum UpdateUserError {
+    #[error("user with email address {email} already exists")]
+    DuplicateEmail { email: EmailAddress },
+    #[error("user id not found")]
+    NotFoundUser { id: Uuid },
+    #[error(transparent)]
+    Unknown(#[from] anyhow::Error),
 }
