@@ -26,15 +26,15 @@ pub trait UserService: Clone + Send + Sync + 'static {
         req: &CreateUserInput,
     ) -> impl Future<Output = Result<CreateUserOutput, CreateUserError>> + Send;
 
-    fn get_user(
-        &self,
-        id: &GetUserInput,
-    ) -> impl Future<Output = Result<GetUserOutput, GetUserError>> + Send;
-
     fn list_users(
         &self,
         req: &ListUsersInput,
     ) -> impl Future<Output = Result<ListUsersOutput, ListUsersError>> + Send;
+
+    fn get_user(
+        &self,
+        req: &GetUserInput,
+    ) -> impl Future<Output = Result<GetUserOutput, GetUserError>> + Send;
 
     fn update_user(
         &self,
@@ -56,14 +56,14 @@ pub struct CreateUserData {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct GetUserData {
-    pub id: Uuid,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ListUsersData {
     pub page: usize,
     pub per_page: usize,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct GetUserData {
+    pub id: Uuid,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -105,19 +105,20 @@ pub trait UserRepository: Clone + Send + Sync + 'static {
         req: &CreateUserData,
     ) -> impl Future<Output = Result<User, UserRepositoryError>> + Send;//TODO checkez si c'est bien ça ou si on doit renvoyer un UUID dans le future
 
-    /// Get a [User] by their unique identifier.
-    ///
-    /// # Errors
-    ///
-    /// - MUST return [UserRepositoryError::NotFoundId] if no [User] with the given id exists.
-    fn get_user(&self, id: Uuid) -> impl Future<Output = Result<User, UserRepositoryError>> + Send;
-
     /// Get a list of [User].
     ///
     /// # Errors
     ///
     /// - MUST return [UserRepositoryError::Unknown] if an error occurs.
-    fn list_users(&self) -> impl Future<Output = Result<Vec<User>, UserRepositoryError>> + Send;
+    fn list_users(&self, req: &ListUsersData
+    ) -> impl Future<Output = Result<Vec<User>, UserRepositoryError>> + Send;
+
+    /// Get a [User] by their unique identifier.
+    ///
+    /// # Errors
+    ///
+    /// - MUST return [UserRepositoryError::NotFoundId] if no [User] with the given id exists.
+    fn get_user(&self, req: &GetUserData) -> impl Future<Output = Result<User, UserRepositoryError>> + Send;
 
     /// Update an existing [User].
     ///
