@@ -310,3 +310,40 @@ impl From<UserRepositoryError> for UpdateUserError {
         }
     }
 }
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
+pub struct DeleteUserInput {
+    pub id: Uuid,
+}
+
+impl DeleteUserInput {
+    pub fn new(id: Uuid) -> Self {
+        Self { id }
+    }
+}
+
+pub struct DeleteUserOutput;
+
+impl DeleteUserOutput {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+#[derive(Debug, Error)]
+pub enum DeleteUserError {
+    #[error("user id not found")]
+    NotFoundUser { id: Uuid },
+    #[error(transparent)]
+    Unknown(#[from] anyhow::Error),
+}
+
+impl From<UserRepositoryError> for DeleteUserError {
+    fn from(err: UserRepositoryError) -> Self {
+        match err {
+            UserRepositoryError::NotFoundId { id } => Self::NotFoundUser { id },
+            UserRepositoryError::Unknown(cause) => Self::Unknown(cause),
+            _ => Self::Unknown(anyhow::Error::from(err)),
+        }
+    }
+}
