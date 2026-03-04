@@ -69,9 +69,9 @@ impl HttpServer {
 }
 
 fn api_routes<US: UserService>() -> Router<AppState<US>> {
-    Router::new().route("/users", get(list_users::<US>))
+    Router::new().route("/users", post(create_user::<US>))
                  .route("/users/:id", get(get_user::<US>))
-                 .route("/users", post(create_user::<US>))
-                 .route("/users", put(edit_user::<US>))
+                 .route("/users", get(list_users::<US>))
+                 .route("/users/:id", put(edit_user::<US>))
                  .route("/users/:id", delete(delete_user::<US>))
 }
