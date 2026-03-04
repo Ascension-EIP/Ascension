@@ -238,12 +238,31 @@ impl GetUserInput {
 }
 
 pub struct GetUserOutput {
-    pub user: User,
+    pub id: Uuid,
+    pub username: Username,
+    pub email: EmailAddress,
+    pub role: Role,
 }
 
 impl GetUserOutput {
-    pub fn new(user: User) -> Self {
-        Self { user }
+    pub fn new(id: Uuid, username: Username, email: EmailAddress, role: Role) -> Self {
+        Self {
+            id,
+            username,
+            email,
+            role,
+        }
+    }
+}
+
+impl From<User> for GetUserOutput {
+    fn from(user: User) -> Self {
+        Self {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            role: user.role,
+        }
     }
 }
 
@@ -342,7 +361,7 @@ pub struct DeleteUserOutput;
 
 impl DeleteUserOutput {
     pub fn new() -> Self {
-        Self {}
+        Self
     }
 }
 
