@@ -1,0 +1,12 @@
+# Files excluded from Markdown guidelines enforcement.
+# Syntax mirrors .gitignore.
+
+# Copilot prompt and agent files — use their own YAML frontmatter format
+.github/prompts/
+.github/agents/
+
+# Squad AI team state files
+.squad/
+
+# Auto-generated HTML exports
+docs/*.html
