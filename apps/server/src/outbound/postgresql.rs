@@ -3,10 +3,8 @@ use sqlx::postgres::PgPoolOptions;
 use sqlx::{Executor, Transaction};
 use uuid::Uuid;
 
-use crate::domain::user::models::user::{EmailAddress, Password, Role, User, Username};
-use crate::domain::user::ports::{
-    CreateUserData, DeleteUserData, UpdateUserData, UserRepository, UserRepositoryError,
-};
+use crate::domain::user::models::user::{CreateUserOutput, EmailAddress, GetUserOutput, ListUsersOutput, Password, Role, UpdateUserOutput, User, Username};
+use crate::domain::user::ports::{CreateUserData, DeleteUserData, GetUserData, ListUsersData, UpdateUserData, UserRepository, UserRepositoryError};
 
 #[derive(Debug, Clone)]
 pub struct Postgres {
@@ -44,10 +42,30 @@ impl Postgres {
         tx.execute(query).await?;
         Ok(id)
     }
+
+    async fn get_user(&self, id: Uuid) -> Result<GetUserOutput, sqlx::Error> {
+        let row = sqlx::query!(
+            "SELECT id, username, email, role FROM users WHERE id = $1",
+            id.to_string()
+        )
+            .fetch_one(&self.pool)
+            .await?;
+
+        Ok(GetUserOutput::new(
+            Uuid::parse_str(&row.id).unwrap(),
+            Username::new(&row.username).unwrap(),
+            EmailAddress::new(&row.email).unwrap(),
+            Role::new(&row.role).unwrap()
+        ))
+    }
+
+    async fn update_user(&self, req: &UpdateUserData) -> Result<User, UserRepositoryError> {
+        todo!()
+    }
 }
 
 impl UserRepository for Postgres {
-    async fn create_user(&self, req: &CreateUserData) -> Result<User, UserRepositoryError> {
+    async fn create_user(&self, req: &CreateUserData) -> Result<CreateUserOutput, UserRepositoryError> {
         let mut tx = self
             .pool
             .begin()
@@ -79,29 +97,39 @@ impl UserRepository for Postgres {
             .await
             .context("failed to commit Postgres transaction")?;
 
-        Ok(User::new(
-            id,
-            req.username.clone(),
-            req.email.clone(),
-            req.password_hash.clone(),
-            req.role.clone(),
-        ))
+        Ok(CreateUserOutput { id })
     }
 
-    async fn list_users(&self) -> Result<Vec<User>, UserRepositoryError> {
-        Ok(vec![])
+    async fn get_user(&self, req: &GetUserData) -> Result<GetUserOutput, UserRepositoryError> {
+        let user = self.get_user(req.id)
+            .await
+            .map_err(|e| {
+                if matches!(e, sqlx::Error::RowNotFound) {
+                    UserRepositoryError::NotFoundId { id: req.id }
+                } else {
+                    anyhow!(e)
+                        .context(format!("failed to get user with id {}", req.id))
+                        .into()
+                }
+            })?;
+
+        Ok(GetUserOutput::new(
+            user.id,
+            user.username,
+            user.email,
+            user.role))
     }
 
-    async fn update_user(&self, req: &UpdateUserData) -> Result<User, UserRepositoryError> {
-        Err(UserRepositoryError::DuplicateEmail {
-            email: EmailAddress::new("caca@pipi.prout").unwrap(),
-        })
+    async fn list_users(&self, req: &ListUsersData) -> Result<ListUsersOutput, UserRepositoryError> {
+        todo!()
+    }
+
+    async fn update_user(&self, req: &UpdateUserData) -> Result<UpdateUserOutput, UserRepositoryError> {
+        todo!()
     }
 
     async fn delete_user(&self, req: &DeleteUserData) -> Result<(), UserRepositoryError> {
-        Err(UserRepositoryError::DuplicateEmail {
-            email: EmailAddress::new("caca@pipi.prout").unwrap(),
-        })
+        todo!()
     }
 }
 
