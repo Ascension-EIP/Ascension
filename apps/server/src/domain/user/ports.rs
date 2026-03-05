@@ -3,9 +3,10 @@ use std::future::Future;
 use thiserror::Error;
 use uuid::Uuid;
 
-#[allow(unused_imports)] // Used in comment docs
 use crate::domain::user::models::user::{
-    CreateUserError, CreateUserInput, CreateUserOutput, EmailAddress, Password, Role, User,
+    CreateUserError, CreateUserInput, CreateUserOutput, DeleteUserError, DeleteUserInput,
+    EmailAddress, GetUserError, GetUserInput, GetUserOutput, ListUsersError, ListUsersInput,
+    ListUsersOutput, Password, Role, UpdateUserError, UpdateUserInput, UpdateUserOutput,
     Username,
 };
 
@@ -24,6 +25,26 @@ pub trait UserService: Clone + Send + Sync + 'static {
         &self,
         req: &CreateUserInput,
     ) -> impl Future<Output = Result<CreateUserOutput, CreateUserError>> + Send;
+
+    fn list_users(
+        &self,
+        req: &ListUsersInput,
+    ) -> impl Future<Output = Result<ListUsersOutput, ListUsersError>> + Send;
+
+    fn get_user(
+        &self,
+        req: &GetUserInput,
+    ) -> impl Future<Output = Result<GetUserOutput, GetUserError>> + Send;
+
+    fn update_user(
+        &self,
+        req: &UpdateUserInput,
+    ) -> impl Future<Output = Result<UpdateUserOutput, UpdateUserError>> + Send;
+
+    fn delete_user(
+        &self,
+        req: &DeleteUserInput,
+    ) -> impl Future<Output = Result<(), DeleteUserError>> + Send;
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -32,6 +53,17 @@ pub struct CreateUserData {
     pub email: EmailAddress,
     pub password_hash: Password,
     pub role: Role,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct ListUsersData {
+    pub page: usize,
+    pub per_page: usize,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct GetUserData {
+    pub id: Uuid,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -66,38 +98,45 @@ pub trait UserRepository: Clone + Send + Sync + 'static {
     ///
     /// # Errors
     ///
-    /// - MUST return [CreateUserError::DuplicateEmail] if an [User] with the same [EmailAddress]
-    /// already exists.
+    /// - MUST return [UserRepositoryError::DuplicateEmail] if an [User] with the same
+    /// [EmailAddress] already exists.
     fn create_user(
         &self,
         req: &CreateUserData,
-    ) -> impl Future<Output = Result<User, UserRepositoryError>> + Send;
+    ) -> impl Future<Output = Result<CreateUserOutput, UserRepositoryError>> + Send;
 
-    /// Asynchronously persist a new [User].
+    /// Get a list of [User].
     ///
     /// # Errors
     ///
-    /// - MUST return [CreateUserError::DuplicateEmail] if an [User] with the same [EmailAddress]
-    /// already exists.
-    fn list_users(&self) -> impl Future<Output = Result<Vec<User>, UserRepositoryError>> + Send;
+    /// - MUST return [UserRepositoryError::Unknown] if an error occurs.
+    fn list_users(&self, req: &ListUsersData
+    ) -> impl Future<Output = Result<ListUsersOutput, UserRepositoryError>> + Send;
 
-    /// Asynchronously persist a new [User].
+    /// Get a [User] by their unique identifier.
     ///
     /// # Errors
     ///
-    /// - MUST return [CreateUserError::DuplicateEmail] if an [User] with the same [EmailAddress]
-    /// already exists.
+    /// - MUST return [UserRepositoryError::NotFoundId] if no [User] with the given id exists.
+    fn get_user(&self, req: &GetUserData) -> impl Future<Output = Result<GetUserOutput, UserRepositoryError>> + Send;
+
+    /// Update an existing [User].
+    ///
+    /// # Errors
+    ///
+    /// - MUST return [UserRepositoryError::NotFoundId] if no [User] with the given id exists.
+    /// - MUST return [UserRepositoryError::DuplicateEmail] if an [User] with the same
+    /// [EmailAddress] already exists.
     fn update_user(
         &self,
         req: &UpdateUserData,
-    ) -> impl Future<Output = Result<User, UserRepositoryError>> + Send;
+    ) -> impl Future<Output = Result<UpdateUserOutput, UserRepositoryError>> + Send;
 
-    /// Asynchronously persist a new [User].
+    /// Delete an existing [User].
     ///
     /// # Errors
     ///
-    /// - MUST return [CreateUserError::DuplicateEmail] if an [User] with the same [EmailAddress]
-    /// already exists.
+    /// - MUST return [UserRepositoryError::NotFoundId] if no [User] with the given id exists.
     fn delete_user(
         &self,
         req: &DeleteUserData,
