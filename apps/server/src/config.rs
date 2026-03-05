@@ -10,6 +10,7 @@ const RUN_MIGRATION: &str = "RUN_MIGRATION";
 pub struct Config {
     /// The connection URL for the Postgres database this application should use.
     pub database_url: String,
+
     /// Run the runtime database migration.
     pub run_migration: bool,
 

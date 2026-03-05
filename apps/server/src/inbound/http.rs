@@ -10,6 +10,7 @@ use crate::inbound::http::handlers::create_user::create_user;
 use crate::inbound::http::handlers::status::api_status;
 
 mod handlers;
+mod middleware;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HttpServerConfig<'a> {

@@ -13,8 +13,6 @@ use crate::domain::user::service::Service;
 async fn main() -> anyhow::Result<()> {
     dotenv::dotenv().ok();
 
-    env_logger::init();
-
     let config = Config::load()?;
 
     let db = Postgres::new(&config.database_url).await?;
