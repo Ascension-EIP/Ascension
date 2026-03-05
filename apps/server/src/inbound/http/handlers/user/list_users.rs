@@ -1,14 +1,10 @@
+use crate::domain::user::models::user::{ListUserOutput, ListUsersError, ListUsersInput, ListUsersOutput};
+use crate::domain::user::ports::UserService;
+use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
+use crate::inbound::http::AppState;
 use axum::extract::{Query, State};
 use axum::http::StatusCode;
-use axum::Json;
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
-use crate::domain::user::models::user::{CreateUserOutput, GetUserError, ListUserOutput, ListUsersError, ListUsersInput, ListUsersOutput, User};
-use crate::domain::user::ports::UserService;
-use crate::inbound::http::AppState;
-use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
-use crate::inbound::http::handlers::user::create_user::CreateUserResponse;
-use crate::inbound::http::handlers::user::get_user::GetUserResponse;
 
 impl From<ListUsersError> for ApiError {
     fn from(e: ListUsersError) -> Self {
@@ -20,6 +16,7 @@ impl From<ListUsersError> for ApiError {
     }
 }
 
+#[derive(Deserialize)]
 pub struct ListUsersParams {
     pub page: usize,
     pub limit: usize,
