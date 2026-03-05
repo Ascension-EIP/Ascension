@@ -196,15 +196,33 @@ impl ListUsersInput {
     }
 }
 
+pub struct ListUserOutput {
+    pub id: Uuid,
+    pub username: Username,
+    pub email: EmailAddress,
+    pub role: Role,
+}
+
+impl ListUserOutput {
+    pub fn new(id: Uuid, username: Username, email: EmailAddress, role: Role) -> Self {
+        Self {
+            id,
+            username,
+            email,
+            role,
+        }
+    }
+}
+
 pub struct ListUsersOutput {
-    pub users: Vec<User>,
+    pub users: Vec<ListUserOutput>,
 }
 
 impl ListUsersOutput {
-    pub fn new(users: Vec<User>) -> Self {
+    pub fn new(users: Vec<ListUserOutput>) -> Self {
         Self { users }
     }
-    pub fn into_users(self) -> Vec<User> {
+    pub fn into_users(self) -> Vec<ListUserOutput> {
         self.users
     }
 }
