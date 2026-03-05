@@ -9,7 +9,7 @@ use crate::domain::user::ports::UserRepositoryError;
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct User {
-    pub id: uuid::Uuid,
+    pub id: Uuid,
     pub username: Username,
     pub email: EmailAddress,
     pub password: Password,
@@ -130,6 +130,8 @@ impl Role {
     }
 }
 
+/// ======================== Create User ===========================================================
+
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
 pub struct CreateUserInput {
     pub username: Username,
@@ -163,8 +165,8 @@ impl CreateUserOutput {
 pub enum CreateUserError {
     #[error("user with email address {email} already exists")]
     DuplicateEmail { email: EmailAddress },
-    #[error("user id not found")]
-    NotFoundUser { id: Uuid },
+    //#[error("user id not found")]
+    //NotFoundUser { id: Uuid },
     #[error(transparent)]
     Unknown(#[from] anyhow::Error),
 }
@@ -173,8 +175,227 @@ impl From<UserRepositoryError> for CreateUserError {
     fn from(err: UserRepositoryError) -> Self {
         match err {
             UserRepositoryError::DuplicateEmail { email } => Self::DuplicateEmail { email },
+            UserRepositoryError::Unknown(cause) => Self::Unknown(cause),
+            _ => Self::Unknown(anyhow::Error::from(err)),
+        }
+    }
+}
+
+/// ======================== List User =============================================================
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
+pub struct ListUsersInput {
+    pub page: usize,
+    pub per_page: usize,
+}
+
+impl ListUsersInput {
+    pub fn new(page: usize, per_page: usize) -> Self {
+        Self { page, per_page }
+    }
+}
+
+pub struct ListUserOutput {
+    pub id: Uuid,
+    pub username: Username,
+    pub email: EmailAddress,
+    pub role: Role,
+}
+
+impl ListUserOutput {
+    pub fn new(id: Uuid, username: Username, email: EmailAddress, role: Role) -> Self {
+        Self {
+            id,
+            username,
+            email,
+            role,
+        }
+    }
+}
+
+pub struct ListUsersOutput {
+    pub users: Vec<ListUserOutput>,
+}
+
+impl ListUsersOutput {
+    pub fn new(users: Vec<ListUserOutput>) -> Self {
+        Self { users }
+    }
+    pub fn into_users(self) -> Vec<ListUserOutput> {
+        self.users
+    }
+}
+
+#[derive(Debug, Error)]
+pub enum ListUsersError {
+    #[error(transparent)]
+    Unknown(#[from] anyhow::Error),
+}
+
+impl From<UserRepositoryError> for ListUsersError {
+    fn from(err: UserRepositoryError) -> Self {
+        match err {
+            UserRepositoryError::Unknown(cause) => Self::Unknown(cause),
+            _ => Self::Unknown(anyhow::Error::from(err)),
+        }
+    }
+}
+
+/// ======================== Get User ==============================================================
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
+pub struct GetUserInput {
+    pub id: Uuid,
+}
+
+impl GetUserInput {
+    pub fn new(id: Uuid) -> Self {
+        Self { id }
+    }
+}
+
+pub struct GetUserOutput {
+    pub id: Uuid,
+    pub username: Username,
+    pub email: EmailAddress,
+    pub role: Role,
+}
+
+impl GetUserOutput {
+    pub fn new(id: Uuid, username: Username, email: EmailAddress, role: Role) -> Self {
+        Self {
+            id,
+            username,
+            email,
+            role,
+        }
+    }
+}
+
+impl From<User> for GetUserOutput {
+    fn from(user: User) -> Self {
+        Self {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            role: user.role,
+        }
+    }
+}
+
+#[derive(Debug, Error)]
+pub enum GetUserError {
+    #[error("user id not found")]
+    NotFoundUser { id: Uuid },
+    #[error(transparent)]
+    Unknown(#[from] anyhow::Error),
+}
+
+impl From<UserRepositoryError> for GetUserError {
+    fn from(err: UserRepositoryError) -> Self {
+        match err {
             UserRepositoryError::NotFoundId { id } => Self::NotFoundUser { id },
             UserRepositoryError::Unknown(cause) => Self::Unknown(cause),
+            _ => Self::Unknown(anyhow::Error::from(err)),
+        }
+    }
+}
+
+/// ======================== Update User ===========================================================
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
+pub struct UpdateUserInput {
+    pub id: Uuid,
+    pub username: Username,
+    pub email: EmailAddress,
+    pub password: Password,
+    pub role: Role,
+}
+
+impl UpdateUserInput {
+    pub fn new(
+        id: Uuid,
+        username: Username,
+        email: EmailAddress,
+        password: Password,
+        role: Role,
+    ) -> Self {
+        Self {
+            id,
+            username,
+            email,
+            password,
+            role,
+        }
+    }
+}
+
+pub struct UpdateUserOutput {
+    pub id: Uuid,
+}
+
+impl UpdateUserOutput {
+    pub fn new(id: Uuid) -> Self {
+        Self { id }
+    }
+}
+
+
+#[derive(Debug, Error)]
+pub enum UpdateUserError {
+    #[error("user with email address {email} already exists")]
+    DuplicateEmail { email: EmailAddress },
+    #[error("user id not found")]
+    NotFoundUser { id: Uuid },
+    #[error(transparent)]
+    Unknown(#[from] anyhow::Error),
+}
+
+impl From<UserRepositoryError> for UpdateUserError {
+    fn from(err: UserRepositoryError) -> Self {
+        match err {
+            UserRepositoryError::DuplicateEmail { email } => Self::DuplicateEmail { email },
+            UserRepositoryError::NotFoundId { id } => Self::NotFoundUser { id },
+            UserRepositoryError::Unknown(cause) => Self::Unknown(cause),
+        }
+    }
+}
+
+/// ======================== Delete User ===========================================================
+
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
+pub struct DeleteUserInput {
+    pub id: Uuid,
+}
+
+impl DeleteUserInput {
+    pub fn new(id: Uuid) -> Self {
+        Self { id }
+    }
+}
+
+pub struct DeleteUserOutput;
+
+impl DeleteUserOutput {
+    pub fn new() -> Self {
+        Self
+    }
+}
+
+#[derive(Debug, Error)]
+pub enum DeleteUserError {
+    #[error("user id not found")]
+    NotFoundUser { id: Uuid },
+    #[error(transparent)]
+    Unknown(#[from] anyhow::Error),
+}
+
+impl From<UserRepositoryError> for DeleteUserError {
+    fn from(err: UserRepositoryError) -> Self {
+        match err {
+            UserRepositoryError::NotFoundId { id } => Self::NotFoundUser { id },
+            UserRepositoryError::Unknown(cause) => Self::Unknown(cause),
+            _ => Self::Unknown(anyhow::Error::from(err)),
         }
     }
 }

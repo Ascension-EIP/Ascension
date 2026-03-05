@@ -1,0 +1,13 @@
+- Mettre les sources des chiffres
+- User story trop courte (faut pas trop d'éléments, plus grand, plus détaillé et dans le github project
+- Qu'est ce qu'on présent dans 2 semaine (faut augmenter le tableau et rajouter un coline)
+- Noter les données qu'on va stocker
+- Légal contraint a refaire
+- Faire un niveau par membre
+- Global system, c'est moche
+- Mettre les 3 scénario pour le capex opex
+- Y'a un tableau a refaire des trucs à clean
+- Plus de details sur geen it
+- Disponibilités cible inutile
+- La slide est horrible
+- Faut un backup stratégie, un plan B
