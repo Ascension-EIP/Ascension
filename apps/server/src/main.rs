@@ -6,12 +6,20 @@ mod outbound;
 use config::Config;
 use inbound::http::{HttpServer, HttpServerConfig};
 use outbound::postgresql::Postgres;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::domain::user::service::Service;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     dotenv::dotenv().ok();
+
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::new(
+            std::env::var("RUST_LOG").unwrap_or_else(|_| "info".into()),
+        ))
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
     let config = Config::load()?;
 

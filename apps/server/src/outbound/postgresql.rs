@@ -3,8 +3,14 @@ use sqlx::postgres::PgPoolOptions;
 use sqlx::{Executor, Transaction};
 use uuid::Uuid;
 
-use crate::domain::user::models::user::{CreateUserOutput, EmailAddress, GetUserOutput, ListUsersOutput, Password, Role, UpdateUserOutput, User, Username};
-use crate::domain::user::ports::{CreateUserData, DeleteUserData, GetUserData, ListUsersData, UpdateUserData, UserRepository, UserRepositoryError};
+use crate::domain::user::models::user::{
+    CreateUserOutput, EmailAddress, GetUserOutput, ListUsersOutput, Password, Role,
+    UpdateUserOutput, User, Username,
+};
+use crate::domain::user::ports::{
+    CreateUserData, DeleteUserData, GetUserData, ListUsersData, UpdateUserData, UserRepository,
+    UserRepositoryError,
+};
 
 #[derive(Debug, Clone)]
 pub struct Postgres {
@@ -48,14 +54,14 @@ impl Postgres {
             "SELECT id, username, email, role FROM users WHERE id = $1",
             id.to_string()
         )
-            .fetch_one(&self.pool)
-            .await?;
+        .fetch_one(&self.pool)
+        .await?;
 
         Ok(GetUserOutput::new(
             Uuid::parse_str(&row.id).unwrap(),
             Username::new(&row.username).unwrap(),
             EmailAddress::new(&row.email).unwrap(),
-            Role::new(&row.role).unwrap()
+            Role::new(&row.role).unwrap(),
         ))
     }
 
@@ -65,7 +71,10 @@ impl Postgres {
 }
 
 impl UserRepository for Postgres {
-    async fn create_user(&self, req: &CreateUserData) -> Result<CreateUserOutput, UserRepositoryError> {
+    async fn create_user(
+        &self,
+        req: &CreateUserData,
+    ) -> Result<CreateUserOutput, UserRepositoryError> {
         let mut tx = self
             .pool
             .begin()
@@ -101,30 +110,35 @@ impl UserRepository for Postgres {
     }
 
     async fn get_user(&self, req: &GetUserData) -> Result<GetUserOutput, UserRepositoryError> {
-        let user = self.get_user(req.id)
-            .await
-            .map_err(|e| {
-                if matches!(e, sqlx::Error::RowNotFound) {
-                    UserRepositoryError::NotFoundId { id: req.id }
-                } else {
-                    anyhow!(e)
-                        .context(format!("failed to get user with id {}", req.id))
-                        .into()
-                }
-            })?;
+        let user = self.get_user(req.id).await.map_err(|e| {
+            if matches!(e, sqlx::Error::RowNotFound) {
+                UserRepositoryError::NotFoundId { id: req.id }
+            } else {
+                anyhow!(e)
+                    .context(format!("failed to get user with id {}", req.id))
+                    .into()
+            }
+        })?;
 
         Ok(GetUserOutput::new(
             user.id,
             user.username,
             user.email,
-            user.role))
+            user.role,
+        ))
     }
 
-    async fn list_users(&self, _req: &ListUsersData) -> Result<ListUsersOutput, UserRepositoryError> {
+    async fn list_users(
+        &self,
+        _req: &ListUsersData,
+    ) -> Result<ListUsersOutput, UserRepositoryError> {
         todo!()
     }
 
-    async fn update_user(&self, _req: &UpdateUserData) -> Result<UpdateUserOutput, UserRepositoryError> {
+    async fn update_user(
+        &self,
+        _req: &UpdateUserData,
+    ) -> Result<UpdateUserOutput, UserRepositoryError> {
         todo!()
     }
 

@@ -1,6 +1,6 @@
+use axum::Json;
 use axum::extract::State;
 use axum::http::StatusCode;
-use axum::Json;
 use serde::{Deserialize, Serialize};
 
 use crate::domain::user::models::user::{
@@ -8,8 +8,8 @@ use crate::domain::user::models::user::{
     Password, PasswordInvalidError, Role, RoleInvalidError, Username, UsernameInvalidError,
 };
 use crate::domain::user::ports::UserService;
-use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 use crate::inbound::http::AppState;
+use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 use thiserror::Error;
 
 impl From<CreateUserError> for ApiError {
@@ -18,8 +18,8 @@ impl From<CreateUserError> for ApiError {
             CreateUserError::DuplicateEmail { email } => {
                 Self::UnprocessableEntity(format!("email {} already exists", email))
             }
-            CreateUserError::Unknown(_cause) => {
-                // tracing::error!("{:?}\n{}", cause, cause.backtrace());
+            CreateUserError::Unknown(cause) => {
+                tracing::error!("{:?}\n{}", cause, cause.backtrace());
                 Self::InternalServerError("Internal server error".to_string())
             }
         }
@@ -47,9 +47,7 @@ impl From<ParseCreateUserHttpRequestError> for ApiError {
             ParseCreateUserHttpRequestError::EmailAddress(cause) => {
                 format!("email address '{}' is invalid", cause.email)
             }
-            ParseCreateUserHttpRequestError::Password(_cause) => {
-                "password is invalid".to_string()
-            }
+            ParseCreateUserHttpRequestError::Password(_cause) => "password is invalid".to_string(),
             ParseCreateUserHttpRequestError::Role(cause) => {
                 format!("role '{}' is invalid", cause.role)
             }

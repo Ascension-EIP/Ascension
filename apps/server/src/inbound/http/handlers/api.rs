@@ -1,5 +1,5 @@
-use axum::http::StatusCode;
 use axum::Json;
+use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use serde::Serialize;
 
@@ -45,8 +45,8 @@ impl IntoResponse for ApiError {
         use ApiError::*;
 
         match self {
-            InternalServerError(_e) => {
-                // tracing::error!("{}", e);
+            InternalServerError(e) => {
+                tracing::error!("{}", e);
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     Json(ApiResponseBody::new_error(

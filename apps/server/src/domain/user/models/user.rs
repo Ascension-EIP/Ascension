@@ -340,7 +340,6 @@ impl UpdateUserOutput {
     }
 }
 
-
 #[derive(Debug, Error)]
 pub enum UpdateUserError {
     #[error("user with email address {email} already exists")]
