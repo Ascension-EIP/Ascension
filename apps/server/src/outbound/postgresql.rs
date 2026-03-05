@@ -1,6 +1,6 @@
 use anyhow::{Context, anyhow};
 use sqlx::postgres::PgPoolOptions;
-use sqlx::{Executor, Transaction};
+use sqlx::{Executor, Transaction, Row};
 use uuid::Uuid;
 
 use crate::domain::user::models::user::{CreateUserOutput, EmailAddress, GetUserOutput, ListUserOutput, ListUsersOutput, Password, Role, UpdateUserOutput, Username};
@@ -47,20 +47,44 @@ impl Postgres {
     }
 
     async fn list_users(&self, req: &ListUsersData) -> Result<ListUsersOutput,  sqlx::Error> {
-        let query = sqlx::query!(
-            "SELECT id, username, email, role FROM users"
-            )
-        .fetch_all(&self.pool)
-        .await?;
+        let rows = if let Some(per_page) = req.per_page {
+            if per_page == 0 {
+                sqlx::query("SELECT id, username, email, role FROM users")
+                    .fetch_all(&self.pool)
+                    .await?
+            } else {
+                let page = req.page.unwrap_or(1);
+                let offset = per_page.saturating_mul(page.saturating_sub(1)) as i64;
+                let per_page_i64 = per_page as i64;
+                sqlx::query("SELECT id, username, email, role FROM users LIMIT $1 OFFSET $2")
+                    .bind(per_page_i64)
+                    .bind(offset)
+                    .fetch_all(&self.pool)
+                    .await?
+            }
+        } else {
+            sqlx::query("SELECT id, username, email, role FROM users")
+                .fetch_all(&self.pool)
+                .await?
+        };
 
-        let users = query.iter().map(|row| {
-            let id = Uuid::parse_str(&row.id).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-            let username = Username::new(&row.username).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-            let email = EmailAddress::new(&row.email).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-            let role = Role::new(&row.role).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+        let users = rows
+            .into_iter()
+            .map(|row| {
+                let id: String = row.try_get("id")?;
+                let username: String = row.try_get("username")?;
+                let email: String = row.try_get("email")?;
+                let role: String = row.try_get("role")?;
 
-            Ok(ListUserOutput::new(id, username, email, role))
-        }).collect::<Result<Vec<ListUserOutput>, sqlx::Error>>()?;
+                let id = Uuid::parse_str(&id).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+                let username = Username::new(&username).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+                let email = EmailAddress::new(&email).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+                let role = Role::new(&role).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+
+                Ok(ListUserOutput::new(id, username, email, role))
+            })
+            .collect::<Result<Vec<ListUserOutput>, sqlx::Error>>()?;
+
         Ok(ListUsersOutput::new(users))
     }
 
@@ -81,7 +105,7 @@ impl Postgres {
     }
 
     async fn update_user(&self, req: &UpdateUserData) -> Result<UpdateUserOutput,  sqlx::Error> {
-        let _query = sqlx::query!(
+        let result = sqlx::query!(
             "UPDATE users SET username = $1, email = $2, password_hash = $3, role = $4 WHERE id = $5",
             req.username.to_string(),
             req.email.to_string(),
@@ -89,18 +113,24 @@ impl Postgres {
             req.role.to_string(),
             req.id.to_string(),
         )
-        .fetch_one(&self.pool)
+        .execute(&self.pool)
         .await?;
+        if result.rows_affected() == 0 {
+            return Err(sqlx::Error::RowNotFound);
+        }
         Ok(UpdateUserOutput::new(req.id))
     }
 
     async fn delete_user(&self, req: &DeleteUserData) -> Result<(),  sqlx::Error> {
-        sqlx::query!(
+        let result = sqlx::query!(
             "DELETE FROM users WHERE id = $1",
             req.id.to_string(),
         )
-        .fetch_one(&self.pool)
+        .execute(&self.pool)
         .await?;
+        if result.rows_affected() == 0 {
+            return Err(sqlx::Error::RowNotFound);
+        }
         Ok({})
     }
 }
