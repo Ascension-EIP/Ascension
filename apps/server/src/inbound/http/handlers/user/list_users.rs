@@ -21,7 +21,7 @@ impl From<ListUsersError> for ApiError {
 #[derive(Deserialize)]
 pub struct ListUsersParams {
     pub page: Option<usize>,
-    pub limit: Option<usize>,
+    pub per_page: Option<usize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -60,7 +60,7 @@ pub async fn list_users<US: UserService>(
     State(state): State<AppState<US>>,
     Query(params): Query<ListUsersParams>,
 ) -> Result<ApiSuccess<ListUsersResponse>, ApiError> {
-    let input = ListUsersInput::new(params.page, params.limit);
+    let input = ListUsersInput::new(params.page, params.per_page);
     state
         .user_service
         .list_users(&input)
