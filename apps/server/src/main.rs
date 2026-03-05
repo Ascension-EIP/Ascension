@@ -3,9 +3,13 @@ mod domain;
 mod inbound;
 mod outbound;
 
+use std::sync::Arc;
+
+use anyhow::Context;
 use config::Config;
 use inbound::http::{HttpServer, HttpServerConfig};
 use outbound::postgresql::Postgres;
+use sqlx::postgres::PgPoolOptions;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::domain::user::service::Service;
@@ -21,11 +25,17 @@ async fn main() -> anyhow::Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let config = Config::load()?;
+    let config = Arc::new(Config::load()?);
 
-    let db = Postgres::new(&config.database_url).await?;
+    let pool = PgPoolOptions::new()
+        .max_connections(50)
+        .connect(&config.database_url)
+        .await
+        .context(format!("could not connect to {}", &config.database_url))?;
 
-    let user_service = Service::new(db);
+    let repo = Arc::new(Postgres::new(pool.clone()));
+
+    let user_service = Arc::new(Service::new(repo.clone()));
 
     let server_config = HttpServerConfig {
         port: &config.server_port,

@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 #http
 axum = { version = "0.8", features = ["macros", "http2", "multipart", "ws"] }
+tower = { version = "0.5", features = ["full"]}
 
 #db
 sqlx = { version = "0.8", features = [ "postgres", "runtime-tokio", "macros" ] }

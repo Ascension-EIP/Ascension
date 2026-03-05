@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::domain::user::models::user::{
     CreateUserError, CreateUserInput, CreateUserOutput, DeleteUserError, DeleteUserInput,
     GetUserError, GetUserInput, GetUserOutput, ListUsersError, ListUsersInput, ListUsersOutput,
@@ -13,14 +15,14 @@ pub struct Service<R>
 where
     R: UserRepository,
 {
-    repo: R,
+    repo: Arc<R>,
 }
 
 impl<R> Service<R>
 where
     R: UserRepository,
 {
-    pub fn new(repo: R) -> Self {
+    pub fn new(repo: Arc<R>) -> Self {
         Self { repo }
     }
 }

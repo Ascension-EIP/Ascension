@@ -18,14 +18,8 @@ pub struct Postgres {
 }
 
 impl Postgres {
-    pub async fn new(path: &str) -> anyhow::Result<Postgres> {
-        let pool = PgPoolOptions::new()
-            .max_connections(50)
-            .connect(path)
-            .await
-            .context(format!("could not connect to {}", path))?;
-
-        Ok(Postgres { pool })
+    pub fn new(pool: sqlx::PgPool) -> Postgres {
+        Postgres { pool }
     }
 
     async fn save_user(
