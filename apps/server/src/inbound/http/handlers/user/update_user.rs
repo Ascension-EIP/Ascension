@@ -1,4 +1,5 @@
 use axum::extract::{Path, State};
+use axum::http::StatusCode;
 use axum::Json;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -61,7 +62,6 @@ impl From<ParseUpdateUserHttpRequestError> for ApiError {
     }
 }
 
-
 /// The body of a [User] update request.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct UpdateUserHttpRequestBody {
@@ -108,5 +108,5 @@ pub async fn update_user<US: UserService>(
         .update_user(&domain_req)
         .await
         .map_err(ApiError::from)
-        .map(|ref output| ApiSuccess::new(axum::http::StatusCode::OK, output.into()))
+        .map(|ref output| ApiSuccess::new(StatusCode::OK, output.into()))
 }
