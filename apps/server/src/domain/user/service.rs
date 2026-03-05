@@ -54,7 +54,7 @@ where
             per_page: input.per_page,
         };
         let user_list = self.repo.list_users(&list_info).await?;
-        Ok(ListUsersOutput::new(user_list.users))
+        Ok(user_list)
     }
 
     async fn get_user(&self, input: &GetUserInput) -> Result<GetUserOutput, GetUserError> {
