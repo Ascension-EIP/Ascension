@@ -185,13 +185,29 @@ impl From<UserRepositoryError> for CreateUserError {
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
 pub struct ListUsersInput {
-    pub page: usize,
-    pub per_page: usize,
+    pub page: Option<usize>,
+    pub per_page: Option<usize>,
 }
 
 impl ListUsersInput {
-    pub fn new(page: usize, per_page: usize) -> Self {
+    pub fn new(page: Option<usize>, per_page: Option<usize>) -> Self {
         Self { page, per_page }
+    }
+
+    pub fn page(&self) -> Option<usize> {
+        self.page
+    }
+
+    pub fn per_page(&self) -> Option<usize> {
+        self.per_page
+    }
+
+    pub fn page_or(&self, default: usize) -> usize {
+        self.page.unwrap_or(default)
+    }
+
+    pub fn per_page_or(&self, default: usize) -> usize {
+        self.per_page.unwrap_or(default)
     }
 }
 

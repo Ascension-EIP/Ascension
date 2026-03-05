@@ -20,8 +20,8 @@ impl From<ListUsersError> for ApiError {
 
 #[derive(Deserialize)]
 pub struct ListUsersParams {
-    pub page: usize,
-    pub limit: usize,
+    pub page: Option<usize>,
+    pub limit: Option<usize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]

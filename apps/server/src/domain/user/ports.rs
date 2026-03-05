@@ -56,8 +56,8 @@ pub struct CreateUserData {
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ListUsersData {
-    pub page: usize,
-    pub per_page: usize,
+    pub page: Option<usize>,
+    pub per_page: Option<usize>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
