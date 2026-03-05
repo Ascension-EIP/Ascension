@@ -6,8 +6,7 @@ use uuid::Uuid;
 use crate::domain::user::models::user::{
     CreateUserError, CreateUserInput, CreateUserOutput, DeleteUserError, DeleteUserInput,
     EmailAddress, GetUserError, GetUserInput, GetUserOutput, ListUsersError, ListUsersInput,
-    ListUsersOutput, Password, Role, UpdateUserError, UpdateUserInput, UpdateUserOutput,
-    Username,
+    ListUsersOutput, Password, Role, UpdateUserError, UpdateUserInput, UpdateUserOutput, Username,
 };
 
 /// `UserService` is the public API for the user domain.
@@ -110,7 +109,9 @@ pub trait UserRepository: Clone + Send + Sync + 'static {
     /// # Errors
     ///
     /// - MUST return [UserRepositoryError::Unknown] if an error occurs.
-    fn list_users(&self, req: &ListUsersData
+    fn list_users(
+        &self,
+        req: &ListUsersData,
     ) -> impl Future<Output = Result<ListUsersOutput, UserRepositoryError>> + Send;
 
     /// Get a [User] by their unique identifier.
@@ -118,7 +119,10 @@ pub trait UserRepository: Clone + Send + Sync + 'static {
     /// # Errors
     ///
     /// - MUST return [UserRepositoryError::NotFoundId] if no [User] with the given id exists.
-    fn get_user(&self, req: &GetUserData) -> impl Future<Output = Result<GetUserOutput, UserRepositoryError>> + Send;
+    fn get_user(
+        &self,
+        req: &GetUserData,
+    ) -> impl Future<Output = Result<GetUserOutput, UserRepositoryError>> + Send;
 
     /// Update an existing [User].
     ///

@@ -6,12 +6,12 @@ use axum::routing::{delete, get, post, put};
 use tokio::net;
 
 use crate::domain::user::ports::UserService;
+use crate::inbound::http::handlers::status::api_status;
 use crate::inbound::http::handlers::user::create_user::create_user;
 use crate::inbound::http::handlers::user::delete_user::delete_user;
-use crate::inbound::http::handlers::user::update_user::update_user;
 use crate::inbound::http::handlers::user::get_user::get_user;
 use crate::inbound::http::handlers::user::list_users::list_users;
-use crate::inbound::http::handlers::status::api_status;
+use crate::inbound::http::handlers::user::update_user::update_user;
 
 mod handlers;
 
@@ -69,9 +69,10 @@ impl HttpServer {
 }
 
 fn api_routes<US: UserService>() -> Router<AppState<US>> {
-    Router::new().route("/users", post(create_user::<US>))
-                 .route("/users", get(list_users::<US>))
-                 .route("/users/{id}", get(get_user::<US>))
-                 .route("/users/{id}", put(update_user::<US>))
-                 .route("/users/{id}", delete(delete_user::<US>))
+    Router::new()
+        .route("/users", post(create_user::<US>))
+        .route("/users", get(list_users::<US>))
+        .route("/users/{id}", get(get_user::<US>))
+        .route("/users/{id}", put(update_user::<US>))
+        .route("/users/{id}", delete(delete_user::<US>))
 }

@@ -1,7 +1,9 @@
-use crate::domain::user::models::user::{ListUserOutput, ListUsersError, ListUsersInput, ListUsersOutput};
+use crate::domain::user::models::user::{
+    ListUserOutput, ListUsersError, ListUsersInput, ListUsersOutput,
+};
 use crate::domain::user::ports::UserService;
-use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 use crate::inbound::http::AppState;
+use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 use axum::extract::{Query, State};
 use axum::http::StatusCode;
 use serde::{Deserialize, Serialize};
@@ -43,7 +45,7 @@ impl From<&ListUserOutput> for ListUserResponse {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ListUsersResponse {
-    pub users: Vec<ListUserResponse>
+    pub users: Vec<ListUserResponse>,
 }
 
 impl From<&ListUsersOutput> for ListUsersResponse {

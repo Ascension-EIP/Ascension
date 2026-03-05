@@ -1,7 +1,7 @@
 use crate::domain::user::models::user::{GetUserError, GetUserInput, GetUserOutput};
 use crate::domain::user::ports::UserService;
-use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 use crate::inbound::http::AppState;
+use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use serde::Serialize;
@@ -29,15 +29,12 @@ enum ParseGetUserHttpRequestError {
 impl From<ParseGetUserHttpRequestError> for ApiError {
     fn from(e: ParseGetUserHttpRequestError) -> Self {
         let message = match e {
-            ParseGetUserHttpRequestError::Id(_cause) => {
-                "id is invalid".to_string()
-            }
+            ParseGetUserHttpRequestError::Id(_cause) => "id is invalid".to_string(),
         };
 
         Self::UnprocessableEntity(message)
     }
 }
-
 
 /// The response body for successful [User] retrieval.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]

@@ -1,12 +1,15 @@
-use axum::extract::{Path, State};
-use axum::http::StatusCode;
-use axum::Json;
-use serde::{Deserialize, Serialize};
-use thiserror::Error;
-use crate::domain::user::models::user::{EmailAddress, EmailAddressInvalidError, Password, PasswordInvalidError, Role, RoleInvalidError, UpdateUserError, UpdateUserInput, UpdateUserOutput, Username, UsernameInvalidError};
+use crate::domain::user::models::user::{
+    EmailAddress, EmailAddressInvalidError, Password, PasswordInvalidError, Role, RoleInvalidError,
+    UpdateUserError, UpdateUserInput, UpdateUserOutput, Username, UsernameInvalidError,
+};
 use crate::domain::user::ports::UserService;
 use crate::inbound::http::AppState;
 use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
+use axum::Json;
+use axum::extract::{Path, State};
+use axum::http::StatusCode;
+use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 impl From<UpdateUserError> for ApiError {
     fn from(e: UpdateUserError) -> Self {
@@ -41,18 +44,14 @@ enum ParseUpdateUserHttpRequestError {
 impl From<ParseUpdateUserHttpRequestError> for ApiError {
     fn from(e: ParseUpdateUserHttpRequestError) -> Self {
         let message = match e {
-            ParseUpdateUserHttpRequestError::Id(_cause) => {
-                "id is invalid".to_string()
-            }
+            ParseUpdateUserHttpRequestError::Id(_cause) => "id is invalid".to_string(),
             ParseUpdateUserHttpRequestError::Username(cause) => {
                 format!("username '{}' is invalid", cause.username)
             }
             ParseUpdateUserHttpRequestError::EmailAddress(cause) => {
                 format!("email address '{}' is invalid", cause.email)
             }
-            ParseUpdateUserHttpRequestError::Password(_cause) => {
-                "password is invalid".to_string()
-            }
+            ParseUpdateUserHttpRequestError::Password(_cause) => "password is invalid".to_string(),
             ParseUpdateUserHttpRequestError::Role(cause) => {
                 format!("role '{}' is invalid", cause.role)
             }
@@ -72,7 +71,10 @@ pub struct UpdateUserHttpRequestBody {
 }
 
 impl UpdateUserHttpRequestBody {
-    fn try_into_domain(self, id: uuid::Uuid) -> Result<UpdateUserInput, ParseUpdateUserHttpRequestError> {
+    fn try_into_domain(
+        self,
+        id: uuid::Uuid,
+    ) -> Result<UpdateUserInput, ParseUpdateUserHttpRequestError> {
         let name = Username::new(&self.username)?;
         let email = EmailAddress::new(&self.email)?;
         let password = Password::new(&self.password)?;
