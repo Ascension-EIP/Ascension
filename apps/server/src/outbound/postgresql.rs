@@ -51,12 +51,15 @@ impl Postgres {
             .fetch_one(&self.pool)
             .await?;
 
-        Ok(GetUserOutput::new(
-            Uuid::parse_str(&row.id).unwrap(),
-            Username::new(&row.username).unwrap(),
-            EmailAddress::new(&row.email).unwrap(),
-            Role::new(&row.role).unwrap()
-        ))
+        let parsed_id = Uuid::parse_str(&row.id)
+            .map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+        let username = Username::new(&row.username)
+            .map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+        let email = EmailAddress::new(&row.email)
+            .map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+        let role = Role::new(&row.role)
+            .map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+        Ok(GetUserOutput::new(parsed_id, username, email, role))
     }
 
     async fn update_user(&self, _req: &UpdateUserData) -> Result<User, UserRepositoryError> {
