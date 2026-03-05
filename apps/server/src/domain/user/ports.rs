@@ -103,7 +103,7 @@ pub trait UserRepository: Clone + Send + Sync + 'static {
     fn create_user(
         &self,
         req: &CreateUserData,
-    ) -> impl Future<Output = Result<User, UserRepositoryError>> + Send;//TODO checkez si c'est bien ça ou si on doit renvoyer un UUID dans le future
+    ) -> impl Future<Output = Result<CreateUserOutput, UserRepositoryError>> + Send;
 
     /// Get a list of [User].
     ///
@@ -111,14 +111,14 @@ pub trait UserRepository: Clone + Send + Sync + 'static {
     ///
     /// - MUST return [UserRepositoryError::Unknown] if an error occurs.
     fn list_users(&self, req: &ListUsersData
-    ) -> impl Future<Output = Result<Vec<User>, UserRepositoryError>> + Send;
+    ) -> impl Future<Output = Result<ListUsersOutput, UserRepositoryError>> + Send;
 
     /// Get a [User] by their unique identifier.
     ///
     /// # Errors
     ///
     /// - MUST return [UserRepositoryError::NotFoundId] if no [User] with the given id exists.
-    fn get_user(&self, req: &GetUserData) -> impl Future<Output = Result<User, UserRepositoryError>> + Send;
+    fn get_user(&self, req: &GetUserData) -> impl Future<Output = Result<GetUserOutput, UserRepositoryError>> + Send;
 
     /// Update an existing [User].
     ///
@@ -130,7 +130,7 @@ pub trait UserRepository: Clone + Send + Sync + 'static {
     fn update_user(
         &self,
         req: &UpdateUserData,
-    ) -> impl Future<Output = Result<User, UserRepositoryError>> + Send;
+    ) -> impl Future<Output = Result<UpdateUserOutput, UserRepositoryError>> + Send;
 
     /// Delete an existing [User].
     ///
