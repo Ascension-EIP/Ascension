@@ -34,3 +34,8 @@ py-modules = ["consumer", "main", "pose_analysis"]
 
 [tool.ruff]
 exclude = ["venv"]
+
+[tool.black]
+line-length = 80
+target-version = ["py311"]
+include = '\.pyi?$'
