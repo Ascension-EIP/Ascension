@@ -1,4 +1,4 @@
-use crate::domain::user::models::user::{GetUserError, GetUserInput, GetUserOutput, User};
+use crate::domain::user::models::user::{GetUserError, GetUserInput, GetUserOutput};
 use crate::domain::user::ports::UserService;
 use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 use crate::inbound::http::AppState;

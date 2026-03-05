@@ -59,7 +59,7 @@ impl Postgres {
         ))
     }
 
-    async fn update_user(&self, req: &UpdateUserData) -> Result<User, UserRepositoryError> {
+    async fn update_user(&self, _req: &UpdateUserData) -> Result<User, UserRepositoryError> {
         todo!()
     }
 }
@@ -120,15 +120,15 @@ impl UserRepository for Postgres {
             user.role))
     }
 
-    async fn list_users(&self, req: &ListUsersData) -> Result<ListUsersOutput, UserRepositoryError> {
+    async fn list_users(&self, _req: &ListUsersData) -> Result<ListUsersOutput, UserRepositoryError> {
         todo!()
     }
 
-    async fn update_user(&self, req: &UpdateUserData) -> Result<UpdateUserOutput, UserRepositoryError> {
+    async fn update_user(&self, _req: &UpdateUserData) -> Result<UpdateUserOutput, UserRepositoryError> {
         todo!()
     }
 
-    async fn delete_user(&self, req: &DeleteUserData) -> Result<(), UserRepositoryError> {
+    async fn delete_user(&self, _req: &DeleteUserData) -> Result<(), UserRepositoryError> {
         todo!()
     }
 }

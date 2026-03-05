@@ -3,7 +3,6 @@ use std::{str::FromStr, sync::LazyLock};
 use uuid::Uuid;
 
 use derive_more::{Display, From, FromStr};
-use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::domain::user::ports::UserRepositoryError;

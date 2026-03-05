@@ -1,7 +1,6 @@
-use axum::Json;
 use axum::extract::State;
 use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
+use axum::Json;
 use serde::{Deserialize, Serialize};
 
 use crate::domain::user::models::user::{
@@ -9,9 +8,9 @@ use crate::domain::user::models::user::{
     Password, PasswordInvalidError, Role, RoleInvalidError, Username, UsernameInvalidError,
 };
 use crate::domain::user::ports::UserService;
+use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 use crate::inbound::http::AppState;
 use thiserror::Error;
-use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 
 impl From<CreateUserError> for ApiError {
     fn from(e: CreateUserError) -> Self {

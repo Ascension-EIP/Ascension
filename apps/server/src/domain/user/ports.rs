@@ -6,7 +6,7 @@ use uuid::Uuid;
 use crate::domain::user::models::user::{
     CreateUserError, CreateUserInput, CreateUserOutput, DeleteUserError, DeleteUserInput,
     EmailAddress, GetUserError, GetUserInput, GetUserOutput, ListUsersError, ListUsersInput,
-    ListUsersOutput, Password, Role, UpdateUserError, UpdateUserInput, UpdateUserOutput, User,
+    ListUsersOutput, Password, Role, UpdateUserError, UpdateUserInput, UpdateUserOutput,
     Username,
 };
 
