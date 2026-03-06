@@ -55,7 +55,7 @@ impl Postgres {
             } else {
                 let page = req.page.unwrap_or(1);
                 let offset = per_page.saturating_mul(page.saturating_sub(1)) as i64;
-                let per_page_i64 = per_page ;
+                let per_page_i64 = per_page as i64;
                 sqlx::query("SELECT id, username, email, role FROM users LIMIT $1 OFFSET $2 ORDER BY id")
                     .bind(per_page_i64)
                     .bind(offset)
