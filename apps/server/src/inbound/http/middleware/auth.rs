@@ -15,7 +15,7 @@ use crate::{
 };
 impl IntoResponse for AuthError {
     fn into_response(self) -> Response {
-        StatusCode::INTERNAL_SERVER_ERROR.into_response()
+        StatusCode::UNAUTHORIZED.into_response()
     }
 }
 
@@ -29,7 +29,7 @@ pub async fn auth(State(state): State<AppState>, mut req: Request, next: Next) -
     {
         Some(token) => token,
         None => {
-            return StatusCode::FORBIDDEN.into_response();
+            return StatusCode::UNAUTHORIZED.into_response();
         }
     };
     let user = match state.auth_service.get_user_by_token(token).await {
