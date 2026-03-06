@@ -1,4 +1,6 @@
+use std::net::SocketAddr;
 use std::sync::Arc;
+use std::time::Duration;
 
 use anyhow::Context;
 use axum::Router;
@@ -6,6 +8,8 @@ use axum::http::StatusCode;
 use axum::routing::{delete, get, post, put};
 use tokio::net;
 use tower::ServiceBuilder;
+use tower_governor::GovernorLayer;
+use tower_governor::governor::GovernorConfigBuilder;
 use tower_http::trace::TraceLayer;
 
 use crate::domain::auth::inbound::AuthService;
@@ -46,6 +50,25 @@ impl HttpServer {
             auth_service,
         };
 
+        let strict = Arc::new(
+            GovernorConfigBuilder::default()
+                .period(Duration::from_secs(1))
+                .burst_size(10)
+                .finish()
+                .unwrap(),
+        );
+
+        for limiter in [strict.limiter()] {
+            let l = limiter.clone();
+            tokio::spawn(async move {
+                let mut interval = tokio::time::interval(Duration::from_secs(60));
+                loop {
+                    interval.tick().await;
+                    l.retain_recent();
+                }
+            });
+        }
+
         let router = Router::new()
             .route(
                 "/healthz",
@@ -65,7 +88,8 @@ impl HttpServer {
             .layer(
                 ServiceBuilder::new()
                     // .layer(RecoveryLayer::new())
-                    .layer(TraceLayer::new_for_http()),
+                    .layer(TraceLayer::new_for_http())
+                    .layer(GovernorLayer::new(strict)),
             )
             .with_state(state);
 
@@ -78,9 +102,13 @@ impl HttpServer {
 
     pub async fn run(self) -> anyhow::Result<()> {
         tracing::info!("listening on {}", self.listener.local_addr().unwrap());
-        axum::serve(self.listener, self.router)
-            .await
-            .context("received error from running server")?;
+        axum::serve(
+            self.listener,
+            self.router
+                .into_make_service_with_connect_info::<SocketAddr>(),
+        )
+        .await
+        .context("received error from running server")?;
         Ok(())
     }
 }
