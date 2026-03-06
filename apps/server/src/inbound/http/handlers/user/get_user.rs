@@ -1,7 +1,8 @@
+use crate::domain::auth::inbound::AuthService;
 use crate::domain::user::models::user::{GetUserError, GetUserInput, GetUserOutput};
 use crate::domain::user::ports::UserService;
-use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 use crate::inbound::http::AppState;
+use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use serde::Serialize;
@@ -29,15 +30,12 @@ enum ParseGetUserHttpRequestError {
 impl From<ParseGetUserHttpRequestError> for ApiError {
     fn from(e: ParseGetUserHttpRequestError) -> Self {
         let message = match e {
-            ParseGetUserHttpRequestError::Id(_cause) => {
-                "id is invalid".to_string()
-            }
+            ParseGetUserHttpRequestError::Id(_cause) => "id is invalid".to_string(),
         };
 
         Self::UnprocessableEntity(message)
     }
 }
-
 
 /// The response body for successful [User] retrieval.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -59,9 +57,9 @@ impl From<GetUserOutput> for GetUserResponse {
     }
 }
 
-pub async fn get_user<US: UserService>(
+pub async fn get_user<US: UserService, AS: AuthService>(
     Path(id): Path<String>,
-    State(state): State<AppState<US>>,
+    State(state): State<AppState<US, AS>>,
 ) -> Result<ApiSuccess<GetUserResponse>, ApiError> {
     let uuid = uuid::Uuid::parse_str(&id).map_err(ParseGetUserHttpRequestError::from)?;
     let input = GetUserInput::new(uuid);

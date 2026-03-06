@@ -1,42 +1,60 @@
 use axum::{
-    body::Body,
-    http::{Request, Response, StatusCode},
+    Extension,
+    extract::{Request, State},
+    http::StatusCode,
     middleware::Next,
-    response::IntoResponse,
+    response::{IntoResponse, Response},
 };
-use uuid::Uuid;
 
-use crate::domain::user::models::user::{EmailAddress, Password, Role, User, Username};
+use crate::{
+    domain::{
+        auth::{error::AuthServiceError, inbound::AuthService},
+        user::{
+            models::user::{Role, User},
+            ports::UserService,
+        },
+    },
+    inbound::http::AppState,
+};
+impl IntoResponse for AuthServiceError {
+    fn into_response(self) -> Response {
+        StatusCode::INTERNAL_SERVER_ERROR.into_response()
+    }
+}
 
-pub async fn auth(mut req: Request<Body>, next: Next) -> Response<Body> {
-    req.extensions_mut().insert(User::new(
-        Uuid::new_v4(),
-        Username::new("ouiouioui").unwrap(),
-        EmailAddress::new("oui@oui.oui").unwrap(),
-        Password::new("oui").unwrap(),
-        Role::Admin,
-    ));
+pub async fn auth<US: UserService, AS: AuthService>(
+    State(state): State<AppState<US, AS>>,
+    mut req: Request,
+    next: Next,
+) -> Response {
+    let token = match req
+        .headers()
+        .get("Authorization")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| v.strip_prefix("Bearer "))
+        .map(|v| v.to_string())
+    {
+        Some(token) => token,
+        None => {
+            return StatusCode::FORBIDDEN.into_response();
+        }
+    };
+    let user = match state.auth_service.get_user_by_token(token).await {
+        Ok(user) => user,
+        Err(e) => return e.into_response(),
+    };
+    req.extensions_mut().insert(user);
     next.run(req).await
 }
 
-pub async fn admin(req: Request<Body>, next: Next) -> Response<Body> {
-    let user = req.extensions().get::<User>().cloned();
-
-    let Some(user) = user else {
-        return StatusCode::UNAUTHORIZED.into_response();
-    };
+pub async fn admin(Extension(user): Extension<User>, req: Request, next: Next) -> Response {
     if user.role != Role::Admin {
         return StatusCode::FORBIDDEN.into_response();
     }
     next.run(req).await
 }
 
-pub async fn user(req: Request<Body>, next: Next) -> Response<Body> {
-    let user = req.extensions().get::<User>().cloned();
-
-    let Some(user) = user else {
-        return StatusCode::UNAUTHORIZED.into_response();
-    };
+pub async fn user(Extension(user): Extension<User>, req: Request, next: Next) -> Response {
     if user.role != Role::User {
         return StatusCode::FORBIDDEN.into_response();
     }

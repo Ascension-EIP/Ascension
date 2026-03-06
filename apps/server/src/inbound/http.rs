@@ -8,6 +8,7 @@ use tokio::net;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 
+use crate::domain::auth::inbound::AuthService;
 use crate::domain::user::ports::UserService;
 use crate::inbound::http::handlers::user::create_user::create_user;
 use crate::inbound::http::handlers::user::delete_user::delete_user;
@@ -24,8 +25,9 @@ pub struct HttpServerConfig<'a> {
 }
 
 #[derive(Clone)]
-struct AppState<US: UserService> {
+struct AppState<US: UserService, AS: AuthService> {
     user_service: Arc<US>,
+    auth_service: Arc<AS>,
 }
 
 pub struct HttpServer {
@@ -34,14 +36,31 @@ pub struct HttpServer {
 }
 
 impl HttpServer {
-    pub async fn new<US: UserService>(
+    pub async fn new<US: UserService, AS: AuthService>(
         user_service: Arc<US>,
+        auth_service: Arc<AS>,
         config: HttpServerConfig<'_>,
     ) -> anyhow::Result<Self> {
-        let state = AppState { user_service };
+        let state = AppState {
+            user_service,
+            auth_service,
+        };
 
         let router = Router::new()
-            .route("/healthz", get(|| async { StatusCode::NO_CONTENT }))
+            .route(
+                "/healthz",
+                get(|| async { StatusCode::NO_CONTENT }).route_layer(
+                    ServiceBuilder::new()
+                        .layer(axum::middleware::from_fn_with_state(
+                            state.clone(),
+                            middleware::auth::auth,
+                        ))
+                        .layer(axum::middleware::from_fn_with_state(
+                            state.clone(),
+                            middleware::auth::admin,
+                        )),
+                ),
+            )
             .nest("/v1", v1_routes())
             .layer(
                 ServiceBuilder::new()
@@ -66,15 +85,15 @@ impl HttpServer {
     }
 }
 
-fn v1_routes<US: UserService>() -> Router<AppState<US>> {
-    Router::new().nest("/users", v1_users_routes::<US>())
+fn v1_routes<US: UserService, AS: AuthService>() -> Router<AppState<US, AS>> {
+    Router::new().nest("/users", v1_users_routes::<US, AS>())
 }
 
-fn v1_users_routes<US: UserService>() -> Router<AppState<US>> {
+fn v1_users_routes<US: UserService, AS: AuthService>() -> Router<AppState<US, AS>> {
     Router::new()
-        .route("/", post(create_user::<US>))
-        .route("/", get(list_users::<US>))
-        .route("/{id}", get(get_user::<US>))
-        .route("/{id}", put(update_user::<US>))
-        .route("/{id}", delete(delete_user::<US>))
+        .route("/", post(create_user::<US, AS>))
+        .route("/", get(list_users::<US, AS>))
+        .route("/{id}", get(get_user::<US, AS>))
+        .route("/{id}", put(update_user::<US, AS>))
+        .route("/{id}", delete(delete_user::<US, AS>))
 }

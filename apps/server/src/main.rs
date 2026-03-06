@@ -2,6 +2,7 @@ mod config;
 mod domain;
 mod inbound;
 mod outbound;
+mod usecase;
 
 use std::sync::Arc;
 
@@ -12,7 +13,7 @@ use outbound::postgresql::Postgres;
 use sqlx::postgres::PgPoolOptions;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::domain::user::service::Service;
+use crate::{domain::user::service::Service, usecase::auth};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -35,11 +36,12 @@ async fn main() -> anyhow::Result<()> {
 
     let repo = Arc::new(Postgres::new(pool.clone()));
 
+    let auth_service = Arc::new(auth::Service::new(repo.clone(), config.hmac_key.clone()));
     let user_service = Arc::new(Service::new(repo.clone()));
 
     let server_config = HttpServerConfig {
         port: &config.server_port,
     };
-    let http_server = HttpServer::new(user_service, server_config).await?;
+    let http_server = HttpServer::new(user_service, auth_service, server_config).await?;
     http_server.run().await
 }
