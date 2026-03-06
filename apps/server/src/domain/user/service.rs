@@ -1,3 +1,7 @@
+use std::sync::Arc;
+
+use async_trait::async_trait;
+
 use crate::domain::user::models::user::{
     CreateUserError, CreateUserInput, CreateUserOutput, DeleteUserError, DeleteUserInput,
     GetUserError, GetUserInput, GetUserOutput, ListUsersError, ListUsersInput, ListUsersOutput,
@@ -13,18 +17,19 @@ pub struct Service<R>
 where
     R: UserRepository,
 {
-    repo: R,
+    repo: Arc<R>,
 }
 
 impl<R> Service<R>
 where
     R: UserRepository,
 {
-    pub fn new(repo: R) -> Self {
+    pub fn new(repo: Arc<R>) -> Self {
         Self { repo }
     }
 }
 
+#[async_trait]
 impl<R> UserService for Service<R>
 where
     R: UserRepository,

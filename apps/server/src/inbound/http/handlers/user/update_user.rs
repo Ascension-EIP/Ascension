@@ -2,7 +2,6 @@ use crate::domain::user::models::user::{
     EmailAddress, EmailAddressInvalidError, Password, PasswordInvalidError, Role, RoleInvalidError,
     UpdateUserError, UpdateUserInput, UpdateUserOutput, Username, UsernameInvalidError,
 };
-use crate::domain::user::ports::UserService;
 use crate::inbound::http::AppState;
 use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 use axum::Json;
@@ -97,9 +96,9 @@ impl From<&UpdateUserOutput> for UpdateUserResponse {
     }
 }
 
-pub async fn update_user<US: UserService>(
+pub async fn update_user(
     Path(id): Path<String>,
-    State(state): State<AppState<US>>,
+    State(state): State<AppState>,
     Json(body): Json<UpdateUserHttpRequestBody>,
 ) -> Result<ApiSuccess<UpdateUserResponse>, ApiError> {
     let uuid = uuid::Uuid::parse_str(&id).map_err(ParseUpdateUserHttpRequestError::from)?;
