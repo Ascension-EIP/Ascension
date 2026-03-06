@@ -23,9 +23,38 @@ concurrency:
 
 ############################ JOBS #############################################
 jobs:
+  ########################## NO-CI DETECTION ##################################
+  detect_no_ci:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+
+    ######################## STEPS ############################################
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Detect no-ci prefix in commit message
+        id: check
+        run: |
+          COMMIT_NAME=$(git log --format="%s" -1)
+          echo "Commit message: $COMMIT_NAME"
+          if echo "$COMMIT_NAME" | grep -qiE '^\[(no-ci|ci-no|ci no|no ci|ci-off|off-ci)\]'; then
+            echo "::notice title=CI skip::No-CI prefix detected — skipping all checks"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+  #############################################################################
+
+
   ########################## COMMIT & BRANCH ##################################
   check_commit_and_branch:
     runs-on: ubuntu-latest
+    needs: detect_no_ci
+    if: needs.detect_no_ci.outputs.skip != 'true'
 
     ######################## STEPS ############################################
     steps:
@@ -57,7 +86,8 @@ jobs:
   ########################## SERVER (RUST) ####################################
   check_server:
     runs-on: ubuntu-latest
-    needs: check_commit_and_branch
+    needs: [detect_no_ci, check_commit_and_branch]
+    if: needs.detect_no_ci.outputs.skip != 'true'
 
     ######################## STEPS ############################################
     steps:
@@ -112,7 +142,8 @@ jobs:
   ########################## MOBILE (FLUTTER) #################################
   check_mobile:
     runs-on: ubuntu-latest
-    needs: check_commit_and_branch
+    needs: [detect_no_ci, check_commit_and_branch]
+    if: needs.detect_no_ci.outputs.skip != 'true'
 
     ######################## STEPS ############################################
     steps:
@@ -165,7 +196,8 @@ jobs:
   ########################## AI (PYTHON) ######################################
   check_ai:
     runs-on: ubuntu-latest
-    needs: check_commit_and_branch
+    needs: [detect_no_ci, check_commit_and_branch]
+    if: needs.detect_no_ci.outputs.skip != 'true'
 
     ######################## STEPS ############################################
     steps:
