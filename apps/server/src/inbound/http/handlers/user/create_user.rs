@@ -7,7 +7,6 @@ use crate::domain::user::models::user::{
     CreateUserError, CreateUserInput, CreateUserOutput, EmailAddress, EmailAddressInvalidError,
     Password, PasswordInvalidError, Role, RoleInvalidError, Username, UsernameInvalidError,
 };
-use crate::domain::user::ports::UserService;
 use crate::inbound::http::AppState;
 use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 use thiserror::Error;
@@ -18,8 +17,8 @@ impl From<CreateUserError> for ApiError {
             CreateUserError::DuplicateEmail { email } => {
                 Self::UnprocessableEntity(format!("email {} already exists", email))
             }
-            CreateUserError::Unknown(_cause) => {
-                // tracing::error!("{:?}\n{}", cause, cause.backtrace());
+            CreateUserError::Unknown(cause) => {
+                tracing::error!("{:?}\n{}", cause, cause.backtrace());
                 Self::InternalServerError("Internal server error".to_string())
             }
         }
@@ -96,8 +95,8 @@ impl From<&CreateUserOutput> for CreateUserResponse {
 ///
 /// - 201 Created: the [User] was successfully created.
 /// - 422 Unprocessable entity: An [User] with the same name already exists.
-pub async fn create_user<US: UserService>(
-    State(state): State<AppState<US>>,
+pub async fn create_user(
+    State(state): State<AppState>,
     Json(body): Json<CreateUserHttpRequestBody>,
 ) -> Result<ApiSuccess<CreateUserResponse>, ApiError> {
     let domain_req = body.try_into_domain()?;

@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 #http
 axum = { version = "0.8", features = ["macros", "http2", "multipart", "ws"] }
+tower = { version = "0.5", features = ["full"]}
 
 #db
 sqlx = { version = "0.8", features = [ "postgres", "runtime-tokio", "macros" ] }
@@ -19,17 +20,24 @@ dotenv = "0.15"
 # serialization
 serde = { version = "1.0", features = ["derive"] }
 
+#minio
+minio = "0.3"
+openssl = { version = "0.10", features = ["vendored"] }
+
 # tools
 uuid = { version = "1.21", features = ["v4", "fast-rng"] }
-env_logger = "0.9"
 async-trait = "0.1"
 anyhow = "1.0"
 thiserror = "2.0"
 derive_more = { version = "2.1", features = ["full"] }
-minio = "0.3"
 regex = "1.12"
+chrono = { version = "0.4", features = ["serde"] }
+jsonwebtoken = "10.3.0"
 
-openssl = { version = "0.10", features = ["vendored"] }
+# log
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"]}
+tower-http = { version = "0.6", features = ["trace"] }
 
 [dev-dependencies]
 mockall = "0.13"
