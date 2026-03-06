@@ -52,3 +52,10 @@ tasks:
       - 'install'
     options:
       allowFailure: true
+
+  format:
+    command: '$CONDA_EXE'
+    args: ['run', '--prefix', './ai-env', 'black', '.']
+    deps:
+      - 'install'
+  

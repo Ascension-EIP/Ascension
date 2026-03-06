@@ -16,6 +16,7 @@ pub struct User {
     pub role: Role,
 }
 
+#[allow(dead_code)]
 impl User {
     pub fn new(
         id: uuid::Uuid,
@@ -185,12 +186,12 @@ impl From<UserRepositoryError> for CreateUserError {
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, From)]
 pub struct ListUsersInput {
-    pub page: usize,
-    pub per_page: usize,
+    pub page: Option<usize>,
+    pub per_page: Option<usize>,
 }
 
 impl ListUsersInput {
-    pub fn new(page: usize, per_page: usize) -> Self {
+    pub fn new(page: Option<usize>, per_page: Option<usize>) -> Self {
         Self { page, per_page }
     }
 }
@@ -220,9 +221,6 @@ pub struct ListUsersOutput {
 impl ListUsersOutput {
     pub fn new(users: Vec<ListUserOutput>) -> Self {
         Self { users }
-    }
-    pub fn into_users(self) -> Vec<ListUserOutput> {
-        self.users
     }
 }
 
@@ -340,7 +338,6 @@ impl UpdateUserOutput {
     }
 }
 
-
 #[derive(Debug, Error)]
 pub enum UpdateUserError {
     #[error("user with email address {email} already exists")]
@@ -371,14 +368,6 @@ pub struct DeleteUserInput {
 impl DeleteUserInput {
     pub fn new(id: Uuid) -> Self {
         Self { id }
-    }
-}
-
-pub struct DeleteUserOutput;
-
-impl DeleteUserOutput {
-    pub fn new() -> Self {
-        Self
     }
 }
 

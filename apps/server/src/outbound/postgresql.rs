@@ -1,10 +1,13 @@
 use anyhow::{Context, anyhow};
 use sqlx::postgres::PgPoolOptions;
-use sqlx::{Executor, Transaction};
+use sqlx::{Executor, Transaction, Row};
 use uuid::Uuid;
 
-use crate::domain::user::models::user::{CreateUserOutput, EmailAddress, GetUserOutput, ListUsersOutput, Password, Role, UpdateUserOutput, User, Username};
-use crate::domain::user::ports::{CreateUserData, DeleteUserData, GetUserData, ListUsersData, UpdateUserData, UserRepository, UserRepositoryError};
+use crate::domain::user::models::user::{CreateUserOutput, EmailAddress, GetUserOutput, ListUserOutput, ListUsersOutput, Password, Role, UpdateUserOutput, Username};
+use crate::domain::user::ports::{
+    CreateUserData, DeleteUserData, GetUserData, ListUsersData, UpdateUserData, UserRepository,
+    UserRepositoryError,
+};
 
 #[derive(Debug, Clone)]
 pub struct Postgres {
@@ -43,29 +46,100 @@ impl Postgres {
         Ok(id)
     }
 
+    async fn list_users(&self, req: &ListUsersData) -> Result<ListUsersOutput,  sqlx::Error> {
+        let rows = if let Some(per_page) = req.per_page {
+            if per_page == 0 {
+                sqlx::query("SELECT id, username, email, role FROM users")
+                    .fetch_all(&self.pool)
+                    .await?
+            } else {
+                let page = req.page.unwrap_or(1);
+                let offset = per_page.saturating_mul(page.saturating_sub(1)) as i64;
+                let per_page_i64 = per_page as i64;
+                sqlx::query("SELECT id, username, email, role FROM users LIMIT $1 OFFSET $2")
+                    .bind(per_page_i64)
+                    .bind(offset)
+                    .fetch_all(&self.pool)
+                    .await?
+            }
+        } else {
+            sqlx::query("SELECT id, username, email, role FROM users")
+                .fetch_all(&self.pool)
+                .await?
+        };
+
+        let users = rows
+            .into_iter()
+            .map(|row| {
+                let id: String = row.try_get("id")?;
+                let username: String = row.try_get("username")?;
+                let email: String = row.try_get("email")?;
+                let role: String = row.try_get("role")?;
+
+                let id = Uuid::parse_str(&id).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+                let username = Username::new(&username).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+                let email = EmailAddress::new(&email).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+                let role = Role::new(&role).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+
+                Ok(ListUserOutput::new(id, username, email, role))
+            })
+            .collect::<Result<Vec<ListUserOutput>, sqlx::Error>>()?;
+
+        Ok(ListUsersOutput::new(users))
+    }
+
     async fn get_user(&self, id: Uuid) -> Result<GetUserOutput, sqlx::Error> {
-        let row = sqlx::query!(
+        let query = sqlx::query!(
             "SELECT id, username, email, role FROM users WHERE id = $1",
             id.to_string()
         )
-            .fetch_one(&self.pool)
-            .await?;
+        .fetch_one(&self.pool)
+        .await?;
 
-        Ok(GetUserOutput::new(
-            Uuid::parse_str(&row.id).unwrap(),
-            Username::new(&row.username).unwrap(),
-            EmailAddress::new(&row.email).unwrap(),
-            Role::new(&row.role).unwrap()
-        ))
+        let parsed_id = Uuid::parse_str(&query.id).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+        let username =
+            Username::new(&query.username).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+        let email = EmailAddress::new(&query.email).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+        let role = Role::new(&query.role).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+        Ok(GetUserOutput::new(parsed_id, username, email, role))
     }
 
-    async fn update_user(&self, _req: &UpdateUserData) -> Result<User, UserRepositoryError> {
-        todo!()
+    async fn update_user(&self, req: &UpdateUserData) -> Result<UpdateUserOutput,  sqlx::Error> {
+        let result: sqlx::postgres::PgQueryResult = sqlx::query!(
+            "UPDATE users SET username = $1, email = $2, password_hash = $3, role = $4 WHERE id = $5",
+            req.username.to_string(),
+            req.email.to_string(),
+            req.password_hash.to_string(),
+            req.role.to_string(),
+            req.id.to_string(),
+        )
+        .execute(&self.pool)
+        .await?;
+        if result.rows_affected() == 0 {
+            return Err(sqlx::Error::RowNotFound);
+        }
+        Ok(UpdateUserOutput::new(req.id))
+    }
+
+    async fn delete_user(&self, req: &DeleteUserData) -> Result<(),  sqlx::Error> {
+        let result: sqlx::postgres::PgQueryResult = sqlx::query!(
+            "DELETE FROM users WHERE id = $1",
+            req.id.to_string(),
+        )
+        .execute(&self.pool)
+        .await?;
+        if result.rows_affected() == 0 {
+            return Err(sqlx::Error::RowNotFound);
+        }
+        Ok(())
     }
 }
 
 impl UserRepository for Postgres {
-    async fn create_user(&self, req: &CreateUserData) -> Result<CreateUserOutput, UserRepositoryError> {
+    async fn create_user(
+        &self,
+        req: &CreateUserData,
+    ) -> Result<CreateUserOutput, UserRepositoryError> {
         let mut tx = self
             .pool
             .begin()
@@ -101,43 +175,76 @@ impl UserRepository for Postgres {
     }
 
     async fn get_user(&self, req: &GetUserData) -> Result<GetUserOutput, UserRepositoryError> {
-        let user = self.get_user(req.id)
-            .await
-            .map_err(|e| {
-                if matches!(e, sqlx::Error::RowNotFound) {
-                    UserRepositoryError::NotFoundId { id: req.id }
-                } else {
-                    anyhow!(e)
-                        .context(format!("failed to get user with id {}", req.id))
-                        .into()
-                }
-            })?;
+        let user = self.get_user(req.id).await.map_err(|e| {
+            if matches!(e, sqlx::Error::RowNotFound) {
+                UserRepositoryError::NotFoundId { id: req.id }
+            } else {
+                anyhow!(e)
+                    .context(format!("failed to get user with id {}", req.id))
+                    .into()
+            }
+        })?;
 
         Ok(GetUserOutput::new(
             user.id,
             user.username,
             user.email,
-            user.role))
+            user.role,
+        ))
     }
 
-    async fn list_users(&self, _req: &ListUsersData) -> Result<ListUsersOutput, UserRepositoryError> {
-        todo!()
+    async fn list_users(
+        &self,
+        req: &ListUsersData,
+    ) -> Result<ListUsersOutput, UserRepositoryError> {
+        let users = self.list_users(req).await.map_err(|e| {
+            UserRepositoryError::Unknown(anyhow!(e).context("failed to list all users"))
+        })?;
+        Ok(users)
     }
 
-    async fn update_user(&self, _req: &UpdateUserData) -> Result<UpdateUserOutput, UserRepositoryError> {
-        todo!()
+    async fn update_user(
+        &self,
+        req: &UpdateUserData,
+    ) -> Result<UpdateUserOutput, UserRepositoryError> {
+        let user = self.update_user(req).await.map_err(|e| {
+            if matches!(e, sqlx::Error::RowNotFound) {
+                UserRepositoryError::NotFoundId { id: req.id }
+            } else if is_unique_constraint_violation(&e) {
+                UserRepositoryError::DuplicateEmail {
+                    email: req.email.clone(),
+                }
+            } else {
+                anyhow!(e)
+                    .context(format!("failed to update user with id {}", req.id))
+                    .into()
+            }
+        })?;
+
+        Ok(UpdateUserOutput::new(
+            user.id,
+        ))
     }
 
     async fn delete_user(&self, _req: &DeleteUserData) -> Result<(), UserRepositoryError> {
-        todo!()
+        self.delete_user(_req).await.map_err(|e| {
+            if matches!(e, sqlx::Error::RowNotFound) {
+                UserRepositoryError::NotFoundId { id: _req.id }
+            } else {
+                anyhow!(e)
+                    .context(format!("failed to delete user with id {}", _req.id))
+                    .into()
+            }
+        })?;
+        Ok(())
     }
 }
 
 fn is_unique_constraint_violation(err: &sqlx::Error) -> bool {
-    if let sqlx::Error::Database(db_err) = err {
-        if db_err.is_unique_violation() {
-            return true;
-        }
+    if let sqlx::Error::Database(db_err) = err
+        && db_err.is_unique_violation()
+    {
+        return true;
     }
 
     false

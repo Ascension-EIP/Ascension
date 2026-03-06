@@ -30,7 +30,10 @@ Because `create_user` is the most complete example, every section uses it as the
    - [The create handler (full example)](#the-create-handler-full-example)
 8. [Step 7 – Register routes](#step-7--register-routes)
 9. [Step 8 – Wire everything in `main.rs`](#step-8--wire-everything-in-mainrs)
-10. [Checklist summary](#checklist-summary)
+10. [Step 9 – Unit tests](#step-9--unit-tests)
+    - [Model tests](#model-tests)
+    - [Service tests](#service-tests)
+11. [Checklist summary](#checklist-summary)
 
 ---
 
@@ -620,6 +623,171 @@ Update `HttpServer::new` signature accordingly to accept the new service.
 
 ---
 
+## Step 9 – Unit tests
+
+Unit tests for the server live in `src/tests/` and are compiled only in test mode (`#[cfg(test)]`).
+They do **not** require a running database — a lightweight mock repository is used instead.
+
+Create two files:
+
+```
+src/tests/domain/<resource>/model_tests.rs
+src/tests/domain/<resource>/service_tests.rs
+```
+
+And declare them in the module hierarchy:
+
+```rust
+// src/tests/domain/<resource>/mod.rs
+pub mod model_tests;
+pub mod service_tests;
+```
+
+```rust
+// src/tests/domain/mod.rs  (add the new resource)
+pub mod user;
+pub mod <resource>;   // ← add this
+```
+
+### Model tests
+
+Test every value type constructor with valid and invalid inputs.
+Focus on boundary conditions (minimum/maximum length, forbidden characters, etc.).
+
+```rust
+// src/tests/domain/post/model_tests.rs
+
+#[cfg(test)]
+mod tests {
+    use crate::domain::post::models::post::PostTitle;
+
+    #[test]
+    fn post_title_valid() {
+        assert!(PostTitle::new("Hello World").is_ok());
+    }
+
+    #[test]
+    fn post_title_empty_is_invalid() {
+        assert!(PostTitle::new("").is_err());
+    }
+
+    #[test]
+    fn post_title_too_long_is_invalid() {
+        assert!(PostTitle::new(&"a".repeat(201)).is_err());
+    }
+}
+```
+
+### Service tests
+
+Test every operation of the service (`create`, `list`, `get`, `update`, `delete`).
+For each operation, test at minimum:
+
+- **Success path** — the service returns the expected output.
+- **Known error** — e.g. `NotFound`, `DuplicateEmail` are correctly mapped.
+- **Unknown error** — a generic repository failure is propagated as `Unknown`.
+
+Because the output types (e.g. `CreatePostOutput`) do not implement `Clone`,
+stored results must be wrapped in `Arc<Mutex<Option<...>>>`:
+
+```rust
+// src/tests/domain/post/service_tests.rs
+
+#[cfg(test)]
+mod tests {
+    use std::future::Future;
+    use std::sync::{Arc, Mutex};
+    use uuid::Uuid;
+
+    use crate::domain::post::models::post::{CreatePostInput, CreatePostOutput, PostTitle, PostContent};
+    use crate::domain::post::ports::{CreatePostData, PostRepository, PostRepositoryError};
+    use crate::domain::post::service::Service;
+    use crate::domain::post::ports::PostService;
+
+    type ArcResult<T> = Arc<Mutex<Option<Result<T, PostRepositoryError>>>>;
+
+    fn arc<T>(v: Result<T, PostRepositoryError>) -> ArcResult<T> {
+        Arc::new(Mutex::new(Some(v)))
+    }
+
+    #[derive(Clone)]
+    struct MockPostRepository {
+        create_result: Option<ArcResult<CreatePostOutput>>,
+    }
+
+    impl MockPostRepository {
+        fn new() -> Self { Self { create_result: None } }
+
+        fn with_create(mut self, r: Result<CreatePostOutput, PostRepositoryError>) -> Self {
+            self.create_result = Some(arc(r));
+            self
+        }
+    }
+
+    impl PostRepository for MockPostRepository {
+        fn create_post(
+            &self,
+            _req: &CreatePostData,
+        ) -> impl Future<Output = Result<CreatePostOutput, PostRepositoryError>> + Send {
+            let result = self
+                .create_result.as_ref().unwrap()
+                .lock().unwrap().take().unwrap();
+            async move { result }
+        }
+    }
+
+    #[tokio::test]
+    async fn create_post_returns_id_on_success() {
+        let id = Uuid::new_v4();
+        let repo = MockPostRepository::new().with_create(Ok(CreatePostOutput::new(id)));
+        let service = Service::new(repo);
+
+        let input = CreatePostInput::new(
+            PostTitle::new("Hello").unwrap(),
+            PostContent::new("World").unwrap(),
+            Uuid::new_v4(),
+        );
+        let result = service.create_post(&input).await;
+
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().id, id);
+    }
+
+    #[tokio::test]
+    async fn create_post_propagates_unknown_error() {
+        let repo = MockPostRepository::new()
+            .with_create(Err(PostRepositoryError::Unknown(anyhow::anyhow!("db down"))));
+        let service = Service::new(repo);
+
+        let input = CreatePostInput::new(
+            PostTitle::new("Hello").unwrap(),
+            PostContent::new("World").unwrap(),
+            Uuid::new_v4(),
+        );
+        let result = service.create_post(&input).await;
+
+        assert!(result.is_err());
+    }
+}
+```
+
+### Running the tests
+
+The `SQLX_OFFLINE=true` flag is required because `sqlx::query!` macros verify queries against
+the database at compile time; the flag uses the cached metadata in `.sqlx/` instead.
+
+```sh
+SQLX_OFFLINE=true cargo test
+```
+
+To run only the tests for a specific resource:
+
+```sh
+SQLX_OFFLINE=true cargo test domain::post
+```
+
+---
+
 ## Checklist summary
 
 Use this checklist every time you add a new CRUD resource:
@@ -634,6 +802,13 @@ Use this checklist every time you add a new CRUD resource:
 ### Outbound layer
 - [ ] `src/outbound/postgresql.rs` — `impl <Resource>Repository for Postgres`
 - [ ] SQL migration in `migrations/`
+- [ ] Add query metadata to `.sqlx/` (run `cargo sqlx prepare` with a live database)
+
+### Tests
+- [ ] `src/tests/domain/<resource>/model_tests.rs` — value type validation tests
+- [ ] `src/tests/domain/<resource>/service_tests.rs` — service CRUD tests with mock repository
+- [ ] `src/tests/domain/<resource>/mod.rs` — declare the two test modules
+- [ ] `src/tests/domain/mod.rs` — add `pub mod <resource>;`
 
 ### Inbound layer
 - [ ] `src/inbound/http/handlers/<resource>/create_<resource>.rs`

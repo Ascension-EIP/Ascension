@@ -6,8 +6,7 @@ use uuid::Uuid;
 use crate::domain::user::models::user::{
     CreateUserError, CreateUserInput, CreateUserOutput, DeleteUserError, DeleteUserInput,
     EmailAddress, GetUserError, GetUserInput, GetUserOutput, ListUsersError, ListUsersInput,
-    ListUsersOutput, Password, Role, UpdateUserError, UpdateUserInput, UpdateUserOutput,
-    Username,
+    ListUsersOutput, Password, Role, UpdateUserError, UpdateUserInput, UpdateUserOutput, Username,
 };
 
 /// `UserService` is the public API for the user domain.
@@ -20,7 +19,7 @@ pub trait UserService: Clone + Send + Sync + 'static {
     /// # Errors
     ///
     /// - [CreateUserError::DuplicateEmail] if an [User] with the same [EmailAddress] already
-    /// exists.
+    ///   exists.
     fn create_user(
         &self,
         req: &CreateUserInput,
@@ -57,8 +56,8 @@ pub struct CreateUserData {
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ListUsersData {
-    pub page: usize,
-    pub per_page: usize,
+    pub page: Option<usize>,
+    pub per_page: Option<usize>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -99,7 +98,7 @@ pub trait UserRepository: Clone + Send + Sync + 'static {
     /// # Errors
     ///
     /// - MUST return [UserRepositoryError::DuplicateEmail] if an [User] with the same
-    /// [EmailAddress] already exists.
+    ///   [EmailAddress] already exists.
     fn create_user(
         &self,
         req: &CreateUserData,
@@ -110,7 +109,9 @@ pub trait UserRepository: Clone + Send + Sync + 'static {
     /// # Errors
     ///
     /// - MUST return [UserRepositoryError::Unknown] if an error occurs.
-    fn list_users(&self, req: &ListUsersData
+    fn list_users(
+        &self,
+        req: &ListUsersData,
     ) -> impl Future<Output = Result<ListUsersOutput, UserRepositoryError>> + Send;
 
     /// Get a [User] by their unique identifier.
@@ -118,7 +119,10 @@ pub trait UserRepository: Clone + Send + Sync + 'static {
     /// # Errors
     ///
     /// - MUST return [UserRepositoryError::NotFoundId] if no [User] with the given id exists.
-    fn get_user(&self, req: &GetUserData) -> impl Future<Output = Result<GetUserOutput, UserRepositoryError>> + Send;
+    fn get_user(
+        &self,
+        req: &GetUserData,
+    ) -> impl Future<Output = Result<GetUserOutput, UserRepositoryError>> + Send;
 
     /// Update an existing [User].
     ///
@@ -126,7 +130,7 @@ pub trait UserRepository: Clone + Send + Sync + 'static {
     ///
     /// - MUST return [UserRepositoryError::NotFoundId] if no [User] with the given id exists.
     /// - MUST return [UserRepositoryError::DuplicateEmail] if an [User] with the same
-    /// [EmailAddress] already exists.
+    ///   [EmailAddress] already exists.
     fn update_user(
         &self,
         req: &UpdateUserData,

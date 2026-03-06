@@ -12,6 +12,7 @@ tasks:
       - "src/**/*"
       - "Cargo.toml"
       - "Cargo.lock"
+      - ".sqlx/**/*"
 
   build-release:
     command: "cargo"
@@ -20,6 +21,7 @@ tasks:
       - "src/**/*"
       - "Cargo.toml"
       - "Cargo.lock"
+      - ".sqlx/**/*"
     deps:
       - "lint"
 
@@ -37,6 +39,7 @@ tasks:
     inputs:
       - "src/**/*"
       - "Cargo.toml"
+      - ".sqlx/**/*"
 
   lint:
     command: "cargo"
@@ -44,7 +47,14 @@ tasks:
     inputs:
       - "src/**/*"
       - "Cargo.toml"
+      - ".sqlx/**/*"
+    env:
+      SQLX_OFFLINE: "true"
 
   format:
     command: "cargo"
-    args: ["fmt", "--all", "--", "--check"]
+    args: ["fmt", "--all"]
+
+  format-check:
+    command: "cargo"
+    args: ["fmt", "--all", "--check"]

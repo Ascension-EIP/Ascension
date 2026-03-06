@@ -1,11 +1,11 @@
-use axum::extract::{Path, State};
-use axum::http::StatusCode;
-use serde::Serialize;
-use thiserror::Error;
 use crate::domain::user::models::user::{DeleteUserError, DeleteUserInput};
 use crate::domain::user::ports::UserService;
 use crate::inbound::http::AppState;
 use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
+use axum::extract::{Path, State};
+use axum::http::StatusCode;
+use serde::Serialize;
+use thiserror::Error;
 
 impl From<DeleteUserError> for ApiError {
     fn from(e: DeleteUserError) -> Self {
@@ -29,9 +29,7 @@ enum ParseDeleteUserHttpRequestError {
 impl From<ParseDeleteUserHttpRequestError> for ApiError {
     fn from(e: ParseDeleteUserHttpRequestError) -> Self {
         let message = match e {
-            ParseDeleteUserHttpRequestError::Id(_cause) => {
-                "id is invalid".to_string()
-            }
+            ParseDeleteUserHttpRequestError::Id(_cause) => "id is invalid".to_string(),
         };
 
         Self::UnprocessableEntity(message)

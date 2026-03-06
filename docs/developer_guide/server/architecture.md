@@ -191,6 +191,7 @@ Client
 ```
 apps/server/
 ├── Cargo.toml                          # Rust project & dependencies
+├── .sqlx/                              # Cached sqlx query metadata (offline mode)
 ├── migrations/                         # SQL migration files (run once to create tables)
 └── src/
     ├── main.rs                         # Entry point: wires everything together
@@ -215,12 +216,24 @@ apps/server/
     │           ├── status.rs           # GET / health check
     │           ├── user.rs             # Re-exports user handlers
     │           └── user/
-    │               └── create_user.rs  # POST /api/users
-    │               └── (others in progress...)
+    │               ├── create_user.rs  # POST /api/users
+    │               ├── list_users.rs   # GET  /api/users
+    │               ├── get_user.rs     # GET  /api/users/:id
+    │               ├── update_user.rs  # PUT  /api/users/:id
+    │               └── delete_user.rs  # DELETE /api/users/:id
     │
     ├── outbound.rs                     # Re-exports outbound module
-    └── outbound/
-        └── postgresql.rs              # Postgres struct — implements UserRepository
+    ├── outbound/
+    │   └── postgresql.rs               # Postgres struct — implements UserRepository
+    │
+    └── tests/                          # Unit tests (compiled only in test mode)
+        ├── mod.rs
+        └── domain/
+            ├── mod.rs
+            └── user/
+                ├── mod.rs
+                ├── model_tests.rs      # Tests for Username, EmailAddress, Password, Role
+                └── service_tests.rs    # Tests for the user CRUD service layer
 ```
 
 ---

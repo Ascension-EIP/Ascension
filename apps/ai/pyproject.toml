@@ -8,6 +8,7 @@ version = "1.0.0"
 description = "AI component for Ascension EIP"
 requires-python = ">=3.11"
 dependencies = [
+    "black>=23.3.0,<24",
     "boto3>=1.34,<2",
     "matplotlib==3.10.8",
     "mediapipe==0.10.32",
@@ -33,3 +34,8 @@ py-modules = ["consumer", "main", "pose_analysis"]
 
 [tool.ruff]
 exclude = ["venv"]
+
+[tool.black]
+line-length = 80
+target-version = ["py311"]
+include = '\.pyi?$'
