@@ -1,11 +1,10 @@
 use anyhow::{Context, anyhow};
-use sqlx::postgres::PgPoolOptions;
-use sqlx::{Executor, Transaction, Row};
+use sqlx::{Executor, Row, Transaction};
 use uuid::Uuid;
 
 use crate::domain::user::models::user::{
-    CreateUserOutput, EmailAddress, GetUserOutput, ListUsersOutput, Password, Role,
-    UpdateUserOutput, User, Username,
+    CreateUserOutput, EmailAddress, GetUserOutput, ListUserOutput, ListUsersOutput, Password, Role,
+    UpdateUserOutput, Username,
 };
 use crate::domain::user::ports::{
     CreateUserData, DeleteUserData, GetUserData, ListUsersData, UpdateUserData, UserRepository,
@@ -43,7 +42,7 @@ impl Postgres {
         Ok(id)
     }
 
-    async fn list_users(&self, req: &ListUsersData) -> Result<ListUsersOutput,  sqlx::Error> {
+    async fn list_users(&self, req: &ListUsersData) -> Result<ListUsersOutput, sqlx::Error> {
         let rows = if let Some(per_page) = req.per_page {
             if per_page == 0 {
                 sqlx::query("SELECT id, username, email, role FROM users ORDER BY id")
@@ -52,12 +51,14 @@ impl Postgres {
             } else {
                 let page = req.page.unwrap_or(1);
                 let offset = per_page.saturating_mul(page.saturating_sub(1)) as i64;
-                let per_page_i64 = per_page ;
-                sqlx::query("SELECT id, username, email, role FROM users LIMIT $1 OFFSET $2 ORDER BY id")
-                    .bind(per_page_i64)
-                    .bind(offset)
-                    .fetch_all(&self.pool)
-                    .await?
+                let per_page = per_page as i64;
+                sqlx::query(
+                    "SELECT id, username, email, role FROM users LIMIT $1 OFFSET $2 ORDER BY id",
+                )
+                .bind(per_page)
+                .bind(offset)
+                .fetch_all(&self.pool)
+                .await?
             }
         } else {
             sqlx::query("SELECT id, username, email, role FROM users ORDER BY id")
@@ -74,8 +75,10 @@ impl Postgres {
                 let role: String = row.try_get("role")?;
 
                 let id = Uuid::parse_str(&id).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-                let username = Username::new(&username).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-                let email = EmailAddress::new(&email).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+                let username =
+                    Username::new(&username).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+                let email =
+                    EmailAddress::new(&email).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
                 let role = Role::new(&role).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
 
                 Ok(ListUserOutput::new(id, username, email, role))
@@ -96,12 +99,13 @@ impl Postgres {
         let parsed_id = Uuid::parse_str(&query.id).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
         let username =
             Username::new(&query.username).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-        let email = EmailAddress::new(&query.email).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+        let email =
+            EmailAddress::new(&query.email).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
         let role = Role::new(&query.role).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
         Ok(GetUserOutput::new(parsed_id, username, email, role))
     }
 
-    async fn update_user(&self, req: &UpdateUserData) -> Result<UpdateUserOutput,  sqlx::Error> {
+    async fn update_user(&self, req: &UpdateUserData) -> Result<UpdateUserOutput, sqlx::Error> {
         let result: sqlx::postgres::PgQueryResult = sqlx::query!(
             "UPDATE users SET username = $1, email = $2, password_hash = $3, role = $4 WHERE id = $5",
             req.username.to_string(),
@@ -118,13 +122,11 @@ impl Postgres {
         Ok(UpdateUserOutput::new(req.id))
     }
 
-    async fn delete_user(&self, req: &DeleteUserData) -> Result<(),  sqlx::Error> {
-        let result: sqlx::postgres::PgQueryResult = sqlx::query!(
-            "DELETE FROM users WHERE id = $1",
-            req.id.to_string(),
-        )
-        .execute(&self.pool)
-        .await?;
+    async fn delete_user(&self, req: &DeleteUserData) -> Result<(), sqlx::Error> {
+        let result: sqlx::postgres::PgQueryResult =
+            sqlx::query!("DELETE FROM users WHERE id = $1", req.id.to_string(),)
+                .execute(&self.pool)
+                .await?;
         if result.rows_affected() == 0 {
             return Err(sqlx::Error::RowNotFound);
         }
@@ -218,9 +220,7 @@ impl UserRepository for Postgres {
             }
         })?;
 
-        Ok(UpdateUserOutput::new(
-            user.id,
-        ))
+        Ok(UpdateUserOutput::new(user.id))
     }
 
     async fn delete_user(&self, req: &DeleteUserData) -> Result<(), UserRepositoryError> {
