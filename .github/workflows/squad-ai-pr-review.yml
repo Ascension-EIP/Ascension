@@ -1,0 +1,282 @@
+# Squad AI PR Review — Real AI review at PR creation, no manual trigger needed
+#
+# Triggers on every PR open / push / reopen.
+# For each domain agent concerned by the changed files:
+#   1. Reads the agent's charter from .squad/agents/{name}/charter.md
+#   2. Collects the real unified diff for the files it owns
+#   3. Calls GitHub Models API (GPT-4o — included in Copilot Pro via GITHUB_TOKEN)
+#   4. Posts / updates a dedicated comment per agent with the AI-generated review
+#
+# No secrets to add — uses GITHUB_TOKEN only (Copilot Pro unlocks premium models).
+
+name: ascension-squad-ai-pr-review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: squad-ai-pr-review-${{ github.event.pull_request.number }}-${{ github.sha }}
+  cancel-in-progress: true
+
+jobs:
+
+  ai-review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Squad AI review per agent
+        uses: actions/github-script@v7
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          script: |
+            const fs   = require('fs');
+            const path = require('path');
+
+            // ── Routing rules (must stay in sync with squad-pull-request-review.yml) ──
+            const ROUTING_RULES = [
+              { pattern: /^apps\/ai\//,                    agent: 'quentin',   domain: 'AI / Python' },
+              { pattern: /^apps\/server\//,                agent: 'renaud',    domain: 'Rust / API' },
+              { pattern: /^apps\/mobile\//,                agent: 'romaric',   domain: 'Flutter / Mobile' },
+              { pattern: /^\.github\//,                    agent: 'arthur',    domain: 'DevOps / CI' },
+              { pattern: /^docker-compose\.yml$/,          agent: 'arthur',    domain: 'DevOps / CI' },
+              { pattern: /Dockerfile/,                     agent: 'arthur',    domain: 'DevOps / CI' },
+              { pattern: /^docs\//,                        agent: 'darius',    domain: 'Documentation' },
+              { pattern: /(^|\/)test(s)?\//,               agent: 'ridjan',    domain: 'Testing' },
+              { pattern: /migrations?\//,                  agent: 'alexandra', domain: 'Database / Infra' },
+              { pattern: /rabbitmq|minio|\.env\.example/i, agent: 'alexandra', domain: 'Database / Infra' },
+            ];
+
+            const REVIEW_EMOJI = {
+              quentin: '🤖', renaud: '🔧', romaric: '📱', arthur: '⚙️',
+              darius: '📝', ridjan: '🧪', alexandra: '🗄️', eric: '🏗️',
+            };
+            const AGENT_DISPLAY = {
+              quentin: 'Quentin', renaud: 'Renaud', romaric: 'Romaric', arthur: 'Arthur',
+              darius: 'Darius',   ridjan: 'Ridjan', alexandra: 'Alexandra', eric: 'Eric',
+            };
+
+            const MAX_PATCH_PER_FILE  = 3000;   // chars — avoid token overflow per file
+            const MAX_DIFF_PER_AGENT  = 12000;  // chars — total diff fed to the model
+            const GITHUB_MODELS_URL   = 'https://models.inference.ai.azure.com/chat/completions';
+            const MODEL               = 'gpt-4o';  // premium model via Copilot Pro
+            const COMMENT_PREFIX      = '<!-- squad-ai-review-agent:';
+            const WORKSPACE           = process.env.GITHUB_WORKSPACE || '.';
+
+            // ── 1. Fetch changed files with their diffs ───────────────────────
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              {
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+                per_page: 100,
+              }
+            );
+            core.info(`PR #${context.payload.pull_request.number}: ${files.length} files changed`);
+
+            // ── 2. Route files to agents ──────────────────────────────────────
+            const agentFiles = {};
+            for (const file of files) {
+              for (const rule of ROUTING_RULES) {
+                if (rule.pattern.test(file.filename)) {
+                  if (!agentFiles[rule.agent]) agentFiles[rule.agent] = [];
+                  agentFiles[rule.agent].push(file);
+                  break;
+                }
+              }
+            }
+
+            let affectedAgents = Object.keys(agentFiles);
+
+            // Flag Eric for cross-domain changes
+            if (affectedAgents.length > 2 && !affectedAgents.includes('eric')) {
+              agentFiles['eric'] = files; // Eric sees all files in cross-domain PRs
+              affectedAgents.push('eric');
+            }
+            if (affectedAgents.length === 0) {
+              agentFiles['eric'] = files;
+              affectedAgents = ['eric'];
+            }
+
+            core.info(`Affected agents: ${affectedAgents.join(', ')}`);
+
+            // ── 3. Fetch existing comments for upsert logic ───────────────────
+            const existingComments = await github.paginate(
+              github.rest.issues.listComments,
+              {
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                per_page: 100,
+              }
+            );
+
+            // ── 4. Helper — call GitHub Models API ────────────────────────────
+            async function callGitHubModels(systemPrompt, userPrompt) {
+              const body = JSON.stringify({
+                model: MODEL,
+                messages: [
+                  { role: 'system', content: systemPrompt },
+                  { role: 'user',   content: userPrompt  },
+                ],
+                max_tokens:  1200,
+                temperature: 0.2,
+              });
+
+              const resp = await fetch(GITHUB_MODELS_URL, {
+                method:  'POST',
+                headers: {
+                  'Authorization': `Bearer ${process.env.GH_TOKEN}`,
+                  'Content-Type':  'application/json',
+                  'X-GitHub-Api-Version': '2022-11-28',
+                },
+                body,
+              });
+
+              if (!resp.ok) {
+                const err = await resp.text();
+                throw new Error(`GitHub Models API ${resp.status}: ${err}`);
+              }
+
+              const data = await resp.json();
+              return data.choices?.[0]?.message?.content ?? '_(no response)_';
+            }
+
+            // ── 5. Per-agent AI review ────────────────────────────────────────
+            const PR = context.payload.pull_request;
+
+            for (const agent of affectedAgents) {
+              core.info(`Processing agent: ${agent}`);
+
+              // 5a. Read charter
+              const charterPath = path.join(WORKSPACE, '.squad', 'agents', agent, 'charter.md');
+              let charter = '';
+              try {
+                charter = fs.readFileSync(charterPath, 'utf8');
+              } catch {
+                core.warning(`Charter not found for ${agent} at ${charterPath} — using generic prompt`);
+                charter = `You are ${AGENT_DISPLAY[agent]}, a domain expert reviewing code changes.`;
+              }
+
+              // 5b. Build diff — only the files owned by this agent
+              const agentOwnedFiles = agentFiles[agent] || [];
+              let diff = '';
+              for (const file of agentOwnedFiles) {
+                if (!file.patch) continue;
+                const truncatedPatch = file.patch.length > MAX_PATCH_PER_FILE
+                  ? file.patch.slice(0, MAX_PATCH_PER_FILE) + '\n... [diff truncated]'
+                  : file.patch;
+                diff += `\n### ${file.status}: ${file.filename}\n\`\`\`diff\n${truncatedPatch}\n\`\`\`\n`;
+                if (diff.length > MAX_DIFF_PER_AGENT) {
+                  diff += '\n... [remaining files truncated — too many changes]';
+                  break;
+                }
+              }
+
+              if (!diff.trim()) {
+                core.info(`No diff available for ${agent} — skipping AI call`);
+                continue;
+              }
+
+              // 5c. Build prompts
+              const systemPrompt = charter + '\n\n'
+                + 'Tu es en train de reviewer une Pull Request sur le projet Ascension.\n'
+                + 'Réponds en français. Sois direct et actionnable.\n'
+                + 'Format de réponse OBLIGATOIRE :\n\n'
+                + '### Synthèse\n'
+                + '2-3 phrases max sur l\'ensemble des changements.\n\n'
+                + '### Points à corriger\n'
+                + 'Liste uniquement les problèmes réels (bugs, violations d\'architecture, sécurité, régressions).\n'
+                + 'Si rien à signaler : "Aucun problème identifié."\n\n'
+                + '### Suggestions d\'amélioration\n'
+                + 'Suggestions optionnelles de qualité (style, performance, lisibilité).\n'
+                + 'Si rien à proposer : "Aucune suggestion."\n\n'
+                + '### Verdict\n'
+                + '\u2705 Approuvé / \u26a0\ufe0f Approuvé avec réserves / \u274c Changements requis';
+
+              const userPrompt = 'PR #' + PR.number + ' \u2014 ' + PR.title + '\n'
+                + 'Branch: `' + PR.head.ref + '` \u2192 `' + PR.base.ref + '`\n'
+                + 'Auteur: ' + PR.user.login + '\n\n'
+                + diff;
+
+              // 5d. Call the model
+              let reviewContent;
+              try {
+                reviewContent = await callGitHubModels(systemPrompt, userPrompt);
+                core.info('Got AI review for ' + agent + ' (' + reviewContent.length + ' chars)');
+              } catch (err) {
+                core.error('AI call failed for ' + agent + ': ' + err.message);
+                reviewContent = '> \u26a0\ufe0f La review automatique a échoué (' + err.message + '). Relance avec **Ralph go** pour une review manuelle.';
+              }
+
+              // 5e. Build comment body
+              const marker  = `${COMMENT_PREFIX}${agent} -->`;
+              const name    = AGENT_DISPLAY[agent];
+              const emoji   = REVIEW_EMOJI[agent] || '📋';
+              const domain  = ROUTING_RULES.find(r => r.agent === agent)?.domain
+                              ?? (agent === 'eric' ? 'Architecture / Lead' : 'Unknown');
+
+              const fileList = agentOwnedFiles
+                .map(f => '- `' + f.filename + '` _(' + f.status + ')_')
+                .join('\n') || '- _(cross-domain review)_';
+
+              const commentBody = marker + '\n'
+                + '# ' + emoji + ' ' + name + ' \u2014 Review IA\n\n'
+                + '**Domaine :** ' + domain + '\n\n'
+                + '<details>\n'
+                + '<summary>\ud83d\udcc1 Fichiers analysés (' + agentOwnedFiles.length + ')</summary>\n\n'
+                + fileList + '\n\n'
+                + '</details>\n\n'
+                + reviewContent + '\n\n'
+                + '> _Review générée automatiquement par Squad AI (' + MODEL + ') \u2014 mise à jour à chaque push._';
+
+              // 5f. Upsert comment
+              const existing = existingComments.find(c => c.body?.includes(marker));
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner:      context.repo.owner,
+                  repo:       context.repo.repo,
+                  comment_id: existing.id,
+                  body:       commentBody,
+                });
+                core.info(`Updated AI review comment for ${agent}`);
+              } else {
+                await github.rest.issues.createComment({
+                  owner:        context.repo.owner,
+                  repo:         context.repo.repo,
+                  issue_number: context.payload.pull_request.number,
+                  body:         commentBody,
+                });
+                core.info(`Created AI review comment for ${agent}`);
+              }
+
+              // Small delay to avoid rate limiting when multiple agents run back-to-back
+              await new Promise(r => setTimeout(r, 500));
+            }
+
+            // ── 6. Remove stale AI review comments (agent no longer affected) ─
+            const stale = existingComments.filter(c => {
+              if (!c.body) return false;
+              const m = c.body.match(/<!-- squad-ai-review-agent:([^ ]+) -->/);
+              return !!m && !affectedAgents.includes(m[1]);
+            });
+            for (const s of stale) {
+              await github.rest.issues.deleteComment({
+                owner:      context.repo.owner,
+                repo:       context.repo.repo,
+                comment_id: s.id,
+              });
+              core.info(`Removed stale AI review comment #${s.id}`);
+            }
+
+            core.info(`Squad AI PR review complete — ${affectedAgents.length} agents processed`);

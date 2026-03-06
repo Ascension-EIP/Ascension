@@ -614,9 +614,9 @@ Routing table:
 | `**/migrations/**`, RabbitMQ/MinIO config        | `alexandra` | Database / Infra    |
 | Multi-domain changes                             | `eric`      | Architecture / Lead |
 
-| Step                                  | Description                                               |
+| Step                                  | Description       Mais Ralph go reste pertinent si tu veux une analyse de code                                        |
 | ------------------------------------- | --------------------------------------------------------- |
-| Analyze PR and assign squad reviewers | Runs a GitHub Script that routes files and applies labels |
+| Analyze PR and assign squad reviewers | Runs a GitHub Script that routes files, applies labels, and posts/updates one routing comment plus one dedicated comment per impacted squad agent |
 
 ### 5.9 Sync squad labels workflow (`sync-squad-labels.yml`)
 
