@@ -44,6 +44,8 @@ tasks:
     inputs:
       - "src/**/*"
       - "Cargo.toml"
+    env:
+      SQLX_OFFLINE: "true"
 
   format:
     command: "cargo"

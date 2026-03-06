@@ -131,7 +131,7 @@ impl Postgres {
         if result.rows_affected() == 0 {
             return Err(sqlx::Error::RowNotFound);
         }
-        Ok({})
+        Ok(())
     }
 }
 
@@ -236,15 +236,15 @@ impl UserRepository for Postgres {
                     .into()
             }
         })?;
-        Ok({})
+        Ok(())
     }
 }
 
 fn is_unique_constraint_violation(err: &sqlx::Error) -> bool {
-    if let sqlx::Error::Database(db_err) = err {
-        if db_err.is_unique_violation() {
-            return true;
-        }
+    if let sqlx::Error::Database(db_err) = err
+        && db_err.is_unique_violation()
+    {
+        return true;
     }
 
     false

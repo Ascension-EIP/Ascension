@@ -19,7 +19,7 @@ pub trait UserService: Clone + Send + Sync + 'static {
     /// # Errors
     ///
     /// - [CreateUserError::DuplicateEmail] if an [User] with the same [EmailAddress] already
-    /// exists.
+    ///   exists.
     fn create_user(
         &self,
         req: &CreateUserInput,
@@ -98,7 +98,7 @@ pub trait UserRepository: Clone + Send + Sync + 'static {
     /// # Errors
     ///
     /// - MUST return [UserRepositoryError::DuplicateEmail] if an [User] with the same
-    /// [EmailAddress] already exists.
+    ///   [EmailAddress] already exists.
     fn create_user(
         &self,
         req: &CreateUserData,
@@ -130,7 +130,7 @@ pub trait UserRepository: Clone + Send + Sync + 'static {
     ///
     /// - MUST return [UserRepositoryError::NotFoundId] if no [User] with the given id exists.
     /// - MUST return [UserRepositoryError::DuplicateEmail] if an [User] with the same
-    /// [EmailAddress] already exists.
+    ///   [EmailAddress] already exists.
     fn update_user(
         &self,
         req: &UpdateUserData,

@@ -16,6 +16,7 @@ pub struct User {
     pub role: Role,
 }
 
+#[allow(dead_code)]
 impl User {
     pub fn new(
         id: uuid::Uuid,
@@ -193,22 +194,6 @@ impl ListUsersInput {
     pub fn new(page: Option<usize>, per_page: Option<usize>) -> Self {
         Self { page, per_page }
     }
-
-    pub fn page(&self) -> Option<usize> {
-        self.page
-    }
-
-    pub fn per_page(&self) -> Option<usize> {
-        self.per_page
-    }
-
-    pub fn page_or(&self, default: usize) -> usize {
-        self.page.unwrap_or(default)
-    }
-
-    pub fn per_page_or(&self, default: usize) -> usize {
-        self.per_page.unwrap_or(default)
-    }
 }
 
 pub struct ListUserOutput {
@@ -236,9 +221,6 @@ pub struct ListUsersOutput {
 impl ListUsersOutput {
     pub fn new(users: Vec<ListUserOutput>) -> Self {
         Self { users }
-    }
-    pub fn into_users(self) -> Vec<ListUserOutput> {
-        self.users
     }
 }
 
@@ -386,14 +368,6 @@ pub struct DeleteUserInput {
 impl DeleteUserInput {
     pub fn new(id: Uuid) -> Self {
         Self { id }
-    }
-}
-
-pub struct DeleteUserOutput;
-
-impl DeleteUserOutput {
-    pub fn new() -> Self {
-        Self
     }
 }
 
