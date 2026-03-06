@@ -68,9 +68,12 @@ jobs:
 
             const MAX_PATCH_PER_FILE  = 3000;   // chars — avoid token overflow per file
             const MAX_DIFF_PER_AGENT  = 12000;  // chars — total diff fed to the model
+            const MAX_SUGGESTIONS_PER_AGENT = 2;
+            const MAX_CANDIDATE_LINES = 80;
             const GITHUB_MODELS_URL   = 'https://models.inference.ai.azure.com/chat/completions';
             const MODEL               = 'gpt-4o';  // premium model via Copilot Pro
             const COMMENT_PREFIX      = '<!-- squad-ai-review-agent:';
+            const SUGGESTION_PREFIX   = '<!-- squad-ai-suggestion-agent:';
             const WORKSPACE           = process.env.GITHUB_WORKSPACE || '.';
 
             // ── 1. Fetch changed files with their diffs ───────────────────────
@@ -153,8 +156,65 @@ jobs:
               return data.choices?.[0]?.message?.content ?? '_(no response)_';
             }
 
+            function parseAddedLinesFromPatch(patchText) {
+              const added = [];
+              if (!patchText) return added;
+
+              let newLine = 0;
+              const lines = patchText.split('\n');
+
+              for (const line of lines) {
+                if (line.startsWith('@@')) {
+                  const match = line.match(/@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
+                  if (match) newLine = parseInt(match[1], 10);
+                  continue;
+                }
+                if (line.startsWith('+++') || line.startsWith('---')) {
+                  continue;
+                }
+                if (newLine === 0) {
+                  continue;
+                }
+
+                if (line.startsWith('+')) {
+                  added.push({ line: newLine, content: line.slice(1) });
+                  newLine += 1;
+                } else if (line.startsWith('-')) {
+                  // Removed line: does not increment new-side cursor.
+                } else {
+                  newLine += 1;
+                }
+              }
+
+              return added;
+            }
+
+            function extractJsonArray(text) {
+              if (!text) return null;
+              const start = text.indexOf('[');
+              const end = text.lastIndexOf(']');
+              if (start === -1 || end === -1 || end <= start) return null;
+              const slice = text.slice(start, end + 1);
+              try {
+                const parsed = JSON.parse(slice);
+                return Array.isArray(parsed) ? parsed : null;
+              } catch {
+                return null;
+              }
+            }
+
             // ── 5. Per-agent AI review ────────────────────────────────────────
             const PR = context.payload.pull_request;
+
+            const existingReviewComments = await github.paginate(
+              github.rest.pulls.listReviewComments,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+                per_page: 100,
+              }
+            );
 
             for (const agent of affectedAgents) {
               core.info(`Processing agent: ${agent}`);
@@ -263,6 +323,106 @@ jobs:
 
               // Small delay to avoid rate limiting when multiple agents run back-to-back
               await new Promise(r => setTimeout(r, 500));
+
+              // 5g. Generate inline "suggested changes" comments (directly applicable)
+              const candidates = [];
+              for (const file of agentOwnedFiles) {
+                const addedLines = parseAddedLinesFromPatch(file.patch);
+                for (const item of addedLines) {
+                  candidates.push({
+                    path: file.filename,
+                    line: item.line,
+                    content: item.content,
+                  });
+                  if (candidates.length >= MAX_CANDIDATE_LINES) break;
+                }
+                if (candidates.length >= MAX_CANDIDATE_LINES) break;
+              }
+
+              const previousSuggestionComments = existingReviewComments.filter(c => {
+                if (!c.body || c.user?.login !== 'github-actions[bot]') return false;
+                return c.body.includes(`${SUGGESTION_PREFIX}${agent} -->`);
+              });
+
+              for (const oldComment of previousSuggestionComments) {
+                await github.rest.pulls.deleteReviewComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: oldComment.id,
+                });
+              }
+
+              if (candidates.length > 0) {
+                const suggestionSystemPrompt = charter + '\n\n'
+                  + 'Tu proposes des corrections ciblées pour une pull request. '
+                  + 'Réponds UNIQUEMENT en JSON valide.';
+
+                const suggestionUserPrompt = 'Tu dois proposer au maximum ' + MAX_SUGGESTIONS_PER_AGENT + ' suggestions.\n'
+                  + 'Retourne UNIQUEMENT un tableau JSON, sans texte autour, format:\n'
+                  + '[{"path":"...","line":123,"summary":"...","suggested_code":"..."}]\n\n'
+                  + 'Règles strictes:\n'
+                  + '- path et line DOIVENT exister dans la liste fournie.\n'
+                  + '- suggested_code doit être une correction précise de la ligne ciblée.\n'
+                  + '- Si aucune suggestion pertinente: retourne []\n\n'
+                  + 'Candidats (path, line, content):\n'
+                  + JSON.stringify(candidates, null, 2);
+
+                let rawSuggestionOutput = '[]';
+                try {
+                  rawSuggestionOutput = await callGitHubModels(suggestionSystemPrompt, suggestionUserPrompt);
+                } catch (err) {
+                  core.warning('Suggestion generation failed for ' + agent + ': ' + err.message);
+                }
+
+                const parsedSuggestions = extractJsonArray(rawSuggestionOutput) || [];
+                const validSuggestions = [];
+
+                for (const proposal of parsedSuggestions) {
+                  if (!proposal || typeof proposal !== 'object') continue;
+                  const proposalPath = String(proposal.path || '');
+                  const proposalLine = Number(proposal.line || 0);
+                  const summary = String(proposal.summary || '').trim();
+                  const suggestedCodeRaw = String(proposal.suggested_code || '').trim();
+
+                  if (!proposalPath || !proposalLine || !suggestedCodeRaw) continue;
+                  const exists = candidates.some(c => c.path === proposalPath && c.line === proposalLine);
+                  if (!exists) continue;
+
+                  validSuggestions.push({
+                    path: proposalPath,
+                    line: proposalLine,
+                    summary: summary || 'Suggestion d\'amélioration',
+                    suggestedCode: suggestedCodeRaw,
+                  });
+
+                  if (validSuggestions.length >= MAX_SUGGESTIONS_PER_AGENT) break;
+                }
+
+                for (const suggestion of validSuggestions) {
+                  const suggestionBody = `${SUGGESTION_PREFIX}${agent} -->\n`
+                    + `### ${emoji} ${name} — Suggested change\n`
+                    + `${suggestion.summary}\n\n`
+                    + '```suggestion\n'
+                    + `${suggestion.suggestedCode}\n`
+                    + '```';
+
+                  try {
+                    await github.rest.pulls.createReviewComment({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      pull_number: context.payload.pull_request.number,
+                      commit_id: PR.head.sha,
+                      path: suggestion.path,
+                      line: suggestion.line,
+                      side: 'RIGHT',
+                      body: suggestionBody,
+                    });
+                  } catch (err) {
+                    core.warning('Failed to create review suggestion for ' + agent + ' on '
+                      + suggestion.path + ':' + suggestion.line + ' — ' + err.message);
+                  }
+                }
+              }
             }
 
             // ── 6. Remove stale AI review comments (agent no longer affected) ─
