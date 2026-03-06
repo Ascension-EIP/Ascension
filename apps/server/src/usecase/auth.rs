@@ -104,7 +104,7 @@ where
 {
     async fn get_user_by_token(&self, token: String) -> Result<User, AuthError> {
         let claims = self.jwt.validate(token.as_str())?;
-        let id = Uuid::from_slice(claims.sub.as_bytes()).map_err(|_| AuthError::InvalidTokenSub)?;
+        let id = Uuid::parse_str(&claims.sub).map_err(|_| AuthError::InvalidTokenSub)?;
         let user = self
             .repo
             .get_user(&crate::domain::user::ports::GetUserData { id })
