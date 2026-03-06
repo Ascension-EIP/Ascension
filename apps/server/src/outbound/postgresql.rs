@@ -53,7 +53,7 @@ impl Postgres {
                 let offset = per_page.saturating_mul(page.saturating_sub(1)) as i64;
                 let per_page = per_page as i64;
                 sqlx::query(
-                    "SELECT id, username, email, role FROM users LIMIT $1 OFFSET $2 ORDER BY id",
+                    "SELECT id, username, email, role FROM users ORDER BY id LIMIT $1 OFFSET $2",
                 )
                 .bind(per_page)
                 .bind(offset)
