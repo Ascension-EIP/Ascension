@@ -30,3 +30,7 @@ minio = "0.3"
 regex = "1.12"
 
 openssl = { version = "0.10", features = ["vendored"] }
+
+[dev-dependencies]
+mockall = "0.13"
+tokio = { version = "1.49", features = ["full", "test-util"] }
