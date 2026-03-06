@@ -8,22 +8,18 @@ use axum::{
 
 use crate::{
     domain::{
-        auth::error::AuthServiceError,
+        auth::error::AuthError,
         user::models::user::{Role, User},
     },
     inbound::http::AppState,
 };
-impl IntoResponse for AuthServiceError {
+impl IntoResponse for AuthError {
     fn into_response(self) -> Response {
         StatusCode::INTERNAL_SERVER_ERROR.into_response()
     }
 }
 
-pub async fn auth(
-    State(state): State<AppState>,
-    mut req: Request,
-    next: Next,
-) -> Response {
+pub async fn auth(State(state): State<AppState>, mut req: Request, next: Next) -> Response {
     let token = match req
         .headers()
         .get("Authorization")

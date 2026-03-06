@@ -4,10 +4,10 @@ use async_trait::async_trait;
 use uuid::Uuid;
 
 use crate::domain::{
-    auth::{error::AuthServiceError, inbound::AuthService},
+    auth::{error::AuthError, inbound::AuthService},
     user::{
         models::user::{EmailAddress, Password, Role, User, Username},
-        ports::UserRepository,
+        ports::{UserRepository, UserRepositoryError},
     },
 };
 
@@ -29,19 +29,35 @@ where
     }
 }
 
+impl From<UserRepositoryError> for AuthError {
+    fn from(value: UserRepositoryError) -> Self {
+        match value {
+            UserRepositoryError::NotFoundId { id } => AuthError::UserNotFound(id),
+            UserRepositoryError::DuplicateEmail { email } => {
+                AuthError::Unknown(UserRepositoryError::DuplicateEmail { email }.into())
+            }
+            UserRepositoryError::Unknown(cause) => AuthError::Unknown(cause),
+        }
+    }
+}
+
 #[async_trait]
 impl<R> AuthService for Service<R>
 where
     R: UserRepository,
 {
-    async fn get_user_by_token(&self, token: String) -> Result<User, AuthServiceError> {
-        let user = User::new(
-            Uuid::new_v4(),
-            Username::new("ouiouioui").unwrap(),
-            EmailAddress::new("oui@oui.oui").unwrap(),
-            Password::new("ouiouioui").unwrap(),
-            Role::Admin,
-        );
+    async fn get_user_by_token(&self, token: String) -> Result<User, AuthError> {
+        let user = self
+            .repo
+            .get_user(&crate::domain::user::ports::GetUserData { id: Uuid::new_v4() })
+            .await?;
+        let user = User {
+            id: Uuid::new_v4(),
+            username: Username::new("ouiouioui").unwrap(),
+            email: EmailAddress::new("oui@oui.oui").unwrap(),
+            password: Password::new("ouiouioui").unwrap(),
+            role: Role::Admin,
+        };
         Ok(user)
     }
 }
