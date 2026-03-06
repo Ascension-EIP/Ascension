@@ -2,6 +2,8 @@ mod config;
 mod domain;
 mod inbound;
 mod outbound;
+#[cfg(test)]
+mod tests;
 
 use config::Config;
 use inbound::http::{HttpServer, HttpServerConfig};

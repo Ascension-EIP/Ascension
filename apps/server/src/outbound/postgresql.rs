@@ -105,7 +105,7 @@ impl Postgres {
     }
 
     async fn update_user(&self, req: &UpdateUserData) -> Result<UpdateUserOutput,  sqlx::Error> {
-        let result = sqlx::query!(
+        let result: sqlx::postgres::PgQueryResult = sqlx::query!(
             "UPDATE users SET username = $1, email = $2, password_hash = $3, role = $4 WHERE id = $5",
             req.username.to_string(),
             req.email.to_string(),
@@ -122,7 +122,7 @@ impl Postgres {
     }
 
     async fn delete_user(&self, req: &DeleteUserData) -> Result<(),  sqlx::Error> {
-        let result = sqlx::query!(
+        let result: sqlx::postgres::PgQueryResult = sqlx::query!(
             "DELETE FROM users WHERE id = $1",
             req.id.to_string(),
         )
