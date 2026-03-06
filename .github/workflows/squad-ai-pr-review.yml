@@ -292,7 +292,8 @@ jobs:
                 .join('\n') || '- _(cross-domain review)_';
 
               const commentBody = marker + '\n'
-                + '# ' + emoji + ' ' + name + ' \u2014 Review IA\n\n'
+                + '# ' + emoji + ' ' + name + ' \u2014 Review ' + domain + '\n\n'
+                + '**Name :** Review ' + domain + '\n\n'
                 + '**Domaine :** ' + domain + '\n\n'
                 + '<details>\n'
                 + '<summary>\ud83d\udcc1 Fichiers analysés (' + agentOwnedFiles.length + ')</summary>\n\n'
@@ -400,7 +401,8 @@ jobs:
 
                 for (const suggestion of validSuggestions) {
                   const suggestionBody = `${SUGGESTION_PREFIX}${agent} -->\n`
-                    + `### ${emoji} ${name} — Suggested change\n`
+                    + `### ${emoji} ${name} — Suggested change (${domain})\n`
+                    + `**Name :** Review ${domain}\n\n`
                     + `${suggestion.summary}\n\n`
                     + '```suggestion\n'
                     + `${suggestion.suggestedCode}\n`
