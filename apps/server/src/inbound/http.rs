@@ -25,9 +25,9 @@ pub struct HttpServerConfig<'a> {
 }
 
 #[derive(Clone)]
-struct AppState<US: UserService, AS: AuthService> {
-    user_service: Arc<US>,
-    auth_service: Arc<AS>,
+pub struct AppState {
+    pub user_service: Arc<dyn UserService>,
+    pub auth_service: Arc<dyn AuthService>,
 }
 
 pub struct HttpServer {
@@ -36,9 +36,9 @@ pub struct HttpServer {
 }
 
 impl HttpServer {
-    pub async fn new<US: UserService, AS: AuthService>(
-        user_service: Arc<US>,
-        auth_service: Arc<AS>,
+    pub async fn new(
+        user_service: Arc<dyn UserService>,
+        auth_service: Arc<dyn AuthService>,
         config: HttpServerConfig<'_>,
     ) -> anyhow::Result<Self> {
         let state = AppState {
@@ -85,15 +85,15 @@ impl HttpServer {
     }
 }
 
-fn v1_routes<US: UserService, AS: AuthService>() -> Router<AppState<US, AS>> {
-    Router::new().nest("/users", v1_users_routes::<US, AS>())
+fn v1_routes() -> Router<AppState> {
+    Router::new().nest("/users", v1_users_routes())
 }
 
-fn v1_users_routes<US: UserService, AS: AuthService>() -> Router<AppState<US, AS>> {
+fn v1_users_routes() -> Router<AppState> {
     Router::new()
-        .route("/", post(create_user::<US, AS>))
-        .route("/", get(list_users::<US, AS>))
-        .route("/{id}", get(get_user::<US, AS>))
-        .route("/{id}", put(update_user::<US, AS>))
-        .route("/{id}", delete(delete_user::<US, AS>))
+        .route("/", post(create_user))
+        .route("/", get(list_users))
+        .route("/{id}", get(get_user))
+        .route("/{id}", put(update_user))
+        .route("/{id}", delete(delete_user))
 }

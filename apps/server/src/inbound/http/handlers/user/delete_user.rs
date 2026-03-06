@@ -1,6 +1,4 @@
-use crate::domain::auth::inbound::AuthService;
 use crate::domain::user::models::user::{DeleteUserError, DeleteUserInput};
-use crate::domain::user::ports::UserService;
 use crate::inbound::http::AppState;
 use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 use axum::extract::{Path, State};
@@ -41,9 +39,9 @@ impl From<ParseDeleteUserHttpRequestError> for ApiError {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct DeleteUserResponse {}
 
-pub async fn delete_user<US: UserService, AS: AuthService>(
+pub async fn delete_user(
     Path(id): Path<String>,
-    State(state): State<AppState<US, AS>>,
+    State(state): State<AppState>,
 ) -> Result<ApiSuccess<DeleteUserResponse>, ApiError> {
     let uuid = uuid::Uuid::parse_str(&id).map_err(ParseDeleteUserHttpRequestError::from)?;
     let input = DeleteUserInput::new(uuid);

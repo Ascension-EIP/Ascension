@@ -1,8 +1,6 @@
-use crate::domain::auth::inbound::AuthService;
 use crate::domain::user::models::user::{
     ListUserOutput, ListUsersError, ListUsersInput, ListUsersOutput,
 };
-use crate::domain::user::ports::UserService;
 use crate::inbound::http::AppState;
 use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 use axum::extract::{Query, State};
@@ -57,8 +55,8 @@ impl From<&ListUsersOutput> for ListUsersResponse {
     }
 }
 
-pub async fn list_users<US: UserService, AS: AuthService>(
-    State(state): State<AppState<US, AS>>,
+pub async fn list_users(
+    State(state): State<AppState>,
     Query(params): Query<ListUsersParams>,
 ) -> Result<ApiSuccess<ListUsersResponse>, ApiError> {
     let input = ListUsersInput::new(params.page, params.limit);

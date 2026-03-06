@@ -36,8 +36,10 @@ async fn main() -> anyhow::Result<()> {
 
     let repo = Arc::new(Postgres::new(pool.clone()));
 
-    let auth_service = Arc::new(auth::Service::new(repo.clone(), config.hmac_key.clone()));
-    let user_service = Arc::new(Service::new(repo.clone()));
+    let auth_service: Arc<dyn crate::domain::auth::inbound::AuthService> =
+        Arc::new(auth::Service::new(repo.clone(), config.hmac_key.clone()));
+    let user_service: Arc<dyn crate::domain::user::ports::UserService> =
+        Arc::new(Service::new(repo.clone()));
 
     let server_config = HttpServerConfig {
         port: &config.server_port,

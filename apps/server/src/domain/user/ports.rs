@@ -1,5 +1,4 @@
-use std::future::Future;
-
+use async_trait::async_trait;
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -13,37 +12,38 @@ use crate::domain::user::models::user::{
 ///
 /// External modules must conform to this contract – the domain is not concerned with the
 /// implementation details or underlying technology of any external code.
-pub trait UserService: Clone + Send + Sync + 'static {
+#[async_trait]
+pub trait UserService: Send + Sync + 'static {
     /// Asynchronously create a new [User].
     ///
     /// # Errors
     ///
     /// - [CreateUserError::DuplicateEmail] if an [User] with the same [EmailAddress] already
     /// exists.
-    fn create_user(
+    async fn create_user(
         &self,
         req: &CreateUserInput,
-    ) -> impl Future<Output = Result<CreateUserOutput, CreateUserError>> + Send;
+    ) -> Result<CreateUserOutput, CreateUserError>;
 
-    fn list_users(
+    async fn list_users(
         &self,
         req: &ListUsersInput,
-    ) -> impl Future<Output = Result<ListUsersOutput, ListUsersError>> + Send;
+    ) -> Result<ListUsersOutput, ListUsersError>;
 
-    fn get_user(
+    async fn get_user(
         &self,
         req: &GetUserInput,
-    ) -> impl Future<Output = Result<GetUserOutput, GetUserError>> + Send;
+    ) -> Result<GetUserOutput, GetUserError>;
 
-    fn update_user(
+    async fn update_user(
         &self,
         req: &UpdateUserInput,
-    ) -> impl Future<Output = Result<UpdateUserOutput, UpdateUserError>> + Send;
+    ) -> Result<UpdateUserOutput, UpdateUserError>;
 
-    fn delete_user(
+    async fn delete_user(
         &self,
         req: &DeleteUserInput,
-    ) -> impl Future<Output = Result<(), DeleteUserError>> + Send;
+    ) -> Result<(), DeleteUserError>;
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]

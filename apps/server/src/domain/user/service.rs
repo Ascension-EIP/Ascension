@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use async_trait::async_trait;
+
 use crate::domain::user::models::user::{
     CreateUserError, CreateUserInput, CreateUserOutput, DeleteUserError, DeleteUserInput,
     GetUserError, GetUserInput, GetUserOutput, ListUsersError, ListUsersInput, ListUsersOutput,
@@ -27,6 +29,7 @@ where
     }
 }
 
+#[async_trait]
 impl<R> UserService for Service<R>
 where
     R: UserRepository,

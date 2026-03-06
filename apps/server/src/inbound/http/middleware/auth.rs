@@ -8,11 +8,8 @@ use axum::{
 
 use crate::{
     domain::{
-        auth::{error::AuthServiceError, inbound::AuthService},
-        user::{
-            models::user::{Role, User},
-            ports::UserService,
-        },
+        auth::error::AuthServiceError,
+        user::models::user::{Role, User},
     },
     inbound::http::AppState,
 };
@@ -22,8 +19,8 @@ impl IntoResponse for AuthServiceError {
     }
 }
 
-pub async fn auth<US: UserService, AS: AuthService>(
-    State(state): State<AppState<US, AS>>,
+pub async fn auth(
+    State(state): State<AppState>,
     mut req: Request,
     next: Next,
 ) -> Response {

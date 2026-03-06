@@ -3,12 +3,10 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use serde::{Deserialize, Serialize};
 
-use crate::domain::auth::inbound::AuthService;
 use crate::domain::user::models::user::{
     CreateUserError, CreateUserInput, CreateUserOutput, EmailAddress, EmailAddressInvalidError,
     Password, PasswordInvalidError, Role, RoleInvalidError, Username, UsernameInvalidError,
 };
-use crate::domain::user::ports::UserService;
 use crate::inbound::http::AppState;
 use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 use thiserror::Error;
@@ -97,8 +95,8 @@ impl From<&CreateUserOutput> for CreateUserResponse {
 ///
 /// - 201 Created: the [User] was successfully created.
 /// - 422 Unprocessable entity: An [User] with the same name already exists.
-pub async fn create_user<US: UserService, AS: AuthService>(
-    State(state): State<AppState<US, AS>>,
+pub async fn create_user(
+    State(state): State<AppState>,
     Json(body): Json<CreateUserHttpRequestBody>,
 ) -> Result<ApiSuccess<CreateUserResponse>, ApiError> {
     let domain_req = body.try_into_domain()?;
