@@ -1,8 +1,8 @@
-> **Last updated:** 3rd March 2026
-> **Version:** 1.2
-> **Authors:** Darius
-> **Status:** Done
-> {.is-success}
+> **Last updated:** 3rd March 2026  
+> **Version:** 1.2  
+> **Authors:** Darius  
+> **Status:** Done  
+> {.is-success}  
 
 ---
 
@@ -13,10 +13,11 @@
 ## Table of Contents
 
 - [AI Worker — Developer Guide](#ai-worker--developer-guide)
+  - [Table of Contents](#table-of-contents)
   - [Overview](#overview)
   - [Repository Location](#repository-location)
   - [Environment Variables](#environment-variables)
-    - [Local Environment Setup (Conda + moon)](#local-environment-setup-conda--moon)
+  - [Local Environment Setup (Conda + moon)](#local-environment-setup-conda--moon)
   - [The vision.skeleton Pipeline](#the-visionskeleton-pipeline)
     - [Job Message Format](#job-message-format)
     - [End-to-End Flow](#end-to-end-flow)
