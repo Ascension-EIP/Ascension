@@ -573,7 +573,6 @@ Then open `src/inbound/http/handlers.rs` and add:
 
 ```rust
 // src/inbound/http/handlers.rs
-pub mod status;
 pub mod api;
 pub mod user;
 pub mod post;   // ← add this
@@ -586,18 +585,20 @@ Finally, open `src/inbound/http.rs`, import your handlers, and add routes:
 use crate::inbound::http::handlers::post::create_post::create_post;
 // ... other post handlers
 
-// inside api_routes()
-fn api_routes<US: UserService, PS: PostService>() -> Router<AppState<US, PS>> {
+// inside v1_routes() / new v1_post_routes()
+fn v1_routes() -> Router<AppState> {
     Router::new()
-        // existing user routes
-        .route("/users",        post(create_user::<US, PS>))
-        // ...
-        // new post routes
-        .route("/posts",        post(create_post::<US, PS>))
-        .route("/posts",        get(list_posts::<US, PS>))
-        .route("/posts/:id",    get(get_post::<US, PS>))
-        .route("/posts/:id",    put(update_post::<US, PS>))
-        .route("/posts/:id",    delete(delete_post::<US, PS>))
+        .nest("/users", v1_users_routes())
+        .nest("/posts", v1_post_routes())  // ← add this
+}
+
+fn v1_post_routes() -> Router<AppState> {
+    Router::new()
+        .route("/",     post(create_post))
+        .route("/",     get(list_posts))
+        .route("/{id}", get(get_post))
+        .route("/{id}", put(update_post))
+        .route("/{id}", delete(delete_post))
 }
 ```
 
@@ -614,12 +615,17 @@ use crate::domain::post::service::Service as PostService;
 
 // ...
 
-let post_service = PostService::new(db.clone());
+let repo = Arc::new(Postgres::new(pool.clone()));
+let auth_service = Arc::new(auth::Service::new(repo.clone(), config.hmac_key.clone()));
+let user_service = Arc::new(UserService::new(repo.clone()));
+let post_service = Arc::new(PostService::new(repo.clone()));
 
-let http_server = HttpServer::new(user_service, post_service, server_config).await?;
+let http_server = HttpServer::new(user_service, auth_service, server_config).await?;
 ```
 
-Update `HttpServer::new` signature accordingly to accept the new service.
+Update `HttpServer::new` and `AppState` to accept the new service.
+`AppState` holds `Arc<dyn Trait>` fields (not generic parameters), so adding a service means
+adding a new `Arc<dyn PostService>` field to the struct.
 
 ---
 
@@ -740,7 +746,7 @@ mod tests {
     async fn create_post_returns_id_on_success() {
         let id = Uuid::new_v4();
         let repo = MockPostRepository::new().with_create(Ok(CreatePostOutput::new(id)));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let input = CreatePostInput::new(
             PostTitle::new("Hello").unwrap(),
@@ -757,7 +763,7 @@ mod tests {
     async fn create_post_propagates_unknown_error() {
         let repo = MockPostRepository::new()
             .with_create(Err(PostRepositoryError::Unknown(anyhow::anyhow!("db down"))));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let input = CreatePostInput::new(
             PostTitle::new("Hello").unwrap(),
@@ -818,5 +824,5 @@ Use this checklist every time you add a new CRUD resource:
 - [ ] `src/inbound/http/handlers/<resource>/delete_<resource>.rs`
 - [ ] `src/inbound/http/handlers/<resource>.rs` — declare the five modules above
 - [ ] `src/inbound/http/handlers.rs` — add `pub mod <resource>;`
-- [ ] `src/inbound/http.rs` — import handlers + add routes in `api_routes()` + extend `AppState` if needed
+- [ ] `src/inbound/http.rs` — import handlers + add routes in `v1_routes()` + add `Arc<dyn <Resource>Service>` field to `AppState` if needed
 - [ ] `src/main.rs` — instantiate the new service + pass it to `HttpServer::new`
