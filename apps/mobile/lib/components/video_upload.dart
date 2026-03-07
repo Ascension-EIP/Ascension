@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 import 'package:mobile/services/api_service.dart';
+import 'package:mobile/pages/analysis/analysis_view_page.dart';
 
 /// video_player is only supported on Android, iOS, and Web.
 bool get _supportsVideoPlayer =>
@@ -448,22 +449,24 @@ class _VideoUploadState extends State<VideoUpload> {
       } catch (_) {}
     }
 
+    final isCompleted = status == 'completed';
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
           Icon(
-            status == 'completed'
+            isCompleted
                 ? Icons.check_circle_rounded
                 : Icons.cancel_rounded,
             size: 80,
-            color: status == 'completed'
+            color: isCompleted
                 ? Theme.of(context).colorScheme.secondary
                 : Colors.redAccent,
           ),
           const SizedBox(height: 16),
           Text(
-            status == 'completed' ? 'Analyse terminée !' : 'Analyse échouée',
+            isCompleted ? 'Analyse terminée !' : 'Analyse échouée',
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
@@ -480,15 +483,44 @@ class _VideoUploadState extends State<VideoUpload> {
             ),
           ],
           const SizedBox(height: 24),
-          if (resultJson != null && status == 'completed')
+          if (resultJson != null && isCompleted)
             _AnalysisSummaryCard(resultJson: resultJson),
-          const SizedBox(height: 32),
-          FilledButton(
-            onPressed: _reset,
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.secondary,
+          const SizedBox(height: 24),
+          // ── Visualiser button (only when analysis succeeded) ──
+          if (resultJson != null && isCompleted) ...[
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => AnalysisViewPage(
+                        resultJson:   resultJson,
+                        processingMs: processingMs,
+                        videoFile:    _videoFile,
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.play_circle_outline_rounded),
+                label: const Text('Visualiser l\'analyse'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
             ),
-            child: const Text('Analyser une autre vidéo'),
+            const SizedBox(height: 12),
+          ],
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: _reset,
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              child: const Text('Analyser une autre vidéo'),
+            ),
           ),
         ],
       ),

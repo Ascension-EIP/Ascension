@@ -20,6 +20,20 @@ tasks:
     deps:
       - 'install'
 
+  # Build APK with backend URL pointing to the host machine (real device).
+  # Override BACKEND_URL env var to change the IP, e.g.:
+  #   BACKEND_URL=http://192.168.1.42:8080 moon run mobile:build-android-dev
+  build-android-dev:
+    command: 'flutter'
+    args:
+      - 'build'
+      - 'apk'
+      - '--dart-define=BACKEND_URL=http://${BACKEND_IP:-192.168.1.42}:8080'
+    deps:
+      - 'install'
+    env:
+      BACKEND_IP: '192.168.1.42'
+
   build-ios:
     command: 'flutter'
     args: ['build', 'ios', '--no-codesign']
