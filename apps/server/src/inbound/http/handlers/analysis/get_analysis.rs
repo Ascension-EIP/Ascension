@@ -1,0 +1,37 @@
+use axum::extract::{Path, State};
+use axum::http::StatusCode;
+use serde::Serialize;
+use uuid::Uuid;
+
+use crate::inbound::http::AppState;
+use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
+
+#[derive(Debug, Serialize, PartialEq)]
+pub struct GetAnalysisResponse {
+    pub id: Uuid,
+    pub video_id: Uuid,
+    pub job_id: Uuid,
+    pub status: String,
+    /// JSON string of the full pose-estimation result (null while processing).
+    pub result_json: Option<String>,
+    pub processing_time_ms: Option<i32>,
+}
+
+pub async fn get_analysis(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+) -> Result<ApiSuccess<GetAnalysisResponse>, ApiError> {
+    let analysis = state.analysis_service.get_analysis(id).await?;
+
+    Ok(ApiSuccess::new(
+        StatusCode::OK,
+        GetAnalysisResponse {
+            id: analysis.id,
+            video_id: analysis.video_id,
+            job_id: analysis.job_id,
+            status: analysis.status,
+            result_json: analysis.result_json,
+            processing_time_ms: analysis.processing_time_ms,
+        },
+    ))
+}
