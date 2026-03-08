@@ -7,6 +7,7 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
   final String? description;
   final Color? descriptionColor;
   final String? logoPath;
+  final List<Widget>? actions;
 
   const Header({
     super.key,
@@ -16,6 +17,7 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
     this.description,
     this.descriptionColor,
     this.logoPath,
+    this.actions,
   });
 
   @override
@@ -58,6 +60,7 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
         ],
       ),
       actions: [
+        if (actions != null) ...actions!,
         if (logoPath != null)
           Padding(
             padding: EdgeInsets.only(right: 16),

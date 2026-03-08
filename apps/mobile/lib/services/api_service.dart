@@ -2,18 +2,22 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// Key used to persist the backend URL in SharedPreferences.
+const String kBackendUrlKey = 'backend_url';
 
 /// Base URL of the Rust/Axum backend.
 ///
 /// Resolution order:
 ///   1. --dart-define=BACKEND_URL=http://...   (highest priority, baked at build time)
-///   2. Runtime fallback:
+///   2. Value stored in SharedPreferences (set at runtime via Settings)
+///   3. Runtime fallback:
 ///        - Linux/macOS/Windows desktop → http://localhost:8080
 ///        - Android emulator            → http://10.0.2.2:8080
-///        - Android real device         → rebuild with --dart-define=BACKEND_URL=http://192.168.1.42:8080
 const String _kDefinedUrl = String.fromEnvironment('BACKEND_URL');
 
-String get _kBaseUrl {
+String get _kDefaultUrl {
   if (_kDefinedUrl.isNotEmpty) return _kDefinedUrl;
   if (!kIsWeb && (Platform.isLinux || Platform.isMacOS || Platform.isWindows)) {
     return 'http://localhost:8080';
@@ -27,7 +31,27 @@ class ApiService {
   factory ApiService() => _instance;
   ApiService._internal();
 
-  final String baseUrl = _kBaseUrl;
+  /// The current backend base URL.  Can be changed at runtime via [setBaseUrl].
+  String _baseUrl = _kDefaultUrl;
+
+  String get baseUrl => _baseUrl;
+
+  /// Load the persisted URL (if any) from SharedPreferences.
+  /// Call this once at app startup (e.g. in [main]).
+  Future<void> loadBaseUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString(kBackendUrlKey);
+    if (saved != null && saved.isNotEmpty) {
+      _baseUrl = saved;
+    }
+  }
+
+  /// Persist [url] and use it for all future requests.
+  Future<void> setBaseUrl(String url) async {
+    _baseUrl = url;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(kBackendUrlKey, url);
+  }
 
   // ── Videos ──────────────────────────────────────────────────────────────────
 
