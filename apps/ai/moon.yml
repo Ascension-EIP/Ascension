@@ -24,7 +24,7 @@ tasks:
 
   dev:
     command: '$CONDA_EXE'
-    args: ['run', '--capture-output', '--prefix', './ai-env', 'python', '-u', 'src/consumer.py']
+    args: ['run', '--prefix', './ai-env', 'python', '-u', 'src/consumer.py']
     deps:
       - 'install'
     env:
