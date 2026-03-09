@@ -37,10 +37,7 @@ pub enum AnalysisServiceError {
 #[async_trait]
 pub trait AnalysisService: Send + Sync + 'static {
     /// Create an analysis record and publish a job to RabbitMQ.
-    async fn trigger_analysis(
-        &self,
-        video_id: Uuid,
-    ) -> Result<Analysis, AnalysisServiceError>;
+    async fn trigger_analysis(&self, video_id: Uuid) -> Result<Analysis, AnalysisServiceError>;
 
     async fn get_analysis(&self, id: Uuid) -> Result<Analysis, AnalysisServiceError>;
 }

@@ -22,7 +22,7 @@ impl IntoResponse for UserError {
                 tracing::error!("{:?}\n{}", cause, cause.backtrace());
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
-                    format!("Internal server error").into_response(),
+                    "Internal server error".to_string().into_response(),
                 )
                     .into_response()
             }

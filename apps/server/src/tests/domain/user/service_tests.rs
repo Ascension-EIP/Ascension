@@ -9,12 +9,12 @@ mod tests {
         GetUserOutput, ListUserOutput, ListUsersInput, ListUsersOutput, Password, Role,
         UpdateUserInput, UpdateUserOutput, Username,
     };
+    use crate::domain::user::ports::UserService;
     use crate::domain::user::ports::{
         CreateUserData, DeleteUserData, GetUserData, ListUsersData, UpdateUserData, UserRepository,
         UserRepositoryError,
     };
     use crate::domain::user::service::Service;
-    use crate::domain::user::ports::UserService;
 
     // ─── Mock Repository ──────────────────────────────────────────────────────
     //
@@ -196,11 +196,15 @@ mod tests {
     #[tokio::test]
     async fn create_user_returns_id_on_success() {
         let id = fixed_uuid();
-        let repo = MockUserRepository::new()
-            .with_create(Ok(CreateUserOutput::new(id)));
+        let repo = MockUserRepository::new().with_create(Ok(CreateUserOutput::new(id)));
         let service = Service::new(Arc::new(repo));
 
-        let input = CreateUserInput::new(valid_username(), valid_email(), valid_password(), valid_role());
+        let input = CreateUserInput::new(
+            valid_username(),
+            valid_email(),
+            valid_password(),
+            valid_role(),
+        );
         let result = service.create_user(&input).await;
 
         assert!(result.is_ok());
@@ -210,18 +214,20 @@ mod tests {
     #[tokio::test]
     async fn create_user_returns_duplicate_email_error() {
         let email = valid_email();
-        let repo = MockUserRepository::new().with_create(Err(
-            UserRepositoryError::DuplicateEmail { email: email.clone() },
-        ));
+        let repo =
+            MockUserRepository::new().with_create(Err(UserRepositoryError::DuplicateEmail {
+                email: email.clone(),
+            }));
         let service = Service::new(Arc::new(repo));
 
         let input = CreateUserInput::new(valid_username(), email, valid_password(), valid_role());
         let result = service.create_user(&input).await;
 
         assert!(result.is_err());
-        assert!(
-            matches!(result.err().unwrap(), crate::domain::user::models::user::CreateUserError::DuplicateEmail { .. })
-        );
+        assert!(matches!(
+            result.err().unwrap(),
+            crate::domain::user::models::user::CreateUserError::DuplicateEmail { .. }
+        ));
     }
 
     #[tokio::test]
@@ -231,13 +237,19 @@ mod tests {
         )));
         let service = Service::new(Arc::new(repo));
 
-        let input = CreateUserInput::new(valid_username(), valid_email(), valid_password(), valid_role());
+        let input = CreateUserInput::new(
+            valid_username(),
+            valid_email(),
+            valid_password(),
+            valid_role(),
+        );
         let result = service.create_user(&input).await;
 
         assert!(result.is_err());
-        assert!(
-            matches!(result.err().unwrap(), crate::domain::user::models::user::CreateUserError::Unknown(_))
-        );
+        assert!(matches!(
+            result.err().unwrap(),
+            crate::domain::user::models::user::CreateUserError::Unknown(_)
+        ));
     }
 
     // ─── list_users ──────────────────────────────────────────────────────────
@@ -289,9 +301,10 @@ mod tests {
         let result = service.list_users(&input).await;
 
         assert!(result.is_err());
-        assert!(
-            matches!(result.err().unwrap(), crate::domain::user::models::user::ListUsersError::Unknown(_))
-        );
+        assert!(matches!(
+            result.err().unwrap(),
+            crate::domain::user::models::user::ListUsersError::Unknown(_)
+        ));
     }
 
     #[tokio::test]
@@ -327,17 +340,17 @@ mod tests {
     #[tokio::test]
     async fn get_user_returns_not_found_error() {
         let id = fixed_uuid();
-        let repo = MockUserRepository::new()
-            .with_get(Err(UserRepositoryError::NotFoundId { id }));
+        let repo = MockUserRepository::new().with_get(Err(UserRepositoryError::NotFoundId { id }));
         let service = Service::new(Arc::new(repo));
 
         let input = GetUserInput::new(id);
         let result = service.get_user(&input).await;
 
         assert!(result.is_err());
-        assert!(
-            matches!(result.err().unwrap(), crate::domain::user::models::user::GetUserError::NotFoundUser { .. })
-        );
+        assert!(matches!(
+            result.err().unwrap(),
+            crate::domain::user::models::user::GetUserError::NotFoundUser { .. }
+        ));
     }
 
     #[tokio::test]
@@ -351,9 +364,10 @@ mod tests {
         let result = service.get_user(&input).await;
 
         assert!(result.is_err());
-        assert!(
-            matches!(result.err().unwrap(), crate::domain::user::models::user::GetUserError::Unknown(_))
-        );
+        assert!(matches!(
+            result.err().unwrap(),
+            crate::domain::user::models::user::GetUserError::Unknown(_)
+        ));
     }
 
     // ─── update_user ─────────────────────────────────────────────────────────
@@ -364,7 +378,13 @@ mod tests {
         let repo = MockUserRepository::new().with_update(Ok(UpdateUserOutput::new(id)));
         let service = Service::new(Arc::new(repo));
 
-        let input = UpdateUserInput::new(id, valid_username(), valid_email(), valid_password(), valid_role());
+        let input = UpdateUserInput::new(
+            id,
+            valid_username(),
+            valid_email(),
+            valid_password(),
+            valid_role(),
+        );
         let result = service.update_user(&input).await;
 
         assert!(result.is_ok());
@@ -374,35 +394,45 @@ mod tests {
     #[tokio::test]
     async fn update_user_returns_not_found_error() {
         let id = fixed_uuid();
-        let repo = MockUserRepository::new()
-            .with_update(Err(UserRepositoryError::NotFoundId { id }));
+        let repo =
+            MockUserRepository::new().with_update(Err(UserRepositoryError::NotFoundId { id }));
         let service = Service::new(Arc::new(repo));
 
-        let input = UpdateUserInput::new(id, valid_username(), valid_email(), valid_password(), valid_role());
+        let input = UpdateUserInput::new(
+            id,
+            valid_username(),
+            valid_email(),
+            valid_password(),
+            valid_role(),
+        );
         let result = service.update_user(&input).await;
 
         assert!(result.is_err());
-        assert!(
-            matches!(result.err().unwrap(), crate::domain::user::models::user::UpdateUserError::NotFoundUser { .. })
-        );
+        assert!(matches!(
+            result.err().unwrap(),
+            crate::domain::user::models::user::UpdateUserError::NotFoundUser { .. }
+        ));
     }
 
     #[tokio::test]
     async fn update_user_returns_duplicate_email_error() {
         let id = fixed_uuid();
         let email = valid_email();
-        let repo = MockUserRepository::new().with_update(Err(
-            UserRepositoryError::DuplicateEmail { email: email.clone() },
-        ));
+        let repo =
+            MockUserRepository::new().with_update(Err(UserRepositoryError::DuplicateEmail {
+                email: email.clone(),
+            }));
         let service = Service::new(Arc::new(repo));
 
-        let input = UpdateUserInput::new(id, valid_username(), email, valid_password(), valid_role());
+        let input =
+            UpdateUserInput::new(id, valid_username(), email, valid_password(), valid_role());
         let result = service.update_user(&input).await;
 
         assert!(result.is_err());
-        assert!(
-            matches!(result.err().unwrap(), crate::domain::user::models::user::UpdateUserError::DuplicateEmail { .. })
-        );
+        assert!(matches!(
+            result.err().unwrap(),
+            crate::domain::user::models::user::UpdateUserError::DuplicateEmail { .. }
+        ));
     }
 
     #[tokio::test]
@@ -413,13 +443,20 @@ mod tests {
         let service = Service::new(Arc::new(repo));
 
         let id = fixed_uuid();
-        let input = UpdateUserInput::new(id, valid_username(), valid_email(), valid_password(), valid_role());
+        let input = UpdateUserInput::new(
+            id,
+            valid_username(),
+            valid_email(),
+            valid_password(),
+            valid_role(),
+        );
         let result = service.update_user(&input).await;
 
         assert!(result.is_err());
-        assert!(
-            matches!(result.err().unwrap(), crate::domain::user::models::user::UpdateUserError::Unknown(_))
-        );
+        assert!(matches!(
+            result.err().unwrap(),
+            crate::domain::user::models::user::UpdateUserError::Unknown(_)
+        ));
     }
 
     // ─── delete_user ─────────────────────────────────────────────────────────
@@ -438,17 +475,18 @@ mod tests {
     #[tokio::test]
     async fn delete_user_returns_not_found_error() {
         let id = fixed_uuid();
-        let repo = MockUserRepository::new()
-            .with_delete(Err(UserRepositoryError::NotFoundId { id }));
+        let repo =
+            MockUserRepository::new().with_delete(Err(UserRepositoryError::NotFoundId { id }));
         let service = Service::new(Arc::new(repo));
 
         let input = DeleteUserInput::new(id);
         let result = service.delete_user(&input).await;
 
         assert!(result.is_err());
-        assert!(
-            matches!(result.err().unwrap(), crate::domain::user::models::user::DeleteUserError::NotFoundUser { .. })
-        );
+        assert!(matches!(
+            result.err().unwrap(),
+            crate::domain::user::models::user::DeleteUserError::NotFoundUser { .. }
+        ));
     }
 
     #[tokio::test]
@@ -462,8 +500,9 @@ mod tests {
         let result = service.delete_user(&input).await;
 
         assert!(result.is_err());
-        assert!(
-            matches!(result.err().unwrap(), crate::domain::user::models::user::DeleteUserError::Unknown(_))
-        );
+        assert!(matches!(
+            result.err().unwrap(),
+            crate::domain::user::models::user::DeleteUserError::Unknown(_)
+        ));
     }
 }

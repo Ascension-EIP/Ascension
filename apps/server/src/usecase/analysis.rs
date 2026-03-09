@@ -41,17 +41,13 @@ impl<A: AnalysisRepository, V: VideoRepository> AnalysisServiceImpl<A, V> {
 }
 
 #[async_trait]
-impl<A: AnalysisRepository, V: VideoRepository> AnalysisService
-    for AnalysisServiceImpl<A, V>
-{
+impl<A: AnalysisRepository, V: VideoRepository> AnalysisService for AnalysisServiceImpl<A, V> {
     async fn trigger_analysis(&self, video_id: Uuid) -> Result<Analysis, AnalysisServiceError> {
         // Make sure the video exists
         let video = self.video_repo.get_video(video_id).await.map_err(|e| {
             use crate::domain::video::ports::VideoRepositoryError;
             match e {
-                VideoRepositoryError::NotFound { id } => {
-                    AnalysisServiceError::VideoNotFound { id }
-                }
+                VideoRepositoryError::NotFound { id } => AnalysisServiceError::VideoNotFound { id },
                 VideoRepositoryError::Unknown(cause) => AnalysisServiceError::Unknown(cause),
             }
         })?;
@@ -63,9 +59,7 @@ impl<A: AnalysisRepository, V: VideoRepository> AnalysisService
             .analysis_repo
             .create_analysis(&CreateAnalysisInput { video_id, job_id })
             .await
-            .map_err(|e| {
-                AnalysisServiceError::Unknown(anyhow::anyhow!(e.to_string()))
-            })?;
+            .map_err(|e| AnalysisServiceError::Unknown(anyhow::anyhow!(e.to_string())))?;
 
         // Build the s3:// URL that the AI worker expects
         let video_url = format!("s3://{}/{}", video.bucket, video.object_key);
@@ -92,9 +86,7 @@ impl<A: AnalysisRepository, V: VideoRepository> AnalysisService
         self.analysis_repo.get_analysis(id).await.map_err(|e| {
             use crate::domain::analysis::ports::AnalysisRepositoryError;
             match e {
-                AnalysisRepositoryError::NotFound { id } => {
-                    AnalysisServiceError::NotFound { id }
-                }
+                AnalysisRepositoryError::NotFound { id } => AnalysisServiceError::NotFound { id },
                 AnalysisRepositoryError::Unknown(cause) => AnalysisServiceError::Unknown(cause),
             }
         })

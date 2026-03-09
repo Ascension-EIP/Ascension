@@ -51,7 +51,7 @@ where
     }
 
     async fn update_user(&self, user: &User) -> Result<User, UserError> {
-        let user = self.repo.update_user(&user).await?;
+        let user = self.repo.update_user(user).await?;
         Ok(user)
     }
 

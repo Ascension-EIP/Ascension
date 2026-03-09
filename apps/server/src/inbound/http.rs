@@ -69,7 +69,8 @@ impl HttpServer {
                 .context("failed to build rate limiter configuration")?,
         );
 
-        for limiter in [strict.limiter()] {
+        {
+            let limiter = strict.limiter();
             let l = limiter.clone();
             tokio::spawn(async move {
                 let mut interval = tokio::time::interval(Duration::from_secs(60));
@@ -141,8 +142,7 @@ fn v1_users_routes() -> Router<AppState> {
 }
 
 fn v1_videos_routes() -> Router<AppState> {
-    Router::new()
-        .route("/upload-url", post(get_upload_url))
+    Router::new().route("/upload-url", post(get_upload_url))
 }
 
 fn v1_analyses_routes() -> Router<AppState> {

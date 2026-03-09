@@ -53,16 +53,31 @@ impl VideoRepository for Postgres {
             }
         })?;
 
-        let raw_id: String = row.try_get("id").map_err(|e| VideoRepositoryError::Unknown(anyhow!(e)))?;
-        let raw_user_id: String = row.try_get("user_id").map_err(|e| VideoRepositoryError::Unknown(anyhow!(e)))?;
+        let raw_id: String = row
+            .try_get("id")
+            .map_err(|e| VideoRepositoryError::Unknown(anyhow!(e)))?;
+        let raw_user_id: String = row
+            .try_get("user_id")
+            .map_err(|e| VideoRepositoryError::Unknown(anyhow!(e)))?;
         Ok(Video {
             id: Uuid::parse_str(&raw_id).map_err(|e| VideoRepositoryError::Unknown(anyhow!(e)))?,
-            user_id: Uuid::parse_str(&raw_user_id).map_err(|e| VideoRepositoryError::Unknown(anyhow!(e)))?,
-            object_key: row.try_get("object_key").map_err(|e| VideoRepositoryError::Unknown(anyhow!(e)))?,
-            bucket: row.try_get("bucket").map_err(|e| VideoRepositoryError::Unknown(anyhow!(e)))?,
-            filename: row.try_get("filename").map_err(|e| VideoRepositoryError::Unknown(anyhow!(e)))?,
-            status: row.try_get("status").map_err(|e| VideoRepositoryError::Unknown(anyhow!(e)))?,
-            created_at: row.try_get("created_at").map_err(|e| VideoRepositoryError::Unknown(anyhow!(e)))?,
+            user_id: Uuid::parse_str(&raw_user_id)
+                .map_err(|e| VideoRepositoryError::Unknown(anyhow!(e)))?,
+            object_key: row
+                .try_get("object_key")
+                .map_err(|e| VideoRepositoryError::Unknown(anyhow!(e)))?,
+            bucket: row
+                .try_get("bucket")
+                .map_err(|e| VideoRepositoryError::Unknown(anyhow!(e)))?,
+            filename: row
+                .try_get("filename")
+                .map_err(|e| VideoRepositoryError::Unknown(anyhow!(e)))?,
+            status: row
+                .try_get("status")
+                .map_err(|e| VideoRepositoryError::Unknown(anyhow!(e)))?,
+            created_at: row
+                .try_get("created_at")
+                .map_err(|e| VideoRepositoryError::Unknown(anyhow!(e)))?,
         })
     }
 }
@@ -84,7 +99,9 @@ impl AnalysisRepository for Postgres {
         .bind(req.job_id.to_string())
         .execute(&self.pool)
         .await
-        .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e).context("failed to insert analysis")))?;
+        .map_err(|e| {
+            AnalysisRepositoryError::Unknown(anyhow!(e).context("failed to insert analysis"))
+        })?;
 
         Ok(CreateAnalysisOutput {
             id,
@@ -107,18 +124,37 @@ impl AnalysisRepository for Postgres {
             }
         })?;
 
-        let raw_id: String = row.try_get("id").map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?;
-        let raw_video_id: String = row.try_get("video_id").map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?;
-        let raw_job_id: String = row.try_get("job_id").map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?;
+        let raw_id: String = row
+            .try_get("id")
+            .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?;
+        let raw_video_id: String = row
+            .try_get("video_id")
+            .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?;
+        let raw_job_id: String = row
+            .try_get("job_id")
+            .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?;
         Ok(Analysis {
-            id: Uuid::parse_str(&raw_id).map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
-            video_id: Uuid::parse_str(&raw_video_id).map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
-            job_id: Uuid::parse_str(&raw_job_id).map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
-            status: row.try_get("status").map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
-            result_json: row.try_get("result_json").map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
-            processing_time_ms: row.try_get("processing_time_ms").map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
-            completed_at: row.try_get("completed_at").map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
-            created_at: row.try_get("created_at").map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
+            id: Uuid::parse_str(&raw_id)
+                .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
+            video_id: Uuid::parse_str(&raw_video_id)
+                .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
+            job_id: Uuid::parse_str(&raw_job_id)
+                .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
+            status: row
+                .try_get("status")
+                .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
+            result_json: row
+                .try_get("result_json")
+                .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
+            processing_time_ms: row
+                .try_get("processing_time_ms")
+                .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
+            completed_at: row
+                .try_get("completed_at")
+                .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
+            created_at: row
+                .try_get("created_at")
+                .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
         })
     }
 }

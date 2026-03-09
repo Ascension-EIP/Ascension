@@ -2,7 +2,6 @@ use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Response;
-use serde::Serialize;
 use thiserror::Error;
 
 use crate::domain::user::error::UserError;
@@ -23,10 +22,6 @@ impl IntoResponse for DeleteUserRequestError {
         (StatusCode::UNPROCESSABLE_ENTITY, message).into_response()
     }
 }
-
-/// The response body for successful [User] deletion.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct DeleteUserResponse {}
 
 /// Delete an existing [User] by id.
 ///

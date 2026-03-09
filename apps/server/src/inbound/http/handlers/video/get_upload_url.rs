@@ -11,9 +11,7 @@ use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 impl From<VideoServiceError> for ApiError {
     fn from(e: VideoServiceError) -> Self {
         match e {
-            VideoServiceError::NotFound { id } => {
-                Self::NotFound(format!("video {} not found", id))
-            }
+            VideoServiceError::NotFound { id } => Self::NotFound(format!("video {} not found", id)),
             VideoServiceError::Presign(msg) => Self::InternalServerError(msg),
             VideoServiceError::Unknown(cause) => {
                 tracing::error!("{:?}", cause);
