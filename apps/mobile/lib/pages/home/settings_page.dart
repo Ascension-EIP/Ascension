@@ -15,8 +15,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    _urlController =
-        TextEditingController(text: ApiService().baseUrl);
+    _urlController = TextEditingController(text: ApiService().baseUrl);
   }
 
   @override
@@ -41,19 +40,13 @@ class _SettingsPageState extends State<SettingsPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Paramètres'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Paramètres'), centerTitle: true),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'URL du backend',
-              style: theme.textTheme.titleMedium,
-            ),
+            Text('URL du backend', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             TextField(
               controller: _urlController,

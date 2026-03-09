@@ -9,9 +9,7 @@ import 'package:mobile/pages/analysis/analysis_view_page.dart';
 
 /// video_player is only supported on Android, iOS, and Web.
 bool get _supportsVideoPlayer =>
-    !kIsWeb
-        ? Platform.isAndroid || Platform.isIOS
-        : true;
+    !kIsWeb ? Platform.isAndroid || Platform.isIOS : true;
 
 enum _UploadState { idle, selected, uploading, analysing, done, error }
 
@@ -456,9 +454,7 @@ class _VideoUploadState extends State<VideoUpload> {
       child: Column(
         children: [
           Icon(
-            isCompleted
-                ? Icons.check_circle_rounded
-                : Icons.cancel_rounded,
+            isCompleted ? Icons.check_circle_rounded : Icons.cancel_rounded,
             size: 80,
             color: isCompleted
                 ? Theme.of(context).colorScheme.secondary
@@ -495,9 +491,9 @@ class _VideoUploadState extends State<VideoUpload> {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => AnalysisViewPage(
-                        resultJson:   resultJson,
+                        resultJson: resultJson,
                         processingMs: processingMs,
-                        videoFile:    _videoFile,
+                        videoFile: _videoFile,
                       ),
                     ),
                   );
@@ -542,15 +538,18 @@ class _AnalysisSummaryCard extends StatelessWidget {
     }
 
     final frames = (data['frames'] as List?) ?? [];
-    final detectedFrames =
-        frames.where((f) => f['pose_detected'] == true).length;
+    final detectedFrames = frames
+        .where((f) => f['pose_detected'] == true)
+        .length;
     final detectionRate = frames.isEmpty
         ? 0.0
         : detectedFrames / frames.length * 100;
 
     // Collect average left-elbow angle across frames
     final angles = frames
-        .where((f) => f['angles'] != null && (f['angles'] as Map).containsKey('13'))
+        .where(
+          (f) => f['angles'] != null && (f['angles'] as Map).containsKey('13'),
+        )
         .map((f) => (f['angles']['13'] as num).toDouble())
         .toList();
     final avgAngle = angles.isEmpty
@@ -579,10 +578,7 @@ class _AnalysisSummaryCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          _StatRow(
-            label: 'Frames totales',
-            value: '${frames.length}',
-          ),
+          _StatRow(label: 'Frames totales', value: '${frames.length}'),
           _StatRow(
             label: 'Pose détectée',
             value:
