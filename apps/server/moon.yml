@@ -5,6 +5,20 @@ project:
   description: "Rust/Axum backend server for Ascension"
 
 tasks:
+  install-sqlx:
+    command: "cargo"
+    args: ["install", "sqlx-cli", "--no-default-features", "--features", "native-tls,postgres"]
+    options:
+      cache: false
+
+  migrate:
+    command: "sqlx"
+    args: ["migrate", "run", "--source", "migrations"]
+    inputs:
+      - "migrations/**/*.sql"
+    options:
+      envFile: true
+
   build:
     command: "cargo"
     args: ["build"]
