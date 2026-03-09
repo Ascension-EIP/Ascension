@@ -17,10 +17,12 @@ use outbound::rabbitmq::RabbitMqPublisher;
 use sqlx::postgres::PgPoolOptions;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::domain::user::service::Service;
+use crate::{
+    domain::{auth::inbound::AuthService, user::inbound::UserService},
+    usecase::{auth, user},
+};
 use crate::usecase::analysis::AnalysisServiceImpl;
 use crate::usecase::video::VideoServiceImpl;
-use crate::usecase::auth;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -52,6 +54,10 @@ async fn main() -> anyhow::Result<()> {
 
     let repo = Arc::new(Postgres::new(pool.clone()));
 
+    let auth_service: Arc<dyn AuthService> =
+        Arc::new(auth::Service::new(repo.clone(), config.hmac_key.clone()));
+    let user_service: Arc<dyn UserService> = Arc::new(user::Service::new(repo.clone()));
+  
     // ── MinIO ──────────────────────────────────────────────────────────────────
     let minio = Arc::new(MinioClient::new(
         &config.minio_endpoint,

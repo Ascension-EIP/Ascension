@@ -10,10 +10,7 @@ use uuid::Uuid;
 
 use crate::domain::{
     auth::{error::AuthError, inbound::AuthService},
-    user::{
-        models::user::{Password, User},
-        ports::{UserRepository, UserRepositoryError},
-    },
+    user::{entity::user::User, error::UserError, outbound::UserRepository},
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -87,14 +84,12 @@ where
     }
 }
 
-impl From<UserRepositoryError> for AuthError {
-    fn from(value: UserRepositoryError) -> Self {
+impl From<UserError> for AuthError {
+    fn from(value: UserError) -> Self {
         match value {
-            UserRepositoryError::NotFoundId { id } => AuthError::UserNotFound(id),
-            UserRepositoryError::DuplicateEmail { email } => {
-                AuthError::Unknown(UserRepositoryError::DuplicateEmail { email }.into())
-            }
-            UserRepositoryError::Unknown(cause) => AuthError::Unknown(cause),
+            UserError::UserNotFound(id) => AuthError::UserNotFound(id),
+            UserError::Unknown(cause) => AuthError::Unknown(cause),
+            cause => AuthError::Unknown(anyhow::anyhow!(cause)),
         }
     }
 }
@@ -107,17 +102,7 @@ where
     async fn get_user_by_token(&self, token: String) -> Result<User, AuthError> {
         let claims = self.jwt.validate(token.as_str())?;
         let id = Uuid::parse_str(&claims.sub).map_err(|_| AuthError::InvalidTokenSub)?;
-        let user = self
-            .repo
-            .get_user(&crate::domain::user::ports::GetUserData { id })
-            .await?;
-        let user = User {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            password: Password::new("ouiouioui").unwrap(),
-            role: user.role,
-        };
+        let user = self.repo.get_user(&id).await?;
         Ok(user)
     }
 }

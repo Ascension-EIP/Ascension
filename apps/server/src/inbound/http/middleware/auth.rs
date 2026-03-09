@@ -6,13 +6,12 @@ use axum::{
     response::{IntoResponse, Response},
 };
 
-use crate::{
-    domain::{
-        auth::error::AuthError,
-        user::models::user::{Role, User},
-    },
-    inbound::http::AppState,
+use crate::domain::{
+    auth::error::AuthError,
+    user::entity::{role::Role, user::User},
 };
+use crate::inbound::http::AppState;
+
 impl IntoResponse for AuthError {
     fn into_response(self) -> Response {
         StatusCode::UNAUTHORIZED.into_response()

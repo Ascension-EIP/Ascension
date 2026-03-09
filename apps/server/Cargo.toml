@@ -43,6 +43,7 @@ jsonwebtoken = "10.3.0"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tower-http = { version = "0.6", features = ["trace"] }
+tower_governor = { version = "0.8", features = ["axum"] }
 
 [dev-dependencies]
 mockall = "0.14"
