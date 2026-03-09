@@ -15,7 +15,10 @@ use outbound::postgresql::Postgres;
 use sqlx::postgres::PgPoolOptions;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::{domain::user::service::Service, usecase::auth};
+use crate::{
+    domain::{auth::inbound::AuthService, user::inbound::UserService},
+    usecase::{auth, user},
+};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -38,10 +41,9 @@ async fn main() -> anyhow::Result<()> {
 
     let repo = Arc::new(Postgres::new(pool.clone()));
 
-    let auth_service: Arc<dyn crate::domain::auth::inbound::AuthService> =
+    let auth_service: Arc<dyn AuthService> =
         Arc::new(auth::Service::new(repo.clone(), config.hmac_key.clone()));
-    let user_service: Arc<dyn crate::domain::user::ports::UserService> =
-        Arc::new(Service::new(repo.clone()));
+    let user_service: Arc<dyn UserService> = Arc::new(user::Service::new(repo.clone()));
 
     let server_config = HttpServerConfig {
         port: &config.server_port,

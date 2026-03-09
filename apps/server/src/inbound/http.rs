@@ -13,7 +13,7 @@ use tower_governor::governor::GovernorConfigBuilder;
 use tower_http::trace::TraceLayer;
 
 use crate::domain::auth::inbound::AuthService;
-use crate::domain::user::ports::UserService;
+use crate::domain::user::inbound::UserService;
 use crate::inbound::http::handlers::user::create_user::create_user;
 use crate::inbound::http::handlers::user::delete_user::delete_user;
 use crate::inbound::http::handlers::user::get_user::get_user;

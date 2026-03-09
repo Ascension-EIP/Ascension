@@ -1,37 +1,27 @@
-use crate::domain::user::models::user::{GetUserError, GetUserInput, GetUserOutput};
-use crate::inbound::http::AppState;
-use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
+use axum::Json;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
+use axum::response::{IntoResponse, Response};
 use serde::Serialize;
 use thiserror::Error;
 
-impl From<GetUserError> for ApiError {
-    fn from(e: GetUserError) -> Self {
-        match e {
-            GetUserError::NotFoundUser { id } => {
-                Self::NotFound(format!("user id {} not found", id))
-            }
-            GetUserError::Unknown(_cause) => {
-                Self::InternalServerError("Internal server error".to_string())
-            }
-        }
-    }
-}
+use crate::domain::user::entity::user::User;
+use crate::domain::user::error::UserError;
+use crate::inbound::http::AppState;
 
 #[derive(Debug, Clone, Error)]
-enum ParseGetUserHttpRequestError {
+enum GetUserRequestError {
     #[error(transparent)]
     Id(#[from] uuid::Error),
 }
 
-impl From<ParseGetUserHttpRequestError> for ApiError {
-    fn from(e: ParseGetUserHttpRequestError) -> Self {
-        let message = match e {
-            ParseGetUserHttpRequestError::Id(_cause) => "id is invalid".to_string(),
+impl IntoResponse for GetUserRequestError {
+    fn into_response(self) -> Response {
+        let message = match self {
+            GetUserRequestError::Id(_) => "id is invalid".to_string(),
         };
 
-        Self::UnprocessableEntity(message)
+        (StatusCode::UNPROCESSABLE_ENTITY, message).into_response()
     }
 }
 
@@ -44,28 +34,35 @@ pub struct GetUserResponse {
     pub role: String,
 }
 
-impl From<GetUserOutput> for GetUserResponse {
-    fn from(output: GetUserOutput) -> Self {
+impl From<&User> for GetUserResponse {
+    fn from(user: &User) -> Self {
         Self {
-            id: output.id.to_string(),
-            username: output.username.to_string(),
-            email: output.email.to_string(),
-            role: output.role.to_string(),
+            id: user.id.to_string(),
+            username: user.username.to_string(),
+            email: user.email.to_string(),
+            role: user.role.to_string(),
         }
     }
 }
 
+/// Get an existing [User] by id.
+///
+/// # Responses
+///
+/// - 200 OK: the [User] was successfully retrieved.
+/// - 404 Not Found: no [User] with the given id exists.
+/// - 422 Unprocessable Entity: the provided id is not a valid UUID.
 pub async fn get_user(
     Path(id): Path<String>,
     State(state): State<AppState>,
-) -> Result<ApiSuccess<GetUserResponse>, ApiError> {
-    let uuid = uuid::Uuid::parse_str(&id).map_err(ParseGetUserHttpRequestError::from)?;
-    let input = GetUserInput::new(uuid);
+) -> Result<(StatusCode, Json<GetUserResponse>), UserError> {
+    let uuid = uuid::Uuid::parse_str(&id)
+        .map_err(GetUserRequestError::from)
+        .map_err(|e| anyhow::anyhow!(e))?;
 
     state
         .user_service
-        .get_user(&input)
+        .get_user(&uuid)
         .await
-        .map_err(ApiError::from)
-        .map(|output| ApiSuccess::new(StatusCode::OK, GetUserResponse::from(output)))
+        .map(|ref user| (StatusCode::OK, Json(GetUserResponse::from(user))))
 }
