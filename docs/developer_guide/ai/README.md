@@ -1,5 +1,5 @@
-> **Last updated:** 3rd March 2026  
-> **Version:** 1.2  
+> **Last updated:** 9th March 2026  
+> **Version:** 1.3  
 > **Authors:** Darius  
 > **Status:** Done  
 > {.is-success}  
@@ -62,23 +62,23 @@ apps/ai/
 
 The `ai-worker` Docker service requires the following environment variables:
 
-| Variable | Default | Description |
-|---|---|---|
-| `RABBITMQ_HOST` | `localhost` | RabbitMQ hostname |
-| `RABBITMQ_PORT` | `5672` | RabbitMQ port |
-| `RABBITMQ_DEFAULT_USER` | `guest` | RabbitMQ username |
-| `RABBITMQ_DEFAULT_PASS` | `guest` | RabbitMQ password |
-| `MINIO_HOST` | `minio` | MinIO/S3 hostname |
-| `MINIO_PORT` | `9000` | MinIO/S3 port |
-| `MINIO_ROOT_USER` | `minioadmin` | MinIO access key |
-| `MINIO_ROOT_PASSWORD` | `minioadmin` | MinIO secret key |
-| `MINIO_ENDPOINT` | _(derived)_ | Full endpoint URL — overrides `MINIO_HOST`/`MINIO_PORT` if set |
-| `POSTGRES_HOST` | `postgresql` | PostgreSQL hostname |
-| `POSTGRES_PORT` | `5432` | PostgreSQL port |
-| `POSTGRES_USER` | `postgres` | PostgreSQL username |
-| `POSTGRES_PASSWORD` | `postgres` | PostgreSQL password |
-| `POSTGRES_DB` | `ascension` | Database name |
-| `DB_URI` | _(none)_ | Full connection URI — overrides individual `POSTGRES_*` vars if set |
+| Variable                | Default      | Description                                                         |
+|-------------------------|--------------|---------------------------------------------------------------------|
+| `RABBITMQ_HOST`         | `localhost`  | RabbitMQ hostname                                                   |
+| `RABBITMQ_PORT`         | `5672`       | RabbitMQ port                                                       |
+| `RABBITMQ_DEFAULT_USER` | `guest`      | RabbitMQ username                                                   |
+| `RABBITMQ_DEFAULT_PASS` | `guest`      | RabbitMQ password                                                   |
+| `MINIO_HOST`            | `minio`      | MinIO/S3 hostname                                                   |
+| `MINIO_PORT`            | `9000`       | MinIO/S3 port                                                       |
+| `MINIO_ROOT_USER`       | `minioadmin` | MinIO access key                                                    |
+| `MINIO_ROOT_PASSWORD`   | `minioadmin` | MinIO secret key                                                    |
+| `MINIO_ENDPOINT`        | _(derived)_  | Full endpoint URL — overrides `MINIO_HOST`/`MINIO_PORT` if set      |
+| `POSTGRES_HOST`         | `postgresql` | PostgreSQL hostname                                                 |
+| `POSTGRES_PORT`         | `5432`       | PostgreSQL port                                                     |
+| `POSTGRES_USER`         | `postgres`   | PostgreSQL username                                                 |
+| `POSTGRES_PASSWORD`     | `postgres`   | PostgreSQL password                                                 |
+| `POSTGRES_DB`           | `ascension`  | Database name                                                       |
+| `DB_URI`                | _(none)_     | Full connection URI — overrides individual `POSTGRES_*` vars if set |
 
 ---
 
@@ -97,7 +97,11 @@ cd apps/ai
 # Create / refresh conda env at ./ai-env from environment.yml
 moon run ai:setup
 
+# Download the MediaPipe pose landmarker model (skipped if already present)
+moon run ai:download-model
+
 # Install editable package + dev dependencies
+# (runs setup + download-model automatically as dependencies)
 moon run ai:install
 
 # Run worker locally
@@ -109,10 +113,15 @@ moon run ai:test
 moon run ai:build
 ```
 
+> The `pose_landmarker.task` model file is not committed to the repository.
+> Running `moon run ai:install` (or `moon run ai:download-model` directly) will
+> download it automatically from the MediaPipe CDN if it is not present.
+
 Equivalent raw commands from `apps/ai/moon.yml`:
 
 ```bash
 conda env create --file environment.yml -p ./ai-env --force
+bash -c 'if [ ! -f pose_landmarker.task ]; then curl -fsSL -o pose_landmarker.task <mediapipe-cdn>; fi'
 conda run --prefix ./ai-env python -m pip install -e .[dev]
 conda run --prefix ./ai-env python consumer.py
 ```
@@ -165,12 +174,12 @@ sequenceDiagram
 
 The `analyses` table is updated with:
 
-| Column | Value |
-|---|---|
-| `status` | `completed` or `failed` |
-| `result_json` | Full `{"frames": [...]}` JSON from `pose_analysis.analyze()` |
-| `processing_time_ms` | Wall-clock duration of the `analyze()` call |
-| `completed_at` | UTC timestamp at time of update |
+| Column               | Value                                                        |
+|----------------------|--------------------------------------------------------------|
+| `status`             | `completed` or `failed`                                      |
+| `result_json`        | Full `{"frames": [...]}` JSON from `pose_analysis.analyze()` |
+| `processing_time_ms` | Wall-clock duration of the `analyze()` call                  |
+| `completed_at`       | UTC timestamp at time of update                              |
 
 ---
 
@@ -194,20 +203,20 @@ production.
 
 The module tracks 12 named body joints (MediaPipe indices):
 
-| Index | Name |
-|---|---|
-| 11 | left\_shoulder |
-| 12 | right\_shoulder |
-| 13 | left\_elbow |
-| 14 | right\_elbow |
-| 15 | left\_wrist |
-| 16 | right\_wrist |
-| 23 | left\_hip |
-| 24 | right\_hip |
-| 25 | left\_knee |
-| 26 | right\_knee |
-| 27 | left\_ankle |
-| 28 | right\_ankle |
+| Index | Name            |
+|-------|-----------------|
+| 11    | left\_shoulder  |
+| 12    | right\_shoulder |
+| 13    | left\_elbow     |
+| 14    | right\_elbow    |
+| 15    | left\_wrist     |
+| 16    | right\_wrist    |
+| 23    | left\_hip       |
+| 24    | right\_hip      |
+| 25    | left\_knee      |
+| 26    | right\_knee     |
+| 27    | left\_ankle     |
+| 28    | right\_ankle    |
 
 A landmark is included in a frame only if its **presence score ≥ 0.8**.
 
@@ -269,12 +278,12 @@ Each pipeline should be its own consumer module (following `consumer.py`) that:
 
 ## Error Handling Strategy
 
-| Scenario | Behaviour |
-|---|---|
-| Exception during processing | `analyses.status` set to `failed` (best-effort DB update), then `basic_nack(requeue=True)` |
-| DB update fails on error path | Logged and swallowed — nack is still sent |
-| Temp video file left on disk | `finally` block always unlinks the temp file |
-| DB connection left open | `finally` block always calls `conn.close()` |
+| Scenario                      | Behaviour                                                                                  |
+|-------------------------------|--------------------------------------------------------------------------------------------|
+| Exception during processing   | `analyses.status` set to `failed` (best-effort DB update), then `basic_nack(requeue=True)` |
+| DB update fails on error path | Logged and swallowed — nack is still sent                                                  |
+| Temp video file left on disk  | `finally` block always unlinks the temp file                                               |
+| DB connection left open       | `finally` block always calls `conn.close()`                                                |
 
 Messages are requeued on failure, which means a permanently broken job will loop
 indefinitely. A dead-letter queue should be configured per queue to cap retry attempts —

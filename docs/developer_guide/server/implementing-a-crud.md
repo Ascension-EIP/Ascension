@@ -1,3 +1,11 @@
+> **Last updated:** 9th March 2026  
+> **Version:** 1.1  
+> **Authors:** Nicolas  
+> **Status:** Done  
+> {.is-success}
+
+---
+
 # How to Implement a CRUD
 
 This guide explains how to add full **Create / Read / Update / Delete** operations for a new resource,
