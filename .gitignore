@@ -85,6 +85,7 @@ __pycache__/
 *.egg-info
 apps/ai/pose_landmarker.task
 apps/ai/ai-env
+worker.pid
 
 # =============================================================================
 # Ascension-specific
