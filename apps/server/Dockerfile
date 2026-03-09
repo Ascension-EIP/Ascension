@@ -9,8 +9,10 @@ RUN mkdir src && echo 'fn main() {}' > src/main.rs \
 	&& cargo build --release \
 	&& rm -rf src
 
-# Build the real binary
+# Copy sqlx offline query cache and sources
+COPY .sqlx ./.sqlx
 COPY src ./src
+ENV SQLX_OFFLINE=true
 RUN touch src/main.rs && cargo build --release
 
 # ── Runtime stage ─────────────────────────────────────────────────────────────
@@ -23,6 +25,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 COPY --from=builder /app/target/release/server ./server
+COPY migrations ./migrations
 
 EXPOSE 8080
 
