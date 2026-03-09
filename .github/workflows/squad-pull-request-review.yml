@@ -39,6 +39,7 @@ jobs:
   ########################## ROUTE REVIEW ######################################
   route-review:
     runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.head_ref, 'dependabot/') }}
 
     ######################## STEPS ############################################
     steps:

@@ -29,6 +29,7 @@ jobs:
 
   ai-review:
     runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.head_ref, 'dependabot/') }}
 
     steps:
       - name: Checkout repository
