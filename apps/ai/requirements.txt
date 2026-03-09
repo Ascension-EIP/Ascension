@@ -1,0 +1,14 @@
+# Ordered install entrypoint for local development.
+#
+# The environment is intentionally split so that heavyweight ML packages are
+# installed in a stable order from moon:
+# 1. requirements/torch.txt
+# 2. requirements/base.txt + requirements/app.txt
+# 3. requirements/detectron2.txt
+# 4. requirements/moge.txt
+# 5. requirements/dev.txt
+#
+# This file is kept as a convenience reference only.
+-r requirements/app.txt
+-r requirements/base.txt
+-r requirements/dev.txt

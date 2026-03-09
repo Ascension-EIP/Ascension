@@ -1,7 +1,7 @@
 """Ascension AI Worker — vision.skeleton pipeline.
 
 Consumes jobs from the ``vision.skeleton`` RabbitMQ queue, downloads the
-climbing video from MinIO/S3, runs MediaPipe pose analysis, persists
+climbing video from MinIO/S3, runs SAM 3D Body pose analysis, persists
 results in PostgreSQL and publishes a completion event.
 """
 
@@ -17,7 +17,7 @@ import boto3
 import pika
 import psycopg2
 
-from pose_analysis import analyze
+from pose_analysis_v2 import analyze, create_estimator
 
 # ─── Logging ─────────────────────────────────────────────────────
 logging.basicConfig(
@@ -130,6 +130,10 @@ def _publish_event(channel, job_id: str, payload: dict):
 
 
 # ─── Message handler ─────────────────────────────────────────────
+# Module-level estimator, initialised once in main().
+_estimator = None
+
+
 def on_message(ch, method, _properties, body):
     """Process a single vision.skeleton job."""
     job = json.loads(body)
@@ -146,9 +150,9 @@ def on_message(ch, method, _properties, body):
         bucket, key = _parse_s3_url(video_url)
         tmp_path = _download_video(s3, bucket, key)
 
-        # 2. Run MediaPipe analysis
+        # 2. Run SAM 3D Body analysis
         t0 = time.monotonic()
-        result = analyze(tmp_path)
+        result = analyze(tmp_path, estimator=_estimator)
         processing_ms = int((time.monotonic() - t0) * 1000)
         logger.info("Analysis done in %d ms (%d frames)",
                      processing_ms, len(result.get("frames", [])))
@@ -189,7 +193,12 @@ def on_message(ch, method, _properties, body):
 
 # ─── Entry point ─────────────────────────────────────────────────
 def main():
-    """Connect to RabbitMQ with retries and start consuming."""
+    """Load SAM 3D model, connect to RabbitMQ, and start consuming."""
+    global _estimator
+    logger.info("Loading SAM 3D Body estimator (one-time)...")
+    _estimator = create_estimator()
+    logger.info("Estimator ready.")
+
     params = pika.ConnectionParameters(
         host=os.getenv("RABBITMQ_HOST", "rabbitmq"),
         port=int(os.getenv("RABBITMQ_PORT", "5672")),
