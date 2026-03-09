@@ -37,7 +37,7 @@ jobs:
           ref: dev
 
       - name: Merge dev into main
-        uses: everlytic/branch-merge@1.1.2
+        uses: everlytic/branch-merge@1.1.5
         with:
           github_token: ${{ steps.generate_token.outputs.token }}
           source_ref: dev
