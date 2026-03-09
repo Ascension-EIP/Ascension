@@ -3,7 +3,7 @@
 This guide walks you through adding a new HTTP route to the server from scratch.
 It assumes you have read the [architecture overview](./architecture.md) first.
 
-We will use a concrete example: adding a `GET /api/status/version` endpoint that returns the current API version.
+We will use a concrete example: adding a `GET /v1/status/version` endpoint that returns the current API version.
 
 ---
 
@@ -27,7 +27,7 @@ Adding a route always touches these files (at minimum):
 |---|---|
 | The handler logic | `src/inbound/http/handlers/<your_file>.rs` |
 | Module declaration | `src/inbound/http/handlers.rs` (or an existing sub-module file) |
-| Route registration | `src/inbound/http.rs` inside `api_routes()` |
+| Route registration | `src/inbound/http.rs` inside `v1_routes()` |
 
 If your route needs to call the domain (e.g., read/write users), you will also touch domain and outbound files — that is covered in the [CRUD guide](./implementing-a-crud.md).
 
@@ -57,13 +57,13 @@ A handler is just an `async fn` that returns something Axum can convert to an HT
 use axum::Json;
 use serde::Serialize;
 
-/// The JSON body returned by GET /api/status/version
+/// The JSON body returned by GET /v1/status/version
 #[derive(Serialize)]
 pub struct VersionResponse {
     pub version: String,
 }
 
-/// Handler for GET /api/status/version
+/// Handler for GET /v1/status/version
 pub async fn get_version() -> Json<VersionResponse> {
     Json(VersionResponse {
         version: "1.0.0".to_string(),
@@ -76,7 +76,7 @@ pub async fn get_version() -> Json<VersionResponse> {
 - The function must be `async`.
 - The return type must implement `IntoResponse`. `Json<T>` already does this as long as `T: Serialize`.
 - If you want to return a specific HTTP status code alongside JSON, use `ApiSuccess<T>` (see the existing `create_user.rs` as a model).
-- If you need access to the shared application state (e.g., to call a service), add `State(state): State<AppState<US>>` as the first parameter. See [Step 4](#step-4--add-the-route-to-the-router) for more details.
+- If you need access to the shared application state (e.g., to call a service), add `State(state): State<AppState>` as the first parameter. See [Step 4](#step-4--add-the-route-to-the-router) for more details.
 
 ---
 
@@ -114,32 +114,32 @@ use crate::inbound::http::handlers::version::get_version;
 
 ### 4b. Add the route
 
-Find the `api_routes` function at the bottom of the file and add your route:
+Find the `v1_routes` function at the bottom of the file and add a new nested router, or extend an existing one:
 
 ```rust
-fn api_routes<US: UserService>() -> Router<AppState<US>> {
+fn v1_routes() -> Router<AppState> {
     Router::new()
-        .route("/users", post(create_user::<US>))
-        .route("/users", get(list_users::<US>))
-        .route("/users/:id", get(get_user::<US>))
-        .route("/users/:id", put(update_user::<US>))
-        .route("/users/:id", delete(delete_user::<US>))
-        .route("/status/version", get(get_version))  // ← add this line
+        .nest("/users", v1_users_routes())
+        .nest("/status", v1_status_routes())  // ← add a new sub-router
+}
+
+fn v1_status_routes() -> Router<AppState> {
+    Router::new()
+        .route("/version", get(get_version))  // ← add this line
 }
 ```
 
-The full URL will be `/api/status/version` because all routes in `api_routes()` are nested under `/api` (see where `.nest("/api", api_routes())` is called in `HttpServer::new`).
+The full URL will be `/v1/status/version` because all routes in `v1_routes()` are nested under `/v1` (see where `.nest("/v1", v1_routes())` is called in `HttpServer::new`).
 
-> **Note:** If your handler does NOT need `AppState` (no service calls), the generic `<US: UserService>` will
-> cause a type error. In that case, you can register the route directly on the outer router instead:
+> **Note:** If your handler is simple and does not belong to any sub-group, you can add it directly in
+> `v1_routes()` without creating an extra function:
 >
 > ```rust
-> // In HttpServer::new(), on the main router
-> let router = axum::Router::new()
->     .nest("/api", api_routes())
->     .route("/", get(api_status))
->     .route("/api/status/version", get(get_version))  // ← here instead
->     .with_state(state);
+> fn v1_routes() -> Router<AppState> {
+>     Router::new()
+>         .nest("/users", v1_users_routes())
+>         .route("/status/version", get(get_version))  // ← inline route
+> }
 > ```
 
 ---
@@ -149,7 +149,7 @@ The full URL will be `/api/status/version` because all routes in `api_routes()` 
 Start the server, then use `curl` or any HTTP client:
 
 ```bash
-curl http://localhost:8080/api/status/version
+curl http://localhost:8080/v1/status/version
 ```
 
 Expected response:
@@ -180,10 +180,10 @@ use axum::routing::{get, post, put, patch, delete};
 
 ### Path parameters
 
-Use `:name` in the route path to capture a segment as a variable:
+Use `{name}` in the route path to capture a segment as a variable:
 
 ```rust
-.route("/users/:id", get(get_user::<US>))
+.route("/users/{id}", get(get_user))
 ```
 
 In the handler, extract it with `axum::extract::Path`:
@@ -192,9 +192,9 @@ In the handler, extract it with `axum::extract::Path`:
 use axum::extract::Path;
 use uuid::Uuid;
 
-pub async fn get_user<US: UserService>(
-    State(state): State<AppState<US>>,
-    Path(id): Path<Uuid>,           // Axum will parse the ":id" segment into a Uuid
+pub async fn get_user(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,           // Axum will parse the "{id}" segment into a Uuid
 ) -> Result<ApiSuccess<...>, ApiError> {
     // ...
 }
@@ -214,8 +214,8 @@ pub struct PaginationParams {
     pub per_page: Option<usize>,
 }
 
-pub async fn list_users<US: UserService>(
-    State(state): State<AppState<US>>,
+pub async fn list_users(
+    State(state): State<AppState>,
     Query(params): Query<PaginationParams>,
 ) -> Result<ApiSuccess<...>, ApiError> {
     let page = params.page.unwrap_or(1);

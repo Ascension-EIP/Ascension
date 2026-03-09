@@ -23,6 +23,7 @@ pub struct Claims {
 #[derive(Debug, Clone)]
 struct Jwt {
     secret: String,
+    #[allow(dead_code)]
     duration: Duration,
 }
 
@@ -31,6 +32,7 @@ impl Jwt {
         Self { secret, duration }
     }
 
+    #[allow(dead_code)]
     pub fn generate(&self, user_id: Uuid) -> Result<String, AuthError> {
         let now = Utc::now();
         let claims = Claims {

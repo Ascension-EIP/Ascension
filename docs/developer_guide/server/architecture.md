@@ -109,8 +109,8 @@ Key files:
 |---|---|
 | `src/inbound/http.rs` | Builds the Axum router, binds to the port, starts the server |
 | `src/inbound/http/handlers/api.rs` | Generic `ApiSuccess<T>` and `ApiError` response wrappers |
-| `src/inbound/http/handlers/status.rs` | The `GET /` health-check endpoint |
-| `src/inbound/http/handlers/user/create_user.rs` | Handler for `POST /api/users` |
+| `src/inbound/http/handlers/user/create_user.rs` | Handler for `POST /v1/users` |
+| `src/inbound/http/middleware/auth.rs` | Auth and admin middleware (JWT validation, role check) |
 
 The Inbound layer answers the question: **"How does the outside world talk to the application?"**
 
@@ -134,12 +134,12 @@ The Outbound layer answers the question: **"How does the application store and r
 
 ## How a request flows through the server
 
-Here is what happens step-by-step when a client sends `POST /api/users`:
+Here is what happens step-by-step when a client sends `POST /v1/users`:
 
 ```
 Client
   │
-  │  POST /api/users  { "username": "...", "email": "...", ... }
+  │  POST /v1/users  { "username": "...", "email": "...", ... }
   ▼
 Axum Router  (src/inbound/http.rs)
   │
@@ -199,6 +199,11 @@ apps/server/
     │
     ├── domain.rs                       # Re-exports domain module
     ├── domain/
+    │   ├── auth/
+    │   │   ├── entity.rs               # Auth entity types
+    │   │   ├── error.rs                # AuthError enum
+    │   │   ├── inbound.rs              # AuthService trait
+    │   │   └── outbound.rs             # Auth outbound trait
     │   └── user/
     │       ├── user.rs                 # Re-exports models, ports, service
     │       ├── models/
@@ -208,23 +213,28 @@ apps/server/
     │
     ├── inbound.rs                      # Re-exports inbound module
     ├── inbound/
-    │   └── http.rs                     # HttpServer, AppState, Axum router + routes
+    │   └── http.rs                     # HttpServer, AppState, Axum router + v1 routes
     │   └── http/
-    │       └── handlers.rs             # Re-exports handlers
-    │       └── handlers/
-    │           ├── api.rs              # ApiSuccess<T> and ApiError generic wrappers
-    │           ├── status.rs           # GET / health check
-    │           ├── user.rs             # Re-exports user handlers
-    │           └── user/
-    │               ├── create_user.rs  # POST /api/users
-    │               ├── list_users.rs   # GET  /api/users
-    │               ├── get_user.rs     # GET  /api/users/:id
-    │               ├── update_user.rs  # PUT  /api/users/:id
-    │               └── delete_user.rs  # DELETE /api/users/:id
+    │       ├── handlers.rs             # Re-exports handlers
+    │       ├── handlers/
+    │       │   ├── api.rs              # ApiSuccess<T> and ApiError generic wrappers
+    │       │   ├── user.rs             # Re-exports user handlers
+    │       │   └── user/
+    │       │       ├── create_user.rs  # POST /v1/users
+    │       │       ├── list_users.rs   # GET  /v1/users
+    │       │       ├── get_user.rs     # GET  /v1/users/{id}
+    │       │       ├── update_user.rs  # PUT  /v1/users/{id}
+    │       │       └── delete_user.rs  # DELETE /v1/users/{id}
+    │       ├── middleware.rs           # Re-exports middleware
+    │       └── middleware/
+    │           └── auth.rs             # JWT auth + admin role middleware
     │
     ├── outbound.rs                     # Re-exports outbound module
     ├── outbound/
     │   └── postgresql.rs               # Postgres struct — implements UserRepository
+    │
+    ├── usecase/
+    │   └── auth.rs                     # auth::Service — implements AuthService (JWT logic)
     │
     └── tests/                          # Unit tests (compiled only in test mode)
         ├── mod.rs
@@ -250,11 +260,16 @@ apps/server/
 
 ```rust
 // main.rs (simplified)
-let db = Postgres::new(&config.database_url).await?;   // outbound adapter
-let user_service = Service::new(db);                   // domain service
-let http_server = HttpServer::new(user_service, ...).await?;
+let repo = Arc::new(Postgres::new(pool));                       // outbound adapter (shared)
+let auth_service = Arc::new(auth::Service::new(repo.clone(), config.hmac_key.clone()));
+let user_service = Arc::new(Service::new(repo.clone()));        // domain service
+let http_server = HttpServer::new(user_service, auth_service, config).await?;
 http_server.run().await
 ```
+
+Note that the repository (`Postgres`) is wrapped in `Arc` and **shared** between both services.
+`AppState` is not generic — it holds `Arc<dyn UserService>` and `Arc<dyn AuthService>`,
+so services are swappable at runtime without compile-time generics.
 
 Notice that `main.rs` is the **only** file that knows about all three layers at the same time.
 Every other file only knows about its own layer and the traits of adjacent ones.
@@ -268,7 +283,7 @@ The server reads its configuration from **environment variables** (or a `.env` f
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `DATABASE_URL` | ✅ Yes | — | PostgreSQL connection string |
-| `JWT_KEY` | ✅ Yes | — | Secret key for signing JWTs |
+| `JWT_KEY` | ✅ Yes | — | Secret key for signing JWTs (HMAC) |
 | `SERVER_PORT` | ❌ No | `8080` | Port the server listens on |
 | `RUN_MIGRATION` | ❌ No | `false` | Run DB migrations on startup |
 

@@ -4,6 +4,7 @@ use uuid::Uuid;
 #[derive(Debug, Error)]
 pub enum AuthError {
     #[error("token failed to generate")]
+    #[allow(dead_code)]
     TokenGeneration,
     #[error("invalid token")]
     InvalidToken,

@@ -198,7 +198,7 @@ mod tests {
         let id = fixed_uuid();
         let repo = MockUserRepository::new()
             .with_create(Ok(CreateUserOutput::new(id)));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let input = CreateUserInput::new(valid_username(), valid_email(), valid_password(), valid_role());
         let result = service.create_user(&input).await;
@@ -213,7 +213,7 @@ mod tests {
         let repo = MockUserRepository::new().with_create(Err(
             UserRepositoryError::DuplicateEmail { email: email.clone() },
         ));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let input = CreateUserInput::new(valid_username(), email, valid_password(), valid_role());
         let result = service.create_user(&input).await;
@@ -229,7 +229,7 @@ mod tests {
         let repo = MockUserRepository::new().with_create(Err(UserRepositoryError::Unknown(
             anyhow::anyhow!("database down"),
         )));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let input = CreateUserInput::new(valid_username(), valid_email(), valid_password(), valid_role());
         let result = service.create_user(&input).await;
@@ -256,7 +256,7 @@ mod tests {
             ),
         ];
         let repo = MockUserRepository::new().with_list(Ok(ListUsersOutput::new(users)));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let input = ListUsersInput::new(None, None);
         let result = service.list_users(&input).await;
@@ -269,7 +269,7 @@ mod tests {
     #[tokio::test]
     async fn list_users_returns_empty_list_when_no_users() {
         let repo = MockUserRepository::new().with_list(Ok(ListUsersOutput::new(vec![])));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let input = ListUsersInput::new(None, None);
         let result = service.list_users(&input).await;
@@ -283,7 +283,7 @@ mod tests {
         let repo = MockUserRepository::new().with_list(Err(UserRepositoryError::Unknown(
             anyhow::anyhow!("connection lost"),
         )));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let input = ListUsersInput::new(Some(1), Some(10));
         let result = service.list_users(&input).await;
@@ -297,7 +297,7 @@ mod tests {
     #[tokio::test]
     async fn list_users_with_pagination_parameters_passes_through() {
         let repo = MockUserRepository::new().with_list(Ok(ListUsersOutput::new(vec![])));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let input = ListUsersInput::new(Some(2), Some(5));
         let result = service.list_users(&input).await;
@@ -312,7 +312,7 @@ mod tests {
         let id = fixed_uuid();
         let expected = GetUserOutput::new(id, valid_username(), valid_email(), valid_role());
         let repo = MockUserRepository::new().with_get(Ok(expected));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let input = GetUserInput::new(id);
         let result = service.get_user(&input).await;
@@ -329,7 +329,7 @@ mod tests {
         let id = fixed_uuid();
         let repo = MockUserRepository::new()
             .with_get(Err(UserRepositoryError::NotFoundId { id }));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let input = GetUserInput::new(id);
         let result = service.get_user(&input).await;
@@ -345,7 +345,7 @@ mod tests {
         let repo = MockUserRepository::new().with_get(Err(UserRepositoryError::Unknown(
             anyhow::anyhow!("query failed"),
         )));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let input = GetUserInput::new(fixed_uuid());
         let result = service.get_user(&input).await;
@@ -362,7 +362,7 @@ mod tests {
     async fn update_user_returns_id_on_success() {
         let id = fixed_uuid();
         let repo = MockUserRepository::new().with_update(Ok(UpdateUserOutput::new(id)));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let input = UpdateUserInput::new(id, valid_username(), valid_email(), valid_password(), valid_role());
         let result = service.update_user(&input).await;
@@ -376,7 +376,7 @@ mod tests {
         let id = fixed_uuid();
         let repo = MockUserRepository::new()
             .with_update(Err(UserRepositoryError::NotFoundId { id }));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let input = UpdateUserInput::new(id, valid_username(), valid_email(), valid_password(), valid_role());
         let result = service.update_user(&input).await;
@@ -394,7 +394,7 @@ mod tests {
         let repo = MockUserRepository::new().with_update(Err(
             UserRepositoryError::DuplicateEmail { email: email.clone() },
         ));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let input = UpdateUserInput::new(id, valid_username(), email, valid_password(), valid_role());
         let result = service.update_user(&input).await;
@@ -410,7 +410,7 @@ mod tests {
         let repo = MockUserRepository::new().with_update(Err(UserRepositoryError::Unknown(
             anyhow::anyhow!("constraint error"),
         )));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let id = fixed_uuid();
         let input = UpdateUserInput::new(id, valid_username(), valid_email(), valid_password(), valid_role());
@@ -427,7 +427,7 @@ mod tests {
     #[tokio::test]
     async fn delete_user_succeeds() {
         let repo = MockUserRepository::new().with_delete(Ok(()));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let input = DeleteUserInput::new(fixed_uuid());
         let result = service.delete_user(&input).await;
@@ -440,7 +440,7 @@ mod tests {
         let id = fixed_uuid();
         let repo = MockUserRepository::new()
             .with_delete(Err(UserRepositoryError::NotFoundId { id }));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let input = DeleteUserInput::new(id);
         let result = service.delete_user(&input).await;
@@ -456,7 +456,7 @@ mod tests {
         let repo = MockUserRepository::new().with_delete(Err(UserRepositoryError::Unknown(
             anyhow::anyhow!("foreign key violation"),
         )));
-        let service = Service::new(repo);
+        let service = Service::new(Arc::new(repo));
 
         let input = DeleteUserInput::new(fixed_uuid());
         let result = service.delete_user(&input).await;

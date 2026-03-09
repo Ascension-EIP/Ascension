@@ -46,6 +46,7 @@ pub async fn admin(Extension(user): Extension<User>, req: Request, next: Next) -
     next.run(req).await
 }
 
+#[allow(dead_code)]
 pub async fn user(Extension(user): Extension<User>, req: Request, next: Next) -> Response {
     if user.role != Role::User {
         return StatusCode::FORBIDDEN.into_response();

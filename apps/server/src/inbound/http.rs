@@ -12,13 +12,18 @@ use tower_governor::GovernorLayer;
 use tower_governor::governor::GovernorConfigBuilder;
 use tower_http::trace::TraceLayer;
 
+use crate::domain::analysis::ports::AnalysisService;
 use crate::domain::auth::inbound::AuthService;
 use crate::domain::user::inbound::UserService;
+use crate::domain::video::ports::VideoService;
+use crate::inbound::http::handlers::analysis::create_analysis::create_analysis;
+use crate::inbound::http::handlers::analysis::get_analysis::get_analysis;
 use crate::inbound::http::handlers::user::create_user::create_user;
 use crate::inbound::http::handlers::user::delete_user::delete_user;
 use crate::inbound::http::handlers::user::get_user::get_user;
 use crate::inbound::http::handlers::user::list_users::list_users;
 use crate::inbound::http::handlers::user::update_user::update_user;
+use crate::inbound::http::handlers::video::get_upload_url::get_upload_url;
 
 mod handlers;
 mod middleware;
@@ -32,6 +37,8 @@ pub struct HttpServerConfig<'a> {
 pub struct AppState {
     pub user_service: Arc<dyn UserService>,
     pub auth_service: Arc<dyn AuthService>,
+    pub video_service: Arc<dyn VideoService>,
+    pub analysis_service: Arc<dyn AnalysisService>,
 }
 
 pub struct HttpServer {
@@ -43,11 +50,15 @@ impl HttpServer {
     pub async fn new(
         user_service: Arc<dyn UserService>,
         auth_service: Arc<dyn AuthService>,
+        video_service: Arc<dyn VideoService>,
+        analysis_service: Arc<dyn AnalysisService>,
         config: HttpServerConfig<'_>,
     ) -> anyhow::Result<Self> {
         let state = AppState {
             user_service,
             auth_service,
+            video_service,
+            analysis_service,
         };
 
         let strict = Arc::new(
@@ -114,7 +125,10 @@ impl HttpServer {
 }
 
 fn v1_routes() -> Router<AppState> {
-    Router::new().nest("/users", v1_users_routes())
+    Router::new()
+        .nest("/users", v1_users_routes())
+        .nest("/videos", v1_videos_routes())
+        .nest("/analyses", v1_analyses_routes())
 }
 
 fn v1_users_routes() -> Router<AppState> {
@@ -124,4 +138,15 @@ fn v1_users_routes() -> Router<AppState> {
         .route("/{id}", get(get_user))
         .route("/{id}", put(update_user))
         .route("/{id}", delete(delete_user))
+}
+
+fn v1_videos_routes() -> Router<AppState> {
+    Router::new()
+        .route("/upload-url", post(get_upload_url))
+}
+
+fn v1_analyses_routes() -> Router<AppState> {
+    Router::new()
+        .route("/", post(create_analysis))
+        .route("/{id}", get(get_analysis))
 }

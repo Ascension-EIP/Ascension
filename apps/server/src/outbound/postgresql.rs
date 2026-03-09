@@ -14,7 +14,7 @@ use crate::domain::user::{
 
 #[derive(Debug, Clone)]
 pub struct Postgres {
-    pool: sqlx::PgPool,
+    pub(crate) pool: sqlx::PgPool,
 }
 
 struct UserFilter {
