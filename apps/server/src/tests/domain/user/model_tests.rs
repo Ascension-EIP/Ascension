@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use crate::domain::user::models::user::{EmailAddress, Password, Role, Username};
+    use crate::domain::user::entity::{
+        email::Email as EmailAddress, password::Password, role::Role, username::Username,
+    };
 
     // ─── Username ─────────────────────────────────────────────────────────────
 

@@ -1,38 +1,35 @@
 #[cfg(test)]
 mod tests {
-    use std::future::Future;
     use std::sync::{Arc, Mutex};
     use uuid::Uuid;
 
-    use crate::domain::user::models::user::{
-        CreateUserInput, CreateUserOutput, DeleteUserInput, EmailAddress, GetUserInput,
-        GetUserOutput, ListUserOutput, ListUsersInput, ListUsersOutput, Password, Role,
-        UpdateUserInput, UpdateUserOutput, Username,
+    use crate::domain::user::entity::{
+        email::Email, new_user::NewUser, pagination::Pagination, password::Password, role::Role,
+        user::User, username::Username,
     };
-    use crate::domain::user::ports::UserService;
-    use crate::domain::user::ports::{
-        CreateUserData, DeleteUserData, GetUserData, ListUsersData, UpdateUserData, UserRepository,
-        UserRepositoryError,
-    };
-    use crate::domain::user::service::Service;
+    use crate::domain::user::error::UserError;
+    use crate::domain::user::inbound::UserService;
+    use crate::domain::user::outbound::UserRepository;
+    use crate::usecase::user::Service;
+    use async_trait::async_trait;
 
     // ─── Mock Repository ──────────────────────────────────────────────────────
     //
     // Results are stored behind Arc<Mutex<Option<...>>> so the mock is Clone
     // without requiring the inner types to implement Clone.
 
-    type ArcResult<T> = Arc<Mutex<Option<Result<T, UserRepositoryError>>>>;
+    type ArcResult<T> = Arc<Mutex<Option<Result<T, UserError>>>>;
 
-    fn arc<T>(v: Result<T, UserRepositoryError>) -> ArcResult<T> {
+    fn arc<T>(v: Result<T, UserError>) -> ArcResult<T> {
         Arc::new(Mutex::new(Some(v)))
     }
 
     #[derive(Clone)]
     struct MockUserRepository {
-        create_result: Option<ArcResult<CreateUserOutput>>,
-        list_result: Option<ArcResult<ListUsersOutput>>,
-        get_result: Option<ArcResult<GetUserOutput>>,
-        update_result: Option<ArcResult<UpdateUserOutput>>,
+        create_result: Option<ArcResult<User>>,
+        list_result: Option<ArcResult<Vec<User>>>,
+        get_result: Option<ArcResult<User>>,
+        update_result: Option<ArcResult<User>>,
         delete_result: Option<ArcResult<()>>,
     }
 
@@ -47,32 +44,32 @@ mod tests {
             }
         }
 
-        fn with_create(mut self, result: Result<CreateUserOutput, UserRepositoryError>) -> Self {
+        fn with_create(mut self, result: Result<User, UserError>) -> Self {
             self.create_result = Some(arc(result));
             self
         }
 
-        fn with_list(mut self, result: Result<ListUsersOutput, UserRepositoryError>) -> Self {
+        fn with_list(mut self, result: Result<Vec<User>, UserError>) -> Self {
             self.list_result = Some(arc(result));
             self
         }
 
-        fn with_get(mut self, result: Result<GetUserOutput, UserRepositoryError>) -> Self {
+        fn with_get(mut self, result: Result<User, UserError>) -> Self {
             self.get_result = Some(arc(result));
             self
         }
 
-        fn with_update(mut self, result: Result<UpdateUserOutput, UserRepositoryError>) -> Self {
+        fn with_update(mut self, result: Result<User, UserError>) -> Self {
             self.update_result = Some(arc(result));
             self
         }
 
-        fn with_delete(mut self, result: Result<(), UserRepositoryError>) -> Self {
+        fn with_delete(mut self, result: Result<(), UserError>) -> Self {
             self.delete_result = Some(arc(result));
             self
         }
 
-        fn take_create(&self) -> Result<CreateUserOutput, UserRepositoryError> {
+        fn take_create(&self) -> Result<User, UserError> {
             self.create_result
                 .as_ref()
                 .expect("create_result not set")
@@ -82,7 +79,7 @@ mod tests {
                 .expect("create_result already consumed")
         }
 
-        fn take_list(&self) -> Result<ListUsersOutput, UserRepositoryError> {
+        fn take_list(&self) -> Result<Vec<User>, UserError> {
             self.list_result
                 .as_ref()
                 .expect("list_result not set")
@@ -92,7 +89,7 @@ mod tests {
                 .expect("list_result already consumed")
         }
 
-        fn take_get(&self) -> Result<GetUserOutput, UserRepositoryError> {
+        fn take_get(&self) -> Result<User, UserError> {
             self.get_result
                 .as_ref()
                 .expect("get_result not set")
@@ -102,7 +99,7 @@ mod tests {
                 .expect("get_result already consumed")
         }
 
-        fn take_update(&self) -> Result<UpdateUserOutput, UserRepositoryError> {
+        fn take_update(&self) -> Result<User, UserError> {
             self.update_result
                 .as_ref()
                 .expect("update_result not set")
@@ -112,7 +109,7 @@ mod tests {
                 .expect("update_result already consumed")
         }
 
-        fn take_delete(&self) -> Result<(), UserRepositoryError> {
+        fn take_delete(&self) -> Result<(), UserError> {
             self.delete_result
                 .as_ref()
                 .expect("delete_result not set")
@@ -123,45 +120,26 @@ mod tests {
         }
     }
 
+    #[async_trait]
     impl UserRepository for MockUserRepository {
-        fn create_user(
-            &self,
-            _req: &CreateUserData,
-        ) -> impl Future<Output = Result<CreateUserOutput, UserRepositoryError>> + Send {
-            let result = self.take_create();
-            async move { result }
+        async fn create_user(&self, _req: &NewUser) -> Result<User, UserError> {
+            self.take_create()
         }
 
-        fn list_users(
-            &self,
-            _req: &ListUsersData,
-        ) -> impl Future<Output = Result<ListUsersOutput, UserRepositoryError>> + Send {
-            let result = self.take_list();
-            async move { result }
+        async fn list_users(&self, _req: &Pagination) -> Result<Vec<User>, UserError> {
+            self.take_list()
         }
 
-        fn get_user(
-            &self,
-            _req: &GetUserData,
-        ) -> impl Future<Output = Result<GetUserOutput, UserRepositoryError>> + Send {
-            let result = self.take_get();
-            async move { result }
+        async fn get_user(&self, _req: &Uuid) -> Result<User, UserError> {
+            self.take_get()
         }
 
-        fn update_user(
-            &self,
-            _req: &UpdateUserData,
-        ) -> impl Future<Output = Result<UpdateUserOutput, UserRepositoryError>> + Send {
-            let result = self.take_update();
-            async move { result }
+        async fn update_user(&self, _req: &User) -> Result<User, UserError> {
+            self.take_update()
         }
 
-        fn delete_user(
-            &self,
-            _req: &DeleteUserData,
-        ) -> impl Future<Output = Result<(), UserRepositoryError>> + Send {
-            let result = self.take_delete();
-            async move { result }
+        async fn delete_user(&self, _req: &Uuid) -> Result<(), UserError> {
+            self.take_delete()
         }
     }
 
@@ -171,12 +149,22 @@ mod tests {
         Username::new("validuser1").unwrap()
     }
 
-    fn valid_email() -> EmailAddress {
-        EmailAddress::new("user@example.com").unwrap()
+    fn valid_email() -> Email {
+        Email::new("user@example.com").unwrap()
     }
 
-    fn valid_email_2() -> EmailAddress {
-        EmailAddress::new("other@example.com").unwrap()
+    fn valid_email_2() -> Email {
+        Email::new("other@example.com").unwrap()
+    }
+
+    fn make_user(id: Uuid) -> User {
+        User::new(
+            id,
+            valid_username(),
+            valid_email(),
+            valid_password(),
+            valid_role(),
+        )
     }
 
     fn valid_password() -> Password {
@@ -196,10 +184,10 @@ mod tests {
     #[tokio::test]
     async fn create_user_returns_id_on_success() {
         let id = fixed_uuid();
-        let repo = MockUserRepository::new().with_create(Ok(CreateUserOutput::new(id)));
+        let repo = MockUserRepository::new().with_create(Ok(make_user(id)));
         let service = Service::new(Arc::new(repo));
 
-        let input = CreateUserInput::new(
+        let input = NewUser::new(
             valid_username(),
             valid_email(),
             valid_password(),
@@ -215,29 +203,26 @@ mod tests {
     async fn create_user_returns_duplicate_email_error() {
         let email = valid_email();
         let repo =
-            MockUserRepository::new().with_create(Err(UserRepositoryError::DuplicateEmail {
-                email: email.clone(),
-            }));
+            MockUserRepository::new().with_create(Err(UserError::DuplicateEmail(email.clone())));
         let service = Service::new(Arc::new(repo));
 
-        let input = CreateUserInput::new(valid_username(), email, valid_password(), valid_role());
+        let input = NewUser::new(valid_username(), email, valid_password(), valid_role());
         let result = service.create_user(&input).await;
 
         assert!(result.is_err());
         assert!(matches!(
             result.err().unwrap(),
-            crate::domain::user::models::user::CreateUserError::DuplicateEmail { .. }
+            UserError::DuplicateEmail(_)
         ));
     }
 
     #[tokio::test]
     async fn create_user_propagates_unknown_error() {
-        let repo = MockUserRepository::new().with_create(Err(UserRepositoryError::Unknown(
-            anyhow::anyhow!("database down"),
-        )));
+        let repo = MockUserRepository::new()
+            .with_create(Err(UserError::Unknown(anyhow::anyhow!("database down"))));
         let service = Service::new(Arc::new(repo));
 
-        let input = CreateUserInput::new(
+        let input = NewUser::new(
             valid_username(),
             valid_email(),
             valid_password(),
@@ -246,10 +231,7 @@ mod tests {
         let result = service.create_user(&input).await;
 
         assert!(result.is_err());
-        assert!(matches!(
-            result.err().unwrap(),
-            crate::domain::user::models::user::CreateUserError::Unknown(_)
-        ));
+        assert!(matches!(result.err().unwrap(), UserError::Unknown(_)));
     }
 
     // ─── list_users ──────────────────────────────────────────────────────────
@@ -259,61 +241,76 @@ mod tests {
         let id1 = Uuid::new_v4();
         let id2 = Uuid::new_v4();
         let users = vec![
-            ListUserOutput::new(id1, valid_username(), valid_email(), valid_role()),
-            ListUserOutput::new(
+            User::new(
+                id1,
+                valid_username(),
+                valid_email(),
+                valid_password(),
+                valid_role(),
+            ),
+            User::new(
                 id2,
                 Username::new("otheruser2").unwrap(),
                 valid_email_2(),
+                valid_password(),
                 Role::new("Admin").unwrap(),
             ),
         ];
-        let repo = MockUserRepository::new().with_list(Ok(ListUsersOutput::new(users)));
+        let repo = MockUserRepository::new().with_list(Ok(users));
         let service = Service::new(Arc::new(repo));
 
-        let input = ListUsersInput::new(None, None);
-        let result = service.list_users(&input).await;
+        let params = Pagination {
+            page: None,
+            per_page: None,
+        };
+        let result = service.list_users(&params).await;
 
         assert!(result.is_ok());
         let output = result.unwrap();
-        assert_eq!(output.users.len(), 2);
+        assert_eq!(output.len(), 2);
     }
 
     #[tokio::test]
     async fn list_users_returns_empty_list_when_no_users() {
-        let repo = MockUserRepository::new().with_list(Ok(ListUsersOutput::new(vec![])));
+        let repo = MockUserRepository::new().with_list(Ok(vec![]));
         let service = Service::new(Arc::new(repo));
 
-        let input = ListUsersInput::new(None, None);
-        let result = service.list_users(&input).await;
+        let params = Pagination {
+            page: None,
+            per_page: None,
+        };
+        let result = service.list_users(&params).await;
 
         assert!(result.is_ok());
-        assert!(result.unwrap().users.is_empty());
+        assert!(result.unwrap().is_empty());
     }
 
     #[tokio::test]
     async fn list_users_propagates_unknown_error() {
-        let repo = MockUserRepository::new().with_list(Err(UserRepositoryError::Unknown(
-            anyhow::anyhow!("connection lost"),
-        )));
+        let repo = MockUserRepository::new()
+            .with_list(Err(UserError::Unknown(anyhow::anyhow!("connection lost"))));
         let service = Service::new(Arc::new(repo));
 
-        let input = ListUsersInput::new(Some(1), Some(10));
-        let result = service.list_users(&input).await;
+        let params = Pagination {
+            page: Some(1),
+            per_page: Some(10),
+        };
+        let result = service.list_users(&params).await;
 
         assert!(result.is_err());
-        assert!(matches!(
-            result.err().unwrap(),
-            crate::domain::user::models::user::ListUsersError::Unknown(_)
-        ));
+        assert!(matches!(result.err().unwrap(), UserError::Unknown(_)));
     }
 
     #[tokio::test]
     async fn list_users_with_pagination_parameters_passes_through() {
-        let repo = MockUserRepository::new().with_list(Ok(ListUsersOutput::new(vec![])));
+        let repo = MockUserRepository::new().with_list(Ok(vec![]));
         let service = Service::new(Arc::new(repo));
 
-        let input = ListUsersInput::new(Some(2), Some(5));
-        let result = service.list_users(&input).await;
+        let params = Pagination {
+            page: Some(2),
+            per_page: Some(5),
+        };
+        let result = service.list_users(&params).await;
 
         assert!(result.is_ok());
     }
@@ -323,12 +320,11 @@ mod tests {
     #[tokio::test]
     async fn get_user_returns_user_on_success() {
         let id = fixed_uuid();
-        let expected = GetUserOutput::new(id, valid_username(), valid_email(), valid_role());
+        let expected = make_user(id);
         let repo = MockUserRepository::new().with_get(Ok(expected));
         let service = Service::new(Arc::new(repo));
 
-        let input = GetUserInput::new(id);
-        let result = service.get_user(&input).await;
+        let result = service.get_user(&id).await;
 
         assert!(result.is_ok());
         let output = result.unwrap();
@@ -340,34 +336,25 @@ mod tests {
     #[tokio::test]
     async fn get_user_returns_not_found_error() {
         let id = fixed_uuid();
-        let repo = MockUserRepository::new().with_get(Err(UserRepositoryError::NotFoundId { id }));
+        let repo = MockUserRepository::new().with_get(Err(UserError::UserNotFound(id)));
         let service = Service::new(Arc::new(repo));
 
-        let input = GetUserInput::new(id);
-        let result = service.get_user(&input).await;
+        let result = service.get_user(&id).await;
 
         assert!(result.is_err());
-        assert!(matches!(
-            result.err().unwrap(),
-            crate::domain::user::models::user::GetUserError::NotFoundUser { .. }
-        ));
+        assert!(matches!(result.err().unwrap(), UserError::UserNotFound(_)));
     }
 
     #[tokio::test]
     async fn get_user_propagates_unknown_error() {
-        let repo = MockUserRepository::new().with_get(Err(UserRepositoryError::Unknown(
-            anyhow::anyhow!("query failed"),
-        )));
+        let repo = MockUserRepository::new()
+            .with_get(Err(UserError::Unknown(anyhow::anyhow!("query failed"))));
         let service = Service::new(Arc::new(repo));
 
-        let input = GetUserInput::new(fixed_uuid());
-        let result = service.get_user(&input).await;
+        let result = service.get_user(&fixed_uuid()).await;
 
         assert!(result.is_err());
-        assert!(matches!(
-            result.err().unwrap(),
-            crate::domain::user::models::user::GetUserError::Unknown(_)
-        ));
+        assert!(matches!(result.err().unwrap(), UserError::Unknown(_)));
     }
 
     // ─── update_user ─────────────────────────────────────────────────────────
@@ -375,17 +362,11 @@ mod tests {
     #[tokio::test]
     async fn update_user_returns_id_on_success() {
         let id = fixed_uuid();
-        let repo = MockUserRepository::new().with_update(Ok(UpdateUserOutput::new(id)));
+        let repo = MockUserRepository::new().with_update(Ok(make_user(id)));
         let service = Service::new(Arc::new(repo));
 
-        let input = UpdateUserInput::new(
-            id,
-            valid_username(),
-            valid_email(),
-            valid_password(),
-            valid_role(),
-        );
-        let result = service.update_user(&input).await;
+        let user = make_user(id);
+        let result = service.update_user(&user).await;
 
         assert!(result.is_ok());
         assert_eq!(result.unwrap().id, id);
@@ -394,24 +375,14 @@ mod tests {
     #[tokio::test]
     async fn update_user_returns_not_found_error() {
         let id = fixed_uuid();
-        let repo =
-            MockUserRepository::new().with_update(Err(UserRepositoryError::NotFoundId { id }));
+        let repo = MockUserRepository::new().with_update(Err(UserError::UserNotFound(id)));
         let service = Service::new(Arc::new(repo));
 
-        let input = UpdateUserInput::new(
-            id,
-            valid_username(),
-            valid_email(),
-            valid_password(),
-            valid_role(),
-        );
-        let result = service.update_user(&input).await;
+        let user = make_user(id);
+        let result = service.update_user(&user).await;
 
         assert!(result.is_err());
-        assert!(matches!(
-            result.err().unwrap(),
-            crate::domain::user::models::user::UpdateUserError::NotFoundUser { .. }
-        ));
+        assert!(matches!(result.err().unwrap(), UserError::UserNotFound(_)));
     }
 
     #[tokio::test]
@@ -419,44 +390,30 @@ mod tests {
         let id = fixed_uuid();
         let email = valid_email();
         let repo =
-            MockUserRepository::new().with_update(Err(UserRepositoryError::DuplicateEmail {
-                email: email.clone(),
-            }));
+            MockUserRepository::new().with_update(Err(UserError::DuplicateEmail(email.clone())));
         let service = Service::new(Arc::new(repo));
 
-        let input =
-            UpdateUserInput::new(id, valid_username(), email, valid_password(), valid_role());
-        let result = service.update_user(&input).await;
+        let user = make_user(id);
+        let result = service.update_user(&user).await;
 
         assert!(result.is_err());
         assert!(matches!(
             result.err().unwrap(),
-            crate::domain::user::models::user::UpdateUserError::DuplicateEmail { .. }
+            UserError::DuplicateEmail(_)
         ));
     }
 
     #[tokio::test]
     async fn update_user_propagates_unknown_error() {
-        let repo = MockUserRepository::new().with_update(Err(UserRepositoryError::Unknown(
-            anyhow::anyhow!("constraint error"),
-        )));
+        let repo = MockUserRepository::new()
+            .with_update(Err(UserError::Unknown(anyhow::anyhow!("constraint error"))));
         let service = Service::new(Arc::new(repo));
 
-        let id = fixed_uuid();
-        let input = UpdateUserInput::new(
-            id,
-            valid_username(),
-            valid_email(),
-            valid_password(),
-            valid_role(),
-        );
-        let result = service.update_user(&input).await;
+        let user = make_user(fixed_uuid());
+        let result = service.update_user(&user).await;
 
         assert!(result.is_err());
-        assert!(matches!(
-            result.err().unwrap(),
-            crate::domain::user::models::user::UpdateUserError::Unknown(_)
-        ));
+        assert!(matches!(result.err().unwrap(), UserError::Unknown(_)));
     }
 
     // ─── delete_user ─────────────────────────────────────────────────────────
@@ -466,8 +423,7 @@ mod tests {
         let repo = MockUserRepository::new().with_delete(Ok(()));
         let service = Service::new(Arc::new(repo));
 
-        let input = DeleteUserInput::new(fixed_uuid());
-        let result = service.delete_user(&input).await;
+        let result = service.delete_user(&fixed_uuid()).await;
 
         assert!(result.is_ok());
     }
@@ -475,34 +431,25 @@ mod tests {
     #[tokio::test]
     async fn delete_user_returns_not_found_error() {
         let id = fixed_uuid();
-        let repo =
-            MockUserRepository::new().with_delete(Err(UserRepositoryError::NotFoundId { id }));
+        let repo = MockUserRepository::new().with_delete(Err(UserError::UserNotFound(id)));
         let service = Service::new(Arc::new(repo));
 
-        let input = DeleteUserInput::new(id);
-        let result = service.delete_user(&input).await;
+        let result = service.delete_user(&id).await;
 
         assert!(result.is_err());
-        assert!(matches!(
-            result.err().unwrap(),
-            crate::domain::user::models::user::DeleteUserError::NotFoundUser { .. }
-        ));
+        assert!(matches!(result.err().unwrap(), UserError::UserNotFound(_)));
     }
 
     #[tokio::test]
     async fn delete_user_propagates_unknown_error() {
-        let repo = MockUserRepository::new().with_delete(Err(UserRepositoryError::Unknown(
-            anyhow::anyhow!("foreign key violation"),
-        )));
+        let repo = MockUserRepository::new().with_delete(Err(UserError::Unknown(anyhow::anyhow!(
+            "foreign key violation"
+        ))));
         let service = Service::new(Arc::new(repo));
 
-        let input = DeleteUserInput::new(fixed_uuid());
-        let result = service.delete_user(&input).await;
+        let result = service.delete_user(&fixed_uuid()).await;
 
         assert!(result.is_err());
-        assert!(matches!(
-            result.err().unwrap(),
-            crate::domain::user::models::user::DeleteUserError::Unknown(_)
-        ));
+        assert!(matches!(result.err().unwrap(), UserError::Unknown(_)));
     }
 }
