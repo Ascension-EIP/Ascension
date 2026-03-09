@@ -25,7 +25,7 @@ minio = "0.3"
 openssl = { version = "0.10", features = ["vendored"] }
 
 # tools
-uuid = { version = "1.21", features = ["v4", "fast-rng"] }
+uuid = { version = "1.22", features = ["v4", "fast-rng"] }
 async-trait = "0.1"
 anyhow = "1.0"
 thiserror = "2.0"
