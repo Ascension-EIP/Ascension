@@ -45,8 +45,7 @@ class ApiService {
       body: jsonEncode({'filename': filename, 'user_id': userId}),
     );
     _assertOk(response, 'get upload URL');
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
-    return body['data'] as Map<String, dynamic>;
+    return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
   /// Upload a video file directly to MinIO using the presigned PUT URL.
@@ -82,8 +81,7 @@ class ApiService {
       body: jsonEncode({'video_id': videoId}),
     );
     _assertOk(response, 'trigger analysis');
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
-    return body['data'] as Map<String, dynamic>;
+    return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
   /// Fetch the current state of an analysis (polls until completed/failed).
@@ -92,8 +90,7 @@ class ApiService {
     final uri = Uri.parse('$baseUrl/v1/analyses/$analysisId');
     final response = await http.get(uri);
     _assertOk(response, 'get analysis');
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
-    return body['data'] as Map<String, dynamic>;
+    return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
   void _assertOk(http.Response response, String context) {
