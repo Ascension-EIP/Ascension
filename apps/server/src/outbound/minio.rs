@@ -57,11 +57,7 @@ impl MinioClient {
     }
 
     /// Generate a presigned PUT URL valid for `expires_in`.
-    pub async fn presign_put(
-        &self,
-        object_key: &str,
-        expires_in: Duration,
-    ) -> Result<String> {
+    pub async fn presign_put(&self, object_key: &str, expires_in: Duration) -> Result<String> {
         let client = self.build_client()?;
         let expiry_secs = expires_in.as_secs() as u32;
 

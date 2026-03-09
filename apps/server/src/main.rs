@@ -17,10 +17,12 @@ use outbound::rabbitmq::RabbitMqPublisher;
 use sqlx::postgres::PgPoolOptions;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::domain::user::service::Service;
 use crate::usecase::analysis::AnalysisServiceImpl;
 use crate::usecase::video::VideoServiceImpl;
-use crate::usecase::auth;
+use crate::{
+    domain::{auth::inbound::AuthService, user::inbound::UserService},
+    usecase::{auth, user},
+};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -73,19 +75,22 @@ async fn main() -> anyhow::Result<()> {
     );
 
     // ── Services ───────────────────────────────────────────────────────────────
-    let auth_service: Arc<dyn crate::domain::auth::inbound::AuthService> =
+    let auth_service: Arc<dyn AuthService> =
         Arc::new(auth::Service::new(repo.clone(), config.hmac_key.clone()));
 
-    let user_service: Arc<dyn crate::domain::user::ports::UserService> =
-        Arc::new(Service::new(repo.clone()));
+    let user_service: Arc<dyn UserService> = Arc::new(user::Service::new(repo.clone()));
 
     let video_service: Arc<dyn crate::domain::video::ports::VideoService> = Arc::new(
         VideoServiceImpl::new(repo.clone(), minio.clone(), config.minio_bucket.clone()),
     );
 
-    let analysis_service: Arc<dyn crate::domain::analysis::ports::AnalysisService> = Arc::new(
-        AnalysisServiceImpl::new(repo.clone(), repo.clone(), mq.clone(), config.minio_bucket.clone()),
-    );
+    let analysis_service: Arc<dyn crate::domain::analysis::ports::AnalysisService> =
+        Arc::new(AnalysisServiceImpl::new(
+            repo.clone(),
+            repo.clone(),
+            mq.clone(),
+            config.minio_bucket.clone(),
+        ));
 
     // ── HTTP server ────────────────────────────────────────────────────────────
     let server_config = HttpServerConfig {

@@ -13,7 +13,7 @@ http = "1"
 sqlx = { version = "0.8", features = ["postgres", "runtime-tokio", "macros", "chrono"] }
 
 # async
-tokio = { version = "1.49", features = ["full"] }
+tokio = { version = "1.50", features = ["full"] }
 
 # config
 dotenv = "0.15"
@@ -30,7 +30,7 @@ openssl = { version = "0.10", features = ["vendored"] }
 lapin = "2"
 
 # tools
-uuid = { version = "1.21", features = ["v4", "fast-rng", "serde"] }
+uuid = { version = "1.22", features = ["v4", "fast-rng", "serde"] }
 async-trait = "0.1"
 anyhow = "1.0"
 thiserror = "2.0"
@@ -43,7 +43,8 @@ jsonwebtoken = "10.3.0"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tower-http = { version = "0.6", features = ["trace"] }
+tower_governor = { version = "0.8", features = ["axum"] }
 
 [dev-dependencies]
-mockall = "0.13"
+mockall = "0.14"
 tokio = { version = "1.49", features = ["full", "test-util"] }

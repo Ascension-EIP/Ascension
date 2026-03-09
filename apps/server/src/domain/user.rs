@@ -1,3 +1,4 @@
-pub mod models;
-pub mod ports;
-pub mod service;
+pub mod entity;
+pub mod error;
+pub mod inbound;
+pub mod outbound;

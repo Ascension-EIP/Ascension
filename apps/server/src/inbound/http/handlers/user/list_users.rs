@@ -1,24 +1,15 @@
-use crate::domain::user::models::user::{
-    ListUserOutput, ListUsersError, ListUsersInput, ListUsersOutput,
-};
-use crate::inbound::http::AppState;
-use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
+use axum::Json;
 use axum::extract::{Query, State};
 use axum::http::StatusCode;
 use serde::{Deserialize, Serialize};
 
-impl From<ListUsersError> for ApiError {
-    fn from(e: ListUsersError) -> Self {
-        match e {
-            ListUsersError::Unknown(_cause) => {
-                Self::InternalServerError("Internal server error".to_string())
-            }
-        }
-    }
-}
+use crate::domain::user::entity::pagination::Pagination;
+use crate::domain::user::entity::user::User;
+use crate::domain::user::error::UserError;
+use crate::inbound::http::AppState;
 
 #[derive(Deserialize)]
-pub struct ListUsersParams {
+pub struct QueryPagination {
     pub page: Option<usize>,
     pub per_page: Option<usize>,
 }
@@ -31,13 +22,13 @@ pub struct ListUserResponse {
     pub role: String,
 }
 
-impl From<&ListUserOutput> for ListUserResponse {
-    fn from(output: &ListUserOutput) -> Self {
+impl From<&User> for ListUserResponse {
+    fn from(user: &User) -> Self {
         Self {
-            id: output.id.to_string(),
-            username: output.username.to_string(),
-            email: output.email.to_string(),
-            role: output.role.to_string(),
+            id: user.id.to_string(),
+            username: user.username.to_string(),
+            email: user.email.to_string(),
+            role: user.role.to_string(),
         }
     }
 }
@@ -47,23 +38,31 @@ pub struct ListUsersResponse {
     pub users: Vec<ListUserResponse>,
 }
 
-impl From<&ListUsersOutput> for ListUsersResponse {
-    fn from(output: &ListUsersOutput) -> Self {
+impl From<&Vec<User>> for ListUsersResponse {
+    fn from(users: &Vec<User>) -> Self {
         Self {
-            users: output.users.iter().map(ListUserResponse::from).collect(),
+            users: users.iter().map(ListUserResponse::from).collect(),
         }
     }
 }
 
+/// List all [User]s.
+///
+/// # Responses
+///
+/// - 200 OK: the list of [User]s was successfully retrieved.
 pub async fn list_users(
     State(state): State<AppState>,
-    Query(params): Query<ListUsersParams>,
-) -> Result<ApiSuccess<ListUsersResponse>, ApiError> {
-    let input = ListUsersInput::new(params.page, params.per_page);
+    Query(params): Query<QueryPagination>,
+) -> Result<(StatusCode, Json<ListUsersResponse>), UserError> {
+    let input = Pagination {
+        page: params.page,
+        per_page: params.per_page,
+    };
+
     state
         .user_service
         .list_users(&input)
         .await
-        .map_err(ApiError::from)
-        .map(|output| ApiSuccess::new(StatusCode::OK, ListUsersResponse::from(&output)))
+        .map(|ref users| (StatusCode::OK, Json(ListUsersResponse::from(users))))
 }

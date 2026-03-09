@@ -1,4 +1,6 @@
+use std::net::SocketAddr;
 use std::sync::Arc;
+use std::time::Duration;
 
 use anyhow::Context;
 use axum::Router;
@@ -6,11 +8,13 @@ use axum::http::StatusCode;
 use axum::routing::{delete, get, post, put};
 use tokio::net;
 use tower::ServiceBuilder;
+use tower_governor::GovernorLayer;
+use tower_governor::governor::GovernorConfigBuilder;
 use tower_http::trace::TraceLayer;
 
 use crate::domain::analysis::ports::AnalysisService;
 use crate::domain::auth::inbound::AuthService;
-use crate::domain::user::ports::UserService;
+use crate::domain::user::inbound::UserService;
 use crate::domain::video::ports::VideoService;
 use crate::inbound::http::handlers::analysis::create_analysis::create_analysis;
 use crate::inbound::http::handlers::analysis::get_analysis::get_analysis;
@@ -57,6 +61,26 @@ impl HttpServer {
             analysis_service,
         };
 
+        let strict = Arc::new(
+            GovernorConfigBuilder::default()
+                .period(Duration::from_secs(1))
+                .burst_size(10)
+                .finish()
+                .context("failed to build rate limiter configuration")?,
+        );
+
+        {
+            let limiter = strict.limiter();
+            let l = limiter.clone();
+            tokio::spawn(async move {
+                let mut interval = tokio::time::interval(Duration::from_secs(60));
+                loop {
+                    interval.tick().await;
+                    l.retain_recent();
+                }
+            });
+        }
+
         let router = Router::new()
             .route(
                 "/healthz",
@@ -75,7 +99,9 @@ impl HttpServer {
             .nest("/v1", v1_routes())
             .layer(
                 ServiceBuilder::new()
-                    .layer(TraceLayer::new_for_http()),
+                    // .layer(RecoveryLayer::new())
+                    .layer(TraceLayer::new_for_http())
+                    .layer(GovernorLayer::new(strict)),
             )
             .with_state(state);
 
@@ -88,9 +114,13 @@ impl HttpServer {
 
     pub async fn run(self) -> anyhow::Result<()> {
         tracing::info!("listening on {}", self.listener.local_addr().unwrap());
-        axum::serve(self.listener, self.router)
-            .await
-            .context("received error from running server")?;
+        axum::serve(
+            self.listener,
+            self.router
+                .into_make_service_with_connect_info::<SocketAddr>(),
+        )
+        .await
+        .context("received error from running server")?;
         Ok(())
     }
 }
@@ -112,8 +142,7 @@ fn v1_users_routes() -> Router<AppState> {
 }
 
 fn v1_videos_routes() -> Router<AppState> {
-    Router::new()
-        .route("/upload-url", post(get_upload_url))
+    Router::new().route("/upload-url", post(get_upload_url))
 }
 
 fn v1_analyses_routes() -> Router<AppState> {
