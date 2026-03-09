@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/shared/layout/mobile_layout.dart';
-import 'package:mobile/services/api_service.dart';
+import 'package:mobile/core/network/api_service.dart';
 import 'package:mobile/shared/theme/app_theme.dart';
 
 void main() async {
