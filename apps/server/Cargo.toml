@@ -27,7 +27,7 @@ minio = "0.3"
 openssl = { version = "0.10", features = ["vendored"] }
 
 # rabbitmq
-lapin = "2"
+lapin = "4"
 
 # tools
 uuid = { version = "1.22", features = ["v4", "fast-rng", "serde"] }
