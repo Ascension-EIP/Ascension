@@ -1,6 +1,11 @@
 # ── Build stage ───────────────────────────────────────────────────────────────
 FROM rust:1.91.1-slim AS builder
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+	perl \
+	make \
+	&& rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Cache dependencies layer
