@@ -18,7 +18,7 @@ import pika
 import psycopg2
 from dotenv import load_dotenv
 
-from apps.ai.src.pose_analysis import analyze
+from pose_analysis import analyze
 
 # Load .env from project root (two levels up from apps/ai/) so that
 # RABBITMQ_HOST, MINIO_ENDPOINT, DB_URI etc. are available when the
