@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/components/header.dart';
+import 'package:mobile/shared/components/header.dart';
 import 'package:mobile/pages/home/settings_page.dart';
 
 class ProfilePage extends StatelessWidget {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/components/header.dart';
-import 'package:mobile/components/video_upload.dart';
+import 'package:mobile/shared/components/header.dart';
+import 'package:mobile/shared/components/video_upload.dart';
 
 class UploadPage extends StatelessWidget {
   const UploadPage({super.key});
