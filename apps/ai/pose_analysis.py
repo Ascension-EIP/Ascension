@@ -123,9 +123,26 @@ def analyze(video_path: str) -> dict:
 
     fps = cap.get(cv2.CAP_PROP_FPS)
     if fps <= 0:
-        fps = 60
+        fps = 30
     n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    print(f"[mediapipe] Vidéo chargée : {n_frames} frames à {fps} FPS")
+
+    # Analyse at most TARGET_FPS frames per second of video.
+    # On a 60 fps video this skips every other frame; on a 30 fps video
+    # nothing is skipped.  Keeps processing time proportional to duration
+    # rather than source frame-rate.
+    TARGET_FPS = 15
+    frame_step = max(1, int(round(fps / TARGET_FPS)))
+    effective_frames = (n_frames + frame_step - 1) // frame_step
+
+    # Resize frames to max this width before sending to MediaPipe.
+    # Reduces memory consumption and speeds up inference significantly.
+    # MediaPipe Lite handles 256-512 px inputs well.
+    MAX_WIDTH = 640
+
+    print(
+        f"[mediapipe] Vidéo : {n_frames} frames @ {fps:.1f} FPS — "
+        f"analyse 1/{frame_step} frames ({effective_frames} frames effectives, max {MAX_WIDTH}px)"
+    )
 
     base_options = python.BaseOptions(model_asset_path=MODEL_PATH)
     options = vision.PoseLandmarkerOptions(
@@ -135,21 +152,40 @@ def analyze(video_path: str) -> dict:
 
     try:
         with vision.PoseLandmarker.create_from_options(options) as landmarker:
-            output: dict = {"frames": []}
+            frames_list = []
+            analyzed = 0
 
-            for i in range(n_frames):
+            # Seek directly to each target frame instead of decoding every
+            # frame sequentially.  This avoids allocating decompressed numpy
+            # arrays for skipped frames and is the primary memory saving.
+            i = 0
+            while i < n_frames:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, i)
                 ret, frame = cap.read()
                 if not ret:
                     print(f"[mediapipe] Lecture interrompue à la frame {i}")
                     break
 
+                # Downscale to MAX_WIDTH to reduce memory and speed up inference
+                h, w = frame.shape[:2]
+                if w > MAX_WIDTH:
+                    scale = MAX_WIDTH / w
+                    frame = cv2.resize(
+                        frame, (MAX_WIDTH, int(h * scale)),
+                        interpolation=cv2.INTER_AREA,
+                    )
+
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                del frame  # release original BGR array immediately
+
                 mp_image = mp.Image(
                     image_format=mp.ImageFormat.SRGB, data=rgb_frame
                 )
+                del rgb_frame  # release after MediaPipe copies it
 
                 timestamp_ms = int((i / fps) * 1000)
                 result = landmarker.detect_for_video(mp_image, timestamp_ms)
+                del mp_image
 
                 frame_data = {
                     "frame": i,
@@ -161,16 +197,17 @@ def analyze(video_path: str) -> dict:
                     frame_data["pose_detected"] = True
                     frame_data.update(_process_pose(result.pose_landmarks[0]))
 
-                output["frames"].append(frame_data)
+                frames_list.append(frame_data)
+                analyzed += 1
 
-                if i % 30 == 0:
+                if analyzed % 30 == 0:
                     det = "OK" if result.pose_landmarks else "NO_POSE"
-                    print(f"[mediapipe] {i}/{n_frames} ({det})")
+                    print(f"[mediapipe] {analyzed}/{effective_frames} ({det})")
 
-            print(
-                f"[mediapipe] Terminé — {len(output['frames'])} frames analysées"
-            )
-            return output
+                i += frame_step
+
+            print(f"[mediapipe] Terminé — {analyzed} frames analysées")
+            return {"frames": frames_list}
     finally:
         cap.release()
 
