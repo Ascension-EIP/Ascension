@@ -36,7 +36,7 @@ logger = logging.getLogger("ai-worker")
 # ─── Constants ───────────────────────────────────────────────────
 QUEUE = "vision.skeleton"
 EXCHANGE = "ascension.events"
-RABBITMQ_RETRY_DELAY: int = 5  # seconds between connection attempts
+RABBITMQ_RETRY_DELAY: int = int(os.getenv('RABBITMQ_RETRY_DELAY', 5))  # seconds between connection attempts
 RABBITMQ_MAX_RETRIES = 12  # ~60 s total before giving up
 
 
