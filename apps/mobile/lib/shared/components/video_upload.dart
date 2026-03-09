@@ -4,8 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
-import 'package:mobile/services/api_service.dart';
-import 'package:mobile/pages/analysis/analysis_view_page.dart';
+import 'package:mobile/core/network/api_service.dart';
+import 'package:mobile/features/upload/presentation/pages/analysis_page.dart';
 
 /// video_player is only supported on Android, iOS, and Web.
 bool get _supportsVideoPlayer =>
@@ -92,12 +92,12 @@ class _VideoUploadState extends State<VideoUpload> {
       final analysisData = await api.triggerAnalysis(videoId: videoId);
       final analysisId = analysisData['analysis_id'] as String;
 
-      // 4. Poll until completed or failed (up to ~5 minutes).
-      // A `failed` status seen in the first 3 polls (< 15 s) may be a stale
-      // result from a previous attempt on the same video — keep waiting until
-      // the worker picks up the new job and updates the status.
+      // 4. Poll until completed or failed (up to ~10 minutes).
+      // A `failed` status seen in the first 30 s may be a stale result from a
+      // previous attempt on the same video — keep waiting until the worker
+      // picks up the new job and updates the status.
       Map<String, dynamic>? result;
-      for (int i = 0; i < 60; i++) {
+      for (int i = 0; i < 120; i++) {
         await Future.delayed(const Duration(seconds: 5));
         final a = await api.getAnalysis(analysisId);
         final status = a['status'] as String;
@@ -105,13 +105,19 @@ class _VideoUploadState extends State<VideoUpload> {
           result = a;
           break;
         }
-        // Accept `failed` only after we have waited at least 15 s so that
-        // a fresh worker run has had time to update the status from a
-        // previously-failed attempt.
-        if (status == 'failed' && i >= 2) {
+        // Accept `failed` only after 30 s so that a fresh worker run has had
+        // time to update the status from a previously-failed attempt.
+        if (status == 'failed' && i >= 6) {
           result = a;
           break;
         }
+      }
+
+      if (result == null) {
+        throw Exception(
+          'L\'analyse a dépassé le délai d\'attente (10 min). '
+          'Vérifiez l\'état du worker et réessayez.',
+        );
       }
 
       setState(() {

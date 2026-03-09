@@ -10,10 +10,13 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import json
+import logging
 import numpy as np
 import os
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+logger = logging.getLogger("ai-worker.pose")
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BASE_DIR, "pose_landmarker.task")
 
 
@@ -24,40 +27,47 @@ MODEL_PATH = os.path.join(BASE_DIR, "pose_landmarker.task")
 class LM:
     L_SHOULDER = 11
     R_SHOULDER = 12
-    L_ELBOW    = 13
-    R_ELBOW    = 14
-    L_WRIST    = 15
-    R_WRIST    = 16
-    L_HIP      = 23
-    R_HIP      = 24
-    L_KNEE     = 25
-    R_KNEE     = 26
-    L_ANKLE    = 27
-    R_ANKLE    = 28
+    L_ELBOW = 13
+    R_ELBOW = 14
+    L_WRIST = 15
+    R_WRIST = 16
+    L_HIP = 23
+    R_HIP = 24
+    L_KNEE = 25
+    R_KNEE = 26
+    L_ANKLE = 27
+    R_ANKLE = 28
 
     NAMES = {
-        11: "left_shoulder",  12: "right_shoulder",
-        13: "left_elbow",     14: "right_elbow",
-        15: "left_wrist",     16: "right_wrist",
-        23: "left_hip",       24: "right_hip",
-        25: "left_knee",      26: "right_knee",
-        27: "left_ankle",     28: "right_ankle",
+        11: "left_shoulder",
+        12: "right_shoulder",
+        13: "left_elbow",
+        14: "right_elbow",
+        15: "left_wrist",
+        16: "right_wrist",
+        23: "left_hip",
+        24: "right_hip",
+        25: "left_knee",
+        26: "right_knee",
+        27: "left_ankle",
+        28: "right_ankle",
     }
+
 
 # Pairs of landmark names to connect when drawing the skeleton overlay.
 _BODY_CONNECTIONS = [
     (LM.L_SHOULDER, LM.R_SHOULDER),
     (LM.L_SHOULDER, LM.L_ELBOW),
-    (LM.L_ELBOW,    LM.L_WRIST),
+    (LM.L_ELBOW, LM.L_WRIST),
     (LM.R_SHOULDER, LM.R_ELBOW),
-    (LM.R_ELBOW,    LM.R_WRIST),
+    (LM.R_ELBOW, LM.R_WRIST),
     (LM.L_SHOULDER, LM.L_HIP),
     (LM.R_SHOULDER, LM.R_HIP),
-    (LM.L_HIP,      LM.R_HIP),
-    (LM.L_HIP,      LM.L_KNEE),
-    (LM.L_KNEE,     LM.L_ANKLE),
-    (LM.R_HIP,      LM.R_KNEE),
-    (LM.R_KNEE,     LM.R_ANKLE),
+    (LM.L_HIP, LM.R_HIP),
+    (LM.L_HIP, LM.L_KNEE),
+    (LM.L_KNEE, LM.L_ANKLE),
+    (LM.R_HIP, LM.R_KNEE),
+    (LM.R_KNEE, LM.R_ANKLE),
 ]
 
 
@@ -123,9 +133,30 @@ def analyze(video_path: str) -> dict:
 
     fps = cap.get(cv2.CAP_PROP_FPS)
     if fps <= 0:
-        fps = 60
+        fps = 30
     n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    print(f"[mediapipe] Vidéo chargée : {n_frames} frames à {fps} FPS")
+
+    # Analyse at most TARGET_FPS frames per second of video.
+    # On a 60 fps video this skips every other frame; on a 30 fps video
+    # nothing is skipped.  Keeps processing time proportional to duration
+    # rather than source frame-rate.
+    TARGET_FPS = 15
+    frame_step = max(1, int(round(fps / TARGET_FPS)))
+    effective_frames = (n_frames + frame_step - 1) // frame_step
+
+    # Resize frames to max this width before sending to MediaPipe.
+    # Reduces memory consumption and speeds up inference significantly.
+    # MediaPipe Lite handles 256-512 px inputs well.
+    MAX_WIDTH = 640
+
+    logger.info(
+        "Vidéo : %d frames @ %.1f FPS — analyse 1/%d frames (%d frames effectives, max %dpx)",
+        n_frames,
+        fps,
+        frame_step,
+        effective_frames,
+        MAX_WIDTH,
+    )
 
     base_options = python.BaseOptions(model_asset_path=MODEL_PATH)
     options = vision.PoseLandmarkerOptions(
@@ -135,21 +166,41 @@ def analyze(video_path: str) -> dict:
 
     try:
         with vision.PoseLandmarker.create_from_options(options) as landmarker:
-            output: dict = {"frames": []}
+            frames_list = []
+            analyzed = 0
 
-            for i in range(n_frames):
+            # Seek directly to each target frame instead of decoding every
+            # frame sequentially.  This avoids allocating decompressed numpy
+            # arrays for skipped frames and is the primary memory saving.
+            i = 0
+            while i < n_frames:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, i)
                 ret, frame = cap.read()
                 if not ret:
-                    print(f"[mediapipe] Lecture interrompue à la frame {i}")
+                    logger.warning("Lecture interrompue à la frame %d", i)
                     break
 
+                # Downscale to MAX_WIDTH to reduce memory and speed up inference
+                h, w = frame.shape[:2]
+                if w > MAX_WIDTH:
+                    scale = MAX_WIDTH / w
+                    frame = cv2.resize(
+                        frame,
+                        (MAX_WIDTH, int(h * scale)),
+                        interpolation=cv2.INTER_AREA,
+                    )
+
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                del frame  # release original BGR array immediately
+
                 mp_image = mp.Image(
                     image_format=mp.ImageFormat.SRGB, data=rgb_frame
                 )
+                del rgb_frame  # release after MediaPipe copies it
 
                 timestamp_ms = int((i / fps) * 1000)
                 result = landmarker.detect_for_video(mp_image, timestamp_ms)
+                del mp_image
 
                 frame_data = {
                     "frame": i,
@@ -161,16 +212,19 @@ def analyze(video_path: str) -> dict:
                     frame_data["pose_detected"] = True
                     frame_data.update(_process_pose(result.pose_landmarks[0]))
 
-                output["frames"].append(frame_data)
+                frames_list.append(frame_data)
+                analyzed += 1
 
-                if i % 30 == 0:
+                if analyzed % 30 == 0:
                     det = "OK" if result.pose_landmarks else "NO_POSE"
-                    print(f"[mediapipe] {i}/{n_frames} ({det})")
+                    logger.debug(
+                        "frame %d/%d (%s)", analyzed, effective_frames, det
+                    )
 
-            print(
-                f"[mediapipe] Terminé — {len(output['frames'])} frames analysées"
-            )
-            return output
+                i += frame_step
+
+            logger.info("Terminé — %d frames analysées", analyzed)
+            return {"frames": frames_list}
     finally:
         cap.release()
 
@@ -202,15 +256,15 @@ def render_annotated_video(
     if not cap.isOpened():
         raise RuntimeError(f"Cannot open video: {video_path}")
 
-    width    = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height   = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fps      = cap.get(cv2.CAP_PROP_FPS) or 30
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps = cap.get(cv2.CAP_PROP_FPS) or 30
     n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
-    print(f"[render] Encodage de {n_frames} frames → {output_path}")
+    logger.info("[render] Encodage de %d frames → %s", n_frames, output_path)
 
     frame_idx = 0
     while True:
@@ -232,41 +286,52 @@ def render_annotated_video(
             for a, b in _BODY_CONNECTIONS:
                 sa, sb = str(a), str(b)
                 if sa in pts and sb in pts:
-                    cv2.line(frame, pts[sa], pts[sb],
-                             (0, 255, 0), 2, cv2.LINE_AA)
+                    cv2.line(
+                        frame, pts[sa], pts[sb], (0, 255, 0), 2, cv2.LINE_AA
+                    )
 
             # Landmark dots
             for px, py in pts.values():
                 cv2.circle(frame, (px, py), 5, (0, 100, 255), -1, cv2.LINE_AA)
-                cv2.circle(frame, (px, py), 5, (255, 255, 255),  1, cv2.LINE_AA)
+                cv2.circle(frame, (px, py), 5, (255, 255, 255), 1, cv2.LINE_AA)
 
             # Angle labels (joint keys are already str from JSON)
             for joint, deg in fd.get("angles", {}).items():
                 if joint in pts:
                     px, py = pts[joint]
                     cv2.putText(
-                        frame, f"{deg:.0f}\u00b0",
+                        frame,
+                        f"{deg:.0f}\u00b0",
                         (px + 8, py - 8),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5,
-                        (255, 255, 0), 1, cv2.LINE_AA,
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5,
+                        (255, 255, 0),
+                        1,
+                        cv2.LINE_AA,
                     )
 
         # Frame counter
         cv2.putText(
-            frame, f"frame {frame_idx}", (10, 25),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1, cv2.LINE_AA,
+            frame,
+            f"frame {frame_idx}",
+            (10, 25),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.6,
+            (200, 200, 200),
+            1,
+            cv2.LINE_AA,
         )
 
         writer.write(frame)
 
         if frame_idx % 30 == 0:
-            print(f"[render] {frame_idx}/{n_frames}")
+            logger.debug("[render] %d/%d", frame_idx, n_frames)
 
         frame_idx += 1
 
     cap.release()
     writer.release()
-    print(f"[render] Terminé — {output_path}")
+    logger.info("[render] Terminé — %s", output_path)
 
 
 # ─── Standalone usage ────────────────────────────────────────────
@@ -277,25 +342,30 @@ if __name__ == "__main__":
         description="Ascension — analyse de pose MediaPipe"
     )
     parser.add_argument(
-        "video", nargs="?",
+        "video",
+        nargs="?",
         default=os.path.join(BASE_DIR, "vid.mp4"),
         help="Chemin vers la vidéo d'entrée (défaut : vid.mp4)",
     )
     parser.add_argument(
-        "-o", "--output",
+        "-o",
+        "--output",
         default=os.path.join(BASE_DIR, "biomechanics.json"),
         help="Chemin du JSON de sortie (défaut : biomechanics.json)",
     )
     parser.add_argument(
-        "--render", action="store_true",
+        "--render",
+        action="store_true",
         help="Générer la vidéo annotée après l'analyse",
     )
     parser.add_argument(
-        "--render-only", metavar="JSON",
+        "--render-only",
+        metavar="JSON",
         help="Sauter l'analyse — générer la vidéo depuis un JSON existant",
     )
     parser.add_argument(
-        "--render-output", metavar="PATH",
+        "--render-output",
+        metavar="PATH",
         help="Chemin de la vidéo annotée (défaut : <video>-postanalyse.mp4)",
     )
     args = parser.parse_args()
@@ -309,7 +379,8 @@ if __name__ == "__main__":
 
     if args.render_only:
         render_annotated_video(
-            args.video, args.render_only,
+            args.video,
+            args.render_only,
             _render_out(args.video, args.render_output),
         )
     else:
@@ -319,6 +390,7 @@ if __name__ == "__main__":
         print(f"Sauvegardé dans {args.output}")
         if args.render:
             render_annotated_video(
-                args.video, args.output,
+                args.video,
+                args.output,
                 _render_out(args.video, args.render_output),
             )

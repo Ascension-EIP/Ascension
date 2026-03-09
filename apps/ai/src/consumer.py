@@ -5,9 +5,11 @@ climbing video from MinIO/S3, runs MediaPipe pose analysis, persists
 results in PostgreSQL and publishes a completion event.
 """
 
+import atexit
 import json
 import logging
 import os
+import signal
 import tempfile
 import time
 from datetime import datetime, timezone
@@ -27,8 +29,9 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(_HERE, "..", "..", ".env"), override=False)
 
 # ─── Logging ─────────────────────────────────────────────────────
+_LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
-    level=logging.INFO,
+    level=getattr(logging, _LOG_LEVEL, logging.INFO),
     format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
 )
 logger = logging.getLogger("ai-worker")
@@ -36,8 +39,35 @@ logger = logging.getLogger("ai-worker")
 # ─── Constants ───────────────────────────────────────────────────
 QUEUE = "vision.skeleton"
 EXCHANGE = "ascension.events"
-RABBITMQ_RETRY_DELAY = 5   # seconds between connection attempts
+RABBITMQ_RETRY_DELAY: int = int(
+    os.getenv("RABBITMQ_RETRY_DELAY", "5")
+)  # seconds between connection attempts
 RABBITMQ_MAX_RETRIES = 12  # ~60 s total before giving up
+
+PID_FILE = os.path.join(_HERE, "..", "worker.pid")
+
+
+def _acquire_pid_lock() -> None:
+    """Ensure only one worker instance runs at a time using a PID file."""
+    pid_path = os.path.abspath(PID_FILE)
+    if os.path.exists(pid_path):
+        with open(pid_path) as f:
+            old_pid = f.read().strip()
+        if old_pid:
+            try:
+                os.kill(int(old_pid), 0)  # 0 = just check existence
+                logger.warning(
+                    "Another worker is already running (PID %s). "
+                    "Killing it before starting.",
+                    old_pid,
+                )
+                os.kill(int(old_pid), signal.SIGTERM)
+                time.sleep(2)
+            except (ProcessLookupError, ValueError):
+                pass  # stale PID file
+    with open(pid_path, "w") as f:
+        f.write(str(os.getpid()))
+    atexit.register(lambda: os.path.exists(pid_path) and os.unlink(pid_path))
 
 
 # ─── Clients ─────────────────────────────────────────────────────
@@ -97,8 +127,13 @@ def _download_video(s3, bucket: str, key: str) -> str:
         raise
 
 
-def _update_analysis(conn, analysis_id: str, status: str,
-                     result_json=None, processing_time_ms: int | None = None):
+def _update_analysis(
+    conn,
+    analysis_id: str,
+    status: str,
+    result_json=None,
+    processing_time_ms: int | None = None,
+):
     """Update the analyses row in PostgreSQL."""
     with conn.cursor() as cur:
         cur.execute(
@@ -157,8 +192,11 @@ def on_message(ch, method, _properties, body):
         t0 = time.monotonic()
         result = analyze(tmp_path)
         processing_ms = int((time.monotonic() - t0) * 1000)
-        logger.info("Analysis done in %d ms (%d frames)",
-                     processing_ms, len(result.get("frames", [])))
+        logger.info(
+            "Analysis done in %d ms (%d frames)",
+            processing_ms,
+            len(result.get("frames", [])),
+        )
 
         # 3. Save results to PostgreSQL
         conn = _pg_conn()
@@ -166,12 +204,16 @@ def on_message(ch, method, _properties, body):
         logger.info("Saved results for analysis %s", analysis_id)
 
         # 4. Publish completion event
-        _publish_event(ch, job_id, {
-            "job_id": job_id,
-            "analysis_id": analysis_id,
-            "status": "completed",
-            "processing_time_ms": processing_ms,
-        })
+        _publish_event(
+            ch,
+            job_id,
+            {
+                "job_id": job_id,
+                "analysis_id": analysis_id,
+                "status": "completed",
+                "processing_time_ms": processing_ms,
+            },
+        )
 
         # 5. Ack
         ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -184,7 +226,9 @@ def on_message(ch, method, _properties, body):
                 conn = _pg_conn()
             _update_analysis(conn, analysis_id, "failed")
         except Exception:
-            logger.exception("Could not update analysis %s to failed", analysis_id)
+            logger.exception(
+                "Could not update analysis %s to failed", analysis_id
+            )
         # Discard the message — it is already marked `failed` in the DB.
         # Re-queuing would cause an infinite crash loop.
         ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
@@ -203,10 +247,16 @@ def _connect(params: pika.ConnectionParameters) -> pika.BlockingConnection:
         try:
             return pika.BlockingConnection(params)
         except pika.exceptions.AMQPConnectionError:
-            logger.warning("RabbitMQ not ready (attempt %d/%d), retrying in %ds…",
-                           attempt, RABBITMQ_MAX_RETRIES, RABBITMQ_RETRY_DELAY)
+            logger.warning(
+                "RabbitMQ not ready (attempt %d/%d), retrying in %ds…",
+                attempt,
+                RABBITMQ_MAX_RETRIES,
+                RABBITMQ_RETRY_DELAY,
+            )
             time.sleep(RABBITMQ_RETRY_DELAY)
-    logger.critical("Could not connect to RabbitMQ after %d attempts", RABBITMQ_MAX_RETRIES)
+    logger.critical(
+        "Could not connect to RabbitMQ after %d attempts", RABBITMQ_MAX_RETRIES
+    )
     raise SystemExit(1)
 
 
@@ -233,7 +283,9 @@ def main():
             channel.queue_declare(queue=QUEUE, durable=True)
 
             # Declare topic exchange for publishing events
-            channel.exchange_declare(exchange=EXCHANGE, exchange_type="topic", durable=True)
+            channel.exchange_declare(
+                exchange=EXCHANGE, exchange_type="topic", durable=True
+            )
 
             # One job at a time per worker
             channel.basic_qos(prefetch_count=1)
@@ -247,11 +299,16 @@ def main():
             logger.info("Worker ready — consuming from %s", QUEUE)
             channel.start_consuming()
 
-        except (pika.exceptions.ConnectionClosedByBroker,
-                pika.exceptions.AMQPChannelError,
-                pika.exceptions.AMQPConnectionError) as exc:
-            logger.warning("RabbitMQ connection lost (%s), reconnecting in %ds…",
-                           exc, RABBITMQ_RETRY_DELAY)
+        except (
+            pika.exceptions.ConnectionClosedByBroker,
+            pika.exceptions.AMQPChannelError,
+            pika.exceptions.AMQPConnectionError,
+        ) as exc:
+            logger.warning(
+                "RabbitMQ connection lost (%s), reconnecting in %ds…",
+                exc,
+                RABBITMQ_RETRY_DELAY,
+            )
             time.sleep(RABBITMQ_RETRY_DELAY)
             continue
         except KeyboardInterrupt:
@@ -260,7 +317,15 @@ def main():
 
 
 if __name__ == "__main__":
-    print("Starting Ascension AI Worker…")
-    logger.info("Starting AI worker…")
-    logger.info("Environment:\n%s", "\n".join(f"  {k}={v}" for k, v in sorted(os.environ.items())))
+    logging.basicConfig(
+        level=getattr(logging, _LOG_LEVEL, logging.INFO),
+        format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
+        force=True,
+    )
+    logger.info("Starting Ascension AI Worker…")
+    _acquire_pid_lock()
+    logger.info(
+        "Environment:\n%s",
+        "\n".join(f"  {k}={v}" for k, v in sorted(os.environ.items())),
+    )
     main()

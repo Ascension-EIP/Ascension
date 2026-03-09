@@ -1,38 +1,15 @@
 import 'dart:convert';
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
-/// Key used to persist the backend URL in SharedPreferences.
-const String kBackendUrlKey = 'backend_url';
-
-/// Base URL of the Rust/Axum backend.
-///
-/// Resolution order:
-///   1. --dart-define=BACKEND_URL=http://...   (highest priority, baked at build time)
-///   2. Value stored in SharedPreferences (set at runtime via Settings)
-///   3. Runtime fallback:
-///        - Linux/macOS/Windows desktop → http://localhost:8080
-///        - Android emulator            → http://10.0.2.2:8080
-const String _kDefinedUrl = String.fromEnvironment('BACKEND_URL');
-
-String get _kDefaultUrl {
-  if (_kDefinedUrl.isNotEmpty) return _kDefinedUrl;
-  if (!kIsWeb && (Platform.isLinux || Platform.isMacOS || Platform.isWindows)) {
-    return 'http://localhost:8080';
-  }
-  // Android emulator
-  return 'http://10.0.2.2:8080';
-}
+import '../constants/app_constants.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
   ApiService._internal();
 
-  /// The current backend base URL.  Can be changed at runtime via [setBaseUrl].
-  String _baseUrl = _kDefaultUrl;
+  /// The current backend base URL. Can be changed at runtime via [setBaseUrl].
+  String _baseUrl = AppConstants.defaultBackendUrl;
 
   String get baseUrl => _baseUrl;
 
@@ -40,7 +17,7 @@ class ApiService {
   /// Call this once at app startup (e.g. in [main]).
   Future<void> loadBaseUrl() async {
     final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString(kBackendUrlKey);
+    final saved = prefs.getString(AppConstants.backendUrlKey);
     if (saved != null && saved.isNotEmpty) {
       _baseUrl = saved;
     }
@@ -50,7 +27,7 @@ class ApiService {
   Future<void> setBaseUrl(String url) async {
     _baseUrl = url;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(kBackendUrlKey, url);
+    await prefs.setString(AppConstants.backendUrlKey, url);
   }
 
   // ── Videos ──────────────────────────────────────────────────────────────────
@@ -68,8 +45,7 @@ class ApiService {
       body: jsonEncode({'filename': filename, 'user_id': userId}),
     );
     _assertOk(response, 'get upload URL');
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
-    return body['data'] as Map<String, dynamic>;
+    return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
   /// Upload a video file directly to MinIO using the presigned PUT URL.
@@ -105,8 +81,7 @@ class ApiService {
       body: jsonEncode({'video_id': videoId}),
     );
     _assertOk(response, 'trigger analysis');
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
-    return body['data'] as Map<String, dynamic>;
+    return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
   /// Fetch the current state of an analysis (polls until completed/failed).
@@ -115,8 +90,7 @@ class ApiService {
     final uri = Uri.parse('$baseUrl/v1/analyses/$analysisId');
     final response = await http.get(uri);
     _assertOk(response, 'get analysis');
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
-    return body['data'] as Map<String, dynamic>;
+    return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
   void _assertOk(http.Response response, String context) {
