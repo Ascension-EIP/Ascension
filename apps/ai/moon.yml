@@ -16,17 +16,7 @@ tasks:
 
   download-model:
     command: 'bash'
-    args:
-      - '-c'
-      - |
-        if [ ! -f "pose_landmarker.task" ]; then
-          echo "Downloading pose_landmarker.task model..."
-          curl -fsSL -o pose_landmarker.task \
-            "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task"
-          echo "Download complete."
-        else
-          echo "pose_landmarker.task already present, skipping download."
-        fi
+    args: ['scripts/download-model.sh']
     outputs:
       - 'pose_landmarker.task'
 
