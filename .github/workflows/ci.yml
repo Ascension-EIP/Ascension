@@ -41,7 +41,7 @@ jobs:
         run: |
           COMMIT_NAME=$(git log --format="%s" -1)
           echo "Commit message: $COMMIT_NAME"
-          if echo "$COMMIT_NAME" | grep -qiE '^\[(no-ci|ci-no|ci no|no ci|ci-off|off-ci)\]'; then
+          if echo "$COMMIT_NAME" | grep -qiE '^\[(no-ci|ci-no|ci no|no ci|ci-off|off-ci|ci off|off ci|ci-skip|skip-ci|ci skip|skip ci)\]'; then
             echo "::notice title=CI skip::No-CI prefix detected — skipping all checks"
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else

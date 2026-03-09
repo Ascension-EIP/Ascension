@@ -25,6 +25,7 @@ pub trait VideoRepository: Send + Sync + 'static {
 #[derive(Debug, Error)]
 pub enum VideoServiceError {
     #[error("video not found: {id}")]
+    #[allow(dead_code)]
     NotFound { id: Uuid },
     #[error("presign error: {0}")]
     Presign(String),
@@ -41,5 +42,6 @@ pub trait VideoService: Send + Sync + 'static {
         filename: String,
     ) -> Result<(Uuid, String), VideoServiceError>;
 
+    #[allow(dead_code)]
     async fn get_video(&self, id: Uuid) -> Result<Video, VideoServiceError>;
 }

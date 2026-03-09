@@ -20,6 +20,7 @@ pub struct AnalysisServiceImpl<A: AnalysisRepository, V: VideoRepository> {
     analysis_repo: Arc<A>,
     video_repo: Arc<V>,
     mq: Arc<RabbitMqPublisher>,
+    #[allow(dead_code)]
     minio_bucket: String,
 }
 

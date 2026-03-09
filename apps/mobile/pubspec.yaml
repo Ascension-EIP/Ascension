@@ -13,6 +13,8 @@ dependencies:
   image_picker: ^1.1.2
   video_player: ^2.9.3
   http: ^1.2.0
+  fl_chart: ^0.69.0
+  shared_preferences: ^2.3.0
 
 dev_dependencies:
   flutter_test:

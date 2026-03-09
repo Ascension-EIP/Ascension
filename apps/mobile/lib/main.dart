@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/layout/mobile_layout.dart';
+import 'package:mobile/services/api_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await ApiService().loadBaseUrl();
   runApp(const AscensionApp());
 }
 
