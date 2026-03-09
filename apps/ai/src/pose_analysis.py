@@ -10,8 +10,11 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import json
+import logging
 import numpy as np
 import os
+
+logger = logging.getLogger("ai-worker.pose")
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BASE_DIR, "pose_landmarker.task")
@@ -146,9 +149,13 @@ def analyze(video_path: str) -> dict:
     # MediaPipe Lite handles 256-512 px inputs well.
     MAX_WIDTH = 640
 
-    print(
-        f"[mediapipe] Vidéo : {n_frames} frames @ {fps:.1f} FPS — "
-        f"analyse 1/{frame_step} frames ({effective_frames} frames effectives, max {MAX_WIDTH}px)"
+    logger.info(
+        "Vidéo : %d frames @ %.1f FPS — analyse 1/%d frames (%d frames effectives, max %dpx)",
+        n_frames,
+        fps,
+        frame_step,
+        effective_frames,
+        MAX_WIDTH,
     )
 
     base_options = python.BaseOptions(model_asset_path=MODEL_PATH)
@@ -170,7 +177,7 @@ def analyze(video_path: str) -> dict:
                 cap.set(cv2.CAP_PROP_POS_FRAMES, i)
                 ret, frame = cap.read()
                 if not ret:
-                    print(f"[mediapipe] Lecture interrompue à la frame {i}")
+                    logger.warning("Lecture interrompue à la frame %d", i)
                     break
 
                 # Downscale to MAX_WIDTH to reduce memory and speed up inference
@@ -210,11 +217,13 @@ def analyze(video_path: str) -> dict:
 
                 if analyzed % 30 == 0:
                     det = "OK" if result.pose_landmarks else "NO_POSE"
-                    print(f"[mediapipe] {analyzed}/{effective_frames} ({det})")
+                    logger.debug(
+                        "frame %d/%d (%s)", analyzed, effective_frames, det
+                    )
 
                 i += frame_step
 
-            print(f"[mediapipe] Terminé — {analyzed} frames analysées")
+            logger.info("Terminé — %d frames analysées", analyzed)
             return {"frames": frames_list}
     finally:
         cap.release()
@@ -255,7 +264,7 @@ def render_annotated_video(
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
-    print(f"[render] Encodage de {n_frames} frames → {output_path}")
+    logger.info("[render] Encodage de %d frames → %s", n_frames, output_path)
 
     frame_idx = 0
     while True:
@@ -316,13 +325,13 @@ def render_annotated_video(
         writer.write(frame)
 
         if frame_idx % 30 == 0:
-            print(f"[render] {frame_idx}/{n_frames}")
+            logger.debug("[render] %d/%d", frame_idx, n_frames)
 
         frame_idx += 1
 
     cap.release()
     writer.release()
-    print(f"[render] Terminé — {output_path}")
+    logger.info("[render] Terminé — %s", output_path)
 
 
 # ─── Standalone usage ────────────────────────────────────────────

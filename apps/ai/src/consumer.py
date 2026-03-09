@@ -5,9 +5,11 @@ climbing video from MinIO/S3, runs MediaPipe pose analysis, persists
 results in PostgreSQL and publishes a completion event.
 """
 
+import atexit
 import json
 import logging
 import os
+import signal
 import tempfile
 import time
 from datetime import datetime, timezone
@@ -27,8 +29,9 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(_HERE, "..", "..", ".env"), override=False)
 
 # ─── Logging ─────────────────────────────────────────────────────
+_LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(
-    level=logging.INFO,
+    level=getattr(logging, _LOG_LEVEL, logging.INFO),
     format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
 )
 logger = logging.getLogger("ai-worker")
@@ -36,8 +39,35 @@ logger = logging.getLogger("ai-worker")
 # ─── Constants ───────────────────────────────────────────────────
 QUEUE = "vision.skeleton"
 EXCHANGE = "ascension.events"
-RABBITMQ_RETRY_DELAY: int = int(os.getenv('RABBITMQ_RETRY_DELAY', '5'))  # seconds between connection attempts
+RABBITMQ_RETRY_DELAY: int = int(
+    os.getenv("RABBITMQ_RETRY_DELAY", "5")
+)  # seconds between connection attempts
 RABBITMQ_MAX_RETRIES = 12  # ~60 s total before giving up
+
+PID_FILE = os.path.join(_HERE, "..", "worker.pid")
+
+
+def _acquire_pid_lock() -> None:
+    """Ensure only one worker instance runs at a time using a PID file."""
+    pid_path = os.path.abspath(PID_FILE)
+    if os.path.exists(pid_path):
+        with open(pid_path) as f:
+            old_pid = f.read().strip()
+        if old_pid:
+            try:
+                os.kill(int(old_pid), 0)  # 0 = just check existence
+                logger.warning(
+                    "Another worker is already running (PID %s). "
+                    "Killing it before starting.",
+                    old_pid,
+                )
+                os.kill(int(old_pid), signal.SIGTERM)
+                time.sleep(2)
+            except (ProcessLookupError, ValueError):
+                pass  # stale PID file
+    with open(pid_path, "w") as f:
+        f.write(str(os.getpid()))
+    atexit.register(lambda: os.path.exists(pid_path) and os.unlink(pid_path))
 
 
 # ─── Clients ─────────────────────────────────────────────────────
@@ -287,8 +317,13 @@ def main():
 
 
 if __name__ == "__main__":
-    print("Starting Ascension AI Worker…")
-    logger.info("Starting AI worker…")
+    logging.basicConfig(
+        level=getattr(logging, _LOG_LEVEL, logging.INFO),
+        format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
+        force=True,
+    )
+    logger.info("Starting Ascension AI Worker…")
+    _acquire_pid_lock()
     logger.info(
         "Environment:\n%s",
         "\n".join(f"  {k}={v}" for k, v in sorted(os.environ.items())),
