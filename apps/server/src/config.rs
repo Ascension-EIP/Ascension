@@ -5,6 +5,11 @@ const DATABASE_URL: &str = "DATABASE_URL";
 const SERVER_PORT: &str = "SERVER_PORT";
 const HMAC_KEY: &str = "JWT_KEY";
 const RUN_MIGRATION: &str = "RUN_MIGRATION";
+const RABBITMQ_URL: &str = "RABBITMQ_URL";
+const MINIO_ENDPOINT: &str = "MINIO_ENDPOINT";
+const MINIO_ACCESS_KEY: &str = "MINIO_ROOT_USER";
+const MINIO_SECRET_KEY: &str = "MINIO_ROOT_PASSWORD";
+const MINIO_BUCKET: &str = "MINIO_BUCKET";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Config {
@@ -18,10 +23,22 @@ pub struct Config {
     pub server_port: String,
 
     /// The HMAC signing and verification key used for login tokens (JWTs).
-    ///
-    /// There is no required structure or format to this key as it's just fed into a hash function.
-    /// In practice, it should be a long, random string that would be infeasible to brute-force.
     pub hmac_key: String,
+
+    /// AMQP URL for RabbitMQ, e.g. amqp://user:pass@rabbitmq:5672
+    pub rabbitmq_url: String,
+
+    /// MinIO / S3-compatible endpoint, e.g. http://minio:9000
+    pub minio_endpoint: String,
+
+    /// MinIO access key (MINIO_ROOT_USER)
+    pub minio_access_key: String,
+
+    /// MinIO secret key (MINIO_ROOT_PASSWORD)
+    pub minio_secret_key: String,
+
+    /// MinIO bucket to store climbing videos
+    pub minio_bucket: String,
 }
 
 impl Config {
@@ -30,12 +47,22 @@ impl Config {
         let server_port = load_env(SERVER_PORT).unwrap_or("8080".into());
         let hmac_key = load_env(HMAC_KEY)?;
         let run_migration = load_env(RUN_MIGRATION).unwrap_or("false".into()) == "true";
+        let rabbitmq_url = load_env(RABBITMQ_URL)?;
+        let minio_endpoint = load_env(MINIO_ENDPOINT)?;
+        let minio_access_key = load_env(MINIO_ACCESS_KEY)?;
+        let minio_secret_key = load_env(MINIO_SECRET_KEY)?;
+        let minio_bucket = load_env(MINIO_BUCKET).unwrap_or("videos".into());
 
         Ok(Config {
             database_url,
             run_migration,
             server_port,
             hmac_key,
+            rabbitmq_url,
+            minio_endpoint,
+            minio_access_key,
+            minio_secret_key,
+            minio_bucket,
         })
     }
 }

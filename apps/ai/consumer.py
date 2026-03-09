@@ -16,8 +16,15 @@ from urllib.parse import urlparse
 import boto3
 import pika
 import psycopg2
+from dotenv import load_dotenv
 
 from pose_analysis import analyze
+
+# Load .env from project root (two levels up from apps/ai/) so that
+# RABBITMQ_HOST, MINIO_ENDPOINT, DB_URI etc. are available when the
+# worker is launched locally with `moon run ai:dev`.
+_HERE = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(_HERE, "..", "..", ".env"), override=False)
 
 # ─── Logging ─────────────────────────────────────────────────────
 logging.basicConfig(
@@ -178,7 +185,9 @@ def on_message(ch, method, _properties, body):
             _update_analysis(conn, analysis_id, "failed")
         except Exception:
             logger.exception("Could not update analysis %s to failed", analysis_id)
-        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
+        # Discard the message — it is already marked `failed` in the DB.
+        # Re-queuing would cause an infinite crash loop.
+        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
     finally:
         if tmp_path and os.path.exists(tmp_path):
@@ -188,8 +197,22 @@ def on_message(ch, method, _properties, body):
 
 
 # ─── Entry point ─────────────────────────────────────────────────
+def _connect(params: pika.ConnectionParameters) -> pika.BlockingConnection:
+    """Try to connect to RabbitMQ, retrying on failure."""
+    for attempt in range(1, RABBITMQ_MAX_RETRIES + 1):
+        try:
+            return pika.BlockingConnection(params)
+        except pika.exceptions.AMQPConnectionError:
+            logger.warning("RabbitMQ not ready (attempt %d/%d), retrying in %ds…",
+                           attempt, RABBITMQ_MAX_RETRIES, RABBITMQ_RETRY_DELAY)
+            time.sleep(RABBITMQ_RETRY_DELAY)
+    logger.critical("Could not connect to RabbitMQ after %d attempts", RABBITMQ_MAX_RETRIES)
+    raise SystemExit(1)
+
+
 def main():
-    """Connect to RabbitMQ with retries and start consuming."""
+    """Connect to RabbitMQ with retries and start consuming.
+    Automatically reconnects if the broker drops the connection."""
     params = pika.ConnectionParameters(
         host=os.getenv("RABBITMQ_HOST", "rabbitmq"),
         port=int(os.getenv("RABBITMQ_PORT", "5672")),
@@ -197,42 +220,43 @@ def main():
             os.getenv("RABBITMQ_DEFAULT_USER", "ascension"),
             os.getenv("RABBITMQ_DEFAULT_PASS", "ascension"),
         ),
-        # heartbeat=600,
+        heartbeat=60,
+        blocked_connection_timeout=300,
     )
 
-    connection = None
-    for attempt in range(1, RABBITMQ_MAX_RETRIES + 1):
+    while True:
         try:
-            connection = pika.BlockingConnection(params)
-            break
-        except pika.exceptions.AMQPConnectionError:
-            logger.warning("RabbitMQ not ready (attempt %d/%d), retrying in %ds…",
-                           attempt, RABBITMQ_MAX_RETRIES, RABBITMQ_RETRY_DELAY)
+            connection = _connect(params)
+            channel = connection.channel()
+
+            # Declare durable queue (survives RabbitMQ restarts)
+            channel.queue_declare(queue=QUEUE, durable=True)
+
+            # Declare topic exchange for publishing events
+            channel.exchange_declare(exchange=EXCHANGE, exchange_type="topic", durable=True)
+
+            # One job at a time per worker
+            channel.basic_qos(prefetch_count=1)
+
+            channel.basic_consume(
+                queue=QUEUE,
+                on_message_callback=on_message,
+                auto_ack=False,
+            )
+
+            logger.info("Worker ready — consuming from %s", QUEUE)
+            channel.start_consuming()
+
+        except (pika.exceptions.ConnectionClosedByBroker,
+                pika.exceptions.AMQPChannelError,
+                pika.exceptions.AMQPConnectionError) as exc:
+            logger.warning("RabbitMQ connection lost (%s), reconnecting in %ds…",
+                           exc, RABBITMQ_RETRY_DELAY)
             time.sleep(RABBITMQ_RETRY_DELAY)
-
-    if connection is None:
-        logger.critical("Could not connect to RabbitMQ after %d attempts", RABBITMQ_MAX_RETRIES)
-        raise SystemExit(1)
-
-    channel = connection.channel()
-
-    # Declare durable queue (survives RabbitMQ restarts)
-    channel.queue_declare(queue=QUEUE, durable=True)
-
-    # Declare topic exchange for publishing events
-    channel.exchange_declare(exchange=EXCHANGE, exchange_type="topic", durable=True)
-
-    # One job at a time per worker
-    channel.basic_qos(prefetch_count=1)
-
-    channel.basic_consume(
-        queue=QUEUE,
-        on_message_callback=on_message,
-        auto_ack=False,
-    )
-
-    logger.info("Worker ready — consuming from %s", QUEUE)
-    channel.start_consuming()
+            continue
+        except KeyboardInterrupt:
+            logger.info("Worker stopped by user.")
+            break
 
 
 if __name__ == "__main__":

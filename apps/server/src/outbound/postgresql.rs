@@ -13,7 +13,7 @@ use crate::domain::user::ports::{
 
 #[derive(Debug, Clone)]
 pub struct Postgres {
-    pool: sqlx::PgPool,
+    pub(crate) pool: sqlx::PgPool,
 }
 
 impl Postgres {
