@@ -33,6 +33,27 @@ services:
     env_file: .env
     volumes:
       - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ascension}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build: ./apps/server
+    container_name: ascensionServer
+    profiles:
+      - prod
+    ports:
+      - "8080:8080"
+    env_file: .env
+    environment:
+      - RUST_LOG=info
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   ai-worker:
     build: ./apps/ai
