@@ -66,7 +66,7 @@ impl HttpServer {
                 .period(Duration::from_secs(1))
                 .burst_size(10)
                 .finish()
-                .unwrap(),
+                .context("failed to build rate limiter configuration")?,
         );
 
         for limiter in [strict.limiter()] {
