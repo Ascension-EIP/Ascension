@@ -4,6 +4,7 @@ docs
 style
 refactor
 test
+tests
 build
 perf
 ci
@@ -18,3 +19,4 @@ init
 details
 dependabot
 agents
+temp

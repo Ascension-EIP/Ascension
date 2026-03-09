@@ -39,6 +39,7 @@ jobs:
   ########################## ROUTE REVIEW ######################################
   route-review:
     runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.head_ref, 'dependabot/') }}
 
     ######################## STEPS ############################################
     steps:
@@ -171,6 +172,16 @@ jobs:
             // ── 4. Post review-routing comment ────────────────────────
             const COMMENT_MARKER = '<!-- squad-pr-review -->';
 
+            const formatFileList = (filesForAgent) => {
+              if (!filesForAgent || filesForAgent.length === 0) {
+                return '_(no routed files)_';
+              }
+              if (filesForAgent.length <= 5) {
+                return filesForAgent.map(f => `\`${f}\``).join(', ');
+              }
+              return `${filesForAgent.slice(0, 5).map(f => `\`${f}\``).join(', ')} (+${filesForAgent.length - 5} more)`;
+            };
+
             // Build summary table
             let body = `${COMMENT_MARKER}\n`;
             body += `### 🏔️ Squad PR Review Routing\n\n`;
@@ -181,9 +192,7 @@ jobs:
               const emoji = REVIEW_EMOJI[agent] || '📋';
               const domain = ROUTING_RULES.find(r => r.agent === agent)?.domain
                 || (agent === 'eric' ? 'Architecture / Lead' : 'Unknown');
-              const fileList = agentFiles[agent].length <= 5
-                ? agentFiles[agent].map(f => `\`${f}\``).join(', ')
-                : `${agentFiles[agent].slice(0, 5).map(f => `\`${f}\``).join(', ')} (+${agentFiles[agent].length - 5} more)`;
+              const fileList = formatFileList(agentFiles[agent]);
               body += `| ${emoji} **${agent.charAt(0).toUpperCase() + agent.slice(1)}** | ${domain} | ${fileList} |\n`;
             }
 
@@ -225,6 +234,9 @@ jobs:
               });
               core.info('Created review-routing comment');
             }
+
+            // ── 5. Per-agent AI review comments are handled by squad-ai-pr-review.yml ──
+            // (real GPT-4o analysis via GitHub Models — no static comments posted here)
 
             core.info(`PR review routing complete — ${labelsToApply.length} labels applied`);
   #############################################################################

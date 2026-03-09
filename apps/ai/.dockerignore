@@ -1,0 +1,39 @@
+# Local conda environment and heavy local assets
+ai-env/
+sam-3d-body/
+
+# Python caches and bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Packaging/build artifacts
+*.egg-info/
+.eggs/
+build/
+dist/
+*.whl
+pip-wheel-metadata/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+
+# Virtualenvs (safety)
+.venv/
+venv/
+env/
+
+# Misc local/editor artifacts
+.DS_Store
+.idea/
+.vscode/
+*.log

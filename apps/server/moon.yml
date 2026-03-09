@@ -1,50 +1,76 @@
-language: 'rust'
+language: "rust"
 
 project:
-  name: 'server'
-  description: 'Rust/Axum backend server for Ascension'
+  name: "server"
+  description: "Rust/Axum backend server for Ascension"
 
 tasks:
-  build:
-    command: 'cargo'
-    args: ['build']
+  install-sqlx:
+    command: "cargo"
+    args: ["install", "sqlx-cli", "--no-default-features", "--features", "native-tls,postgres"]
+    options:
+      cache: false
+
+  migrate:
+    command: "sqlx"
+    args: ["migrate", "run", "--source", "migrations"]
     inputs:
-      - 'src/**/*'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
+      - "migrations/**/*.sql"
+    options:
+      envFile: true
+
+  build:
+    command: "cargo"
+    args: ["build"]
+    env:
+      SQLX_OFFLINE: "true"
+    inputs:
+      - "src/**/*"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".sqlx/**/*"
 
   build-release:
-    command: 'cargo'
-    args: ['build', '--release']
+    command: "cargo"
+    args: ["build", "--release"]
     inputs:
-      - 'src/**/*'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
+      - "src/**/*"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".sqlx/**/*"
     deps:
-      - 'lint'
+      - "lint"
 
   dev:
-    command: 'cargo'
-    args: ['run']
+    command: "cargo"
+    args: ["run"]
     env:
-      RUST_LOG: 'debug'
+      RUST_LOG: "debug"
     options:
       envFile: true
 
   test:
-    command: 'cargo'
-    args: ['test']
+    command: "cargo"
+    args: ["test"]
     inputs:
-      - 'src/**/*'
-      - 'Cargo.toml'
+      - "src/**/*"
+      - "Cargo.toml"
+      - ".sqlx/**/*"
 
   lint:
-    command: 'cargo'
-    args: ['clippy', '--', '-D', 'warnings']
+    command: "cargo"
+    args: ["clippy", "--", "-D", "warnings"]
     inputs:
-      - 'src/**/*'
-      - 'Cargo.toml'
+      - "src/**/*"
+      - "Cargo.toml"
+      - ".sqlx/**/*"
+    env:
+      SQLX_OFFLINE: "true"
 
   format:
-    command: 'cargo'
-    args: ['fmt', '--all', '--', '--check']
+    command: "cargo"
+    args: ["fmt", "--all"]
+
+  format-check:
+    command: "cargo"
+    args: ["fmt", "--all", "--check"]

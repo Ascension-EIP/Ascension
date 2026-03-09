@@ -2,4 +2,10 @@
 
 COMMIT_MSG_FILE=$1
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
-.github/scripts/check_commit "$COMMIT_MSG"
+
+if echo "$COMMIT_MSG" | grep -qiE '^\[(no-ci|ci-no|ci no|no ci|ci-off|off-ci|ci off|off ci|ci-skip|skip-ci|ci skip|skip ci)\]'; then
+    echo "::notice title=CI skip::No-CI prefix detected — skipping commit name check"
+else
+    .github/scripts/check_commit "$COMMIT_MSG"
+fi
+

@@ -1,7 +1,7 @@
-> **Last updated:** 18th February 2026  
-> **Version:** 2.0  
-> **Authors:** Gianni TUERO  
-> **Status:** Done  
+> **Last updated:** 3rd March 2026
+> **Version:** 2.1
+> **Authors:** Gianni TUERO
+> **Status:** Done
 > {.is-success}
 
 ---
@@ -99,14 +99,14 @@ graph TB
    # Or download from https://docs.flutter.dev/get-started/install
    ```
 
-5. **Python** (3.10+)
+5. **Conda** (Miniconda or Anaconda)
 
    ```bash
-   # macOS
-   brew install python@3.11
+  # Install Miniconda/Anaconda (official instructions)
+  # https://docs.conda.io/projects/conda/en/latest/user-guide/install/
 
-   # Linux
-   sudo apt-get install python3.11 python3.11-venv
+  # Verify installation
+  conda --version
    ```
 
 ### Optional Tools
@@ -140,9 +140,10 @@ Ascension/                      # Monorepo root
     │
     ├── ai/                     # Python AI workers
     │   ├── moon.yml
-    │   ├── requirements.txt
+    │   ├── environment.yml
+    │   ├── pyproject.toml
     │   ├── Dockerfile
-    │   └── main.py
+    │   └── consumer.py
     │
     └── mobile/                 # Flutter mobile app
         ├── moon.yml
@@ -198,6 +199,20 @@ Create `.env` file from template:
 ```bash
 cp .env.example .env
 ```
+
+#### Environment Variable Strategy
+
+We follow a dual-strategy for environment variables to balance local developer experience with production security and reliability.
+
+| Feature | Local Development (Native) | Production / Docker (`--profile prod`) |
+| :--- | :--- | :--- |
+| **Source** | Root `.env` file | Hardcoded in `docker-compose.yml` |
+| **Hostnames** | `localhost` | Internal service names (`rabbitmq`, `postgresql`) |
+| **Ports** | Forwarded to host machine | Internal container ports |
+
+**Why this dual-approach?**
+- **Native Context:** Allows you to run `moon run ai:dev` or `cargo run` directly on your host machine while connecting to Dockerized infra services.
+- **Docker Context:** Ensures that when the AI worker runs *inside* a container (production), it uses internal network hostnames and avoids `.env` host mismatches.
 
 Edit `.env`:
 
@@ -314,22 +329,39 @@ curl http://localhost:8080/health
 #### Install Dependencies via moon
 
 ```bash
+moon run ai:setup
 moon run ai:install
+```
+
+#### Common AI moon Tasks
+
+```bash
+moon run ai:setup
+moon run ai:install
+moon run ai:dev
+moon run ai:build
+moon run ai:lint
+moon run ai:test
 ```
 
 Or manually:
 
 ```bash
 cd apps/ai
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
+# Create environment from environment.yml
+conda env create --name ascension-ai --file environment.yml --force
+
+# Or update an existing environment
+conda env update --name ascension-ai --file environment.yml --prune
+
+# Install local project in editable mode
+conda run --name ascension-ai python -m pip install -e .[dev]
 ```
 
 #### Download ML Models
 
 ```bash
-python scripts/download_models.py
+conda run --name ascension-ai python scripts/download_models.py
 ```
 
 This downloads:
@@ -344,7 +376,7 @@ This downloads:
 moon run ai:dev
 
 # Or directly
-cd apps/ai && venv/bin/python main.py
+cd apps/ai && conda run --name ascension-ai python consumer.py
 ```
 
 Or using Docker:
@@ -882,8 +914,8 @@ For faster iteration during development:
 
    ```bash
    cd apps/ai
-   venv/bin/pip install watchdog
-   watchmedo auto-restart --patterns="*.py" --recursive venv/bin/python main.py
+  conda run --name ascension-ai python -m pip install watchdog
+  conda run --name ascension-ai watchmedo auto-restart --patterns="*.py" --recursive -- python consumer.py
    ```
 
    Or via moon:
@@ -905,5 +937,5 @@ For faster iteration during development:
 
 ---
 
-**Last Updated**: 2026-02-12
+**Last Updated**: 2026-03-03
 **Maintainer**: Ascension Development Team

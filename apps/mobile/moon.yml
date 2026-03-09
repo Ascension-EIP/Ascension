@@ -16,21 +16,31 @@ tasks:
 
   build-android:
     command: 'flutter'
-    args: ['build', 'apk']
-    deps:
-      - 'install'
-
-  build-ios:
-    command: 'flutter'
-    args: ['build', 'ios', '--no-codesign']
+    args: ['build', 'apk', '--dart-define=BACKEND_URL=${BACKEND_URL}']
     deps:
       - 'install'
     options:
-      runInCI: true
+      envFile: true
+
+  build-ios:
+    command: 'flutter'
+    args: ['build', 'ios', '--no-codesign', '--dart-define=BACKEND_URL=${BACKEND_URL}']
+    deps:
+      - 'install'
+    options:
+      envFile: true
+
+  build:
+    command: 'bash'
+    args: ['scripts/build.sh']
+    deps:
+      - 'install'
+    options:
+      envFile: true
 
   dev:
     command: 'flutter'
-    args: ['run']
+    args: ['run', '--dart-define=BACKEND_URL=${BACKEND_URL}']
     deps:
       - 'install'
     options:
