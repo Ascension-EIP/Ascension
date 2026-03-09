@@ -10,39 +10,45 @@ import 'package:video_player/video_player.dart';
 class _LM {
   static const lShoulder = 11;
   static const rShoulder = 12;
-  static const lElbow    = 13;
-  static const rElbow    = 14;
-  static const lWrist    = 15;
-  static const rWrist    = 16;
-  static const lHip      = 23;
-  static const rHip      = 24;
-  static const lKnee     = 25;
-  static const rKnee     = 26;
-  static const lAnkle    = 27;
-  static const rAnkle    = 28;
+  static const lElbow = 13;
+  static const rElbow = 14;
+  static const lWrist = 15;
+  static const rWrist = 16;
+  static const lHip = 23;
+  static const rHip = 24;
+  static const lKnee = 25;
+  static const rKnee = 26;
+  static const lAnkle = 27;
+  static const rAnkle = 28;
 
   static const names = {
-    11: 'Épaule G',  12: 'Épaule D',
-    13: 'Coude G',   14: 'Coude D',
-    15: 'Poignet G', 16: 'Poignet D',
-    23: 'Hanche G',  24: 'Hanche D',
-    25: 'Genou G',   26: 'Genou D',
-    27: 'Cheville G',28: 'Cheville D',
+    11: 'Épaule G',
+    12: 'Épaule D',
+    13: 'Coude G',
+    14: 'Coude D',
+    15: 'Poignet G',
+    16: 'Poignet D',
+    23: 'Hanche G',
+    24: 'Hanche D',
+    25: 'Genou G',
+    26: 'Genou D',
+    27: 'Cheville G',
+    28: 'Cheville D',
   };
 
   static const connections = [
     (_LM.lShoulder, _LM.rShoulder),
     (_LM.lShoulder, _LM.lElbow),
-    (_LM.lElbow,    _LM.lWrist),
+    (_LM.lElbow, _LM.lWrist),
     (_LM.rShoulder, _LM.rElbow),
-    (_LM.rElbow,    _LM.rWrist),
+    (_LM.rElbow, _LM.rWrist),
     (_LM.lShoulder, _LM.lHip),
     (_LM.rShoulder, _LM.rHip),
-    (_LM.lHip,      _LM.rHip),
-    (_LM.lHip,      _LM.lKnee),
-    (_LM.lKnee,     _LM.lAnkle),
-    (_LM.rHip,      _LM.rKnee),
-    (_LM.rKnee,     _LM.rAnkle),
+    (_LM.lHip, _LM.rHip),
+    (_LM.lHip, _LM.lKnee),
+    (_LM.lKnee, _LM.lAnkle),
+    (_LM.rHip, _LM.rKnee),
+    (_LM.rKnee, _LM.rAnkle),
   ];
 }
 
@@ -52,7 +58,7 @@ class _FrameData {
   final int timestampMs;
   final bool poseDetected;
   final Map<int, Offset> landmarks; // key = LM id, value = (x, y) normalised
-  final Map<int, double> angles;    // key = LM id of joint
+  final Map<int, double> angles; // key = LM id of joint
 
   const _FrameData({
     required this.frameIndex,
@@ -84,11 +90,11 @@ class _FrameData {
     }
 
     return _FrameData(
-      frameIndex:  (json['frame']        as int?  ) ?? 0,
-      timestampMs: (json['timestamp_ms'] as int?  ) ?? 0,
-      poseDetected:(json['pose_detected'] as bool? ) ?? false,
-      landmarks:   landmarks,
-      angles:      angles,
+      frameIndex: (json['frame'] as int?) ?? 0,
+      timestampMs: (json['timestamp_ms'] as int?) ?? 0,
+      poseDetected: (json['pose_detected'] as bool?) ?? false,
+      landmarks: landmarks,
+      angles: angles,
     );
   }
 }
@@ -197,7 +203,7 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
           unselectedLabelColor: Colors.grey,
           tabs: const [
             Tab(icon: Icon(Icons.person_outline), text: 'Squelette'),
-            Tab(icon: Icon(Icons.show_chart),     text: 'Angles'),
+            Tab(icon: Icon(Icons.show_chart), text: 'Angles'),
             Tab(icon: Icon(Icons.analytics_outlined), text: 'Stats'),
           ],
         ),
@@ -213,17 +219,17 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
               controller: _tabCtrl,
               children: [
                 _SkeletonTab(
-                  frames:       _frames,
+                  frames: _frames,
                   currentIndex: _currentFrame,
-                  isPlaying:    _isPlaying,
-                  accent:       accent,
-                  videoCtrl:    _videoCtrl,
-                  videoReady:   _videoReady,
+                  isPlaying: _isPlaying,
+                  accent: accent,
+                  videoCtrl: _videoCtrl,
+                  videoReady: _videoReady,
                   onFrameChanged: (i) {
                     setState(() => _currentFrame = i);
                     _seekVideoToFrame(i);
                   },
-                  onPlay:  _play,
+                  onPlay: _play,
                   onPause: () {
                     _videoCtrl?.pause();
                     setState(() => _isPlaying = false);
@@ -239,9 +245,9 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
                 ),
                 _AngleChartTab(frames: _frames, accent: accent),
                 _StatsTab(
-                  frames:       _frames,
+                  frames: _frames,
                   processingMs: widget.processingMs,
-                  accent:       accent,
+                  accent: accent,
                 ),
               ],
             ),
@@ -365,7 +371,10 @@ class _SkeletonTab extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: onReset,
-                icon: const Icon(Icons.skip_previous_rounded, color: Colors.white70),
+                icon: const Icon(
+                  Icons.skip_previous_rounded,
+                  color: Colors.white70,
+                ),
                 iconSize: 32,
               ),
               const SizedBox(width: 8),
@@ -373,7 +382,10 @@ class _SkeletonTab extends StatelessWidget {
                 onPressed: currentIndex > 0
                     ? () => onFrameChanged(currentIndex - 1)
                     : null,
-                icon: const Icon(Icons.chevron_left_rounded, color: Colors.white70),
+                icon: const Icon(
+                  Icons.chevron_left_rounded,
+                  color: Colors.white70,
+                ),
                 iconSize: 36,
               ),
               const SizedBox(width: 8),
@@ -398,13 +410,19 @@ class _SkeletonTab extends StatelessWidget {
                 onPressed: currentIndex < frames.length - 1
                     ? () => onFrameChanged(currentIndex + 1)
                     : null,
-                icon: const Icon(Icons.chevron_right_rounded, color: Colors.white70),
+                icon: const Icon(
+                  Icons.chevron_right_rounded,
+                  color: Colors.white70,
+                ),
                 iconSize: 36,
               ),
               const SizedBox(width: 8),
               IconButton(
                 onPressed: () => onFrameChanged(frames.length - 1),
-                icon: const Icon(Icons.skip_next_rounded, color: Colors.white70),
+                icon: const Icon(
+                  Icons.skip_next_rounded,
+                  color: Colors.white70,
+                ),
                 iconSize: 32,
               ),
             ],
@@ -469,6 +487,7 @@ class _VideoWithOverlay extends StatelessWidget {
 class _SkeletonPainter extends CustomPainter {
   final _FrameData frame;
   final Color accent;
+
   /// When true, landmarks (already normalised 0-1 by MediaPipe) are mapped
   /// directly to pixel coordinates: x*width, y*height.  This is the correct
   /// mode when painting over a video that fills the full canvas.
@@ -494,7 +513,10 @@ class _SkeletonPainter extends CustomPainter {
         )..layout();
         tp.paint(
           canvas,
-          Offset(size.width / 2 - tp.width / 2, size.height / 2 - tp.height / 2),
+          Offset(
+            size.width / 2 - tp.width / 2,
+            size.height / 2 - tp.height / 2,
+          ),
         );
       }
       return;
@@ -517,9 +539,9 @@ class _SkeletonPainter extends CustomPainter {
       final rangeX = (maxX - minX).clamp(0.01, 1.0);
       final rangeY = (maxY - minY).clamp(0.01, 1.0);
       const padding = 48.0;
-      final drawW = size.width  - padding * 2;
+      final drawW = size.width - padding * 2;
       final drawH = size.height - padding * 2;
-      final scale  = math.min(drawW / rangeX, drawH / rangeY);
+      final scale = math.min(drawW / rangeX, drawH / rangeY);
       final offsetX = padding + (drawW - rangeX * scale) / 2;
       final offsetY = padding + (drawH - rangeY * scale) / 2;
       toCanvas = (norm) => Offset(
@@ -530,10 +552,10 @@ class _SkeletonPainter extends CustomPainter {
 
     // ── Connections ──
     final bonePaint = Paint()
-      ..color      = accent.withValues(alpha: 0.85)
+      ..color = accent.withValues(alpha: 0.85)
       ..strokeWidth = fullFrame ? 3.5 : 2.5
-      ..style      = PaintingStyle.stroke
-      ..strokeCap  = StrokeCap.round;
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
 
     for (final (a, b) in _LM.connections) {
       final pA = frame.landmarks[a];
@@ -547,9 +569,9 @@ class _SkeletonPainter extends CustomPainter {
       ..color = Colors.white
       ..style = PaintingStyle.fill;
     final jointOutline = Paint()
-      ..color   = accent
+      ..color = accent
       ..strokeWidth = 1.5
-      ..style   = PaintingStyle.stroke;
+      ..style = PaintingStyle.stroke;
 
     for (final entry in frame.landmarks.entries) {
       final pt = toCanvas(entry.value);
@@ -559,7 +581,7 @@ class _SkeletonPainter extends CustomPainter {
 
     // ── Angle label at left elbow ──
     final elbowAngle = frame.angles[_LM.lElbow];
-    final elbowPos   = frame.landmarks[_LM.lElbow];
+    final elbowPos = frame.landmarks[_LM.lElbow];
     if (elbowAngle != null && elbowPos != null) {
       final pt = toCanvas(elbowPos);
       final label = '${elbowAngle.toStringAsFixed(0)}°';
@@ -581,7 +603,10 @@ class _SkeletonPainter extends CustomPainter {
         Rect.fromLTWH(pt.dx + 8, pt.dy - 10, tp.width + 8, tp.height + 4),
         const Radius.circular(6),
       );
-      canvas.drawRRect(rect, Paint()..color = const Color(0xFF162032).withValues(alpha: 0.85));
+      canvas.drawRRect(
+        rect,
+        Paint()..color = const Color(0xFF162032).withValues(alpha: 0.85),
+      );
       tp.paint(canvas, Offset(pt.dx + 12, pt.dy - 8));
     }
   }
@@ -624,7 +649,10 @@ class _AngleChartTabState extends State<_AngleChartTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionTitle('Angle des coudes dans le temps', accent: widget.accent),
+          _SectionTitle(
+            'Angle des coudes dans le temps',
+            accent: widget.accent,
+          ),
           const SizedBox(height: 12),
           if (!hasData)
             _EmptyCard('Aucune donnée d\'angle disponible')
@@ -635,14 +663,10 @@ class _AngleChartTabState extends State<_AngleChartTab> {
                   backgroundColor: const Color(0xFF162032),
                   gridData: FlGridData(
                     show: true,
-                    getDrawingHorizontalLine: (_) => FlLine(
-                      color: Colors.white10,
-                      strokeWidth: 1,
-                    ),
-                    getDrawingVerticalLine: (_) => FlLine(
-                      color: Colors.white10,
-                      strokeWidth: 1,
-                    ),
+                    getDrawingHorizontalLine: (_) =>
+                        FlLine(color: Colors.white10, strokeWidth: 1),
+                    getDrawingVerticalLine: (_) =>
+                        FlLine(color: Colors.white10, strokeWidth: 1),
                   ),
                   borderData: FlBorderData(show: false),
                   titlesData: FlTitlesData(
@@ -657,7 +681,8 @@ class _AngleChartTabState extends State<_AngleChartTab> {
                         getTitlesWidget: (v, _) => Text(
                           '${v.toInt()}°',
                           style: const TextStyle(
-                            color: Colors.white38, fontSize: 10,
+                            color: Colors.white38,
+                            fontSize: 10,
                           ),
                         ),
                       ),
@@ -673,22 +698,27 @@ class _AngleChartTabState extends State<_AngleChartTab> {
                         getTitlesWidget: (v, _) => Text(
                           '${v.toStringAsFixed(0)}s',
                           style: const TextStyle(
-                            color: Colors.white38, fontSize: 10,
+                            color: Colors.white38,
+                            fontSize: 10,
                           ),
                         ),
                       ),
                     ),
-                    topTitles:   const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                   lineBarsData: [
                     if (lElbowSpots.isNotEmpty)
                       LineChartBarData(
-                        spots:        lElbowSpots,
-                        isCurved:     true,
-                        color:        widget.accent,
-                        barWidth:     2,
-                        dotData:      const FlDotData(show: false),
+                        spots: lElbowSpots,
+                        isCurved: true,
+                        color: widget.accent,
+                        barWidth: 2,
+                        dotData: const FlDotData(show: false),
                         belowBarData: BarAreaData(
                           show: true,
                           color: widget.accent.withValues(alpha: 0.08),
@@ -696,13 +726,13 @@ class _AngleChartTabState extends State<_AngleChartTab> {
                       ),
                     if (rElbowSpots.isNotEmpty)
                       LineChartBarData(
-                        spots:    rElbowSpots,
+                        spots: rElbowSpots,
                         isCurved: true,
-                        color:    Colors.orangeAccent,
+                        color: Colors.orangeAccent,
                         barWidth: 2,
-                        dotData:  const FlDotData(show: false),
+                        dotData: const FlDotData(show: false),
                         belowBarData: BarAreaData(
-                          show:  true,
+                          show: true,
                           color: Colors.orangeAccent.withValues(alpha: 0.08),
                         ),
                       ),
@@ -735,7 +765,10 @@ class _AngleChartTabState extends State<_AngleChartTab> {
                 if (lElbowSpots.isNotEmpty && rElbowSpots.isNotEmpty)
                   const SizedBox(width: 24),
                 if (rElbowSpots.isNotEmpty)
-                  const _Legend(color: Colors.orangeAccent, label: 'Coude droit'),
+                  const _Legend(
+                    color: Colors.orangeAccent,
+                    label: 'Coude droit',
+                  ),
               ],
             ),
           ],
@@ -818,8 +851,8 @@ class _StatsTab extends StatelessWidget {
                 valueColor: detRate > 80
                     ? Colors.greenAccent
                     : detRate > 50
-                        ? Colors.orangeAccent
-                        : Colors.redAccent,
+                    ? Colors.orangeAccent
+                    : Colors.redAccent,
               ),
             ],
           ),
@@ -914,9 +947,7 @@ class _StatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white10),
       ),
-      child: Column(
-        children: children,
-      ),
+      child: Column(children: children),
     );
   }
 }
@@ -1024,7 +1055,10 @@ class _Legend extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 6),
-        Text(label, style: const TextStyle(color: Colors.white60, fontSize: 12)),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white60, fontSize: 12),
+        ),
       ],
     );
   }
@@ -1126,14 +1160,15 @@ class _RangeBarPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Gradient bar
-    final grad = LinearGradient(colors: [
-      Colors.lightBlueAccent,
-      accent,
-      Colors.orangeAccent,
-    ]);
+    final grad = LinearGradient(
+      colors: [Colors.lightBlueAccent, accent, Colors.orangeAccent],
+    );
     canvas.drawRect(
       Rect.fromLTWH(0, 0, size.width, size.height),
-      Paint()..shader = grad.createShader(Rect.fromLTWH(0, 0, size.width, size.height)),
+      Paint()
+        ..shader = grad.createShader(
+          Rect.fromLTWH(0, 0, size.width, size.height),
+        ),
     );
     // Avg marker
     final x = avgFrac.clamp(0.0, 1.0) * size.width;
@@ -1177,7 +1212,7 @@ class _LandmarkHeatmap extends StatelessWidget {
       child: Column(
         children: items.map((e) {
           final count = counts[e.key] ?? 0;
-          final pct   = total == 0 ? 0.0 : count / total;
+          final pct = total == 0 ? 0.0 : count / total;
 
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
@@ -1200,8 +1235,8 @@ class _LandmarkHeatmap extends StatelessWidget {
                         pct > 0.8
                             ? Colors.greenAccent
                             : pct > 0.5
-                                ? accent
-                                : Colors.orangeAccent,
+                            ? accent
+                            : Colors.orangeAccent,
                       ),
                       minHeight: 7,
                     ),
