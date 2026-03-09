@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 import 'package:mobile/core/network/api_service.dart';
-import 'package:mobile/pages/analysis/analysis_view_page.dart';
+import 'package:mobile/features/upload/presentation/pages/analysis_page.dart';
 
 /// video_player is only supported on Android, iOS, and Web.
 bool get _supportsVideoPlayer =>

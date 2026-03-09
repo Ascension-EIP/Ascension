@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:mobile/pages/home/home_page.dart';
-import 'package:mobile/pages/home/upload_page.dart';
-import 'package:mobile/pages/home/stats_page.dart';
-import 'package:mobile/pages/home/profile_page.dart';
+import 'package:mobile/features/home/presentation/pages/home_page.dart';
+import 'package:mobile/features/upload/presentation/pages/upload_page.dart';
+import 'package:mobile/features/stats/presentation/pages/stats_page.dart';
+import 'package:mobile/features/profile/presentation/pages/profile_page.dart';
 
 class MobileLayout extends StatefulWidget {
   const MobileLayout({super.key});
