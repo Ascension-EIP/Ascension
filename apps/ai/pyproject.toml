@@ -31,12 +31,32 @@ dev = [
 ascension-worker = "consumer:main"
 
 [tool.setuptools]
-py-modules = ["consumer", "main", "pose_analysis"]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.ruff]
-exclude = ["venv"]
+exclude = [
+    ".git",
+    "ai-env",
+    "venv",
+    "dist",
+    "build",
+]
 
 [tool.black]
 line-length = 80
 target-version = ["py311"]
 include = '\.pyi?$'
+force-exclude = '''
+/(
+    ai-env
+  | venv
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
