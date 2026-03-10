@@ -34,7 +34,7 @@ tasks:
       - "Cargo.lock"
       - ".sqlx/**/*"
     deps:
-      - "migrate"
+      - "root:setup-git-config"
 
   build-release:
     command: "cargo"
@@ -45,7 +45,6 @@ tasks:
       - "Cargo.lock"
       - ".sqlx/**/*"
     deps:
-      - "migrate"
       - "lint"
 
   dev:
@@ -73,6 +72,8 @@ tasks:
       - ".sqlx/**/*"
     env:
       SQLX_OFFLINE: "true"
+    deps:
+      - "root:setup-git-config"
 
   format:
     command: "cargo"
