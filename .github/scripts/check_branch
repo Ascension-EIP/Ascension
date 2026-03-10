@@ -29,8 +29,7 @@ def load_keywords():
 
 def is_kebab_case(s):
     # kebab-case: lowercase letters/numbers separated by single hyphens, no leading/trailing hyphen
-    return re.match(r'^[a-z0-9/\\]+(?:-[a-z0-9/\\]+)*$', s) is not None
-
+    return re.match(r'^[a-z0-9/\\_]+(?:-[a-z0-9/\\_]+)*$', s) is not None
 
 def validate_branch(branch, keywords):
     # Allow exact names main and dev

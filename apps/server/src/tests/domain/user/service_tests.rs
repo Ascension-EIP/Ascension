@@ -134,6 +134,12 @@ mod tests {
             self.take_get()
         }
 
+        async fn get_user_by_email(&self, _email: &Email) -> Result<User, UserError> {
+            Err(UserError::Unknown(anyhow::anyhow!(
+                "not implemented in this mock"
+            )))
+        }
+
         async fn update_user(&self, _req: &User) -> Result<User, UserError> {
             self.take_update()
         }

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../constants/app_constants.dart';
+import 'package:mobile/core/constants/app_constants.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -28,6 +28,41 @@ class ApiService {
     _baseUrl = url;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(AppConstants.backendUrlKey, url);
+  }
+
+  // ── Auth ─────────────────────────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> login({
+    required String email,
+    required String password,
+  }) async {
+    final uri = Uri.parse('$baseUrl/v1/auth/login');
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'password': password}),
+    );
+    _assertOk(response, 'login');
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> register({
+    required String username,
+    required String email,
+    required String password,
+  }) async {
+    final uri = Uri.parse('$baseUrl/v1/auth/register');
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'username': username,
+        'email': email,
+        'password': password,
+      }),
+    );
+    _assertOk(response, 'register');
+    return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
   // ── Videos ──────────────────────────────────────────────────────────────────

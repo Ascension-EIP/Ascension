@@ -45,6 +45,6 @@ jobs:
           sudo apt update
           sudo apt install -y gh
       - name: Set up Wiki
-        uses: Andrew-Chen-Wang/github-wiki-action@v5.0.3
+        uses: Andrew-Chen-Wang/github-wiki-action@v5.0.4
   #############################################################################
 ###############################################################################
