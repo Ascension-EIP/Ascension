@@ -1,4 +1,5 @@
-"""MediaPipe pose analysis module.
+"""
+MediaPipe pose analysis module.
 
 Expose `analyze(video_path)` qui retourne un dict JSON-sérialisable
 contenant les landmarks et angles par frame.
@@ -106,42 +107,23 @@ def _process_pose(landmarks_raw):
 
     angles = {}
 
-    def _add_angle(name: str, a_idx: int, b_idx: int, c_idx: int):
-        """
-        Calcule l'angle (en degrés) au niveau du point b, défini par les
-        trois landmarks d'indices a_idx, b_idx, c_idx (dans l'espace 3D).
-        N'ajoute rien si un des points nécessaires est manquant.
-        """
-        a_key = str(a_idx)
-        b_key = str(b_idx)
-        c_key = str(c_idx)
-        if a_key not in lm or b_key not in lm or c_key not in lm:
-            return
-        # Vecteurs centrés sur le point b (joint)
-        v1 = _vec3(lm[b_key], lm[a_key])
-        v2 = _vec3(lm[b_key], lm[c_key])
-        angle = _angle_between(v1, v2)
-        angles[name] = round(angle, 1)
-
-    # Indices basés sur la convention MediaPipe Pose:
-    #  - 11: left_shoulder, 12: right_shoulder
-    #  - 13: left_elbow,   14: right_elbow
-    #  - 15: left_wrist,   16: right_wrist
-    #  - 23: left_hip,     24: right_hip
-    #  - 25: left_knee,    26: right_knee
-    #  - 27: left_ankle,   28: right_ankle
+    def _try_angle(a, b, c):
+        sa, sb, sc = str(a), str(b), str(c)
+        if all(k in lm for k in (sa, sb, sc)):
+            angles[sb] = round(_angle_between(_vec3(lm[sb], lm[sa]), _vec3(lm[sb], lm[sc])), 2)
 
     # Coudes
-    _add_angle("left_elbow", 11, 13, 15)   # épaule-gauche, coude-gauche, poignet-gauche
-    _add_angle("right_elbow", 12, 14, 16)  # épaule-droite, coude-droit, poignet-droit
-    
+    _try_angle(LM.L_SHOULDER, LM.L_ELBOW,    LM.L_WRIST)
+    _try_angle(LM.R_SHOULDER, LM.R_ELBOW,    LM.R_WRIST)
+    # Épaules
+    _try_angle(LM.L_ELBOW,    LM.L_SHOULDER, LM.L_HIP)
+    _try_angle(LM.R_ELBOW,    LM.R_SHOULDER, LM.R_HIP)
+    # Hanches
+    _try_angle(LM.L_SHOULDER, LM.L_HIP,      LM.L_KNEE)
+    _try_angle(LM.R_SHOULDER, LM.R_HIP,      LM.R_KNEE)
     # Genoux
-    _add_angle("left_knee", 23, 25, 27)    # hanche-gauche, genou-gauche, cheville-gauche
-    _add_angle("right_knee", 24, 26, 28)   # hanche-droite, genou-droit, cheville-droite
-    
-    # Hanches (angle entre tronc et cuisse)
-    _add_angle("left_hip", 11, 23, 25)     # épaule-gauche, hanche-gauche, genou-gauche
-    _add_angle("right_hip", 12, 24, 26)    # épaule-droite, hanche-droite, genou-droit
+    _try_angle(LM.L_HIP,      LM.L_KNEE,     LM.L_ANKLE)
+    _try_angle(LM.R_HIP,      LM.R_KNEE,     LM.R_ANKLE)
 
     return {"landmarks": lm, "angles": angles}
 
@@ -176,7 +158,7 @@ def analyze(video_path: str) -> dict:
         fps = 30
     n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    TARGET_FPS = 15
+    TARGET_FPS = 30
     frame_step = max(1, int(round(fps / TARGET_FPS)))
     effective_frames = (n_frames + frame_step - 1) // frame_step
     MAX_WIDTH = 640
@@ -203,7 +185,7 @@ def analyze(video_path: str) -> dict:
                 if not ret:
                     break
 
-                if not i % frame_step:
+                if i % frame_step != 0:
                     i += 1
                     continue
 
