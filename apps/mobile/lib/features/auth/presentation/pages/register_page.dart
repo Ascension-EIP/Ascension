@@ -241,19 +241,7 @@ class _Logo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Icon(
-            Icons.fitness_center,
-            size: 40,
-            color: AppColors.primary,
-          ),
-        ),
+        Image.asset('assets/images/logo.png', width: 72, height: 72),
         const SizedBox(height: 12),
         const Text(
           'ASCENSION',
