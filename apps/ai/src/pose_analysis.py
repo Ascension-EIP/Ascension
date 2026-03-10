@@ -1,4 +1,5 @@
-"""MediaPipe pose analysis module.
+"""
+MediaPipe pose analysis module.
 
 Expose `analyze(video_path)` qui retourne un dict JSON-sérialisable
 contenant les landmarks et angles par frame.
@@ -105,22 +106,43 @@ def _process_pose(landmarks_raw):
         }
 
     angles = {}
-    s_sh, s_el, s_wr = str(LM.L_SHOULDER), str(LM.L_ELBOW), str(LM.L_WRIST)
-    if all(k in lm for k in (s_sh, s_el, s_wr)):
-        v1 = _vec3(lm[s_el], lm[s_sh])
-        v2 = _vec3(lm[s_el], lm[s_wr])
-        angles[s_el] = round(_angle_between(v1, v2), 2)
+
+    def _try_angle(a, b, c):
+        sa, sb, sc = str(a), str(b), str(c)
+        if all(k in lm for k in (sa, sb, sc)):
+            angles[sb] = round(_angle_between(_vec3(lm[sb], lm[sa]), _vec3(lm[sb], lm[sc])), 2)
+
+    # Coudes
+    _try_angle(LM.L_SHOULDER, LM.L_ELBOW,    LM.L_WRIST)
+    _try_angle(LM.R_SHOULDER, LM.R_ELBOW,    LM.R_WRIST)
+    # Épaules
+    _try_angle(LM.L_ELBOW,    LM.L_SHOULDER, LM.L_HIP)
+    _try_angle(LM.R_ELBOW,    LM.R_SHOULDER, LM.R_HIP)
+    # Hanches
+    _try_angle(LM.L_SHOULDER, LM.L_HIP,      LM.L_KNEE)
+    _try_angle(LM.R_SHOULDER, LM.R_HIP,      LM.R_KNEE)
+    # Genoux
+    _try_angle(LM.L_HIP,      LM.L_KNEE,     LM.L_ANKLE)
+    _try_angle(LM.R_HIP,      LM.R_KNEE,     LM.R_ANKLE)
 
     return {"landmarks": lm, "angles": angles}
 
 
 # ─── Public API ──────────────────────────────────────────────────
 def analyze(video_path: str) -> dict:
-    """Run MediaPipe pose estimation on *video_path*.
-
-    Returns a dict ``{"frames": [...]}``.
-    Raises ``FileNotFoundError`` / ``RuntimeError`` on bad input.
     """
+    Analyze a video with MediaPipe Pose and return a JSON-serializable dict.
+    
+    The result contains per-frame pose data (landmarks and derived angles),
+    sampled at a reduced frame rate for performance, suitable for direct
+    JSON serialization and downstream processing.
+    
+    :param video_path: Path to the input video file.
+    :return: Dict with per-frame pose analysis (landmarks and angles).
+    :raises FileNotFoundError: If the video file does not exist.
+    :raises RuntimeError: If the video cannot be opened by OpenCV.
+    """
+      
     if not os.path.exists(video_path):
         raise FileNotFoundError(f"Fichier vidéo introuvable : {video_path}")
 
@@ -136,26 +158,14 @@ def analyze(video_path: str) -> dict:
         fps = 30
     n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    # Analyse at most TARGET_FPS frames per second of video.
-    # On a 60 fps video this skips every other frame; on a 30 fps video
-    # nothing is skipped.  Keeps processing time proportional to duration
-    # rather than source frame-rate.
-    TARGET_FPS = 15
+    TARGET_FPS = 30
     frame_step = max(1, int(round(fps / TARGET_FPS)))
     effective_frames = (n_frames + frame_step - 1) // frame_step
-
-    # Resize frames to max this width before sending to MediaPipe.
-    # Reduces memory consumption and speeds up inference significantly.
-    # MediaPipe Lite handles 256-512 px inputs well.
     MAX_WIDTH = 640
 
     logger.info(
         "Vidéo : %d frames @ %.1f FPS — analyse 1/%d frames (%d frames effectives, max %dpx)",
-        n_frames,
-        fps,
-        frame_step,
-        effective_frames,
-        MAX_WIDTH,
+        n_frames, fps, frame_step, effective_frames, MAX_WIDTH,
     )
 
     base_options = python.BaseOptions(model_asset_path=MODEL_PATH)
@@ -168,19 +178,17 @@ def analyze(video_path: str) -> dict:
         with vision.PoseLandmarker.create_from_options(options) as landmarker:
             frames_list = []
             analyzed = 0
+            i = 0  # vrai index de frame
 
-            # Seek directly to each target frame instead of decoding every
-            # frame sequentially.  This avoids allocating decompressed numpy
-            # arrays for skipped frames and is the primary memory saving.
-            i = 0
-            while i < n_frames:
-                cap.set(cv2.CAP_PROP_POS_FRAMES, i)
+            while True:
                 ret, frame = cap.read()
                 if not ret:
-                    logger.warning("Lecture interrompue à la frame %d", i)
                     break
 
-                # Downscale to MAX_WIDTH to reduce memory and speed up inference
+                if i % frame_step != 0:
+                    i += 1
+                    continue
+
                 h, w = frame.shape[:2]
                 if w > MAX_WIDTH:
                     scale = MAX_WIDTH / w
@@ -191,12 +199,11 @@ def analyze(video_path: str) -> dict:
                     )
 
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                del frame  # release original BGR array immediately
+                del frame
 
-                mp_image = mp.Image(
-                    image_format=mp.ImageFormat.SRGB, data=rgb_frame
-                )
-                del rgb_frame  # release after MediaPipe copies it
+                if rgb_frame is not None:
+                    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
+                del rgb_frame
 
                 timestamp_ms = int((i / fps) * 1000)
                 result = landmarker.detect_for_video(mp_image, timestamp_ms)
@@ -217,11 +224,9 @@ def analyze(video_path: str) -> dict:
 
                 if analyzed % 30 == 0:
                     det = "OK" if result.pose_landmarks else "NO_POSE"
-                    logger.debug(
-                        "frame %d/%d (%s)", analyzed, effective_frames, det
-                    )
+                    logger.debug("frame %d/%d (%s)", analyzed, effective_frames, det)
 
-                i += frame_step
+                i += 1  # un seul incrément, ici
 
             logger.info("Terminé — %d frames analysées", analyzed)
             return {"frames": frames_list}
