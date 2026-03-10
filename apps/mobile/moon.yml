@@ -13,6 +13,8 @@ tasks:
     inputs:
       - 'pubspec.yaml'
       - 'pubspec.lock'
+    deps:
+      - 'root:setup-git-config'
 
   build-android:
     command: 'flutter'
