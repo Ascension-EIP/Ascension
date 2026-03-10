@@ -145,7 +145,7 @@ where
 
         let user = self.repo.create_user(&new_user).await?;
         let token = self.jwt.generate(user.id)?;
-        Ok(AuthToken::new(token))
+        Ok(AuthToken::new(token, user.id))
     }
 
     /// Authenticate an existing user. Returns a JWT on success.
@@ -172,6 +172,6 @@ where
         }
 
         let token = self.jwt.generate(user.id)?;
-        Ok(AuthToken::new(token))
+        Ok(AuthToken::new(token, user.id))
     }
 }

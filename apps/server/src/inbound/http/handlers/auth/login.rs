@@ -21,13 +21,14 @@ pub struct LoginRequest {
 /// Response body for a successful login.
 #[derive(Debug, Serialize)]
 pub struct LoginResponse {
-    token: String,
+    access_token: String,
+    user_id: String,
 }
 
 /// Authenticate a user with email and password.
 ///
 /// On success the JWT is:
-/// 1. Returned in the JSON body as `token`.
+/// 1. Returned in the JSON body as `access_token`.
 /// 2. Set as an `HttpOnly; SameSite=Strict` session cookie named `session_token`.
 ///
 /// # Responses
@@ -41,7 +42,7 @@ pub async fn login(
     Json(body): Json<LoginRequest>,
 ) -> Result<(StatusCode, Json<LoginResponse>), AuthError> {
     let email = Email::new(&body.email)
-        .map_err(|e| AuthError::Unknown(anyhow::anyhow!(e)))?;
+        .map_err(|e| AuthError::ValidationError(e.to_string()))?;
     let password = Password::new(&body.password)
         .map_err(|_| AuthError::InvalidCredentials)?;
 
@@ -55,7 +56,13 @@ pub async fn login(
     cookie.set_same_site(tower_cookies::cookie::SameSite::Strict);
     cookies.add(cookie);
 
-    Ok((StatusCode::OK, Json(LoginResponse { token: auth_token.token })))
+    Ok((
+        StatusCode::OK,
+        Json(LoginResponse {
+            access_token: auth_token.token,
+            user_id: auth_token.user_id.to_string(),
+        }),
+    ))
 }
 
 impl IntoResponse for AuthError {
@@ -68,6 +75,7 @@ impl IntoResponse for AuthError {
             }
             AuthError::UserNotFound(_) => StatusCode::NOT_FOUND.into_response(),
             AuthError::DuplicateEmail => StatusCode::CONFLICT.into_response(),
+            AuthError::ValidationError(_) => StatusCode::UNPROCESSABLE_ENTITY.into_response(),
             AuthError::TokenGeneration | AuthError::Unknown(_) => {
                 StatusCode::INTERNAL_SERVER_ERROR.into_response()
             }

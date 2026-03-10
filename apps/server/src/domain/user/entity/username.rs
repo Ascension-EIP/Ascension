@@ -11,7 +11,7 @@ pub struct Username(String);
 pub struct UsernameInvalidError(String);
 
 static USERNAME_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^[a-zA-Z0-9_]{8,24}$").unwrap());
+    LazyLock::new(|| Regex::new(r"^[a-zA-Z0-9_]{3,24}$").unwrap());
 
 impl Username {
     pub fn new(raw: &str) -> Result<Self, UsernameInvalidError> {

@@ -18,6 +18,8 @@ pub enum AuthError {
     InvalidCredentials,
     #[error("email already registered")]
     DuplicateEmail,
+    #[error("validation error: {0}")]
+    ValidationError(String),
     #[error(transparent)]
     Unknown(#[from] anyhow::Error),
 }

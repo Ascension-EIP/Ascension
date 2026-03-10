@@ -1,3 +1,5 @@
+use uuid::Uuid;
+
 use crate::domain::user::entity::{email::Email, password::Password};
 
 /// Credentials provided by a user attempting to log in.
@@ -19,10 +21,12 @@ impl LoginCredentials {
 pub struct AuthToken {
     /// Signed JWT that the client must carry in subsequent requests.
     pub token: String,
+    /// The authenticated user's ID.
+    pub user_id: Uuid,
 }
 
 impl AuthToken {
-    pub fn new(token: String) -> Self {
-        Self { token }
+    pub fn new(token: String, user_id: Uuid) -> Self {
+        Self { token, user_id }
     }
 }

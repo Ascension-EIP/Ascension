@@ -20,7 +20,8 @@ pub struct RegisterRequest {
 /// Response body for a successful registration.
 #[derive(Debug, Serialize)]
 pub struct RegisterResponse {
-    token: String,
+    access_token: String,
+    user_id: String,
 }
 
 /// Register a new user account.
@@ -39,11 +40,11 @@ pub async fn register(
     Json(body): Json<RegisterRequest>,
 ) -> Result<(StatusCode, Json<RegisterResponse>), AuthError> {
     let username = Username::new(&body.username)
-        .map_err(|e| AuthError::Unknown(anyhow::anyhow!(e)))?;
+        .map_err(|e| AuthError::ValidationError(e.to_string()))?;
     let email = Email::new(&body.email)
-        .map_err(|e| AuthError::Unknown(anyhow::anyhow!(e)))?;
+        .map_err(|e| AuthError::ValidationError(e.to_string()))?;
     let password = Password::new(&body.password)
-        .map_err(|e| AuthError::Unknown(anyhow::anyhow!(e)))?;
+        .map_err(|e| AuthError::ValidationError(e.to_string()))?;
 
     // New accounts are always created with the `User` role.
     let role = Role::User;
@@ -58,5 +59,11 @@ pub async fn register(
     cookie.set_same_site(tower_cookies::cookie::SameSite::Strict);
     cookies.add(cookie);
 
-    Ok((StatusCode::CREATED, Json(RegisterResponse { token: auth_token.token })))
+    Ok((
+        StatusCode::CREATED,
+        Json(RegisterResponse {
+            access_token: auth_token.token,
+            user_id: auth_token.user_id.to_string(),
+        }),
+    ))
 }
