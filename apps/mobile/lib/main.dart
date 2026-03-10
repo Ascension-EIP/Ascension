@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/shared/layout/mobile_layout.dart';
+import 'package:mobile/core/auth/auth_service.dart';
 import 'package:mobile/core/network/api_service.dart';
+import 'package:mobile/core/router/app_router.dart';
 import 'package:mobile/shared/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ApiService().loadBaseUrl();
+  await AuthService().init();
   runApp(const AscensionApp());
 }
 
@@ -14,13 +16,13 @@ class AscensionApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Ascension',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.dark,
-      home: const MobileLayout(),
+      routerConfig: appRouter,
     );
   }
 }
