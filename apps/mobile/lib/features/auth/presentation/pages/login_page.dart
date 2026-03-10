@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile/core/auth/auth_service.dart';
 import 'package:mobile/core/network/api_service.dart';
 import 'package:mobile/features/profile/presentation/pages/settings_page.dart';
-import 'package:mobile/shared/components/header.dart';
 import 'package:mobile/shared/theme/app_colors.dart';
 
 class LoginPage extends StatefulWidget {
