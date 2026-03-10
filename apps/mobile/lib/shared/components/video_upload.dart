@@ -590,11 +590,6 @@ class _AnalysisSummaryCard extends StatelessWidget {
             value:
                 '$detectedFrames frames (${detectionRate.toStringAsFixed(0)} %)',
           ),
-          if (avgAngle != null)
-            _StatRow(
-              label: 'Angle moyen coude gauche',
-              value: '${avgAngle.toStringAsFixed(1)}°',
-            ),
         ],
       ),
     );
