@@ -1,8 +1,11 @@
 use async_trait::async_trait;
 
 use crate::domain::{
-    auth::{entity::{AuthToken, LoginCredentials}, error::AuthError},
-    user::{entity::{new_user::NewUser, user::User}, },
+    auth::{
+        entity::{AuthToken, LoginCredentials},
+        error::AuthError,
+    },
+    user::entity::{new_user::NewUser, user::User},
 };
 
 #[async_trait]

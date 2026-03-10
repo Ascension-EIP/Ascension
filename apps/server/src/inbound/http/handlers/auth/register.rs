@@ -2,12 +2,14 @@ use axum::{Json, extract::State, http::StatusCode};
 use serde::{Deserialize, Serialize};
 use tower_cookies::{Cookie, Cookies};
 
+use super::login::SESSION_COOKIE;
 use crate::domain::{
     auth::error::AuthError,
-    user::entity::{email::Email, new_user::NewUser, password::Password, role::Role, username::Username},
+    user::entity::{
+        email::Email, new_user::NewUser, password::Password, role::Role, username::Username,
+    },
 };
 use crate::inbound::http::AppState;
-use super::login::SESSION_COOKIE;
 
 /// Request body for `POST /v1/auth/register`.
 #[derive(Debug, Deserialize)]
@@ -39,12 +41,11 @@ pub async fn register(
     cookies: Cookies,
     Json(body): Json<RegisterRequest>,
 ) -> Result<(StatusCode, Json<RegisterResponse>), AuthError> {
-    let username = Username::new(&body.username)
-        .map_err(|e| AuthError::ValidationError(e.to_string()))?;
-    let email = Email::new(&body.email)
-        .map_err(|e| AuthError::ValidationError(e.to_string()))?;
-    let password = Password::new(&body.password)
-        .map_err(|e| AuthError::ValidationError(e.to_string()))?;
+    let username =
+        Username::new(&body.username).map_err(|e| AuthError::ValidationError(e.to_string()))?;
+    let email = Email::new(&body.email).map_err(|e| AuthError::ValidationError(e.to_string()))?;
+    let password =
+        Password::new(&body.password).map_err(|e| AuthError::ValidationError(e.to_string()))?;
 
     // New accounts are always created with the `User` role.
     let role = Role::User;

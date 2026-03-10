@@ -32,9 +32,7 @@ fn extract_token(req: &Request, cookies: &Cookies) -> Option<String> {
     }
 
     // 2. Session cookie
-    cookies
-        .get(SESSION_COOKIE)
-        .map(|c| c.value().to_string())
+    cookies.get(SESSION_COOKIE).map(|c| c.value().to_string())
 }
 
 /// Authentication middleware – validates the JWT and injects the [User] into

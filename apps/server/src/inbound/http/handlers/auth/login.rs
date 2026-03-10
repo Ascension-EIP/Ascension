@@ -41,10 +41,8 @@ pub async fn login(
     cookies: Cookies,
     Json(body): Json<LoginRequest>,
 ) -> Result<(StatusCode, Json<LoginResponse>), AuthError> {
-    let email = Email::new(&body.email)
-        .map_err(|e| AuthError::ValidationError(e.to_string()))?;
-    let password = Password::new(&body.password)
-        .map_err(|_| AuthError::InvalidCredentials)?;
+    let email = Email::new(&body.email).map_err(|e| AuthError::ValidationError(e.to_string()))?;
+    let password = Password::new(&body.password).map_err(|_| AuthError::InvalidCredentials)?;
 
     let credentials = LoginCredentials::new(email, password);
     let auth_token = state.auth_service.login(&credentials).await?;

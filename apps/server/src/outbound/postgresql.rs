@@ -127,13 +127,11 @@ fn map_row_to_user(row: &sqlx::postgres::PgRow) -> Result<User, sqlx::Error> {
     let id_str: String = row.try_get("id")?;
     let parsed_id = Uuid::parse_str(&id_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
     let username_str: String = row.try_get("username")?;
-    let username =
-        Username::new(&username_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+    let username = Username::new(&username_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
     let email_str: String = row.try_get("email")?;
     let email = Email::new(&email_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
     let password_str: String = row.try_get("password_hash")?;
-    let password =
-        Password::new(&password_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+    let password = Password::new(&password_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
     let role_str: String = row.try_get("role")?;
     let role = Role::new(&role_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
     Ok(User::new(parsed_id, username, email, password, role))

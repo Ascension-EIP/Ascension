@@ -149,8 +149,7 @@ mod tests {
     #[tokio::test]
     async fn register_propagates_duplicate_email() {
         let email = Email::new("test@example.com").unwrap();
-        let repo = MockUserRepository::new()
-            .with_create(Err(UserError::DuplicateEmail(email)));
+        let repo = MockUserRepository::new().with_create(Err(UserError::DuplicateEmail(email)));
         let service = make_service(repo);
 
         let new_user = make_new_user("plaintextpw");
@@ -209,8 +208,8 @@ mod tests {
     /// A login for a non-existing email returns [AuthError::InvalidCredentials].
     #[tokio::test]
     async fn login_fails_when_email_not_found() {
-        let repo = MockUserRepository::new()
-            .with_get_by_email(Err(UserError::UserNotFound(Uuid::nil())));
+        let repo =
+            MockUserRepository::new().with_get_by_email(Err(UserError::UserNotFound(Uuid::nil())));
         let service = make_service(repo);
 
         let credentials = LoginCredentials::new(
@@ -238,8 +237,7 @@ mod tests {
 
         // Generate a token using the same service so the secret matches.
         let new_user = make_new_user("plaintextpw");
-        let create_repo =
-            MockUserRepository::new().with_create(Ok(stored_user.clone()));
+        let create_repo = MockUserRepository::new().with_create(Ok(stored_user.clone()));
         let service2 = make_service(create_repo);
         let token = service2.register(&new_user).await.unwrap().token;
 
