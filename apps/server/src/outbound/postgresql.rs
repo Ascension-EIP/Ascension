@@ -54,80 +54,42 @@ impl Postgres {
         ))
     }
 
-    async fn get_user(&self, id: &Uuid) -> Result<User, sqlx::Error> {
-        use sqlx::Row;
-        let row = sqlx::query("SELECT id, username, email, role FROM users WHERE id = $1")
-            .bind(id.to_string())
-            .fetch_one(&self.pool)
-            .await?;
+    async fn fetch_user_by_id(&self, id: &Uuid) -> Result<User, sqlx::Error> {
+        let row =
+            sqlx::query("SELECT id, username, email, password_hash, role FROM users WHERE id = $1")
+                .bind(id.to_string())
+                .fetch_one(&self.pool)
+                .await?;
+        map_row_to_user(&row)
+    }
 
-        let id_str: String = row.try_get("id")?;
-        let parsed_id = Uuid::parse_str(&id_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-        let username_str: String = row.try_get("username")?;
-        let username =
-            Username::new(&username_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-        let password = Password::new("ouiouioui").map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-        let email_str: String = row.try_get("email")?;
-        let email = Email::new(&email_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-        let role_str: String = row.try_get("role")?;
-        let role = Role::new(&role_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-        Ok(User::new(parsed_id, username, email, password, role))
+    async fn fetch_user_by_email(&self, email: &Email) -> Result<User, sqlx::Error> {
+        let row = sqlx::query(
+            "SELECT id, username, email, password_hash, role FROM users WHERE email = $1",
+        )
+        .bind(email.to_string())
+        .fetch_one(&self.pool)
+        .await?;
+        map_row_to_user(&row)
     }
 
     async fn filter_users(&self, req: &UserFilter) -> Result<Vec<User>, sqlx::Error> {
         let rows = sqlx::query(
-            "SELECT id, username, email, role FROM users ORDER BY id LIMIT $1 OFFSET $2",
+            "SELECT id, username, email, password_hash, role FROM users ORDER BY id LIMIT $1 OFFSET $2",
         )
         .bind(req.limit as i32)
         .bind(req.offset as i32)
         .fetch_all(&self.pool)
         .await?;
-        let users = rows
-            .into_iter()
-            .map(|row| {
-                use sqlx::Row;
-                let id_str: String = row.try_get("id")?;
-                let id = Uuid::parse_str(&id_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-                let username_str: String = row.try_get("username")?;
-                let username =
-                    Username::new(&username_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-                let email_str: String = row.try_get("email")?;
-                let email = Email::new(&email_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-                let password =
-                    Password::new("ouiouioui").map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-                let role_str: String = row.try_get("role")?;
-                let role = Role::new(&role_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-
-                Ok(User::new(id, username, email, password, role))
-            })
-            .collect::<Result<Vec<User>, sqlx::Error>>()?;
-        Ok(users)
+        rows.into_iter().map(|row| map_row_to_user(&row)).collect()
     }
 
     async fn get_all_users(&self) -> Result<Vec<User>, sqlx::Error> {
-        let rows = sqlx::query("SELECT id, username, email, role FROM users ORDER BY id")
-            .fetch_all(&self.pool)
-            .await?;
-        let users = rows
-            .into_iter()
-            .map(|row| {
-                use sqlx::Row;
-                let id_str: String = row.try_get("id")?;
-                let id = Uuid::parse_str(&id_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-                let username_str: String = row.try_get("username")?;
-                let username =
-                    Username::new(&username_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-                let email_str: String = row.try_get("email")?;
-                let email = Email::new(&email_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-                let password =
-                    Password::new("ouiouioui").map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-                let role_str: String = row.try_get("role")?;
-                let role = Role::new(&role_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
-
-                Ok(User::new(id, username, email, password, role))
-            })
-            .collect::<Result<Vec<User>, sqlx::Error>>()?;
-        Ok(users)
+        let rows =
+            sqlx::query("SELECT id, username, email, password_hash, role FROM users ORDER BY id")
+                .fetch_all(&self.pool)
+                .await?;
+        rows.into_iter().map(|row| map_row_to_user(&row)).collect()
     }
 
     async fn update_user(&self, req: &User) -> Result<User, sqlx::Error> {
@@ -157,6 +119,22 @@ impl Postgres {
         }
         Ok(())
     }
+}
+
+/// Map a single sqlx [Row] to a [User].
+fn map_row_to_user(row: &sqlx::postgres::PgRow) -> Result<User, sqlx::Error> {
+    use sqlx::Row;
+    let id_str: String = row.try_get("id")?;
+    let parsed_id = Uuid::parse_str(&id_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+    let username_str: String = row.try_get("username")?;
+    let username = Username::new(&username_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+    let email_str: String = row.try_get("email")?;
+    let email = Email::new(&email_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+    let password_str: String = row.try_get("password_hash")?;
+    let password = Password::new(&password_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+    let role_str: String = row.try_get("role")?;
+    let role = Role::new(&role_str).map_err(|e| sqlx::Error::Decode(Box::new(e)))?;
+    Ok(User::new(parsed_id, username, email, password, role))
 }
 
 #[async_trait]
@@ -189,7 +167,7 @@ impl UserRepository for Postgres {
     }
 
     async fn get_user(&self, req: &Uuid) -> Result<User, UserError> {
-        let user = self.get_user(req).await.map_err(|e| {
+        let user = self.fetch_user_by_id(req).await.map_err(|e| {
             if matches!(e, sqlx::Error::RowNotFound) {
                 UserError::UserNotFound(*req)
             } else {
@@ -200,6 +178,20 @@ impl UserRepository for Postgres {
         })?;
 
         Ok(user)
+    }
+
+    async fn get_user_by_email(&self, email: &Email) -> Result<User, UserError> {
+        self.fetch_user_by_email(email).await.map_err(|e| {
+            if matches!(e, sqlx::Error::RowNotFound) {
+                // UserNotFound requires a Uuid; use a nil UUID as a sentinel when
+                // searching by email to avoid leaking whether the address exists.
+                UserError::UserNotFound(Uuid::nil())
+            } else {
+                anyhow!(e)
+                    .context(format!("failed to get user with email {}", email))
+                    .into()
+            }
+        })
     }
 
     async fn list_users(&self, req: &Pagination) -> Result<Vec<User>, UserError> {
