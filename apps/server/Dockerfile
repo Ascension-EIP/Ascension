@@ -1,6 +1,11 @@
 # ── Build stage ───────────────────────────────────────────────────────────────
 FROM rust:1.91.1-slim AS builder
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+	perl \
+	make \
+	&& rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Cache dependencies layer
@@ -9,8 +14,9 @@ RUN mkdir src && echo 'fn main() {}' > src/main.rs \
 	&& cargo build --release \
 	&& rm -rf src
 
-# Copy sqlx offline query cache and sources
+# Copy sqlx offline query cache, migrations and sources
 COPY .sqlx ./.sqlx
+COPY migrations ./migrations
 COPY src ./src
 ENV SQLX_OFFLINE=true
 RUN touch src/main.rs && cargo build --release
