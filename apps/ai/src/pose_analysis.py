@@ -153,7 +153,7 @@ def analyze(video_path: str) -> dict:
                 if not ret:
                     break
 
-                if i % frame_step != 0:
+                if not i % frame_step:
                     i += 1
                     continue
 
@@ -169,7 +169,8 @@ def analyze(video_path: str) -> dict:
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 del frame
 
-                mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
+                if rgb_frame is not None:
+                    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
                 del rgb_frame
 
                 timestamp_ms = int((i / fps) * 1000)
