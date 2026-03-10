@@ -154,7 +154,7 @@ def analyze(video_path: str) -> dict:
                     break
 
                 if not i % frame_step:
-                    i += 1
+i += frame_step
                     continue
 
                 h, w = frame.shape[:2]
