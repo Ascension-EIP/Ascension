@@ -106,11 +106,61 @@ def _process_pose(landmarks_raw):
 
     angles = {}
 
+    def _add_angle(name: str, a_idx: int, b_idx: int, c_idx: int):
+        """
+        Calcule l'angle (en degrés) au niveau du point b, défini par les
+        trois landmarks d'indices a_idx, b_idx, c_idx (dans l'espace 3D).
+        N'ajoute rien si un des points nécessaires est manquant.
+        """
+        a_key = str(a_idx)
+        b_key = str(b_idx)
+        c_key = str(c_idx)
+        if a_key not in lm or b_key not in lm or c_key not in lm:
+            return
+        # Vecteurs centrés sur le point b (joint)
+        v1 = _vec3(lm[b_key], lm[a_key])
+        v2 = _vec3(lm[b_key], lm[c_key])
+        angle = _angle_between(v1, v2)
+        angles[name] = round(angle, 1)
+
+    # Indices basés sur la convention MediaPipe Pose:
+    #  - 11: left_shoulder, 12: right_shoulder
+    #  - 13: left_elbow,   14: right_elbow
+    #  - 15: left_wrist,   16: right_wrist
+    #  - 23: left_hip,     24: right_hip
+    #  - 25: left_knee,    26: right_knee
+    #  - 27: left_ankle,   28: right_ankle
+
+    # Coudes
+    _add_angle("left_elbow", 11, 13, 15)   # épaule-gauche, coude-gauche, poignet-gauche
+    _add_angle("right_elbow", 12, 14, 16)  # épaule-droite, coude-droit, poignet-droit
+    
+    # Genoux
+    _add_angle("left_knee", 23, 25, 27)    # hanche-gauche, genou-gauche, cheville-gauche
+    _add_angle("right_knee", 24, 26, 28)   # hanche-droite, genou-droit, cheville-droite
+    
+    # Hanches (angle entre tronc et cuisse)
+    _add_angle("left_hip", 11, 23, 25)     # épaule-gauche, hanche-gauche, genou-gauche
+    _add_angle("right_hip", 12, 24, 26)    # épaule-droite, hanche-droite, genou-droit
+
     return {"landmarks": lm, "angles": angles}
 
 
 # ─── Public API ──────────────────────────────────────────────────
 def analyze(video_path: str) -> dict:
+    """
+    Analyze a video with MediaPipe Pose and return a JSON-serializable dict.
+    
+    The result contains per-frame pose data (landmarks and derived angles),
+    sampled at a reduced frame rate for performance, suitable for direct
+    JSON serialization and downstream processing.
+    
+    :param video_path: Path to the input video file.
+    :return: Dict with per-frame pose analysis (landmarks and angles).
+    :raises FileNotFoundError: If the video file does not exist.
+    :raises RuntimeError: If the video cannot be opened by OpenCV.
+    """
+      
     if not os.path.exists(video_path):
         raise FileNotFoundError(f"Fichier vidéo introuvable : {video_path}")
 
@@ -154,7 +204,7 @@ def analyze(video_path: str) -> dict:
                     break
 
                 if not i % frame_step:
-i += frame_step
+                    i += 1
                     continue
 
                 h, w = frame.shape[:2]
