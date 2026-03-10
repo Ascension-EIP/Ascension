@@ -8,6 +8,7 @@ use axum::http::StatusCode;
 use axum::routing::{delete, get, post, put};
 use tokio::net;
 use tower::ServiceBuilder;
+use tower_cookies::CookieManagerLayer;
 use tower_governor::GovernorLayer;
 use tower_governor::governor::GovernorConfigBuilder;
 use tower_http::trace::TraceLayer;
@@ -18,6 +19,9 @@ use crate::domain::user::inbound::UserService;
 use crate::domain::video::ports::VideoService;
 use crate::inbound::http::handlers::analysis::create_analysis::create_analysis;
 use crate::inbound::http::handlers::analysis::get_analysis::get_analysis;
+use crate::inbound::http::handlers::auth::login::login;
+use crate::inbound::http::handlers::auth::logout::logout;
+use crate::inbound::http::handlers::auth::register::register;
 use crate::inbound::http::handlers::user::create_user::create_user;
 use crate::inbound::http::handlers::user::delete_user::delete_user;
 use crate::inbound::http::handlers::user::get_user::get_user;
@@ -101,7 +105,10 @@ impl HttpServer {
                 ServiceBuilder::new()
                     // .layer(RecoveryLayer::new())
                     .layer(TraceLayer::new_for_http())
-                    .layer(GovernorLayer::new(strict)),
+                    .layer(GovernorLayer::new(strict))
+                    // Cookie manager must wrap the entire app so that auth
+                    // middleware and handlers can read / write cookies.
+                    .layer(CookieManagerLayer::new()),
             )
             .with_state(state);
 
@@ -127,9 +134,17 @@ impl HttpServer {
 
 fn v1_routes() -> Router<AppState> {
     Router::new()
+        .nest("/auth", v1_auth_routes())
         .nest("/users", v1_users_routes())
         .nest("/videos", v1_videos_routes())
         .nest("/analyses", v1_analyses_routes())
+}
+
+fn v1_auth_routes() -> Router<AppState> {
+    Router::new()
+        .route("/register", post(register))
+        .route("/login", post(login))
+        .route("/logout", post(logout))
 }
 
 fn v1_users_routes() -> Router<AppState> {

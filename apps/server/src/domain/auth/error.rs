@@ -14,6 +14,10 @@ pub enum AuthError {
     InvalidTokenSub,
     #[error("user not found {0}")]
     UserNotFound(Uuid),
+    #[error("invalid credentials")]
+    InvalidCredentials,
+    #[error("email already registered")]
+    DuplicateEmail,
     #[error(transparent)]
     Unknown(#[from] anyhow::Error),
 }
