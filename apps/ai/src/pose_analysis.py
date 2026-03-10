@@ -106,6 +106,24 @@ def _process_pose(landmarks_raw):
 
     angles = {}
 
+    def _try_angle(a, b, c):
+        sa, sb, sc = str(a), str(b), str(c)
+        if all(k in lm for k in (sa, sb, sc)):
+            angles[sb] = round(_angle_between(_vec3(lm[sb], lm[sa]), _vec3(lm[sb], lm[sc])), 2)
+
+    # Coudes
+    _try_angle(LM.L_SHOULDER, LM.L_ELBOW,    LM.L_WRIST)
+    _try_angle(LM.R_SHOULDER, LM.R_ELBOW,    LM.R_WRIST)
+    # Épaules
+    _try_angle(LM.L_ELBOW,    LM.L_SHOULDER, LM.L_HIP)
+    _try_angle(LM.R_ELBOW,    LM.R_SHOULDER, LM.R_HIP)
+    # Hanches
+    _try_angle(LM.L_SHOULDER, LM.L_HIP,      LM.L_KNEE)
+    _try_angle(LM.R_SHOULDER, LM.R_HIP,      LM.R_KNEE)
+    # Genoux
+    _try_angle(LM.L_HIP,      LM.L_KNEE,     LM.L_ANKLE)
+    _try_angle(LM.R_HIP,      LM.R_KNEE,     LM.R_ANKLE)
+
     return {"landmarks": lm, "angles": angles}
 
 
@@ -126,7 +144,7 @@ def analyze(video_path: str) -> dict:
         fps = 30
     n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    TARGET_FPS = 15
+    TARGET_FPS = 30
     frame_step = max(1, int(round(fps / TARGET_FPS)))
     effective_frames = (n_frames + frame_step - 1) // frame_step
     MAX_WIDTH = 640
