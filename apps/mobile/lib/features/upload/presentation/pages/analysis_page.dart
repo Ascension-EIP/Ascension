@@ -146,13 +146,46 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
     if (widget.videoFile != null) {
       _videoCtrl = VideoPlayerController.file(widget.videoFile!)
         ..initialize().then((_) {
-          if (mounted) setState(() => _videoReady = true);
+          if (mounted) {
+            setState(() => _videoReady = true);
+            // Listen to video position changes to keep skeleton in sync
+            _videoCtrl!.addListener(_onVideoPositionChanged);
+          }
         });
+    }
+  }
+
+  /// Called on every video frame tick; maps the current playback position
+  /// to the closest analysis frame so the skeleton overlay stays in sync.
+  void _onVideoPositionChanged() {
+    if (!mounted || _videoCtrl == null) return;
+    final posMs = _videoCtrl!.value.position.inMilliseconds;
+
+    // Binary search for the frame whose timestamp is closest to posMs
+    int lo = 0, hi = _frames.length - 1, best = _currentFrame;
+    while (lo <= hi) {
+      final mid = (lo + hi) ~/ 2;
+      final midMs = _frames[mid].timestampMs;
+      if (midMs <= posMs) {
+        best = mid;
+        lo = mid + 1;
+      } else {
+        hi = mid - 1;
+      }
+    }
+
+    final isNowPlaying = _videoCtrl!.value.isPlaying;
+    if (best != _currentFrame || isNowPlaying != _isPlaying) {
+      setState(() {
+        _currentFrame = best;
+        _isPlaying = isNowPlaying;
+      });
     }
   }
 
   @override
   void dispose() {
+    _videoCtrl?.removeListener(_onVideoPositionChanged);
     _tabCtrl.dispose();
     _videoCtrl?.dispose();
     super.dispose();
@@ -169,18 +202,7 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
   void _play() {
     if (_frames.isEmpty) return;
     _videoCtrl?.play();
-    setState(() => _isPlaying = true);
-    _advanceFrame();
-  }
-
-  void _advanceFrame() async {
-    while (_isPlaying && _currentFrame < _frames.length - 1) {
-      await Future.delayed(const Duration(milliseconds: 66)); // ~15 fps
-      if (!mounted) return;
-      setState(() => _currentFrame++);
-    }
-    _videoCtrl?.pause();
-    if (mounted) setState(() => _isPlaying = false);
+    // _isPlaying is updated via the listener; no manual frame loop needed
   }
 
   @override
@@ -330,13 +352,13 @@ class _SkeletonTab extends StatelessWidget {
                 _fmtMs(frame.timestampMs),
                 style: const TextStyle(color: Colors.white54, fontSize: 12),
               ),
-              Text(
-                frame.poseDetected ? '✅ Pose détectée' : '❌ Aucune pose',
-                style: TextStyle(
-                  color: frame.poseDetected ? accent : Colors.redAccent,
-                  fontSize: 12,
-                ),
-              ),
+              //Text(
+              //  frame.poseDetected ? '✅ Pose détectée' : '❌ Aucune pose',
+              //  style: TextStyle(
+              //    color: frame.poseDetected ? accent : Colors.redAccent,
+              //    fontSize: 12,
+              //  ),
+              //),
             ],
           ),
         ),
@@ -579,19 +601,22 @@ class _SkeletonPainter extends CustomPainter {
       canvas.drawCircle(pt, 5, jointOutline);
     }
 
-    // ── Angle label at left elbow ──
-    final elbowAngle = frame.angles[_LM.lElbow];
-    final elbowPos = frame.landmarks[_LM.lElbow];
-    if (elbowAngle != null && elbowPos != null) {
-      final pt = toCanvas(elbowPos);
-      final label = '${elbowAngle.toStringAsFixed(0)}°';
+    // ── Angle labels for all detected joints ──
+    for (final entry in frame.angles.entries) {
+      final jointId = entry.key;
+      final angle = entry.value;
+      final jointPos = frame.landmarks[jointId];
+      if (jointPos == null) continue;
+
+      final pt = toCanvas(jointPos);
+      final label = '${angle.toStringAsFixed(0)}°';
 
       final tp = TextPainter(
         text: TextSpan(
           text: label,
           style: TextStyle(
             color: accent,
-            fontSize: 12,
+            fontSize: fullFrame ? 11 : 10,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -616,6 +641,31 @@ class _SkeletonPainter extends CustomPainter {
 }
 
 // ─── Tab 2 — Angle chart ────────────────────────────────────────
+
+/// All joints for which we compute angles, in display order.
+const _kAngleJoints = <int, String>{
+  _LM.lElbow: 'Coude G',
+  _LM.rElbow: 'Coude D',
+  _LM.lShoulder: 'Épaule G',
+  _LM.rShoulder: 'Épaule D',
+  _LM.lHip: 'Hanche G',
+  _LM.rHip: 'Hanche D',
+  _LM.lKnee: 'Genou G',
+  _LM.rKnee: 'Genou D',
+};
+
+/// Distinct colors per joint so curves are easy to differentiate.
+const _kJointColors = <int, Color>{
+  _LM.lElbow: const Color(0xFF64B5F6),    // blue 300
+  _LM.rElbow: const Color(0xFFFFB74D),    // orange 300
+  _LM.lShoulder: const Color(0xFF81C784), // green 300
+  _LM.rShoulder: const Color(0xFFE57373), // red 300
+  _LM.lHip: const Color(0xFFCE93D8),      // purple 200
+  _LM.rHip: const Color(0xFF4DB6AC),      // teal 300
+  _LM.lKnee: const Color(0xFFFFF176),     // yellow 200
+  _LM.rKnee: const Color(0xFFFF8A65),     // deep orange 300
+};
+
 class _AngleChartTab extends StatefulWidget {
   final List<_FrameData> frames;
   final Color accent;
@@ -626,7 +676,16 @@ class _AngleChartTab extends StatefulWidget {
 }
 
 class _AngleChartTabState extends State<_AngleChartTab> {
-  // Build angle time-series for a given LM joint id
+  /// Which joints are currently shown on the chart.
+  late final Set<int> _visible;
+
+  @override
+  void initState() {
+    super.initState();
+    // Start with elbows visible; user can toggle the rest
+    _visible = {_LM.lElbow, _LM.rElbow};
+  }
+
   List<FlSpot> _spots(int jointId) {
     final spots = <FlSpot>[];
     for (final f in widget.frames) {
@@ -640,22 +699,67 @@ class _AngleChartTabState extends State<_AngleChartTab> {
 
   @override
   Widget build(BuildContext context) {
-    final lElbowSpots = _spots(_LM.lElbow);
-    final rElbowSpots = _spots(_LM.rElbow);
-    final hasData = lElbowSpots.isNotEmpty || rElbowSpots.isNotEmpty;
+    // Precompute spots for visible joints that actually have data
+    final seriesData = <int, List<FlSpot>>{};
+    for (final id in _kAngleJoints.keys) {
+      final s = _spots(id);
+      if (s.isNotEmpty) seriesData[id] = s;
+    }
+
+    final visibleSeries = seriesData.entries
+        .where((e) => _visible.contains(e.key))
+        .toList();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionTitle(
-            'Angle des coudes dans le temps',
-            accent: widget.accent,
-          ),
+          _SectionTitle('Angles articulaires', accent: widget.accent),
           const SizedBox(height: 12),
-          if (!hasData)
-            _EmptyCard('Aucune donnée d\'angle disponible')
+
+          // ── Joint selector chips ──
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _kAngleJoints.entries.map((e) {
+              final id = e.key;
+              final hasData = seriesData.containsKey(id);
+              final selected = _visible.contains(id) && hasData;
+              final color = _kJointColors[id] ?? widget.accent;
+              return FilterChip(
+                label: Text(
+                  e.value,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: selected ? Colors.black : Colors.white60,
+                  ),
+                ),
+                selected: selected,
+                onSelected: hasData
+                    ? (v) => setState(() {
+                          if (v) {
+                            _visible.add(id);
+                          } else {
+                            _visible.remove(id);
+                          }
+                        })
+                    : null,
+                selectedColor: color,
+                backgroundColor: const Color(0xFF1E3050),
+                checkmarkColor: Colors.black,
+                side: BorderSide(
+                  color: hasData ? color.withValues(alpha: 0.6) : Colors.white12,
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 16),
+
+          // ── Chart ──
+          if (visibleSeries.isEmpty)
+            _EmptyCard('Sélectionnez au moins une articulation')
           else
             _ChartCard(
               child: LineChart(
@@ -677,7 +781,7 @@ class _AngleChartTabState extends State<_AngleChartTab> {
                       ),
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 36,
+                        reservedSize: 40,
                         getTitlesWidget: (v, _) => Text(
                           '${v.toInt()}°',
                           style: const TextStyle(
@@ -711,41 +815,34 @@ class _AngleChartTabState extends State<_AngleChartTab> {
                       sideTitles: SideTitles(showTitles: false),
                     ),
                   ),
-                  lineBarsData: [
-                    if (lElbowSpots.isNotEmpty)
-                      LineChartBarData(
-                        spots: lElbowSpots,
-                        isCurved: true,
-                        color: widget.accent,
-                        barWidth: 2,
-                        dotData: const FlDotData(show: false),
-                        belowBarData: BarAreaData(
-                          show: true,
-                          color: widget.accent.withValues(alpha: 0.08),
-                        ),
+                  lineBarsData: visibleSeries.map((e) {
+                    final color = _kJointColors[e.key] ?? widget.accent;
+                    return LineChartBarData(
+                      spots: e.value,
+                      isCurved: true,
+                      color: color,
+                      barWidth: 2,
+                      dotData: const FlDotData(show: false),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        color: color.withValues(alpha: 0.06),
                       ),
-                    if (rElbowSpots.isNotEmpty)
-                      LineChartBarData(
-                        spots: rElbowSpots,
-                        isCurved: true,
-                        color: Colors.orangeAccent,
-                        barWidth: 2,
-                        dotData: const FlDotData(show: false),
-                        belowBarData: BarAreaData(
-                          show: true,
-                          color: Colors.orangeAccent.withValues(alpha: 0.08),
-                        ),
-                      ),
-                  ],
+                    );
+                  }).toList(),
                   lineTouchData: LineTouchData(
                     touchTooltipData: LineTouchTooltipData(
                       getTooltipColor: (_) => const Color(0xFF1E3050),
-                      getTooltipItems: (spots) => spots.map((s) {
+                      getTooltipItems: (touchedSpots) =>
+                          touchedSpots.map((s) {
+                        final jointId = visibleSeries[s.barIndex].key;
+                        final name =
+                            _kAngleJoints[jointId] ?? 'Joint $jointId';
                         return LineTooltipItem(
-                          '${s.y.toStringAsFixed(1)}°',
+                          '$name\n${s.y.toStringAsFixed(1)}°',
                           TextStyle(
                             color: s.bar.color ?? Colors.white,
                             fontWeight: FontWeight.bold,
+                            fontSize: 11,
                           ),
                         );
                       }).toList(),
@@ -754,24 +851,20 @@ class _AngleChartTabState extends State<_AngleChartTab> {
                 ),
               ),
             ),
+
           const SizedBox(height: 16),
-          // Legend
-          if (lElbowSpots.isNotEmpty || rElbowSpots.isNotEmpty) ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (lElbowSpots.isNotEmpty)
-                  _Legend(color: widget.accent, label: 'Coude gauche'),
-                if (lElbowSpots.isNotEmpty && rElbowSpots.isNotEmpty)
-                  const SizedBox(width: 24),
-                if (rElbowSpots.isNotEmpty)
-                  const _Legend(
-                    color: Colors.orangeAccent,
-                    label: 'Coude droit',
-                  ),
-              ],
+
+          // ── Legend for visible series ──
+          if (visibleSeries.isNotEmpty)
+            Wrap(
+              spacing: 16,
+              runSpacing: 8,
+              children: visibleSeries.map((e) {
+                final color = _kJointColors[e.key] ?? widget.accent;
+                final name = _kAngleJoints[e.key] ?? 'Joint ${e.key}';
+                return _Legend(color: color, label: name);
+              }).toList(),
             ),
-          ],
         ],
       ),
     );
@@ -790,29 +883,32 @@ class _StatsTab extends StatelessWidget {
     required this.accent,
   });
 
+  /// Collect all angle values for [jointId] across all frames.
+  List<double> _anglesFor(int jointId) => frames
+      .expand((f) => f.angles.entries)
+      .where((e) => e.key == jointId)
+      .map((e) => e.value)
+      .toList();
+
   @override
   Widget build(BuildContext context) {
     final detected = frames.where((f) => f.poseDetected).toList();
-    final detRate = frames.isEmpty
-        ? 0.0
-        : detected.length / frames.length * 100;
+    final detRate =
+        frames.isEmpty ? 0.0 : detected.length / frames.length * 100;
 
-    // Elbow angle stats
-    final lAngles = frames
-        .expand((f) => f.angles.entries)
-        .where((e) => e.key == _LM.lElbow)
-        .map((e) => e.value)
-        .toList();
-
-    double? lMin, lMax, lAvg;
-    if (lAngles.isNotEmpty) {
-      lMin = lAngles.reduce(math.min);
-      lMax = lAngles.reduce(math.max);
-      lAvg = lAngles.reduce((a, b) => a + b) / lAngles.length;
-    }
-
-    // Duration
     final durationMs = frames.isNotEmpty ? frames.last.timestampMs : 0;
+
+    // Build stats for every joint that has data
+    final jointStats = <int, ({double min, double max, double avg})>{};
+    for (final id in _kAngleJoints.keys) {
+      final vals = _anglesFor(id);
+      if (vals.isNotEmpty) {
+        final mn = vals.reduce(math.min);
+        final mx = vals.reduce(math.max);
+        final av = vals.reduce((a, b) => a + b) / vals.length;
+        jointStats[id] = (min: mn, max: mx, avg: av);
+      }
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -854,47 +950,96 @@ class _StatsTab extends StatelessWidget {
                     ? Colors.orangeAccent
                     : Colors.redAccent,
               ),
+              _StatRow(
+                'Articulations mesurées',
+                '${jointStats.length} / ${_kAngleJoints.length}',
+                icon: Icons.architecture_outlined,
+                accent: accent,
+              ),
             ],
           ),
-          const SizedBox(height: 20),
-          if (lAngles.isNotEmpty) ...[
-            _SectionTitle('Coude gauche', accent: accent),
+
+          // ── Per-joint angle stats ──
+          if (jointStats.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            _SectionTitle('Angles par articulation', accent: accent),
             const SizedBox(height: 12),
-            _StatCard(
-              accent: accent,
-              children: [
-                _StatRow(
-                  'Angle minimum',
-                  '${lMin!.toStringAsFixed(1)}°',
-                  icon: Icons.arrow_downward_rounded,
-                  accent: accent,
-                  valueColor: Colors.lightBlueAccent,
+            ...jointStats.entries.map((entry) {
+              final id = entry.key;
+              final s = entry.value;
+              final name = _kAngleJoints[id] ?? 'Joint $id';
+              final color = _kJointColors[id] ?? accent;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          name,
+                          style: TextStyle(
+                            color: color,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    _StatCard(
+                      accent: accent,
+                      children: [
+                        _StatRow(
+                          'Minimum',
+                          '${s.min.toStringAsFixed(1)}°',
+                          icon: Icons.arrow_downward_rounded,
+                          accent: accent,
+                          valueColor: Colors.lightBlueAccent,
+                        ),
+                        _StatRow(
+                          'Maximum',
+                          '${s.max.toStringAsFixed(1)}°',
+                          icon: Icons.arrow_upward_rounded,
+                          accent: accent,
+                          valueColor: Colors.orangeAccent,
+                        ),
+                        _StatRow(
+                          'Moyenne',
+                          '${s.avg.toStringAsFixed(1)}°',
+                          icon: Icons.show_chart,
+                          accent: accent,
+                        ),
+                        _StatRow(
+                          'Amplitude',
+                          '${(s.max - s.min).toStringAsFixed(1)}°',
+                          icon: Icons.swap_vert_rounded,
+                          accent: accent,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    _AngleRangeBar(
+                      min: s.min,
+                      max: s.max,
+                      avg: s.avg,
+                      accent: color,
+                    ),
+                  ],
                 ),
-                _StatRow(
-                  'Angle maximum',
-                  '${lMax!.toStringAsFixed(1)}°',
-                  icon: Icons.arrow_upward_rounded,
-                  accent: accent,
-                  valueColor: Colors.orangeAccent,
-                ),
-                _StatRow(
-                  'Angle moyen',
-                  '${lAvg!.toStringAsFixed(1)}°',
-                  icon: Icons.show_chart,
-                  accent: accent,
-                ),
-                _StatRow(
-                  'Amplitude',
-                  '${(lMax - lMin).toStringAsFixed(1)}°',
-                  icon: Icons.swap_vert_rounded,
-                  accent: accent,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // Mini angle range bar
-            _AngleRangeBar(min: lMin, max: lMax, avg: lAvg, accent: accent),
+              );
+            }),
           ],
+
           const SizedBox(height: 20),
           _SectionTitle('Landmarks détectés', accent: accent),
           const SizedBox(height: 12),
