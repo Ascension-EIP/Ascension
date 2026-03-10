@@ -17,7 +17,7 @@ class ApiService {
   /// Call this once at app startup (e.g. in [main]).
   Future<void> loadBaseUrl() async {
     final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString(AppConstants.backendUrlKey);
+    final saved = prefs.getString(AppConstants.defaultBackendUrl);
     if (saved != null && saved.isNotEmpty) {
       _baseUrl = saved;
     }
@@ -27,7 +27,7 @@ class ApiService {
   Future<void> setBaseUrl(String url) async {
     _baseUrl = url;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(AppConstants.backendUrlKey, url);
+    await prefs.setString(AppConstants.defaultBackendUrl, url);
   }
 
   // ── Auth ─────────────────────────────────────────────────────────────────────
