@@ -161,9 +161,9 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
     if (!mounted || _videoCtrl == null) return;
     // Add a small lookahead to compensate for the decoder pipeline delay
     // (video_player reports the last decoded frame, not the currently displayed one).
-    const _kLookaheadMs =
+    const kLookaheadMs =
         100; // IMPORTANT: c'est ce qui rend parfait le calage entre vidéo et squelette, si tu baisse le squelette a du retard par rapport à la vidéo, si tu l'augmente le squelette est en avance sur la vidéo. 100ms semble être un bon compromis pour compenser le délai de décodage sans introduire de lag perceptible.
-    final posMs = _videoCtrl!.value.position.inMilliseconds + _kLookaheadMs;
+    final posMs = _videoCtrl!.value.position.inMilliseconds + kLookaheadMs;
 
     // Binary search for the last frame whose timestamp ≤ posMs (floor)
     int lo = 0, hi = _frames.length - 1, floor = 0;
@@ -737,14 +737,14 @@ const _kAngleJoints = <int, String>{
 
 /// Distinct colors per joint so curves are easy to differentiate.
 const _kJointColors = <int, Color>{
-  _LM.lElbow: const Color(0xFF64B5F6), // blue 300
-  _LM.rElbow: const Color(0xFFFFB74D), // orange 300
-  _LM.lShoulder: const Color(0xFF81C784), // green 300
-  _LM.rShoulder: const Color(0xFFE57373), // red 300
-  _LM.lHip: const Color(0xFFCE93D8), // purple 200
-  _LM.rHip: const Color(0xFF4DB6AC), // teal 300
-  _LM.lKnee: const Color(0xFFFFF176), // yellow 200
-  _LM.rKnee: const Color(0xFFFF8A65), // deep orange 300
+  _LM.lElbow: Color(0xFF64B5F6), // blue 300
+  _LM.rElbow: Color(0xFFFFB74D), // orange 300
+  _LM.lShoulder: Color(0xFF81C784), // green 300
+  _LM.rShoulder: Color(0xFFE57373), // red 300
+  _LM.lHip: Color(0xFFCE93D8), // purple 200
+  _LM.rHip: Color(0xFF4DB6AC), // teal 300
+  _LM.lKnee: Color(0xFFFFF176), // yellow 200
+  _LM.rKnee: Color(0xFFFF8A65), // deep orange 300
 };
 
 class _AngleChartTab extends StatefulWidget {

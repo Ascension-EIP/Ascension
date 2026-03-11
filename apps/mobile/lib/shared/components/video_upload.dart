@@ -551,17 +551,6 @@ class _AnalysisSummaryCard extends StatelessWidget {
         ? 0.0
         : detectedFrames / frames.length * 100;
 
-    // Collect average left-elbow angle across frames
-    final angles = frames
-        .where(
-          (f) => f['angles'] != null && (f['angles'] as Map).containsKey('13'),
-        )
-        .map((f) => (f['angles']['13'] as num).toDouble())
-        .toList();
-    final avgAngle = angles.isEmpty
-        ? null
-        : angles.reduce((a, b) => a + b) / angles.length;
-
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
