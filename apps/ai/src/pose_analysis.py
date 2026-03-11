@@ -13,11 +13,21 @@ import json
 import logging
 import numpy as np
 import os
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+# Charge la clé API depuis le fichier .env
+load_dotenv()
 
 logger = logging.getLogger("ai-worker.pose")
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BASE_DIR, "pose_landmarker.task")
+
+# Configuration de l'IA
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
 
 
 # ─── Landmark IDs ────────────────────────────────────────────────
@@ -88,6 +98,48 @@ def _normalize(v):
 def _angle_between(v1, v2):
     u1, u2 = _normalize(v1), _normalize(v2)
     return float(np.degrees(np.arccos(np.clip(np.dot(u1, u2), -1, 1))))
+
+
+# ─── AI helpers ──────────────────────────────────────────────────
+def _summarize_for_ai(full_data, sample_rate=15):
+    """Réduit le poids du JSON pour ne pas saturer l'API (échantillonnage)."""
+    summary = []
+    # On filtre pour ne garder que les moments où une pose est là
+    valid_frames = [f for f in full_data["frames"] if f.get("pose_detected")]
+    
+    for i, frame in enumerate(valid_frames):
+        if i % sample_rate == 0:
+            # On simplifie : seulement X, Y et les angles (pas de Z/pres)
+            reduced_lms = {
+                k: {"x": round(v["x"], 3), "y": round(v["y"], 3)}
+                for k, v in frame["landmarks"].items()
+            }
+            summary.append({
+                "time": frame["timestamp_ms"],
+                "points": reduced_lms,
+                "angles": frame["angles"]
+            })
+    return summary
+
+def get_climbing_advice(result_dict):
+    """Envoie une version légère des données à Gemini."""
+    if not GEMINI_API_KEY:
+        return "Clé API absente. Vérifie ton .env"
+    
+    ai_data = _summarize_for_ai(result_dict)
+    model = genai.GenerativeModel('models/gemini-2.5-flash')
+    
+    prompt = (
+        "Tu es un coach expert en escalade. Voici les coordonnées de mouvement d'un grimpeur.\n"
+        f"Données : {json.dumps(ai_data)}\n\n"
+        "Analyse le centre de gravité, la flexion des bras et des jambes, puis donne 3 conseils."
+    )
+    
+    try:
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        return f"Erreur Gemini : {e}"
 
 
 # ─── Per-frame processing ───────────────────────────────────────
@@ -225,18 +277,6 @@ def render_annotated_video(
     json_path: str,
     output_path: str,
 ) -> None:
-    """Render an annotated MP4 with skeleton overlay baked in.
-
-    Reads the JSON produced by :func:`analyze`, draws the skeleton on
-    every frame, and writes the result to *output_path*.  No GUI window
-    is opened — just open the output file in any video player.
-
-    Args:
-        video_path:   Path to the original video file.
-        json_path:    Path to the biomechanics JSON produced by
-                      :func:`analyze`.
-        output_path:  Destination MP4 file (e.g. ``vid-postanalyse.mp4``).
-    """
     with open(json_path, "r") as f:
         data = json.load(f)
 
@@ -266,13 +306,11 @@ def render_annotated_video(
         if fd.get("pose_detected") and "landmarks" in fd:
             lm = fd["landmarks"]
 
-            # Normalised [0,1] → pixel coords
             pts = {
                 name: (int(v["x"] * width), int(v["y"] * height))
                 for name, v in lm.items()
             }
 
-            # Skeleton lines (LM constants are ints; JSON keys are str)
             for a, b in _BODY_CONNECTIONS:
                 sa, sb = str(a), str(b)
                 if sa in pts and sb in pts:
@@ -280,12 +318,10 @@ def render_annotated_video(
                         frame, pts[sa], pts[sb], (0, 255, 0), 2, cv2.LINE_AA
                     )
 
-            # Landmark dots
             for px, py in pts.values():
                 cv2.circle(frame, (px, py), 5, (0, 100, 255), -1, cv2.LINE_AA)
                 cv2.circle(frame, (px, py), 5, (255, 255, 255), 1, cv2.LINE_AA)
 
-            # Angle labels (joint keys are already str from JSON)
             for joint, deg in fd.get("angles", {}).items():
                 if joint in pts:
                     px, py = pts[joint]
@@ -300,7 +336,6 @@ def render_annotated_video(
                         cv2.LINE_AA,
                     )
 
-        # Frame counter
         cv2.putText(
             frame,
             f"frame {frame_idx}",
@@ -313,10 +348,6 @@ def render_annotated_video(
         )
 
         writer.write(frame)
-
-        if frame_idx % 30 == 0:
-            logger.debug("[render] %d/%d", frame_idx, n_frames)
-
         frame_idx += 1
 
     cap.release()
@@ -360,7 +391,6 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    # Dérive le chemin de sortie vidéo depuis le nom de la vidéo source
     def _render_out(video: str, override: str | None) -> str:
         if override:
             return override
@@ -374,10 +404,20 @@ if __name__ == "__main__":
             _render_out(args.video, args.render_output),
         )
     else:
+        # 1. Analyse Vidéo
         result = analyze(args.video)
+        
+        # 2. Sauvegarde JSON
         with open(args.output, "w") as f:
             json.dump(result, f)
-        print(f"Sauvegardé dans {args.output}")
+        print(f"Analyse terminée. JSON sauvegardé dans {args.output}")
+
+        # 3. CONSEILS GEMINI
+        print("\n--- Demande de conseils à Gemini en cours... ---")
+        conseils = get_climbing_advice(result)
+        print(f"\nCONSEILS DE L'IA :\n{conseils}\n")
+
+        # 4. Rendu éventuel
         if args.render:
             render_annotated_video(
                 args.video,
