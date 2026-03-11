@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/handler"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/middleware"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/router"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
@@ -30,6 +31,11 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 	userS := service.NewUserService(&repo)
 	authS := service.NewAuthService(&jwtS, &sessionS, &repo)
 
+	authMW := middleware.Auth(&jwtS)
+	guestMW := middleware.Guest(&jwtS)
+	adminMW := middleware.Admin()
+	userMW := middleware.User()
+
 	userH := handler.NewUserHandler(l, &userS)
 	authH := handler.NewAuthHandler(l, &authS)
 
@@ -45,6 +51,11 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 	// gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
 	router.New(app, cfg, l,
+		authMW,
+		guestMW,
+		adminMW,
+		userMW,
+
 		&userH,
 		&authH,
 	)

@@ -16,6 +16,11 @@ func New(
 	cfg *config.Config,
 	l *zerolog.Logger,
 
+	authMW gin.HandlerFunc,
+	guestMW gin.HandlerFunc,
+	adminMW gin.HandlerFunc,
+	userMW gin.HandlerFunc,
+
 	userH *handler.UserHandler,
 	authH *handler.AuthHandler,
 ) {
@@ -28,25 +33,18 @@ func New(
 
 	v1 := app.Group("/v1")
 	{
-		v1.POST("/signup", middleware.RateLimiter(time.Minute, 5), authH.Signup)
-		v1.POST("/login", middleware.RateLimiter(time.Minute, 10), authH.Login)
-		// v1.POST("/signup", middleware.RateLimiter(time.Minute, 5), guestMw, authH.Signup)
-		// v1.POST("/login", middleware.RateLimiter(time.Minute, 10), guestMw, authH.Login)
-		// v1.POST("/logout", middleware.RateLimiter(time.Minute, 10), authMw, authH.Logout)
+		v1.POST("/signup", middleware.RateLimiter(time.Minute, 5), guestMW, authH.Signup)
+		v1.POST("/login", middleware.RateLimiter(time.Minute, 10), guestMW, authH.Login)
+		v1.DELETE("/logout", middleware.RateLimiter(time.Minute, 10), authH.Logout)
+		v1.PUT("/refresh", middleware.RateLimiter(time.Minute, 10), authH.RefreshToken)
 
 		usersGroup := v1.Group("/users")
 		{
-			usersGroup.POST("/", middleware.RateLimiter(time.Minute, 25), userH.Create)
-			usersGroup.GET("/", middleware.RateLimiter(time.Minute, 100), userH.List)
-			usersGroup.GET("/:id", middleware.RateLimiter(time.Minute, 100), userH.GetByID)
-			usersGroup.PUT("/:id", middleware.RateLimiter(time.Minute, 25), userH.Update)
-			usersGroup.DELETE("/:id", middleware.RateLimiter(time.Minute, 25), userH.Delete)
-
-			// usersGroup.POST("/", middleware.RateLimiter(time.Minute, 25), authMw, adminMw, userH.Create)
-			// usersGroup.GET("/", middleware.RateLimiter(time.Minute, 100), authMw, adminMw, userH.List)
-			// usersGroup.GET("/:id", middleware.RateLimiter(time.Minute, 100), authMw, adminMw, userH.GetByID)
-			// usersGroup.PUT("/:id", middleware.RateLimiter(time.Minute, 25), authMw, adminMw, userH.Update)
-			// usersGroup.DELETE("/:id", middleware.RateLimiter(time.Minute, 25), authMw, adminMw, userH.Delete)
+			usersGroup.POST("/", middleware.RateLimiter(time.Minute, 25), authMW, adminMW, userH.Create)
+			usersGroup.GET("/", middleware.RateLimiter(time.Minute, 100), authMW, adminMW, userH.List)
+			usersGroup.GET("/:id", middleware.RateLimiter(time.Minute, 100), authMW, adminMW, userH.GetByID)
+			usersGroup.PUT("/:id", middleware.RateLimiter(time.Minute, 25), authMW, adminMW, userH.Update)
+			usersGroup.DELETE("/:id", middleware.RateLimiter(time.Minute, 25), authMW, adminMW, userH.Delete)
 		}
 	}
 }
