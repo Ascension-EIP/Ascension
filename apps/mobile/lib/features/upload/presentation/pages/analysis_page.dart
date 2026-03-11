@@ -159,19 +159,30 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
   /// to the closest analysis frame so the skeleton overlay stays in sync.
   void _onVideoPositionChanged() {
     if (!mounted || _videoCtrl == null) return;
-    final posMs = _videoCtrl!.value.position.inMilliseconds;
+    // Add a small lookahead to compensate for the decoder pipeline delay
+    // (video_player reports the last decoded frame, not the currently displayed one).
+    const _kLookaheadMs =
+        100; // IMPORTANT: c'est ce qui rend parfait le calage entre vidéo et squelette, si tu baisse le squelette a du retard par rapport à la vidéo, si tu l'augmente le squelette est en avance sur la vidéo. 100ms semble être un bon compromis pour compenser le délai de décodage sans introduire de lag perceptible.
+    final posMs = _videoCtrl!.value.position.inMilliseconds + _kLookaheadMs;
 
-    // Binary search for the frame whose timestamp is closest to posMs
-    int lo = 0, hi = _frames.length - 1, best = _currentFrame;
+    // Binary search for the last frame whose timestamp ≤ posMs (floor)
+    int lo = 0, hi = _frames.length - 1, floor = 0;
     while (lo <= hi) {
       final mid = (lo + hi) ~/ 2;
-      final midMs = _frames[mid].timestampMs;
-      if (midMs <= posMs) {
-        best = mid;
+      if (_frames[mid].timestampMs <= posMs) {
+        floor = mid;
         lo = mid + 1;
       } else {
         hi = mid - 1;
       }
+    }
+
+    // Pick the nearest frame (floor vs floor+1) to avoid systematic 1-frame lag
+    int best = floor;
+    if (floor + 1 < _frames.length) {
+      final distFloor = posMs - _frames[floor].timestampMs;
+      final distNext = _frames[floor + 1].timestampMs - posMs;
+      if (distNext < distFloor) best = floor + 1;
     }
 
     final isNowPlaying = _videoCtrl!.value.isPlaying;
@@ -278,7 +289,7 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
 }
 
 // ─── Tab 1 — Skeleton viewer ────────────────────────────────────
-class _SkeletonTab extends StatelessWidget {
+class _SkeletonTab extends StatefulWidget {
   final List<_FrameData> frames;
   final int currentIndex;
   final bool isPlaying;
@@ -304,9 +315,16 @@ class _SkeletonTab extends StatelessWidget {
   });
 
   @override
+  State<_SkeletonTab> createState() => _SkeletonTabState();
+}
+
+class _SkeletonTabState extends State<_SkeletonTab> {
+  bool _showAngles = true;
+
+  @override
   Widget build(BuildContext context) {
-    final frame = frames[currentIndex];
-    final hasVideo = videoCtrl != null && videoReady;
+    final frame = widget.frames[widget.currentIndex];
+    final hasVideo = widget.videoCtrl != null && widget.videoReady;
 
     return Column(
       children: [
@@ -320,16 +338,18 @@ class _SkeletonTab extends StatelessWidget {
                 color: const Color(0xFF0D1B2A),
                 child: hasVideo
                     ? _VideoWithOverlay(
-                        ctrl: videoCtrl!,
+                        ctrl: widget.videoCtrl!,
                         frame: frame,
-                        accent: accent,
+                        accent: widget.accent,
+                        showAngles: _showAngles,
                       )
                     // No video file: show skeleton on plain background
                     : CustomPaint(
                         painter: _SkeletonPainter(
                           frame: frame,
-                          accent: accent,
+                          accent: widget.accent,
                           fullFrame: false,
+                          showAngles: _showAngles,
                         ),
                         child: const SizedBox.expand(),
                       ),
@@ -338,49 +358,96 @@ class _SkeletonTab extends StatelessWidget {
           ),
         ),
 
-        // ── Frame info ──
+        // ── Frame info + angles toggle ──
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Frame ${frame.frameIndex}',
-                style: const TextStyle(color: Colors.white54, fontSize: 12),
+              // Left: frame index
+              SizedBox(
+                width: 70,
+                child: Text(
+                  'Frame ${frame.frameIndex}',
+                  style: const TextStyle(color: Colors.white54, fontSize: 12),
+                ),
               ),
-              Text(
-                _fmtMs(frame.timestampMs),
-                style: const TextStyle(color: Colors.white54, fontSize: 12),
+              // Centre: timestamp
+              Expanded(
+                child: Text(
+                  _fmtMs(frame.timestampMs),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
-              //Text(
-              //  frame.poseDetected ? '✅ Pose détectée' : '❌ Aucune pose',
-              //  style: TextStyle(
-              //    color: frame.poseDetected ? accent : Colors.redAccent,
-              //    fontSize: 12,
-              //  ),
-              //),
+              // ── Angles toggle chip ──
+              GestureDetector(
+                onTap: () => setState(() => _showAngles = !_showAngles),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _showAngles
+                        ? widget.accent.withValues(alpha: 0.18)
+                        : Colors.white10,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: _showAngles ? widget.accent : Colors.white24,
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.straighten_rounded,
+                        size: 13,
+                        color: _showAngles ? widget.accent : Colors.white38,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        'Angles',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _showAngles ? widget.accent : Colors.white38,
+                          fontWeight: _showAngles
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
-        const SizedBox(height: 8),
+
+        const SizedBox(height: 6),
 
         // ── Scrubber ──
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: SliderTheme(
             data: SliderTheme.of(context).copyWith(
-              activeTrackColor: accent,
-              thumbColor: accent,
+              activeTrackColor: widget.accent,
+              thumbColor: widget.accent,
               inactiveTrackColor: Colors.white12,
-              overlayColor: accent.withValues(alpha: 0.2),
+              overlayColor: widget.accent.withValues(alpha: 0.2),
               trackHeight: 3,
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
             ),
             child: Slider(
               min: 0,
-              max: (frames.length - 1).toDouble(),
-              value: currentIndex.toDouble(),
-              onChanged: (v) => onFrameChanged(v.round()),
+              max: (widget.frames.length - 1).toDouble(),
+              value: widget.currentIndex.toDouble(),
+              onChanged: (v) => widget.onFrameChanged(v.round()),
             ),
           ),
         ),
@@ -392,7 +459,7 @@ class _SkeletonTab extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
-                onPressed: onReset,
+                onPressed: widget.onReset,
                 icon: const Icon(
                   Icons.skip_previous_rounded,
                   color: Colors.white70,
@@ -401,8 +468,8 @@ class _SkeletonTab extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               IconButton(
-                onPressed: currentIndex > 0
-                    ? () => onFrameChanged(currentIndex - 1)
+                onPressed: widget.currentIndex > 0
+                    ? () => widget.onFrameChanged(widget.currentIndex - 1)
                     : null,
                 icon: const Icon(
                   Icons.chevron_left_rounded,
@@ -412,16 +479,18 @@ class _SkeletonTab extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               GestureDetector(
-                onTap: isPlaying ? onPause : onPlay,
+                onTap: widget.isPlaying ? widget.onPause : widget.onPlay,
                 child: Container(
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: accent,
+                    color: widget.accent,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                    widget.isPlaying
+                        ? Icons.pause_rounded
+                        : Icons.play_arrow_rounded,
                     color: Colors.black,
                     size: 30,
                   ),
@@ -429,8 +498,8 @@ class _SkeletonTab extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               IconButton(
-                onPressed: currentIndex < frames.length - 1
-                    ? () => onFrameChanged(currentIndex + 1)
+                onPressed: widget.currentIndex < widget.frames.length - 1
+                    ? () => widget.onFrameChanged(widget.currentIndex + 1)
                     : null,
                 icon: const Icon(
                   Icons.chevron_right_rounded,
@@ -440,7 +509,8 @@ class _SkeletonTab extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               IconButton(
-                onPressed: () => onFrameChanged(frames.length - 1),
+                onPressed: () =>
+                    widget.onFrameChanged(widget.frames.length - 1),
                 icon: const Icon(
                   Icons.skip_next_rounded,
                   color: Colors.white70,
@@ -466,11 +536,13 @@ class _VideoWithOverlay extends StatelessWidget {
   final VideoPlayerController ctrl;
   final _FrameData frame;
   final Color accent;
+  final bool showAngles;
 
   const _VideoWithOverlay({
     required this.ctrl,
     required this.frame,
     required this.accent,
+    this.showAngles = true,
   });
 
   @override
@@ -494,7 +566,8 @@ class _VideoWithOverlay extends StatelessWidget {
                 painter: _SkeletonPainter(
                   frame: frame,
                   accent: accent,
-                  fullFrame: true, // use direct normalized → pixel mapping
+                  fullFrame: true,
+                  showAngles: showAngles,
                 ),
               ),
             ),
@@ -516,10 +589,14 @@ class _SkeletonPainter extends CustomPainter {
   /// When false (no video), use auto-fit bounding-box centering.
   final bool fullFrame;
 
+  /// Whether to render the degree labels next to each joint.
+  final bool showAngles;
+
   const _SkeletonPainter({
     required this.frame,
     required this.accent,
     this.fullFrame = false,
+    this.showAngles = true,
   });
 
   @override
@@ -601,7 +678,8 @@ class _SkeletonPainter extends CustomPainter {
       canvas.drawCircle(pt, 5, jointOutline);
     }
 
-    // ── Angle labels for all detected joints ──
+    // ── Angle labels for all detected joints (optional) ──
+    if (!showAngles) return;
     for (final entry in frame.angles.entries) {
       final jointId = entry.key;
       final angle = entry.value;
@@ -637,7 +715,10 @@ class _SkeletonPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_SkeletonPainter old) => old.frame != frame;
+  bool shouldRepaint(_SkeletonPainter old) =>
+      old.frame != frame ||
+      old.showAngles != showAngles ||
+      old.accent != accent;
 }
 
 // ─── Tab 2 — Angle chart ────────────────────────────────────────
@@ -656,14 +737,14 @@ const _kAngleJoints = <int, String>{
 
 /// Distinct colors per joint so curves are easy to differentiate.
 const _kJointColors = <int, Color>{
-  _LM.lElbow: const Color(0xFF64B5F6),    // blue 300
-  _LM.rElbow: const Color(0xFFFFB74D),    // orange 300
+  _LM.lElbow: const Color(0xFF64B5F6), // blue 300
+  _LM.rElbow: const Color(0xFFFFB74D), // orange 300
   _LM.lShoulder: const Color(0xFF81C784), // green 300
   _LM.rShoulder: const Color(0xFFE57373), // red 300
-  _LM.lHip: const Color(0xFFCE93D8),      // purple 200
-  _LM.rHip: const Color(0xFF4DB6AC),      // teal 300
-  _LM.lKnee: const Color(0xFFFFF176),     // yellow 200
-  _LM.rKnee: const Color(0xFFFF8A65),     // deep orange 300
+  _LM.lHip: const Color(0xFFCE93D8), // purple 200
+  _LM.rHip: const Color(0xFF4DB6AC), // teal 300
+  _LM.lKnee: const Color(0xFFFFF176), // yellow 200
+  _LM.rKnee: const Color(0xFFFF8A65), // deep orange 300
 };
 
 class _AngleChartTab extends StatefulWidget {
@@ -738,18 +819,20 @@ class _AngleChartTabState extends State<_AngleChartTab> {
                 selected: selected,
                 onSelected: hasData
                     ? (v) => setState(() {
-                          if (v) {
-                            _visible.add(id);
-                          } else {
-                            _visible.remove(id);
-                          }
-                        })
+                        if (v) {
+                          _visible.add(id);
+                        } else {
+                          _visible.remove(id);
+                        }
+                      })
                     : null,
                 selectedColor: color,
                 backgroundColor: const Color(0xFF1E3050),
                 checkmarkColor: Colors.black,
                 side: BorderSide(
-                  color: hasData ? color.withValues(alpha: 0.6) : Colors.white12,
+                  color: hasData
+                      ? color.withValues(alpha: 0.6)
+                      : Colors.white12,
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 4),
               );
@@ -832,11 +915,9 @@ class _AngleChartTabState extends State<_AngleChartTab> {
                   lineTouchData: LineTouchData(
                     touchTooltipData: LineTouchTooltipData(
                       getTooltipColor: (_) => const Color(0xFF1E3050),
-                      getTooltipItems: (touchedSpots) =>
-                          touchedSpots.map((s) {
+                      getTooltipItems: (touchedSpots) => touchedSpots.map((s) {
                         final jointId = visibleSeries[s.barIndex].key;
-                        final name =
-                            _kAngleJoints[jointId] ?? 'Joint $jointId';
+                        final name = _kAngleJoints[jointId] ?? 'Joint $jointId';
                         return LineTooltipItem(
                           '$name\n${s.y.toStringAsFixed(1)}°',
                           TextStyle(
@@ -893,8 +974,9 @@ class _StatsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final detected = frames.where((f) => f.poseDetected).toList();
-    final detRate =
-        frames.isEmpty ? 0.0 : detected.length / frames.length * 100;
+    final detRate = frames.isEmpty
+        ? 0.0
+        : detected.length / frames.length * 100;
 
     final durationMs = frames.isNotEmpty ? frames.last.timestampMs : 0;
 
