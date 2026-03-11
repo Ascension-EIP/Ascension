@@ -19,6 +19,7 @@ use crate::inbound::http::handlers::auth::login::SESSION_COOKIE;
 /// Lookup order (first match wins):
 /// 1. `Authorization: Bearer <token>` header.
 /// 2. `session_token` HttpOnly cookie set by `/v1/auth/login` or `/v1/auth/register`.
+#[allow(dead_code)]
 fn extract_token(req: &Request, cookies: &Cookies) -> Option<String> {
     // 1. Bearer header
     if let Some(token) = req
@@ -38,6 +39,7 @@ fn extract_token(req: &Request, cookies: &Cookies) -> Option<String> {
 /// Authentication middleware – validates the JWT and injects the [User] into
 /// the request extensions so downstream handlers can access it via
 /// `Extension<User>`.
+#[allow(dead_code)]
 pub async fn auth(
     State(state): State<AppState>,
     cookies: Cookies,
@@ -58,6 +60,7 @@ pub async fn auth(
 }
 
 /// Require the authenticated user to have the `Admin` role.
+#[allow(dead_code)]
 pub async fn admin(Extension(user): Extension<User>, req: Request, next: Next) -> Response {
     if user.role != Role::Admin {
         return StatusCode::FORBIDDEN.into_response();

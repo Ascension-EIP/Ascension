@@ -11,6 +11,7 @@ use crate::domain::{
 #[async_trait]
 pub trait AuthService: Send + Sync {
     /// Validate a JWT and return the associated [User].
+    #[allow(dead_code)]
     async fn get_user_by_token(&self, token: String) -> Result<User, AuthError>;
 
     /// Register a new user account. The password is hashed before storage.

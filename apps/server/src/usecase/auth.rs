@@ -57,6 +57,7 @@ impl Jwt {
         .map_err(|_| AuthError::TokenGeneration)
     }
 
+    #[allow(dead_code)]
     pub fn validate(&self, token: &str) -> Result<Claims, AuthError> {
         decode::<Claims>(
             token,
