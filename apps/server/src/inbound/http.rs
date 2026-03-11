@@ -86,20 +86,7 @@ impl HttpServer {
         }
 
         let router = Router::new()
-            .route(
-                "/",
-                get(|| async { StatusCode::OK }).route_layer(
-                    ServiceBuilder::new()
-                        .layer(axum::middleware::from_fn_with_state(
-                            state.clone(),
-                            middleware::auth::auth,
-                        ))
-                        .layer(axum::middleware::from_fn_with_state(
-                            state.clone(),
-                            middleware::auth::admin,
-                        )),
-                ),
-            )
+            .route("/", get(|| async { StatusCode::OK }))
             .nest("/v1", v1_routes())
             .layer(
                 ServiceBuilder::new()
