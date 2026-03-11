@@ -110,20 +110,22 @@ def _process_pose(landmarks_raw):
     def _try_angle(a, b, c):
         sa, sb, sc = str(a), str(b), str(c)
         if all(k in lm for k in (sa, sb, sc)):
-            angles[sb] = round(_angle_between(_vec3(lm[sb], lm[sa]), _vec3(lm[sb], lm[sc])), 2)
+            angles[sb] = round(
+                _angle_between(_vec3(lm[sb], lm[sa]), _vec3(lm[sb], lm[sc])), 2
+            )
 
     # Coudes
-    _try_angle(LM.L_SHOULDER, LM.L_ELBOW,    LM.L_WRIST)
-    _try_angle(LM.R_SHOULDER, LM.R_ELBOW,    LM.R_WRIST)
+    _try_angle(LM.L_SHOULDER, LM.L_ELBOW, LM.L_WRIST)
+    _try_angle(LM.R_SHOULDER, LM.R_ELBOW, LM.R_WRIST)
     # Épaules
-    _try_angle(LM.L_ELBOW,    LM.L_SHOULDER, LM.L_HIP)
-    _try_angle(LM.R_ELBOW,    LM.R_SHOULDER, LM.R_HIP)
+    _try_angle(LM.L_ELBOW, LM.L_SHOULDER, LM.L_HIP)
+    _try_angle(LM.R_ELBOW, LM.R_SHOULDER, LM.R_HIP)
     # Hanches
-    _try_angle(LM.L_SHOULDER, LM.L_HIP,      LM.L_KNEE)
-    _try_angle(LM.R_SHOULDER, LM.R_HIP,      LM.R_KNEE)
+    _try_angle(LM.L_SHOULDER, LM.L_HIP, LM.L_KNEE)
+    _try_angle(LM.R_SHOULDER, LM.R_HIP, LM.R_KNEE)
     # Genoux
-    _try_angle(LM.L_HIP,      LM.L_KNEE,     LM.L_ANKLE)
-    _try_angle(LM.R_HIP,      LM.R_KNEE,     LM.R_ANKLE)
+    _try_angle(LM.L_HIP, LM.L_KNEE, LM.L_ANKLE)
+    _try_angle(LM.R_HIP, LM.R_KNEE, LM.R_ANKLE)
 
     return {"landmarks": lm, "angles": angles}
 
@@ -132,17 +134,17 @@ def _process_pose(landmarks_raw):
 def analyze(video_path: str) -> dict:
     """
     Analyze a video with MediaPipe Pose and return a JSON-serializable dict.
-    
+
     The result contains per-frame pose data (landmarks and derived angles),
     sampled at a reduced frame rate for performance, suitable for direct
     JSON serialization and downstream processing.
-    
+
     :param video_path: Path to the input video file.
     :return: Dict with per-frame pose analysis (landmarks and angles).
     :raises FileNotFoundError: If the video file does not exist.
     :raises RuntimeError: If the video cannot be opened by OpenCV.
     """
-      
+
     if not os.path.exists(video_path):
         raise FileNotFoundError(f"Fichier vidéo introuvable : {video_path}")
 
@@ -165,7 +167,11 @@ def analyze(video_path: str) -> dict:
 
     logger.info(
         "Vidéo : %d frames @ %.1f FPS — analyse 1/%d frames (%d frames effectives, max %dpx)",
-        n_frames, fps, frame_step, effective_frames, MAX_WIDTH,
+        n_frames,
+        fps,
+        frame_step,
+        effective_frames,
+        MAX_WIDTH,
     )
 
     base_options = python.BaseOptions(model_asset_path=MODEL_PATH)
@@ -202,7 +208,9 @@ def analyze(video_path: str) -> dict:
                 del frame
 
                 if rgb_frame is not None:
-                    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
+                    mp_image = mp.Image(
+                        image_format=mp.ImageFormat.SRGB, data=rgb_frame
+                    )
                 del rgb_frame
 
                 timestamp_ms = int((i / fps) * 1000)
@@ -224,7 +232,9 @@ def analyze(video_path: str) -> dict:
 
                 if analyzed % 30 == 0:
                     det = "OK" if result.pose_landmarks else "NO_POSE"
-                    logger.debug("frame %d/%d (%s)", analyzed, effective_frames, det)
+                    logger.debug(
+                        "frame %d/%d (%s)", analyzed, effective_frames, det
+                    )
 
                 i += 1  # un seul incrément, ici
 
