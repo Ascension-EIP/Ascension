@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -17,7 +17,6 @@ type AuthService struct {
 	jwtS     *JWTService
 	sessionS *SessionService
 	repo     authRepository
-	cfg      config.SessionConfig
 }
 
 func NewAuthService(jwtS *JWTService, sessionS *SessionService, repo authRepository) AuthService {
@@ -73,13 +72,13 @@ func (s *AuthService) Login(ctx context.Context, form *model.LoginForm) (*model.
 	}, nil
 }
 
-// func (s *AuthService) Logout(c context.Context, userID uint, sessionID string) error {
-// 	if err := s.repo.DeleteSessionByUserID(c, userID, sessionID); err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
-//
+func (s *AuthService) Logout(ctx context.Context, userID uuid.UUID, sessionID uuid.UUID) error {
+	if err := s.sessionS.DeleteRefreshTokenByUserID(ctx, userID, sessionID); err != nil {
+		return err
+	}
+	return nil
+}
+
 // func (s *AuthService) ValidateSession(c context.Context, sessionID string) (uint, error) {
 // 	session, err := s.repo.GetUnexpiredSession(c, sessionID)
 // 	if err != nil {

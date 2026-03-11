@@ -1,6 +1,9 @@
 package request
 
-import "github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+import (
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+	"github.com/google/uuid"
+)
 
 type SignupForm struct {
 	Name     string `json:"name" binding:"required,min=3,max=20,alphanumunicode|contains=_"`
@@ -27,4 +30,8 @@ func (req *LoginForm) IntoLoginForm() (model.LoginForm, error) {
 		Email:    req.Email,
 		Password: []byte(req.Password),
 	}, nil
+}
+
+type RefreshToken struct {
+	Token uuid.UUID `json:"refresh_token" binding:"required"`
 }

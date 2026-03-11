@@ -8,6 +8,7 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
 
@@ -60,4 +61,36 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, response.TokensUserToResponse(tokens, user))
+}
+
+func (h *AuthHandler) Logout(c *gin.Context) {
+	var userID uuid.UUID
+
+	var req request.RefreshToken
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+
+	if err := h.s.Logout(c.Request.Context(), userID, req.Token); err != nil {
+		utils.Error(c, err, h.l)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+func (h *AuthHandler) RefreshToken(c *gin.Context) {
+	var req request.RefreshToken
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+
+	// if err := h.s.Logout(c.Request.Context(), req.Token, req.Token); err != nil {
+	// 	utils.Error(c, err, h.l)
+	// 	return
+	// }
+
+	c.Status(http.StatusNoContent)
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres/dto"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -101,22 +102,24 @@ func (r *PostgresRepo) CreateSession(ctx context.Context, newSession *model.NewS
 // 	}
 // 	return nil
 // }
-//
-// func (r *Repo) DeleteSessionByUserID(ctx context.Context, userID uint, id string) error {
-// 	if err := r.db.WithContext(ctx).
-// 		Where("id = ? AND user_id = ?", id).
-// 		Delete(&model.Session{}).
-// 		Error; err != nil {
-// 		switch {
-// 		case errors.Is(err, gorm.ErrRecordNotFound):
-// 			return ErrNotFound
-// 		default:
-// 			return err
-// 		}
-// 	}
-// 	return nil
-// }
-//
+
+func (r *PostgresRepo) DeleteSessionByUserID(ctx context.Context, userID uuid.UUID, sessionID uuid.UUID) error {
+	err := pgx.BeginFunc(ctx, r.Pool, func(tx pgx.Tx) error {
+		_, err := tx.Exec(ctx,
+			"DELETE FROM sessions WHERE user_id = $1 AND id = $2",
+			userID,
+			sessionID)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // func (r *Repo) DeleteExpiredSessions(ctx context.Context) error {
 // 	if err := r.db.WithContext(ctx).Where("expires_at < ?", time.Now()).Delete(&model.Session{}).Error; err != nil {
 // 		return err

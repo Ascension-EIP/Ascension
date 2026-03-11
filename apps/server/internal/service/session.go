@@ -13,7 +13,7 @@ type sessionRepository interface {
 	CreateSession(context.Context, *model.NewSession) (*model.Session, error)
 	// GetUnexpiredSession(ctx context.Context, sessionID string) (*model.Session, error)
 	// UpdateSession(ctx context.Context, session *model.Session) error
-	// DeleteSessionByUserID(ctx context.Context, userID uint, id string) error
+	DeleteSessionByUserID(context.Context, uuid.UUID, uuid.UUID) error
 	// DeleteExpiredSessions(ctx context.Context) error
 }
 
@@ -41,4 +41,8 @@ func (s *SessionService) CreateRefreshToken(ctx context.Context, userID uuid.UUI
 	}
 
 	return session.ID, nil
+}
+
+func (s *SessionService) DeleteRefreshTokenByUserID(ctx context.Context, userID uuid.UUID, sessionID uuid.UUID) error {
+	return s.repo.DeleteSessionByUserID(ctx, userID, sessionID)
 }

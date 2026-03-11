@@ -52,7 +52,7 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 
 	user, err := h.s.GetUserByID(c.Request.Context(), userID)
 	if err != nil {
-		utils.Error(c, err)
+		utils.Error(c, err, h.l)
 		return
 	}
 
@@ -63,7 +63,7 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 func (h *UserHandler) List(c *gin.Context) {
 	users, err := h.s.ListAllUsers(c.Request.Context())
 	if err != nil {
-		utils.Error(c, err)
+		utils.Error(c, err, h.l)
 		return
 	}
 
@@ -86,7 +86,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 
 	updatedUser, err := h.s.UpdateUser(c.Request.Context(), &user)
 	if err != nil {
-		utils.Error(c, err)
+		utils.Error(c, err, h.l)
 		return
 	}
 
@@ -103,7 +103,7 @@ func (h *UserHandler) Delete(c *gin.Context) {
 	}
 
 	if err := h.s.DeleteUser(c.Request.Context(), userID); err != nil {
-		utils.Error(c, err)
+		utils.Error(c, err, h.l)
 		return
 	}
 
