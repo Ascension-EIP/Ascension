@@ -17,9 +17,6 @@ class AppConstants {
     return 'http://10.0.2.2:8080';
   }
 
-  /// SharedPreferences key used to persist the backend URL.
-  static const String backendUrlKey = 'backend_url';
-
   // Secure storage keys
   static const String accessTokenKey = 'access_token';
   static const String refreshTokenKey = 'refresh_token';
