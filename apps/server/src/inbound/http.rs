@@ -88,7 +88,7 @@ impl HttpServer {
         let router = Router::new()
             .route(
                 "/",
-                get(|| async { StatusCode::NO_CONTENT }).route_layer(
+                get(|| async { StatusCode::OK }).route_layer(
                     ServiceBuilder::new()
                         .layer(axum::middleware::from_fn_with_state(
                             state.clone(),
