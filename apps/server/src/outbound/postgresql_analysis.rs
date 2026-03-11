@@ -111,7 +111,7 @@ impl AnalysisRepository for Postgres {
 
     async fn get_analysis(&self, id: Uuid) -> Result<Analysis, AnalysisRepositoryError> {
         let row = sqlx::query(
-            "SELECT id, video_id, job_id, status, result_json, processing_time_ms, completed_at, created_at FROM analyses WHERE id = $1",
+            "SELECT id, video_id, job_id, status, progress, result_json, processing_time_ms, completed_at, created_at FROM analyses WHERE id = $1",
         )
         .bind(id.to_string())
         .fetch_one(&self.pool)
@@ -143,6 +143,9 @@ impl AnalysisRepository for Postgres {
             status: row
                 .try_get("status")
                 .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
+            progress: row
+                .try_get("progress")
+                .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
             result_json: row
                 .try_get("result_json")
                 .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
@@ -156,5 +159,23 @@ impl AnalysisRepository for Postgres {
                 .try_get("created_at")
                 .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
         })
+    }
+
+    async fn update_analysis_progress(
+        &self,
+        id: Uuid,
+        progress: i32,
+    ) -> Result<(), AnalysisRepositoryError> {
+        sqlx::query(
+            "UPDATE analyses SET progress = $1, updated_at = NOW() WHERE id = $2",
+        )
+        .bind(progress)
+        .bind(id.to_string())
+        .execute(&self.pool)
+        .await
+        .map_err(|e| {
+            AnalysisRepositoryError::Unknown(anyhow!(e).context("failed to update analysis progress"))
+        })?;
+        Ok(())
     }
 }

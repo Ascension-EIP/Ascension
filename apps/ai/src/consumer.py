@@ -142,7 +142,8 @@ def _update_analysis(
                SET status            = %s,
                    result_json       = %s,
                    processing_time_ms = %s,
-                   completed_at      = %s
+                   completed_at      = %s,
+                   progress          = CASE WHEN %s = 'completed' THEN 100 ELSE progress END
              WHERE id = %s
             """,
             (
@@ -150,8 +151,19 @@ def _update_analysis(
                 json.dumps(result_json) if result_json is not None else None,
                 processing_time_ms,
                 datetime.now(timezone.utc),
+                status,
                 analysis_id,
             ),
+        )
+    conn.commit()
+
+
+def _update_analysis_progress(conn, analysis_id: str, progress: int) -> None:
+    """Write real-time progress (0–99) to the analyses row."""
+    with conn.cursor() as cur:
+        cur.execute(
+            "UPDATE analyses SET progress = %s, updated_at = NOW() WHERE id = %s",
+            (progress, analysis_id),
         )
     conn.commit()
 
@@ -188,9 +200,16 @@ def on_message(ch, method, _properties, body):
         bucket, key = _parse_s3_url(video_url)
         tmp_path = _download_video(s3, bucket, key)
 
-        # 2. Run MediaPipe analysis
+        # 2. Open DB connection early so the progress callback can use it
+        conn = _pg_conn()
+
+        def _on_progress(pct: int) -> None:
+            _update_analysis_progress(conn, analysis_id, pct)
+            logger.debug("Progress %d%% for analysis %s", pct, analysis_id)
+
+        # 3. Run MediaPipe analysis (emits progress every ~30 frames)
         t0 = time.monotonic()
-        result = analyze(tmp_path)
+        result = analyze(tmp_path, on_progress=_on_progress)
         processing_ms = int((time.monotonic() - t0) * 1000)
         logger.info(
             "Analysis done in %d ms (%d frames)",
@@ -198,12 +217,11 @@ def on_message(ch, method, _properties, body):
             len(result.get("frames", [])),
         )
 
-        # 3. Save results to PostgreSQL
-        conn = _pg_conn()
+        # 4. Save results to PostgreSQL (also sets progress=100)
         _update_analysis(conn, analysis_id, "completed", result, processing_ms)
         logger.info("Saved results for analysis %s", analysis_id)
 
-        # 4. Publish completion event
+        # 5. Publish completion event
         _publish_event(
             ch,
             job_id,
@@ -215,7 +233,7 @@ def on_message(ch, method, _properties, body):
             },
         )
 
-        # 5. Ack
+        # 6. Ack
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     except Exception:

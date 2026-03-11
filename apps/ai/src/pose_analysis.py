@@ -131,7 +131,7 @@ def _process_pose(landmarks_raw):
 
 
 # ─── Public API ──────────────────────────────────────────────────
-def analyze(video_path: str) -> dict:
+def analyze(video_path: str, on_progress=None) -> dict:
     """
     Analyze a video with MediaPipe Pose and return a JSON-serializable dict.
 
@@ -139,7 +139,11 @@ def analyze(video_path: str) -> dict:
     sampled at a reduced frame rate for performance, suitable for direct
     JSON serialization and downstream processing.
 
-    :param video_path: Path to the input video file.
+    :param video_path:   Path to the input video file.
+    :param on_progress:  Optional callable ``(percent: int) -> None`` invoked
+                         every ~30 analysed frames so callers can persist
+                         real-time progress (0–99). The caller is responsible
+                         for catching / logging any exception raised inside it.
     :return: Dict with per-frame pose analysis (landmarks and angles).
     :raises FileNotFoundError: If the video file does not exist.
     :raises RuntimeError: If the video cannot be opened by OpenCV.
@@ -235,6 +239,14 @@ def analyze(video_path: str) -> dict:
                     logger.debug(
                         "frame %d/%d (%s)", analyzed, effective_frames, det
                     )
+                    # Report real-time progress (capped at 99 — 100 is set
+                    # only once the full result is persisted).
+                    if on_progress is not None and effective_frames > 0:
+                        pct = min(99, int(analyzed / effective_frames * 100))
+                        try:
+                            on_progress(pct)
+                        except Exception as cb_err:  # noqa: BLE001
+                            logger.warning("on_progress callback raised: %s", cb_err)
 
                 i += 1  # un seul incrément, ici
 

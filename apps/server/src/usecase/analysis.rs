@@ -91,4 +91,25 @@ impl<A: AnalysisRepository, V: VideoRepository> AnalysisService for AnalysisServ
             }
         })
     }
+
+    async fn update_analysis_progress(
+        &self,
+        id: Uuid,
+        progress: i32,
+    ) -> Result<(), AnalysisServiceError> {
+        self.analysis_repo
+            .update_analysis_progress(id, progress)
+            .await
+            .map_err(|e| {
+                use crate::domain::analysis::ports::AnalysisRepositoryError;
+                match e {
+                    AnalysisRepositoryError::NotFound { id } => {
+                        AnalysisServiceError::NotFound { id }
+                    }
+                    AnalysisRepositoryError::Unknown(cause) => {
+                        AnalysisServiceError::Unknown(cause)
+                    }
+                }
+            })
+    }
 }

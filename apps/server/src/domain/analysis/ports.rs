@@ -20,6 +20,13 @@ pub trait AnalysisRepository: Send + Sync + 'static {
     ) -> Result<CreateAnalysisOutput, AnalysisRepositoryError>;
 
     async fn get_analysis(&self, id: Uuid) -> Result<Analysis, AnalysisRepositoryError>;
+
+    /// Update only the progress column (0–100), called by the AI worker via HTTP.
+    async fn update_analysis_progress(
+        &self,
+        id: Uuid,
+        progress: i32,
+    ) -> Result<(), AnalysisRepositoryError>;
 }
 
 #[derive(Debug, Error)]
@@ -40,4 +47,11 @@ pub trait AnalysisService: Send + Sync + 'static {
     async fn trigger_analysis(&self, video_id: Uuid) -> Result<Analysis, AnalysisServiceError>;
 
     async fn get_analysis(&self, id: Uuid) -> Result<Analysis, AnalysisServiceError>;
+
+    /// Update progress (0–100). Called by the AI worker.
+    async fn update_analysis_progress(
+        &self,
+        id: Uuid,
+        progress: i32,
+    ) -> Result<(), AnalysisServiceError>;
 }

@@ -12,6 +12,8 @@ pub struct GetAnalysisResponse {
     pub video_id: Uuid,
     pub job_id: Uuid,
     pub status: String,
+    /// Real-time progress (0–100) updated by the AI worker while processing.
+    pub progress: i32,
     /// JSON string of the full pose-estimation result (null while processing).
     pub result_json: Option<String>,
     pub processing_time_ms: Option<i32>,
@@ -30,6 +32,7 @@ pub async fn get_analysis(
             video_id: analysis.video_id,
             job_id: analysis.job_id,
             status: analysis.status,
+            progress: analysis.progress,
             result_json: analysis.result_json,
             processing_time_ms: analysis.processing_time_ms,
         },
