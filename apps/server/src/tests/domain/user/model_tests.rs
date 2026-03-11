@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use crate::domain::user::models::user::{EmailAddress, Password, Role, Username};
+    use crate::domain::user::entity::{
+        email::Email as EmailAddress, password::Password, role::Role, username::Username,
+    };
 
     // ─── Username ─────────────────────────────────────────────────────────────
 
@@ -26,7 +28,7 @@ mod tests {
 
     #[test]
     fn username_invalid_too_short() {
-        assert!(Username::new("abc").is_err());
+        assert!(Username::new("ab").is_err());
     }
 
     #[test]
@@ -46,8 +48,8 @@ mod tests {
 
     #[test]
     fn username_trims_whitespace_then_validates() {
-        // After trimming "  abc  " becomes "abc" (3 chars) → invalid
-        assert!(Username::new("  abc  ").is_err());
+        // After trimming "  ab  " becomes "ab" (2 chars) → invalid
+        assert!(Username::new("  ab  ").is_err());
     }
 
     #[test]

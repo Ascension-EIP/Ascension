@@ -1,3 +1,11 @@
+> **Last updated:** 9th March 2026  
+> **Version:** 1.1  
+> **Authors:** Nicolas  
+> **Status:** Done  
+> {.is-success}
+
+---
+
 # Server Architecture
 
 This document explains how the Ascension backend server is structured and why it is built that way.

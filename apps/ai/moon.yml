@@ -13,6 +13,14 @@ tasks:
     inputs:
       - 'environment.yml'
       - 'pyproject.toml'
+    deps:
+      - 'root:setup-git-config'
+
+  download-model:
+    command: 'bash'
+    args: ['scripts/download-model.sh']
+    outputs:
+      - 'pose_landmarker.task'
 
   install_torch:
     command: '$CONDA_EXE'
@@ -21,6 +29,7 @@ tasks:
       - 'requirements/torch.txt'
     deps:
       - 'setup'
+      - 'download-model'
 
   install_base:
     command: '$CONDA_EXE'
@@ -67,7 +76,7 @@ tasks:
 
   dev:
     command: '$CONDA_EXE'
-    args: ['run', '--no-capture-output', '--prefix', './ai-env', 'python', '-u', 'consumer.py']
+    args: ['run', '--no-capture-output', '--prefix', './ai-env', 'python', '-u', 'src/consumer.py']
     deps:
       - 'install'
     env:
@@ -84,13 +93,13 @@ tasks:
 
   lint:
     command: '$CONDA_EXE'
-    args: ['run', '--prefix', './ai-env', 'ruff', 'check', '.']
+    args: ['run', '--no-capture-output', '--prefix', './ai-env', 'ruff', 'check', 'src']
     deps:
       - 'install'
 
   test:
     command: '$CONDA_EXE'
-    args: ['run', '--prefix', './ai-env', 'pytest', '-p', 'no:cacheprovider']
+    args: ['run', '--no-capture-output', '--prefix', './ai-env', 'pytest', '-p', 'no:cacheprovider']
     deps:
       - 'install'
     options:
@@ -98,7 +107,7 @@ tasks:
 
   format:
     command: '$CONDA_EXE'
-    args: ['run', '--prefix', './ai-env', 'black', '.']
+    args: ['run', '--no-capture-output', '--prefix', './ai-env', 'black', 'src']
     deps:
       - 'install'
 

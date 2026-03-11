@@ -1,105 +1,51 @@
-use axum::Json;
-use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
+use axum::{
+    Json,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 use serde::Serialize;
 
-#[derive(Debug, Clone)]
-pub struct ApiSuccess<T: Serialize + PartialEq>(StatusCode, Json<ApiResponseBody<T>>);
+/// A successful API response wrapping an arbitrary serializable body.
+#[derive(Debug)]
+pub struct ApiSuccess<T: Serialize> {
+    status: StatusCode,
+    body: T,
+}
 
-impl<T> PartialEq for ApiSuccess<T>
-where
-    T: Serialize + PartialEq,
-{
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0 && self.1.0 == other.1.0
+impl<T: Serialize> ApiSuccess<T> {
+    pub fn new(status: StatusCode, body: T) -> Self {
+        Self { status, body }
     }
 }
 
-impl<T: Serialize + PartialEq> ApiSuccess<T> {
-    pub(crate) fn new(status: StatusCode, data: T) -> Self {
-        ApiSuccess(status, Json(ApiResponseBody::new(status, data)))
-    }
-}
-
-impl<T: Serialize + PartialEq> IntoResponse for ApiSuccess<T> {
+impl<T: Serialize> IntoResponse for ApiSuccess<T> {
     fn into_response(self) -> Response {
-        (self.0, self.1).into_response()
+        (self.status, Json(self.body)).into_response()
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// A generic API error that maps to HTTP status codes.
+#[derive(Debug)]
+#[allow(dead_code)]
 pub enum ApiError {
-    InternalServerError(String),
+    BadRequest(String),
+    Unauthorized(String),
+    Forbidden(String),
     NotFound(String),
     UnprocessableEntity(String),
-}
-
-impl From<anyhow::Error> for ApiError {
-    fn from(e: anyhow::Error) -> Self {
-        Self::InternalServerError(e.to_string())
-    }
+    InternalServerError(String),
 }
 
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
-        use ApiError::*;
-
-        match self {
-            InternalServerError(e) => {
-                tracing::error!("{}", e);
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    Json(ApiResponseBody::new_error(
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        "Internal server error".to_string(),
-                    )),
-                )
-                    .into_response()
-            }
-            UnprocessableEntity(message) => (
-                StatusCode::UNPROCESSABLE_ENTITY,
-                Json(ApiResponseBody::new_error(
-                    StatusCode::UNPROCESSABLE_ENTITY,
-                    message,
-                )),
-            )
-                .into_response(),
-            NotFound(message) => (
-                StatusCode::NOT_FOUND,
-                Json(ApiResponseBody::new_error(StatusCode::NOT_FOUND, message)),
-            )
-                .into_response(),
-        }
+        let (status, message) = match self {
+            ApiError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
+            ApiError::Unauthorized(msg) => (StatusCode::UNAUTHORIZED, msg),
+            ApiError::Forbidden(msg) => (StatusCode::FORBIDDEN, msg),
+            ApiError::NotFound(msg) => (StatusCode::NOT_FOUND, msg),
+            ApiError::UnprocessableEntity(msg) => (StatusCode::UNPROCESSABLE_ENTITY, msg),
+            ApiError::InternalServerError(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
+        };
+        (status, message).into_response()
     }
-}
-
-/// Generic response structure shared by all API responses.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct ApiResponseBody<T: Serialize + PartialEq> {
-    status_code: u16,
-    data: T,
-}
-
-impl<T: Serialize + PartialEq> ApiResponseBody<T> {
-    pub fn new(status_code: StatusCode, data: T) -> Self {
-        Self {
-            status_code: status_code.as_u16(),
-            data,
-        }
-    }
-}
-
-impl ApiResponseBody<ApiErrorData> {
-    pub fn new_error(status_code: StatusCode, message: String) -> Self {
-        Self {
-            status_code: status_code.as_u16(),
-            data: ApiErrorData { message },
-        }
-    }
-}
-
-/// The response data format for all error responses.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct ApiErrorData {
-    pub message: String,
 }

@@ -1,3 +1,11 @@
+> **Last updated:** 9th March 2026  
+> **Version:** 1.1  
+> **Authors:** Nicolas  
+> **Status:** Done  
+> {.is-success}
+
+---
+
 # How to Add a Route
 
 This guide walks you through adding a new HTTP route to the server from scratch.
@@ -9,13 +17,21 @@ We will use a concrete example: adding a `GET /v1/status/version` endpoint that 
 
 ## Table of Contents
 
-1. [Overview: what files are involved?](#overview-what-files-are-involved)
-2. [Step 1 – Create the handler file](#step-1--create-the-handler-file)
-3. [Step 2 – Write the handler function](#step-2--write-the-handler-function)
-4. [Step 3 – Register the handler as a module](#step-3--register-the-handler-as-a-module)
-5. [Step 4 – Add the route to the router](#step-4--add-the-route-to-the-router)
-6. [Testing your route](#testing-your-route)
-7. [Route reference: HTTP methods in Axum](#route-reference-http-methods-in-axum)
+- [How to Add a Route](#how-to-add-a-route)
+  - [Table of Contents](#table-of-contents)
+  - [Overview: what files are involved?](#overview-what-files-are-involved)
+  - [Step 1 – Create the handler file](#step-1--create-the-handler-file)
+  - [Step 2 – Write the handler function](#step-2--write-the-handler-function)
+    - [Key points](#key-points)
+  - [Step 3 – Register the handler as a module](#step-3--register-the-handler-as-a-module)
+  - [Step 4 – Add the route to the router](#step-4--add-the-route-to-the-router)
+    - [4a. Import your handler](#4a-import-your-handler)
+    - [4b. Add the route](#4b-add-the-route)
+  - [Testing your route](#testing-your-route)
+  - [Route reference: HTTP methods in Axum](#route-reference-http-methods-in-axum)
+    - [Path parameters](#path-parameters)
+    - [Query parameters](#query-parameters)
+    - [JSON request body](#json-request-body)
 
 ---
 
@@ -23,11 +39,11 @@ We will use a concrete example: adding a `GET /v1/status/version` endpoint that 
 
 Adding a route always touches these files (at minimum):
 
-| What | Where |
-|---|---|
-| The handler logic | `src/inbound/http/handlers/<your_file>.rs` |
+| What               | Where                                                           |
+|--------------------|-----------------------------------------------------------------|
+| The handler logic  | `src/inbound/http/handlers/<your_file>.rs`                      |
 | Module declaration | `src/inbound/http/handlers.rs` (or an existing sub-module file) |
-| Route registration | `src/inbound/http.rs` inside `v1_routes()` |
+| Route registration | `src/inbound/http.rs` inside `v1_routes()`                      |
 
 If your route needs to call the domain (e.g., read/write users), you will also touch domain and outbound files — that is covered in the [CRUD guide](./implementing-a-crud.md).
 
@@ -170,13 +186,13 @@ Axum provides one function per HTTP method. Import them from `axum::routing`:
 use axum::routing::{get, post, put, patch, delete};
 ```
 
-| Axum function | HTTP method | Typical use |
-|---|---|---|
-| `get(handler)` | `GET` | Read / list a resource |
-| `post(handler)` | `POST` | Create a new resource |
-| `put(handler)` | `PUT` | Replace a resource entirely |
-| `patch(handler)` | `PATCH` | Partially update a resource |
-| `delete(handler)` | `DELETE` | Delete a resource |
+| Axum function     | HTTP method | Typical use                 |
+|-------------------|-------------|-----------------------------|
+| `get(handler)`    | `GET`       | Read / list a resource      |
+| `post(handler)`   | `POST`      | Create a new resource       |
+| `put(handler)`    | `PUT`       | Replace a resource entirely |
+| `patch(handler)`  | `PATCH`     | Partially update a resource |
+| `delete(handler)` | `DELETE`    | Delete a resource           |
 
 ### Path parameters
 

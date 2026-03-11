@@ -9,6 +9,15 @@ updates:
       timezone: Europe/Paris
     target-branch: "dev"
 
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: monday
+      time: "09:00"
+      timezone: Europe/Paris
+    target-branch: "dev"
+
   - package-ecosystem: "cargo"
     directory: "/apps/server"
     schedule:

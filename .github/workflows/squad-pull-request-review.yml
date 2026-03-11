@@ -39,11 +39,12 @@ jobs:
   ########################## ROUTE REVIEW ######################################
   route-review:
     runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.head_ref, 'dependabot/') }}
 
     ######################## STEPS ############################################
     steps:
       - name: Analyze PR and assign squad reviewers
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             // ── Domain routing rules ──────────────────────────────────

@@ -1,6 +1,24 @@
+> **Last updated:** 9th March 2026  
+> **Version:** 1.2  
+> **Authors:** Nicolas  
+> **Status:** Done  
+> {.is-success}
+
+---
+
 # Developer Quickstart
 
-Welcome to the Ascension developer guide. This document provides a quick reference for setting up your development environment.
+Welcome to the Ascension developer guide. This document provides a quick reference
+for setting up your development environment and links to all domain-specific guides.
+
+---
+
+## Table of Contents
+
+- [Prerequisites & Installation](#prerequisites--installation)
+- [Repository Setup](#repository-setup)
+- [Environment Variable Strategy](#environment-variable-strategy)
+- [Documentation Index](#documentation-index)
 
 ---
 
@@ -56,14 +74,22 @@ The mobile application is built with Flutter.
    # Edit .env if needed
    ```
 
-3. **Initialize AI Environment:**
+3. **Start Infrastructure (databases, message broker, object storage):**
    ```bash
-   moon run ai:setup
+   docker compose up -d
    ```
 
-4. **Start Infrastructure:**
+4. **Initialize AI Environment and download the MediaPipe model:**
    ```bash
-   docker-compose up -d
+   moon run ai:install
+   ```
+
+   This runs `ai:setup` → `ai:download-model` → `ai:install` automatically.
+
+5. **Install sqlx-cli and run database migrations (server):**
+   ```bash
+   moon run server:install-sqlx
+   moon run server:migrate
    ```
 
 ---
@@ -81,3 +107,27 @@ We follow a dual-strategy for environment variables to balance local developer e
 - **Source:** Hardcoded in [docker-compose.yml](/docker-compose.yml) under the `environment` section for the `ai-worker`.
 - **Hostnames:** Uses internal Docker network hostnames (e.g., `RABBITMQ_HOST=rabbitmq`).
 - **Behavior:** This ensures seamless cross-container communication within the Docker network and prevents accidental `.env` leaks into the production container environment.
+
+---
+
+## Documentation Index
+
+### Architecture
+
+- [System Overview](./architecture/system-overview.md) — global architecture, data flows, scaling
+
+### Server (Rust / Axum)
+
+- [Developer Guide](./server/README.md) — setup, env vars, moon tasks, Docker
+- [Architecture](./server/architecture.md) — hexagonal architecture, layers, request flow
+- [API Routes Reference](./server/api-routes.md) — all HTTP routes with examples
+- [How to Add a Route](./server/adding-a-route.md) — step-by-step guide
+- [How to Implement a CRUD](./server/implementing-a-crud.md) — full domain-to-HTTP walkthrough
+
+### AI Worker (Python / MediaPipe)
+
+- [Developer Guide](./ai/README.md) — setup, pipelines, RabbitMQ, pose analysis
+
+### Mobile (Flutter / Dart)
+
+- [Developer Guide](./mobile/README.md) — setup, screens, navigation, API integration

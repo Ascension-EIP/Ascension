@@ -5,14 +5,36 @@ project:
   description: "Rust/Axum backend server for Ascension"
 
 tasks:
+  install:
+    command: "cargo"
+    args: ["install", "sqlx-cli", "--no-default-features", "--features", "native-tls,postgres"]
+    options:
+      cache: false
+    deps:
+      - "root:setup-git-config"
+
+  migrate:
+    command: "sqlx"
+    args: ["migrate", "run", "--source", "migrations"]
+    inputs:
+      - "migrations/**/*.sql"
+    options:
+      envFile: true
+    deps:
+      - "install"
+
   build:
     command: "cargo"
     args: ["build"]
+    env:
+      SQLX_OFFLINE: "true"
     inputs:
       - "src/**/*"
       - "Cargo.toml"
       - "Cargo.lock"
       - ".sqlx/**/*"
+    deps:
+      - "root:setup-git-config"
 
   build-release:
     command: "cargo"
@@ -50,6 +72,8 @@ tasks:
       - ".sqlx/**/*"
     env:
       SQLX_OFFLINE: "true"
+    deps:
+      - "root:setup-git-config"
 
   format:
     command: "cargo"

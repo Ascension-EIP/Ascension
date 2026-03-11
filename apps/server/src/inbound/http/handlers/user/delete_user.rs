@@ -1,55 +1,46 @@
-use crate::domain::user::models::user::{DeleteUserError, DeleteUserInput};
-use crate::inbound::http::AppState;
-use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
-use serde::Serialize;
+use axum::response::IntoResponse;
+use axum::response::Response;
 use thiserror::Error;
 
-impl From<DeleteUserError> for ApiError {
-    fn from(e: DeleteUserError) -> Self {
-        match e {
-            DeleteUserError::NotFoundUser { id } => {
-                Self::NotFound(format!("user id {} not found", id))
-            }
-            DeleteUserError::Unknown(_cause) => {
-                Self::InternalServerError("Internal server error".to_string())
-            }
-        }
-    }
-}
+use crate::domain::user::error::UserError;
+use crate::inbound::http::AppState;
 
 #[derive(Debug, Clone, Error)]
-enum ParseDeleteUserHttpRequestError {
+enum DeleteUserRequestError {
     #[error(transparent)]
     Id(#[from] uuid::Error),
 }
 
-impl From<ParseDeleteUserHttpRequestError> for ApiError {
-    fn from(e: ParseDeleteUserHttpRequestError) -> Self {
-        let message = match e {
-            ParseDeleteUserHttpRequestError::Id(_cause) => "id is invalid".to_string(),
+impl IntoResponse for DeleteUserRequestError {
+    fn into_response(self) -> Response {
+        let message = match self {
+            DeleteUserRequestError::Id(_) => "id is invalid".to_string(),
         };
 
-        Self::UnprocessableEntity(message)
+        (StatusCode::UNPROCESSABLE_ENTITY, message).into_response()
     }
 }
 
-/// The response body for successful [User] deletion.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct DeleteUserResponse {}
-
+/// Delete an existing [User] by id.
+///
+/// # Responses
+///
+/// - 200 OK: the [User] was successfully deleted.
+/// - 404 Not Found: no [User] with the given id exists.
+/// - 422 Unprocessable Entity: the provided id is not a valid UUID.
 pub async fn delete_user(
     Path(id): Path<String>,
     State(state): State<AppState>,
-) -> Result<ApiSuccess<DeleteUserResponse>, ApiError> {
-    let uuid = uuid::Uuid::parse_str(&id).map_err(ParseDeleteUserHttpRequestError::from)?;
-    let input = DeleteUserInput::new(uuid);
+) -> Result<(StatusCode, ()), UserError> {
+    let uuid = uuid::Uuid::parse_str(&id)
+        .map_err(DeleteUserRequestError::from)
+        .map_err(|e| anyhow::anyhow!(e))?;
 
     state
         .user_service
-        .delete_user(&input)
+        .delete_user(&uuid)
         .await
-        .map_err(ApiError::from)
-        .map(|_| ApiSuccess::new(StatusCode::OK, DeleteUserResponse {}))
+        .map(|output| (StatusCode::OK, output))
 }
