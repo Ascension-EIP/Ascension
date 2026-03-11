@@ -37,12 +37,12 @@ func (r *PostgresRepo) CreateUser(ctx context.Context, newUser *model.NewUser) (
 	return user.ToUser(), nil
 }
 
-func (r *PostgresRepo) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
+func (r *PostgresRepo) GetUserByID(ctx context.Context, userID uuid.UUID) (*model.User, error) {
 	var user *dto.User
 	if err := pgx.BeginFunc(ctx, r.Pool, func(tx pgx.Tx) error {
 		rows, err := tx.Query(ctx,
 			"SELECT * FROM users WHERE id = $1",
-			id)
+			userID)
 		if err != nil {
 			return err
 		}
@@ -59,7 +59,7 @@ func (r *PostgresRepo) GetUserByID(ctx context.Context, id uuid.UUID) (*model.Us
 	return user.ToUser(), nil
 }
 
-func (r *PostgresRepo) GetEmailByUsername(ctx context.Context, email string) (*model.User, error) {
+func (r *PostgresRepo) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	var user *dto.User
 	if err := pgx.BeginFunc(ctx, r.Pool, func(tx pgx.Tx) error {
 		rows, err := tx.Query(ctx,
@@ -152,11 +152,11 @@ func (r *PostgresRepo) UpdateUser(ctx context.Context, partialUser *model.Partia
 	return user.ToUser(), nil
 }
 
-func (r *PostgresRepo) DeleteUser(ctx context.Context, id uuid.UUID) error {
+func (r *PostgresRepo) DeleteUser(ctx context.Context, userID uuid.UUID) error {
 	err := pgx.BeginFunc(ctx, r.Pool, func(tx pgx.Tx) error {
 		_, err := tx.Exec(ctx,
 			"DELETE FROM users WHERE id = $1",
-			id)
+			userID)
 		if err != nil {
 			return err
 		}

@@ -17,6 +17,7 @@ func New(
 	l *zerolog.Logger,
 
 	userH *handler.UserHandler,
+	authH *handler.AuthHandler,
 ) {
 	app.Use(middleware.RequestID())
 	app.Use(middleware.Logger(l))
@@ -27,6 +28,8 @@ func New(
 
 	v1 := app.Group("/v1")
 	{
+		v1.POST("/signup", middleware.RateLimiter(time.Minute, 5), authH.Signup)
+		v1.POST("/login", middleware.RateLimiter(time.Minute, 10), authH.Login)
 		// v1.POST("/signup", middleware.RateLimiter(time.Minute, 5), guestMw, authH.Signup)
 		// v1.POST("/login", middleware.RateLimiter(time.Minute, 10), guestMw, authH.Login)
 		// v1.POST("/logout", middleware.RateLimiter(time.Minute, 10), authMw, authH.Logout)

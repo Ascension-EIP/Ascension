@@ -24,9 +24,14 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 	if err != nil {
 		l.Fatal().Msg(err.Error())
 	}
-	userS := service.NewUserService(l, repo)
 
-	userH := handler.NewUserHandler(l, userS)
+	jwtS := service.NewJWTService(cfg.Auth.JWT)
+	sessionS := service.NewSessionService(cfg.Auth.Session, &repo)
+	userS := service.NewUserService(&repo)
+	authS := service.NewAuthService(&jwtS, &sessionS, &repo)
+
+	userH := handler.NewUserHandler(l, &userS)
+	authH := handler.NewAuthHandler(l, &authS)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -40,7 +45,8 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 	// gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
 	router.New(app, cfg, l,
-		userH,
+		&userH,
+		&authH,
 	)
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(cfg.HTTP.Port),

@@ -17,10 +17,10 @@ type PostgresRepo struct {
 	l    *zerolog.Logger
 }
 
-func New(l *zerolog.Logger, dsn string, migrationDir string) (*PostgresRepo, error) {
+func New(l *zerolog.Logger, dsn string, migrationDir string) (PostgresRepo, error) {
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
-		return nil, err
+		return PostgresRepo{}, err
 	}
 
 	config.MaxConns = 25
@@ -29,21 +29,21 @@ func New(l *zerolog.Logger, dsn string, migrationDir string) (*PostgresRepo, err
 
 	pool, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
-		return nil, err
+		return PostgresRepo{}, err
 	}
 
 	if err := pool.Ping(context.Background()); err != nil {
-		return nil, err
+		return PostgresRepo{}, err
 	}
 
 	if migrationDir != "" {
 		if err := migrateDB(dsn, migrationDir); err != nil {
-			return nil, err
+			return PostgresRepo{}, err
 		}
 		l.Info().Msg("migration completed successfully")
 	}
 
-	return &PostgresRepo{Pool: pool}, nil
+	return PostgresRepo{Pool: pool}, nil
 }
 
 func migrateDB(dsn string, migrationDir string) error {

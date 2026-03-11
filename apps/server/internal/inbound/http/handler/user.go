@@ -16,8 +16,8 @@ type UserHandler struct {
 	l *zerolog.Logger
 }
 
-func NewUserHandler(l *zerolog.Logger, s *service.UserService) *UserHandler {
-	return &UserHandler{s: s, l: l}
+func NewUserHandler(l *zerolog.Logger, s *service.UserService) UserHandler {
+	return UserHandler{s: s, l: l}
 }
 
 func (h *UserHandler) Create(c *gin.Context) {

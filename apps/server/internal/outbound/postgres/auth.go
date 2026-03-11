@@ -1,25 +1,39 @@
 package postgres
 
-// func (r *Repo) CreateSession(ctx context.Context, session *entity.Session) error {
-// 	if session == nil {
-// 		return ErrModelNil
-// 	}
-// 	m := model.SessionFromEntity(session)
-// 	if err := r.db.WithContext(ctx).Create(m).Error; err != nil {
-// 		switch {
-// 		case errors.Is(err, gorm.ErrDuplicatedKey):
-// 			return ErrDuplicatedKey
-// 		case errors.Is(err, gorm.ErrForeignKeyViolated):
-// 			return ErrForeignKeyViolated
-// 		default:
-// 			return err
-// 		}
-// 	}
-// 	session.CreatedAt = m.CreatedAt
-// 	session.UpdatedAt = m.UpdatedAt
-// 	return nil
-// }
-//
+import (
+	"context"
+
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres/dto"
+	"github.com/jackc/pgx/v5"
+)
+
+func (r *PostgresRepo) CreateSession(ctx context.Context, newSession *model.NewSession) (*model.Session, error) {
+	if newSession == nil {
+		return nil, model.ErrUnknown
+	}
+
+	var session *dto.Session
+	if err := pgx.BeginFunc(ctx, r.Pool, func(tx pgx.Tx) error {
+		rows, err := tx.Query(ctx,
+			"INSERT INTO sessions (user_id, expires_at) VALUES ($1, $2) RETURNING *",
+			newSession.UserID, newSession.ExpiresAt)
+		if err != nil {
+			return err
+		}
+
+		session, err = pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.Session])
+		if err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return session.ToSession(), nil
+}
+
 // func (r *Repo) GetSession(ctx context.Context, id string) (*entity.Session, error) {
 // 	var session model.Session
 // 	if err := r.db.WithContext(ctx).

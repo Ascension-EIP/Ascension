@@ -10,8 +10,8 @@ import (
 
 type (
 	Config struct {
-		DB   DBConfig `envPrefix:"DB_"`
-		Auth AuthConfig
+		DB   DBConfig   `envPrefix:"DB_"`
+		Auth AuthConfig `envPrefix:"AUTH_"`
 		HTTP HTTPConfig
 		Log  LogConfig `envPrefix:"LOG_"`
 	}
@@ -27,8 +27,18 @@ type (
 	}
 
 	AuthConfig struct {
-		CookieExp  time.Duration `env:"COOKIE_EXP" envDefault:"24h"`
-		CookieName string        `env:"COOKIE_NAME" envDefault:"user_session"`
+		JWT     JWTConfig     `envPrefix:"JWT_"`
+		Session SessionConfig `envPrefix:"SESSION_"`
+	}
+
+	JWTConfig struct {
+		Exp    time.Duration `env:"EXP" envDefault:"15m"`
+		Secret string        `env:"SECRET" envDefault:"user_session"`
+	}
+
+	SessionConfig struct {
+		Exp         time.Duration `env:"EXP" envDefault:"168h"`
+		RememberExp time.Duration `env:"EXP" envDefault:"720h"`
 	}
 
 	HTTPConfig struct {

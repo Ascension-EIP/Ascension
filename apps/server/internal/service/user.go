@@ -5,25 +5,23 @@ import (
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type userRepository interface {
-	CreateUser(ctx context.Context, user *model.NewUser) (*model.User, error)
-	GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error)
-	ListAllUsers(ctx context.Context) ([]*model.User, error)
-	UpdateUser(ctx context.Context, user *model.PartialUser) (*model.User, error)
-	DeleteUser(ctx context.Context, id uuid.UUID) error
+	CreateUser(context.Context, *model.NewUser) (*model.User, error)
+	GetUserByID(context.Context, uuid.UUID) (*model.User, error)
+	ListAllUsers(context.Context) ([]*model.User, error)
+	UpdateUser(context.Context, *model.PartialUser) (*model.User, error)
+	DeleteUser(context.Context, uuid.UUID) error
 }
 
 type UserService struct {
 	r userRepository
-	l *zerolog.Logger
 }
 
-func NewUserService(l *zerolog.Logger, r userRepository) *UserService {
-	return &UserService{r: r}
+func NewUserService(r userRepository) UserService {
+	return UserService{r: r}
 }
 
 func (s *UserService) CreateUser(c context.Context, user *model.NewUser) (*model.User, error) {
