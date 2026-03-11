@@ -28,7 +28,7 @@ impl RabbitMqPublisher {
         // Declare the queue (durable, matching the AI worker)
         channel
             .queue_declare(
-                QUEUE,
+                QUEUE.into(),
                 QueueDeclareOptions {
                     durable: true,
                     ..Default::default()
@@ -41,7 +41,7 @@ impl RabbitMqPublisher {
         // Declare the topic exchange for completion events
         channel
             .exchange_declare(
-                EXCHANGE,
+                EXCHANGE.into(),
                 lapin::ExchangeKind::Topic,
                 ExchangeDeclareOptions {
                     durable: true,
@@ -61,8 +61,8 @@ impl RabbitMqPublisher {
 
         self.channel
             .basic_publish(
-                "",
-                QUEUE,
+                "".into(),
+                QUEUE.into(),
                 BasicPublishOptions::default(),
                 &body,
                 BasicProperties::default()

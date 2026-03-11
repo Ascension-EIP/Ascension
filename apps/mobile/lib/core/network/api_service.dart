@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../constants/app_constants.dart';
+import 'package:mobile/core/constants/app_constants.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -17,7 +17,7 @@ class ApiService {
   /// Call this once at app startup (e.g. in [main]).
   Future<void> loadBaseUrl() async {
     final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString(AppConstants.backendUrlKey);
+    final saved = prefs.getString(AppConstants.defaultBackendUrl);
     if (saved != null && saved.isNotEmpty) {
       _baseUrl = saved;
     }
@@ -27,7 +27,42 @@ class ApiService {
   Future<void> setBaseUrl(String url) async {
     _baseUrl = url;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(AppConstants.backendUrlKey, url);
+    await prefs.setString(AppConstants.defaultBackendUrl, url);
+  }
+
+  // ── Auth ─────────────────────────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> login({
+    required String email,
+    required String password,
+  }) async {
+    final uri = Uri.parse('$baseUrl/v1/auth/login');
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'password': password}),
+    );
+    _assertOk(response, 'login');
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> register({
+    required String username,
+    required String email,
+    required String password,
+  }) async {
+    final uri = Uri.parse('$baseUrl/v1/auth/register');
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'username': username,
+        'email': email,
+        'password': password,
+      }),
+    );
+    _assertOk(response, 'register');
+    return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
   // ── Videos ──────────────────────────────────────────────────────────────────

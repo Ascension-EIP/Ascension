@@ -27,7 +27,7 @@ minio = "0.3"
 openssl = { version = "0.10", features = ["vendored"] }
 
 # rabbitmq
-lapin = "2"
+lapin = "4"
 
 # tools
 uuid = { version = "1.22", features = ["v4", "fast-rng", "serde"] }
@@ -37,7 +37,9 @@ thiserror = "2.0"
 derive_more = { version = "2.1", features = ["full"] }
 regex = "1.12"
 chrono = { version = "0.4", features = ["serde"] }
-jsonwebtoken = "10.3.0"
+jsonwebtoken = { version = "10.3.0", features = ["use_pem", "rust_crypto"] }
+bcrypt = "0.17"
+tower-cookies = "0.11"
 
 # log
 tracing = "0.1"

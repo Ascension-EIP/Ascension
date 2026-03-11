@@ -8,4 +8,3 @@ if echo "$COMMIT_MSG" | grep -qiE '^\[(no-ci|ci-no|ci no|no ci|ci-off|off-ci|ci 
 else
     .github/scripts/check_commit "$COMMIT_MSG"
 fi
-

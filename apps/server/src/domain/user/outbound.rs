@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use uuid::Uuid;
 
 use crate::domain::user::{
-    entity::{new_user::NewUser, pagination::Pagination, user::User},
+    entity::{email::Email, new_user::NewUser, pagination::Pagination, user::User},
     error::UserError,
 };
 
@@ -33,6 +33,13 @@ pub trait UserRepository: Send + Sync {
     ///
     /// - MUST return [UserError::NotFoundId] if no [User] with the given id exists.
     async fn get_user(&self, req: &Uuid) -> Result<User, UserError>;
+
+    /// Get a [User] by their email address. Returns the full row including password_hash.
+    ///
+    /// # Errors
+    ///
+    /// - MUST return [UserError::UserNotFound] if no [User] with the given email exists.
+    async fn get_user_by_email(&self, email: &Email) -> Result<User, UserError>;
 
     /// Update an existing [User].
     ///

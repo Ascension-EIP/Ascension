@@ -1,0 +1,82 @@
+############################ CONFIGURATION ####################################
+name: ascension-vps-deploy
+
+on:
+  workflow_run:
+    workflows: ["ascension-deploy"]
+    types:
+      - completed
+
+env:
+  GITHUB_ACTIONS: true
+  REGISTRY: ghcr.io
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+###############################################################################
+
+
+
+############################ JOBS #############################################
+jobs:
+  ########################## DEPLOY TO VPS ####################################
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    ######################## STEPS ############################################
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set image prefix
+        id: image
+        run: echo "prefix=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Copy compose files to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "docker-compose.yml,docker-compose.prod.yml"
+          target: /opt/ascension
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1
+        env:
+          IMAGE_PREFIX: ${{ steps.image.outputs.prefix }}
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: IMAGE_PREFIX,GHCR_USER,GHCR_TOKEN
+          script: |
+            set -e
+            cd /opt/ascension
+
+            # Login to GHCR
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+
+            # Pull infra images
+            docker compose pull minio rabbitmq postgresql
+
+            # Pull latest app images
+            docker pull "$IMAGE_PREFIX/ascension-server:latest"
+            docker pull "$IMAGE_PREFIX/ascension-ai:latest"
+
+            # Start/update all services (infra + app) with prod profile
+            IMAGE_PREFIX="$IMAGE_PREFIX" docker compose \
+              -f docker-compose.yml \
+              -f docker-compose.prod.yml \
+              --profile prod \
+              up -d --remove-orphans
+
+            # Cleanup dangling images
+            docker image prune -f
+  #############################################################################
+
+###############################################################################

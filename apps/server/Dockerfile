@@ -14,14 +14,15 @@ RUN mkdir src && echo 'fn main() {}' > src/main.rs \
 	&& cargo build --release \
 	&& rm -rf src
 
-# Copy sqlx offline query cache and sources
+# Copy sqlx offline query cache, migrations and sources
 COPY .sqlx ./.sqlx
+COPY migrations ./migrations
 COPY src ./src
 ENV SQLX_OFFLINE=true
 RUN touch src/main.rs && cargo build --release
 
 # ── Runtime stage ─────────────────────────────────────────────────────────────
-FROM debian:bookworm-slim AS runtime
+FROM debian:trixie-slim AS runtime
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
 	ca-certificates \
