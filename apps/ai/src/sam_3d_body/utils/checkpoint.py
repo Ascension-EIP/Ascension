@@ -62,7 +62,9 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
         # complicated structure, e.g., nn.Module(nn.Module(DDP))
         if isinstance(module, torch.nn.parallel.DistributedDataParallel):
             module = module.module
-        local_metadata = {} if metadata is None else metadata.get(prefix[:-1], {})
+        local_metadata = (
+            {} if metadata is None else metadata.get(prefix[:-1], {})
+        )
         module._load_from_state_dict(
             local_state_dict,
             prefix,
@@ -98,11 +100,14 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
     load = None  # break load->load reference cycle
 
     # ignore "num_batches_tracked" of BN layers
-    missing_keys = [key for key in missing_keys if "num_batches_tracked" not in key]
+    missing_keys = [
+        key for key in missing_keys if "num_batches_tracked" not in key
+    ]
 
     if unexpected_keys:
         err_msg.append(
-            "unexpected key in source " f'state_dict: {", ".join(unexpected_keys)}\n'
+            "unexpected key in source "
+            f'state_dict: {", ".join(unexpected_keys)}\n'
         )
     if missing_keys:
         err_msg.append(
@@ -110,7 +115,9 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
         )
 
     if len(err_msg) > 0:
-        err_msg.insert(0, "The model and loaded state dict do not match exactly\n")
+        err_msg.insert(
+            0, "The model and loaded state dict do not match exactly\n"
+        )
         err_msg = "\n".join(err_msg)
         if strict:
             raise RuntimeError(err_msg)

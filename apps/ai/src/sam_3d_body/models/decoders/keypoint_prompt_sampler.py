@@ -22,7 +22,10 @@ def build_keypoint_sampler(sampler_cfg, prompt_keypoints, keybody_idx):
 class BaseKeypointSampler(ABC):
     @abstractmethod
     def sample(
-        self, gt_keypoints: torch.Tensor, pred_keypoints: torch.Tensor, is_train: bool
+        self,
+        gt_keypoints: torch.Tensor,
+        pred_keypoints: torch.Tensor,
+        is_train: bool,
     ) -> torch.Tensor:
         pass
 
@@ -92,7 +95,8 @@ class KeypointSamplerV1(BaseKeypointSampler):
         # (2) both the gt and pred are outside of the image
         mask_1 = gt_keypoints_2d[:, :, -1] < 0.5
         mask_2 = (
-            (gt_keypoints_2d[:, :, :2] > 0.5) | (gt_keypoints_2d[:, :, :2] < -0.5)
+            (gt_keypoints_2d[:, :, :2] > 0.5)
+            | (gt_keypoints_2d[:, :, :2] < -0.5)
         ).any(dim=-1)
 
         # Elements to be ignored
@@ -150,7 +154,9 @@ class KeypointSamplerV1(BaseKeypointSampler):
 
             if valid_keypoint:
                 cur_point = gt_keypoints_2d[b, keypoint_idx].clone()
-                if torch.any(cur_point[:2] > 0.5) or torch.any(cur_point[:2] < -0.5):
+                if torch.any(cur_point[:2] > 0.5) or torch.any(
+                    cur_point[:2] < -0.5
+                ):
                     # Negative prompt --> indicating the predicted keypoint is incorrect
                     cur_point[:2] = pred_keypoints_2d[b, keypoint_idx][:2]
                     cur_point = torch.clamp(
@@ -178,5 +184,7 @@ class KeypointSamplerV1(BaseKeypointSampler):
             keypoints_prompt.append(cur_point)
             # print(print_str)
 
-        keypoints_prompt = torch.stack(keypoints_prompt, dim=0).view(batch_size, 1, 3)
+        keypoints_prompt = torch.stack(keypoints_prompt, dim=0).view(
+            batch_size, 1, 3
+        )
         return keypoints_prompt

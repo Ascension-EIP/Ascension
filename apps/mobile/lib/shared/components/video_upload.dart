@@ -32,7 +32,7 @@ const List<_PromoMessage> _promoMessages = [
   ),
   _PromoMessage(
     icon: Icons.stars_rounded,
-    text: 'Passez au mode Premium pour seulement 4,99 €/mois.',
+    text: 'Passez au mode Premium pour seulement 20€/mois.',
     isPromo: true,
   ),
   _PromoMessage(
@@ -53,12 +53,7 @@ const List<_PromoMessage> _promoMessages = [
   _PromoMessage(
     icon: Icons.tips_and_updates_rounded,
     text:
-        'Le saviez-vous ? MediaPipe détecte jusqu\'à 33 points du corps humain.',
-    isPromo: false,
-  ),
-  _PromoMessage(
-    icon: Icons.videocam_rounded,
-    text: 'Astuce : filmez de profil pour de meilleures détections.',
+        'Le saviez-vous ? Ascension détecte jusqu\'à 33 points du corps humain.',
     isPromo: false,
   ),
   _PromoMessage(
@@ -92,11 +87,6 @@ const List<_PromoMessage> _promoMessages = [
         'L\'IA Ascension apprend de chaque session pour mieux vous conseiller.',
     isPromo: false,
   ),
-  _PromoMessage(
-    icon: Icons.offline_bolt_rounded,
-    text: 'Premium : analyses disponibles même hors connexion (bientôt).',
-    isPromo: true,
-  ),
 ];
 
 class _PromoMessage {
@@ -128,10 +118,11 @@ class _VideoUploadState extends State<VideoUpload> {
   // Analysis progress tracking
   int _analysisProgress = 0; // real value 0–100 from the API
   DateTime? _analysisStartedAt; // when the analysing phase began
+  bool _isGeneratingHints = false; // true while the server runs Gemini
   static const int _analysisMaxPolls = 120; // 120 × 5 s = 10 min
 
   Future<void> _pickVideo(ImageSource source) async {
-    final picked = await ImagePicker().pickVideo(
+    XFile? picked = await ImagePicker().pickVideo(
       source: source,
       maxDuration: const Duration(minutes: 10),
     );
@@ -207,8 +198,27 @@ class _VideoUploadState extends State<VideoUpload> {
         final status = a['status'] as String;
         // Read the real progress written by the AI worker.
         final rawProgress = a['progress'];
+        int? nextProgress;
+        bool? nextIsGeneratingHints;
         if (rawProgress is int) {
-          setState(() => _analysisProgress = rawProgress);
+          nextProgress = rawProgress;
+        }
+        // Show a dedicated spinner while Gemini is generating coaching hints.
+        if (status == 'generating_hints') {
+          nextIsGeneratingHints = true;
+        } else if (_isGeneratingHints && status != 'generating_hints') {
+          // Gemini finished — revert to normal display
+          nextIsGeneratingHints = false;
+        }
+        if (nextProgress != null || nextIsGeneratingHints != null) {
+          setState(() {
+            if (nextProgress != null) {
+              _analysisProgress = nextProgress;
+            }
+            if (nextIsGeneratingHints != null) {
+              _isGeneratingHints = nextIsGeneratingHints;
+            }
+          });
         }
         if (status == 'completed') {
           result = a;
@@ -283,6 +293,7 @@ class _VideoUploadState extends State<VideoUpload> {
       _analysisResult = null;
       _analysisProgress = 0;
       _analysisStartedAt = null;
+      _isGeneratingHints = false;
     });
   }
 
@@ -507,16 +518,17 @@ class _VideoUploadState extends State<VideoUpload> {
   }
 
   Widget _buildAnalysing() {
-    final int percent = _analysisProgress;
+    // While Gemini is generating hints, lock the display at 99 %.
+    final int percent = _isGeneratingHints ? 99 : _analysisProgress;
     final double progress = percent / 100.0;
 
     // Compute ETA from elapsed time and current speed.
     // Only shown once we have at least 2 % progress to avoid wild estimates.
+    // Hidden during the Gemini phase (we can't estimate Gemini duration).
     String remainingLabel = 'calcul en cours…';
     final started = _analysisStartedAt;
-    if (started != null && percent >= 2) {
+    if (!_isGeneratingHints && started != null && percent >= 2) {
       final elapsedSecs = DateTime.now().difference(started).inSeconds;
-      // seconds-per-percent then extrapolate remaining
       final remainingSecs = (elapsedSecs / percent * (100 - percent)).round();
       remainingLabel = _formatRemaining(remainingSecs);
     }
@@ -525,6 +537,7 @@ class _VideoUploadState extends State<VideoUpload> {
       progress: progress,
       percent: percent,
       remainingLabel: remainingLabel,
+      isGeneratingHints: _isGeneratingHints,
     );
   }
 
@@ -576,6 +589,7 @@ class _VideoUploadState extends State<VideoUpload> {
     final status = result?['status'] as String? ?? '—';
     final processingMs = result?['processing_time_ms'] as int?;
     final resultJson = result?['result_json'] as String?;
+    final hints = result?['hints'] as String?;
 
     // Parse frame count from JSON if available
     int? frameCount;
@@ -633,6 +647,7 @@ class _VideoUploadState extends State<VideoUpload> {
                         resultJson: resultJson,
                         processingMs: processingMs,
                         videoFile: _videoFile,
+                        hints: hints,
                       ),
                     ),
                   );
@@ -797,11 +812,13 @@ class _AnalysingScreen extends StatefulWidget {
   final double progress;
   final int percent;
   final String remainingLabel;
+  final bool isGeneratingHints;
 
   const _AnalysingScreen({
     required this.progress,
     required this.percent,
     required this.remainingLabel,
+    this.isGeneratingHints = false,
   });
 
   @override
@@ -810,54 +827,53 @@ class _AnalysingScreen extends StatefulWidget {
 
 class _AnalysingScreenState extends State<_AnalysingScreen>
     with SingleTickerProviderStateMixin {
-  int _promoIndex = 0;
-  late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
-
-  static const Duration _promoInterval = Duration(seconds: 4);
+  late final PageController _pageCtrl;
+  late AnimationController _autoSlideCtrl;
+  int _pageIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeInOut,
-    );
-    _fadeController.forward();
-    _scheduleNext();
+    _pageCtrl = PageController();
+    // Auto-advance timer: drives a thin progress bar and flips the page when full.
+    _autoSlideCtrl =
+        AnimationController(vsync: this, duration: const Duration(seconds: 5))
+          ..addStatusListener((status) {
+            if (status == AnimationStatus.completed && mounted) {
+              _nextPage();
+              _autoSlideCtrl.forward(from: 0);
+            }
+          });
+    _autoSlideCtrl.forward();
   }
 
-  void _scheduleNext() {
-    Future.delayed(_promoInterval, () {
-      if (!mounted) return;
-      _fadeController.reverse().then((_) {
-        if (!mounted) return;
-        setState(() {
-          _promoIndex = (_promoIndex + 1) % _promoMessages.length;
-        });
-        _fadeController.forward().then((_) => _scheduleNext());
-      });
-    });
+  void _nextPage() {
+    _goToPage((_pageIndex + 1) % _promoMessages.length);
+  }
+
+  void _goToPage(int index) {
+    setState(() => _pageIndex = index);
+    _pageCtrl.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 380),
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
   void dispose() {
-    _fadeController.dispose();
+    _autoSlideCtrl.dispose();
+    _pageCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final msg = _promoMessages[_promoIndex];
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -869,7 +885,9 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                   width: 120,
                   height: 120,
                   child: CircularProgressIndicator(
-                    value: widget.progress > 0 ? widget.progress : null,
+                    value: widget.isGeneratingHints
+                        ? null
+                        : (widget.progress > 0 ? widget.progress : null),
                     color: colorScheme.secondary,
                     backgroundColor: colorScheme.secondary.withValues(
                       alpha: 0.15,
@@ -877,126 +895,236 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                     strokeWidth: 8,
                   ),
                 ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${widget.percent} %',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.secondary,
+                if (!widget.isGeneratingHints)
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${widget.percent} %',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.secondary,
+                        ),
                       ),
-                    ),
-                    Text(
-                      widget.remainingLabel,
-                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
-                    ),
-                  ],
-                ),
+                      Text(
+                        widget.remainingLabel,
+                        style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                      ),
+                    ],
+                  )
+                else
+                  Icon(
+                    Icons.auto_awesome_rounded,
+                    color: colorScheme.secondary,
+                    size: 32,
+                  ),
               ],
             ),
             const SizedBox(height: 28),
             Text(
-              'Analyse en cours…',
+              widget.isGeneratingHints
+                  ? 'Génération des conseils IA…'
+                  : 'Analyse en cours…',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 6),
             Text(
-              'MediaPipe analyse votre session d\'escalade.',
+              widget.isGeneratingHints
+                  ? 'Ascension analyse votre session et rédige vos conseils personnalisés.'
+                  : 'Ascension analyse votre session d\'escalade.',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey[500], fontSize: 14),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
 
-            // ── Promotional / tips banner ──
-            FadeTransition(
-              opacity: _fadeAnimation,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: msg.isPromo
-                      ? colorScheme.secondary.withValues(alpha: 0.10)
-                      : colorScheme.surface,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: msg.isPromo
-                        ? colorScheme.secondary.withValues(alpha: 0.35)
-                        : Colors.grey.withValues(alpha: 0.20),
-                  ),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      msg.icon,
-                      size: 28,
-                      color: msg.isPromo
-                          ? colorScheme.secondary
-                          : Colors.grey[400],
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (msg.isPromo)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 4),
-                              child: Text(
-                                '✦ MODE PREMIUM',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: colorScheme.secondary,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                            ),
-                          Text(
-                            msg.text,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: msg.isPromo
-                                  ? Colors.white
-                                  : Colors.grey[400],
-                              height: 1.4,
-                            ),
-                          ),
-                        ],
+            // ── Swipeable promo / tips cards ──
+            Row(
+              children: [
+                //_NavArrow(
+                //  onTap: () {
+                //    _autoSlideCtrl.forward(from: 0);
+                //    _goToPage(
+                //      (_pageIndex - 1 + _promoMessages.length) %
+                //          _promoMessages.length,
+                //    );
+                //  },
+                //  icon: Icons.chevron_left_rounded,
+                //  accent: colorScheme.secondary,
+                //),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: SizedBox(
+                    height: 85,
+                    child: PageView.builder(
+                      controller: _pageCtrl,
+                      itemCount: _promoMessages.length,
+                      onPageChanged: (i) {
+                        setState(() => _pageIndex = i);
+                        _autoSlideCtrl.forward(from: 0);
+                      },
+                      itemBuilder: (context, i) => Padding(
+                        // Horizontal gap between cards when paging
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: _PromoCard(
+                          msg: _promoMessages[i],
+                          accent: colorScheme.secondary,
+                        ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+                //_NavArrow(
+                //  onTap: () {
+                //    _autoSlideCtrl.forward(from: 0);
+                //    _nextPage();
+                //  },
+                //  icon: Icons.chevron_right_rounded,
+                //  accent: colorScheme.secondary,
+                //),
+              ],
             ),
 
-            // ── Dot indicators ──
-            const SizedBox(height: 16),
+            // ── Dot indicators (tappable) ──
+            const SizedBox(height: 14),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
                 _promoMessages.length,
-                (i) => AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  width: i == _promoIndex ? 18 : 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: i == _promoIndex
-                        ? colorScheme.secondary
-                        : Colors.grey.withValues(alpha: 0.35),
-                    borderRadius: BorderRadius.circular(3),
+                (i) => GestureDetector(
+                  onTap: () {
+                    _autoSlideCtrl.forward(from: 0);
+                    _goToPage(i);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: i == _pageIndex ? 18 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: i == _pageIndex
+                          ? colorScheme.secondary
+                          : Colors.grey.withValues(alpha: 0.35),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
                   ),
+                ),
+              ),
+            ),
+
+            // ── Thin auto-advance progress bar ──
+            const SizedBox(height: 10),
+            AnimatedBuilder(
+              animation: _autoSlideCtrl,
+              builder: (context, _) => ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: _autoSlideCtrl.value,
+                  color: colorScheme.secondary.withValues(alpha: 0.5),
+                  backgroundColor: colorScheme.secondary.withValues(alpha: 0.1),
+                  minHeight: 3,
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Small left/right arrow button used beside the swipeable promo cards.
+// ignore: unused_element
+class _NavArrow extends StatelessWidget {
+  final VoidCallback onTap;
+  final IconData icon;
+  final Color accent;
+  const _NavArrow({
+    required this.onTap,
+    required this.icon,
+    required this.accent,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 30,
+        height: 30,
+        decoration: BoxDecoration(
+          color: accent.withValues(alpha: 0.10),
+          shape: BoxShape.circle,
+          border: Border.all(color: accent.withValues(alpha: 0.25)),
+        ),
+        child: Icon(icon, size: 20, color: accent.withValues(alpha: 0.7)),
+      ),
+    );
+  }
+}
+
+/// A single promotional / tips card shown inside the PageView.
+class _PromoCard extends StatelessWidget {
+  final _PromoMessage msg;
+  final Color accent;
+  const _PromoCard({required this.msg, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: msg.isPromo
+            ? accent.withValues(alpha: 0.10)
+            : Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: msg.isPromo
+              ? accent.withValues(alpha: 0.35)
+              : Colors.grey.withValues(alpha: 0.20),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            msg.icon,
+            size: 26,
+            color: msg.isPromo ? accent : Colors.grey[400],
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (msg.isPromo)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text(
+                      '✦ MODE PREMIUM',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: accent,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ),
+                Text(
+                  msg.text,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: msg.isPromo ? Colors.white : Colors.grey[400],
+                    height: 1.4,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

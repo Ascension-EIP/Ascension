@@ -22,7 +22,7 @@ class HumanDetector:
         elif name == "sam3":
             from sam3.model_builder import build_sam3_image_model
             from sam3.model.sam3_image_processor import Sam3Processor
-            
+
             self.detector = build_sam3_image_model()
             self.processor = Sam3Processor(self.detector)
             self.detector_func = lambda detector, img, **kwargs: self.sam3_run(
@@ -30,21 +30,29 @@ class HumanDetector:
             )
         else:
             raise NotImplementedError
-        
-    def sam3_run(self, img, det_cat_id: int = 0, bbox_thr: float = 0.5, **kwargs):
-        # switch bgr to rgb 
+
+    def sam3_run(
+        self, img, det_cat_id: int = 0, bbox_thr: float = 0.5, **kwargs
+    ):
+        # switch bgr to rgb
         img = img[:, :, ::-1].copy()
-        img = Image.fromarray(img.astype('uint8'), 'RGB')
+        img = Image.fromarray(img.astype("uint8"), "RGB")
         inference_state = self.processor.set_image(img)
         # Prompt the model with text
-        output = self.processor.set_text_prompt(state=inference_state, prompt="person")
+        output = self.processor.set_text_prompt(
+            state=inference_state, prompt="person"
+        )
 
         # Get the masks, bounding boxes, and scores
-        masks, boxes, scores = output["masks"], output["boxes"], output["scores"]
-        
+        _, boxes, scores = (
+            output["masks"],
+            output["boxes"],
+            output["scores"],
+        )
+
         confident_idx = scores > bbox_thr
         boxes = boxes[confident_idx].cpu().numpy()
-        
+
         # resize the box with a scale factor 1.2
         scale = 1.2
         enlarged_boxes = []
@@ -88,7 +96,9 @@ def load_detectron2_vitdet(path=""):
         else os.path.join(path, "model_final_f05665.pkl")
     )
     for i in range(3):
-        detectron2_cfg.model.roi_heads.box_predictors[i].test_score_thresh = 0.25
+        detectron2_cfg.model.roi_heads.box_predictors[i].test_score_thresh = (
+            0.25
+        )
     detector = instantiate(detectron2_cfg.model)
     checkpointer = DetectionCheckpointer(detector)
     checkpointer.load(detectron2_cfg.train.init_checkpoint)
@@ -110,7 +120,9 @@ def run_detectron2_vitdet(
     height, width = img.shape[:2]
 
     IMAGE_SIZE = 1024
-    transforms = T.ResizeShortestEdge(short_edge_length=IMAGE_SIZE, max_size=IMAGE_SIZE)
+    transforms = T.ResizeShortestEdge(
+        short_edge_length=IMAGE_SIZE, max_size=IMAGE_SIZE
+    )
     img_transformed = transforms(T.AugInput(img)).apply_image(img)
     img_transformed = torch.as_tensor(
         img_transformed.astype("float32").transpose(2, 0, 1)

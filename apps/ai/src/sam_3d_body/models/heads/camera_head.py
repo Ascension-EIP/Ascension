@@ -7,7 +7,7 @@ import torch.nn as nn
 
 from sam_3d_body.models.modules.geometry_utils import perspective_projection
 
-from ..modules import get_intrinsic_matrix, to_2tuple
+from ..modules import to_2tuple
 from ..modules.transformer import FFN
 
 
@@ -106,5 +106,7 @@ class PerspectiveHead(nn.Module):
             "pred_keypoints_2d": j2d.reshape(batch_size, -1, 2),
             "pred_cam_t": pred_cam_t,
             "focal_length": focal_length,
-            "pred_keypoints_2d_depth": j3d_cam.reshape(batch_size, -1, 3)[:, :, 2],
+            "pred_keypoints_2d_depth": j3d_cam.reshape(batch_size, -1, 3)[
+                :, :, 2
+            ],
         }

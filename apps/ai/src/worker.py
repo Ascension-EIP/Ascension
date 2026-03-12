@@ -21,7 +21,7 @@ import psycopg2
 from dotenv import load_dotenv
 
 # from ai_sam3d import analyze, create_estimator
-from ai_mediapipe import analyze
+from ai_mediapipe import analyze, get_climbing_advice
 
 # Load .env from project root (two levels up from apps/ai/) so that
 # RABBITMQ_HOST, MINIO_ENDPOINT, DB_URI etc. are available when the
@@ -134,6 +134,7 @@ def _update_analysis(
     status: str,
     result_json=None,
     processing_time_ms: int | None = None,
+    hints: str | None = None,
 ):
     """Update the analyses row in PostgreSQL."""
     with conn.cursor() as cur:
@@ -142,6 +143,7 @@ def _update_analysis(
             UPDATE analyses
                SET status            = %s,
                    result_json       = %s,
+                   hints             = %s,
                    processing_time_ms = %s,
                    completed_at      = %s,
                    progress          = CASE WHEN %s = 'completed' THEN 100 ELSE progress END
@@ -150,11 +152,22 @@ def _update_analysis(
             (
                 status,
                 json.dumps(result_json) if result_json is not None else None,
+                hints,
                 processing_time_ms,
                 datetime.now(timezone.utc),
                 status,
                 analysis_id,
             ),
+        )
+    conn.commit()
+
+
+def _update_analysis_status(conn, analysis_id: str, status: str) -> None:
+    """Update only the status column (e.g. 'generating_hints')."""
+    with conn.cursor() as cur:
+        cur.execute(
+            "UPDATE analyses SET status = %s, updated_at = NOW() WHERE id = %s",
+            (status, analysis_id),
         )
     conn.commit()
 
@@ -222,11 +235,44 @@ def on_message(ch, method, _properties, body):
             len(result.get("frames", [])),
         )
 
-        # 4. Save results to PostgreSQL (also sets progress=100)
-        _update_analysis(conn, analysis_id, "completed", result, processing_ms)
+        # 4. Signal that MediaPipe is done and Gemini generation is starting
+        _update_analysis_status(conn, analysis_id, "generating_hints")
+
+        # 5. Generate Gemini coaching hints (best-effort — never fails the job)
+        hints = None
+        try:
+            logger.info(
+                "Requesting Gemini coaching hints for analysis %s", analysis_id
+            )
+            raw_hints = get_climbing_advice(result)
+            # Normalize hints: treat empty/sentinel values (e.g. "no hints available")
+            # as None so they are not persisted/displayed as actual coaching advice.
+            if isinstance(raw_hints, str):
+                normalized = raw_hints.strip()
+                if normalized and normalized.lower() != "no hints available":
+                    hints = normalized
+                else:
+                    hints = None
+            else:
+                hints = None
+            logger.info(
+                "Gemini hints received (%d chars)",
+                len(hints) if isinstance(hints, str) else 0,
+            )
+        except Exception:  # noqa: BLE001
+            logger.warning(
+                "Gemini hints generation failed for analysis %s",
+                analysis_id,
+                exc_info=True,
+            )
+
+        # 6. Save results to PostgreSQL (also sets progress=100)
+        _update_analysis(
+            conn, analysis_id, "completed", result, processing_ms, hints=hints
+        )
         logger.info("Saved results for analysis %s", analysis_id)
 
-        # 5. Publish completion event
+        # 7. Publish completion event
         _publish_event(
             ch,
             job_id,
@@ -238,7 +284,7 @@ def on_message(ch, method, _properties, body):
             },
         )
 
-        # 6. Ack
+        # 8. Ack
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     except Exception:

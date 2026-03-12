@@ -17,7 +17,9 @@ class FOVEstimator:
             raise NotImplementedError
 
     def get_cam_intrinsics(self, img, **kwargs):
-        return self.fov_estimator_func(self.fov_estimator, img, self.device, **kwargs)
+        return self.fov_estimator_func(
+            self.fov_estimator, img, self.device, **kwargs
+        )
 
 
 def load_moge(device, path=""):

@@ -6,11 +6,10 @@ import cv2
 import numpy as np
 import torch.nn as nn
 import torchvision.transforms.functional as F
-from PIL import Image, ImageOps
+from PIL import Image
 from sam_3d_body.models.modules import to_2tuple
 
 from .bbox_utils import (
-    bbox_cs2xyxy,
     bbox_xywh2cs,
     bbox_xyxy2cs,
     fix_aspect_ratio,
@@ -176,7 +175,9 @@ class ToPIL:
     def __call__(self, results: Dict) -> Optional[dict]:
         if isinstance(results["img"], list):
             if isinstance(results["img"][0], np.ndarray):
-                results["img"] = [Image.fromarray(img) for img in results["img"]]
+                results["img"] = [
+                    Image.fromarray(img) for img in results["img"]
+                ]
         elif isinstance(results["img"], np.ndarray):
             results["img"] = Image.fromarray(results["img"])
 
@@ -257,15 +258,22 @@ class TopdownAffine(nn.Module):
 
         # expand bbox to fixed aspect ratio
         results["orig_bbox_scale"] = results["bbox_scale"].copy()
-        if self.fix_square and results["bbox_scale"][0] == results["bbox_scale"][1]:
+        if (
+            self.fix_square
+            and results["bbox_scale"][0] == results["bbox_scale"][1]
+        ):
             # In HMR2.0 etc, no fexpand_aspect_ratio for square bbox
-            bbox_scale = fix_aspect_ratio(results["bbox_scale"], aspect_ratio=w / h)
+            bbox_scale = fix_aspect_ratio(
+                results["bbox_scale"], aspect_ratio=w / h
+            )
         else:
             # first to a prior aspect ratio, then reshape to model input size
             bbox_scale = fix_aspect_ratio(
                 results["bbox_scale"], aspect_ratio=self.aspect_ratio
             )
-            results["bbox_scale"] = fix_aspect_ratio(bbox_scale, aspect_ratio=w / h)
+            results["bbox_scale"] = fix_aspect_ratio(
+                bbox_scale, aspect_ratio=w / h
+            )
         results["bbox_expand_factor"] = (
             results["bbox_scale"].max() / results["orig_bbox_scale"].max()
         )
@@ -286,7 +294,9 @@ class TopdownAffine(nn.Module):
                 rot = results["bbox_rotation"]
 
         if self.use_udp:
-            warp_mat = get_udp_warp_matrix(center, scale, rot, output_size=(w, h))
+            warp_mat = get_udp_warp_matrix(
+                center, scale, rot, output_size=(w, h)
+            )
         else:
             warp_mat = get_warp_matrix(center, scale, rot, output_size=(w, h))
 
@@ -355,6 +365,8 @@ class NormalizeKeypoint(nn.Module):
             img_size = results.get("img_size", results["input_size"])
 
             results["keypoints_2d"][:, :2] = (
-                results["keypoints_2d"][:, :2] / np.array(img_size).reshape(1, 2) - 0.5
+                results["keypoints_2d"][:, :2]
+                / np.array(img_size).reshape(1, 2)
+                - 0.5
             )
         return results

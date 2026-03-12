@@ -61,7 +61,9 @@ def visualize_sample(img_cv2, outputs, faces):
                 2,
             )
 
-        renderer = Renderer(focal_length=person_output["focal_length"], faces=faces)
+        renderer = Renderer(
+            focal_length=person_output["focal_length"], faces=faces
+        )
         img2 = (
             renderer(
                 person_output["pred_vertices"],
@@ -91,13 +93,14 @@ def visualize_sample(img_cv2, outputs, faces):
 
     return rend_img
 
+
 def visualize_sample_together(img_cv2, outputs, faces):
     # Render everything together
     img_keypoints = img_cv2.copy()
     img_mesh = img_cv2.copy()
 
     # First, sort by depth, furthest to closest
-    all_depths = np.stack([tmp['pred_cam_t'] for tmp in outputs], axis=0)[:, 2]
+    all_depths = np.stack([tmp["pred_cam_t"] for tmp in outputs], axis=0)[:, 2]
     outputs_sorted = [outputs[idx] for idx in np.argsort(-all_depths)]
 
     # Then, draw all keypoints.
@@ -112,17 +115,24 @@ def visualize_sample_together(img_cv2, outputs, faces):
     all_pred_vertices = []
     all_faces = []
     for pid, person_output in enumerate(outputs_sorted):
-        all_pred_vertices.append(person_output["pred_vertices"] + person_output["pred_cam_t"])
+        all_pred_vertices.append(
+            person_output["pred_vertices"] + person_output["pred_cam_t"]
+        )
         all_faces.append(faces + len(person_output["pred_vertices"]) * pid)
     all_pred_vertices = np.concatenate(all_pred_vertices, axis=0)
     all_faces = np.concatenate(all_faces, axis=0)
 
     # Pull out a fake translation; take the closest two
-    fake_pred_cam_t = (np.max(all_pred_vertices[-2*18439:], axis=0) + np.min(all_pred_vertices[-2*18439:], axis=0)) / 2
+    fake_pred_cam_t = (
+        np.max(all_pred_vertices[-2 * 18439 :], axis=0)
+        + np.min(all_pred_vertices[-2 * 18439 :], axis=0)
+    ) / 2
     all_pred_vertices = all_pred_vertices - fake_pred_cam_t
-    
+
     # Render front view
-    renderer = Renderer(focal_length=person_output["focal_length"], faces=all_faces)
+    renderer = Renderer(
+        focal_length=person_output["focal_length"], faces=all_faces
+    )
     img_mesh = (
         renderer(
             all_pred_vertices,
@@ -148,6 +158,8 @@ def visualize_sample_together(img_cv2, outputs, faces):
         * 255
     )
 
-    cur_img = np.concatenate([img_cv2, img_keypoints, img_mesh, img_mesh_side], axis=1)
+    cur_img = np.concatenate(
+        [img_cv2, img_keypoints, img_mesh, img_mesh_side], axis=1
+    )
 
     return cur_img

@@ -9,7 +9,9 @@ import torch
 from torch.nn import functional as F
 
 
-def cam_crop_to_full(cam_bbox, box_center, box_size, img_size, focal_length=5000.0):
+def cam_crop_to_full(
+    cam_bbox, box_center, box_size, img_size, focal_length=5000.0
+):
     # Convert cam_bbox to full image
     img_w, img_h = img_size[:, 0], img_size[:, 1]
     cx, cy, b = box_center[:, 0], box_center[:, 1], box_size
@@ -57,7 +59,12 @@ def _quat_to_rotmat(quat: torch.Tensor) -> torch.Tensor:
     """
     norm_quat = quat
     norm_quat = norm_quat / norm_quat.norm(p=2, dim=1, keepdim=True)
-    w, x, y, z = norm_quat[:, 0], norm_quat[:, 1], norm_quat[:, 2], norm_quat[:, 3]
+    w, x, y, z = (
+        norm_quat[:, 0],
+        norm_quat[:, 1],
+        norm_quat[:, 2],
+        norm_quat[:, 3],
+    )
 
     B = quat.size(0)
 
@@ -229,7 +236,7 @@ def inverse_perspective_projection(points, K, distance):
     points = torch.einsum("bij,bkj->bki", torch.inverse(K), points)
 
     # Apply perspective distortion
-    if distance == None:
+    if distance is None:
         return points
     points = points * distance
     return points

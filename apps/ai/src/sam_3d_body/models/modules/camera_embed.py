@@ -14,9 +14,13 @@ class CameraEncoder(nn.Module):
         super().__init__()
         self.patch_size = patch_size
         self.embed_dim = embed_dim
-        self.camera = FourierPositionEncoding(n=3, num_bands=16, max_resolution=64)
+        self.camera = FourierPositionEncoding(
+            n=3, num_bands=16, max_resolution=64
+        )
 
-        self.conv = nn.Conv2d(embed_dim + 99, embed_dim, kernel_size=1, bias=False)
+        self.conv = nn.Conv2d(
+            embed_dim + 99, embed_dim, kernel_size=1, bias=False
+        )
         self.norm = LayerNorm2d(embed_dim)
 
     def forward(self, img_embeddings, rays):
@@ -87,7 +91,9 @@ def _generate_fourier_features(pos, num_bands, max_resolution):
     min_freq = 1.0
     freq_bands = torch.stack(
         [
-            torch.linspace(start=min_freq, end=res / 2, steps=num_bands, device=device)
+            torch.linspace(
+                start=min_freq, end=res / 2, steps=num_bands, device=device
+            )
             for res in max_resolution
         ],
         dim=0,
@@ -101,7 +107,10 @@ def _generate_fourier_features(pos, num_bands, max_resolution):
 
     # Sin-Cos
     per_pos_features = torch.cat(
-        [torch.sin(np.pi * per_pos_features), torch.cos(np.pi * per_pos_features)],
+        [
+            torch.sin(np.pi * per_pos_features),
+            torch.cos(np.pi * per_pos_features),
+        ],
         dim=-1,
     )
 

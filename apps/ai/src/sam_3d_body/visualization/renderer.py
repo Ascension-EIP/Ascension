@@ -123,7 +123,9 @@ def create_raymond_lights() -> List[pyrender.Node]:
         matrix[:3, :3] = np.c_[x, y, z]
         nodes.append(
             pyrender.Node(
-                light=pyrender.DirectionalLight(color=np.ones(3), intensity=1.0),
+                light=pyrender.DirectionalLight(
+                    color=np.ones(3), intensity=1.0
+                ),
                 matrix=matrix,
             )
         )
@@ -206,7 +208,9 @@ class Renderer:
             )
             mesh.apply_transform(rot)
 
-        rot = trimesh.transformations.rotation_matrix(np.radians(180), [1, 0, 0])
+        rot = trimesh.transformations.rotation_matrix(
+            np.radians(180), [1, 0, 0]
+        )
         mesh.apply_transform(rot)
 
         mesh = pyrender.Mesh.from_trimesh(mesh, material=material)
@@ -243,7 +247,9 @@ class Renderer:
         for node in light_nodes:
             scene.add_node(node)
 
-        color, _rend_depth = renderer.render(scene, flags=pyrender.RenderFlags.RGBA)
+        color, _rend_depth = renderer.render(
+            scene, flags=pyrender.RenderFlags.RGBA
+        )
 
         color = color.astype(np.float32) / 255.0
         renderer.delete()
@@ -278,10 +284,14 @@ class Renderer:
 
         # mesh = trimesh.Trimesh(vertices.copy(), self.faces.copy())
 
-        rot = trimesh.transformations.rotation_matrix(np.radians(rot_angle), rot_axis)
+        rot = trimesh.transformations.rotation_matrix(
+            np.radians(rot_angle), rot_axis
+        )
         mesh.apply_transform(rot)
 
-        rot = trimesh.transformations.rotation_matrix(np.radians(180), [1, 0, 0])
+        rot = trimesh.transformations.rotation_matrix(
+            np.radians(180), [1, 0, 0]
+        )
         mesh.apply_transform(rot)
         return mesh
 
@@ -300,7 +310,9 @@ class Renderer:
     ):
 
         renderer = pyrender.OffscreenRenderer(
-            viewport_width=render_res[0], viewport_height=render_res[1], point_size=1.0
+            viewport_width=render_res[0],
+            viewport_height=render_res[1],
+            point_size=1.0,
         )
         # material = pyrender.MetallicRoughnessMaterial(
         #     metallicFactor=0.0,
@@ -347,7 +359,9 @@ class Renderer:
         for node in light_nodes:
             scene.add_node(node)
 
-        color, rend_depth = renderer.render(scene, flags=pyrender.RenderFlags.RGBA)
+        color, rend_depth = renderer.render(
+            scene, flags=pyrender.RenderFlags.RGBA
+        )
         color = color.astype(np.float32) / 255.0
         renderer.delete()
 
@@ -366,7 +380,9 @@ class Renderer:
     ):
 
         renderer = pyrender.OffscreenRenderer(
-            viewport_width=render_res[0], viewport_height=render_res[1], point_size=1.0
+            viewport_width=render_res[0],
+            viewport_height=render_res[1],
+            point_size=1.0,
         )
         MESH_COLORS = [
             [0.000, 0.447, 0.741],
@@ -398,7 +414,9 @@ class Renderer:
         camera_pose = np.eye(4)
         # camera_pose[:3, 3] = camera_translation
         camera_center = [render_res[0] / 2.0, render_res[1] / 2.0]
-        focal_length = focal_length if focal_length is not None else self.focal_length
+        focal_length = (
+            focal_length if focal_length is not None else self.focal_length
+        )
         camera = pyrender.IntrinsicsCamera(
             fx=focal_length,
             fy=focal_length,
@@ -417,7 +435,9 @@ class Renderer:
         for node in light_nodes:
             scene.add_node(node)
 
-        color, rend_depth = renderer.render(scene, flags=pyrender.RenderFlags.RGBA)
+        color, rend_depth = renderer.render(
+            scene, flags=pyrender.RenderFlags.RGBA
+        )
         color = color.astype(np.float32) / 255.0
         renderer.delete()
 
@@ -432,14 +452,18 @@ class Renderer:
             matrix = cam_pose @ pose
             node = pyrender.Node(
                 name=f"light-{i:02d}",
-                light=pyrender.DirectionalLight(color=color, intensity=intensity),
+                light=pyrender.DirectionalLight(
+                    color=color, intensity=intensity
+                ),
                 matrix=matrix,
             )
             if scene.has_node(node):
                 continue
             scene.add_node(node)
 
-    def add_point_lighting(self, scene, cam_node, color=np.ones(3), intensity=1.0):
+    def add_point_lighting(
+        self, scene, cam_node, color=np.ones(3), intensity=1.0
+    ):
         # from phalp.visualize.py_renderer import get_light_poses
         light_poses = get_light_poses(dist=0.5)
         light_poses.append(np.eye(4))

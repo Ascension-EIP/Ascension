@@ -1,8 +1,5 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 
-import os
-
-
 OPENPOSE_TO_COCO = [0, 16, 15, 18, 17, 5, 2, 6, 3, 7, 4, 12, 9, 13, 10, 14, 11]
 
 # Mapping the J19 used in HMR2.0 to the 14 common points for evaluation

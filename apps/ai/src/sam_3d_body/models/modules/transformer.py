@@ -156,7 +156,9 @@ class FFN(nn.Module):
         layers.append(nn.Dropout(ffn_drop))
         self.layers = nn.Sequential(*layers)
         self.dropout_layer = (
-            DropPath(drop_path_rate) if drop_path_rate > 0.0 else torch.nn.Identity()
+            DropPath(drop_path_rate)
+            if drop_path_rate > 0.0
+            else torch.nn.Identity()
         )
         self.add_identity = add_identity
 
@@ -360,7 +362,9 @@ class Attention(nn.Module):
 
         attn_drop = self.attn_drop if self.training else 0.0
         if attn_mask is not None:
-            attn_mask = attn_mask.unsqueeze(1).expand(-1, self.num_heads, -1, -1)
+            attn_mask = attn_mask.unsqueeze(1).expand(
+                -1, self.num_heads, -1, -1
+            )
 
         x = F.scaled_dot_product_attention(
             q, k, v, attn_mask=attn_mask, dropout_p=attn_drop
@@ -646,6 +650,8 @@ class TransformerDecoderLayer(nn.Module):
                 if x_mask is not None
                 else None
             )
-            context = context + self.cross_attn_2(q=q, k=k, v=v, attn_mask=attn_mask)
+            context = context + self.cross_attn_2(
+                q=q, k=k, v=v, attn_mask=attn_mask
+            )
 
         return x, context

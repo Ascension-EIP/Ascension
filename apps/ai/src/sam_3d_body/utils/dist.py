@@ -6,6 +6,7 @@ import shutil
 import tempfile
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
+import numpy as np
 import torch
 from torch import distributed as torch_dist, Tensor
 from torch.distributed import ProcessGroup
@@ -217,7 +218,8 @@ def get_data_device(data: Union[Tensor, Mapping, Iterable]) -> torch.device:
         return pre
     else:
         raise TypeError(
-            "data should be a Tensor, sequence of tensor or dict, " f"but got {data}"
+            "data should be a Tensor, sequence of tensor or dict, "
+            f"but got {data}"
         )
 
 
@@ -294,7 +296,7 @@ def cast_data_device(
         Tensor or list or dict: ``data`` was casted to ``device``.
     """
     if out is not None:
-        if type(data) != type(out):
+        if not isinstance(data, type(out)):
             raise TypeError(
                 "out should be the same type with data, but got data is "
                 f"{type(data)} and out is {type(data)}"
@@ -356,11 +358,14 @@ def cast_data_device(
         return type(data)(data_on_device)  # type: ignore
     else:
         raise TypeError(
-            "data should be a Tensor, list of tensor or dict, " f"but got {data}"
+            "data should be a Tensor, list of tensor or dict, "
+            f"but got {data}"
         )
 
 
-def broadcast(data: Tensor, src: int = 0, group: Optional[ProcessGroup] = None) -> None:
+def broadcast(
+    data: Tensor, src: int = 0, group: Optional[ProcessGroup] = None
+) -> None:
     """Broadcast the data from ``src`` process to the whole group.
 
     ``data`` must have the same number of elements in all processes

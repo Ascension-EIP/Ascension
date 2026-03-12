@@ -104,28 +104,37 @@ class BaseModel(BaseLightningModule):
     ) -> torch.Tensor:
         """Convert full-image keypoints coordinates to crop and normalize to [-0.5. 0.5]"""
         pred_keypoints_2d_cropped = torch.cat(
-            [pred_keypoints_2d, torch.ones_like(pred_keypoints_2d[:, :, [-1]])], dim=-1
+            [pred_keypoints_2d, torch.ones_like(pred_keypoints_2d[:, :, [-1]])],
+            dim=-1,
         )
         affine_trans = self._flatten_person(batch["affine_trans"]).to(
             pred_keypoints_2d_cropped
         )
         img_size = self._flatten_person(batch["img_size"]).unsqueeze(1)
         pred_keypoints_2d_cropped = pred_keypoints_2d_cropped @ affine_trans.mT
-        pred_keypoints_2d_cropped = pred_keypoints_2d_cropped[..., :2] / img_size - 0.5
+        pred_keypoints_2d_cropped = (
+            pred_keypoints_2d_cropped[..., :2] / img_size - 0.5
+        )
 
         return pred_keypoints_2d_cropped
 
     def _cam_full_to_crop(
-        self, batch: Dict, pred_cam_t: torch.Tensor, focal_length: torch.Tensor = None
+        self,
+        batch: Dict,
+        pred_cam_t: torch.Tensor,
+        focal_length: torch.Tensor = None,
     ) -> torch.Tensor:
         """Revert the camera translation from full to crop image space"""
         num_person = batch["img"].shape[1]
         cam_int = self._flatten_person(
-            batch["cam_int"].unsqueeze(1).expand(-1, num_person, -1, -1).contiguous()
+            batch["cam_int"]
+            .unsqueeze(1)
+            .expand(-1, num_person, -1, -1)
+            .contiguous()
         )
         bbox_center = self._flatten_person(batch["bbox_center"])
         bbox_size = self._flatten_person(batch["bbox_scale"])[:, 0]
-        img_size = self._flatten_person(batch["ori_img_size"])
+        _ = self._flatten_person(batch["ori_img_size"])
         input_size = self._flatten_person(batch["img_size"])[:, 0]
 
         tx, ty, tz = pred_cam_t[:, 0], pred_cam_t[:, 1], pred_cam_t[:, 2]
@@ -157,13 +166,13 @@ class BaseModel(BaseLightningModule):
             self._set_fp16(self.full_encoder, fp16_type)
 
         if hasattr(self.backbone, "lhand_pos_embed"):
-            self.backbone.lhand_pos_embed.data = self.backbone.lhand_pos_embed.data.to(
-                fp16_type
+            self.backbone.lhand_pos_embed.data = (
+                self.backbone.lhand_pos_embed.data.to(fp16_type)
             )
 
         if hasattr(self.backbone, "rhand_pos_embed"):
-            self.backbone.rhand_pos_embed.data = self.backbone.rhand_pos_embed.data.to(
-                fp16_type
+            self.backbone.rhand_pos_embed.data = (
+                self.backbone.rhand_pos_embed.data.to(fp16_type)
             )
 
         return fp16_type
@@ -178,4 +187,6 @@ class BaseModel(BaseLightningModule):
             module.encoder.rope_embed = module.encoder.rope_embed.to(fp16_type)
         else:
             # DINOv2
-            module.encoder.pos_embed.data = module.encoder.pos_embed.data.to(fp16_type)
+            module.encoder.pos_embed.data = module.encoder.pos_embed.data.to(
+                fp16_type
+            )

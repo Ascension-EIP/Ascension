@@ -51,7 +51,9 @@ class PromptEncoder(nn.Module):
                 nn.Conv2d(1, mask_in_chans // 4, kernel_size=4, stride=4),
                 LayerNorm2d(mask_in_chans // 4),
                 nn.GELU(),
-                nn.Conv2d(mask_in_chans // 4, mask_in_chans, kernel_size=4, stride=4),
+                nn.Conv2d(
+                    mask_in_chans // 4, mask_in_chans, kernel_size=4, stride=4
+                ),
                 LayerNorm2d(mask_in_chans),
                 nn.GELU(),
                 nn.Conv2d(mask_in_chans, embed_dim, kernel_size=1),
@@ -71,11 +73,16 @@ class PromptEncoder(nn.Module):
                 LayerNorm2d(mask_in_chans // 16),
                 nn.GELU(),
                 nn.Conv2d(
-                    mask_in_chans // 16, mask_in_chans // 4, kernel_size=2, stride=2
+                    mask_in_chans // 16,
+                    mask_in_chans // 4,
+                    kernel_size=2,
+                    stride=2,
                 ),
                 LayerNorm2d(mask_in_chans // 4),
                 nn.GELU(),
-                nn.Conv2d(mask_in_chans // 4, mask_in_chans, kernel_size=2, stride=2),
+                nn.Conv2d(
+                    mask_in_chans // 4, mask_in_chans, kernel_size=2, stride=2
+                ),
                 LayerNorm2d(mask_in_chans),
                 nn.GELU(),
                 nn.Conv2d(mask_in_chans, embed_dim, kernel_size=1),
@@ -182,7 +189,9 @@ class PromptEncoder(nn.Module):
             point_embeddings, point_mask = self._embed_keypoints(
                 coords, labels
             )  # pad=(boxes is None))
-            sparse_embeddings = torch.cat([sparse_embeddings, point_embeddings], dim=1)
+            sparse_embeddings = torch.cat(
+                [sparse_embeddings, point_embeddings], dim=1
+            )
             sparse_masks = torch.cat([sparse_masks, point_mask], dim=1)
 
         return sparse_embeddings, sparse_masks
@@ -194,9 +203,9 @@ class PromptEncoder(nn.Module):
         size: Tuple[int, int] = (16, 16),  # [H, W]
     ) -> torch.Tensor:
         """Embeds mask inputs."""
-        no_mask_embeddings = self.no_mask_embed.weight.reshape(1, -1, 1, 1).expand(
-            bs, -1, size[0], size[1]
-        )
+        no_mask_embeddings = self.no_mask_embed.weight.reshape(
+            1, -1, 1, 1
+        ).expand(bs, -1, size[0], size[1])
         if masks is not None:
             mask_embeddings = self.mask_downscaling(masks)
         else:
@@ -215,7 +224,9 @@ class PositionEmbeddingRandom(nn.Module):
     Positional encoding using random spatial frequencies.
     """
 
-    def __init__(self, num_pos_feats: int = 64, scale: Optional[float] = None) -> None:
+    def __init__(
+        self, num_pos_feats: int = 64, scale: Optional[float] = None
+    ) -> None:
         super().__init__()
         if scale is None or scale <= 0.0:
             scale = 1.0
