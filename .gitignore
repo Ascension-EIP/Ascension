@@ -86,6 +86,7 @@ __pycache__/
 apps/ai/pose_landmarker.task
 apps/ai/ai-env
 worker.pid
+biomechanics.json
 
 # =============================================================================
 # Ascension-specific
