@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/core/audio/audio_service.dart';
 import 'package:mobile/core/network/api_service.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -11,16 +12,24 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   late final TextEditingController _urlController;
   bool _saved = false;
+  bool _musicEnabled = false;
 
   @override
   void initState() {
     super.initState();
     _urlController = TextEditingController(text: ApiService().baseUrl);
+    _musicEnabled = AudioService().musicEnabled;
+    AudioService().addListener(_onAudioChanged);
+  }
+
+  void _onAudioChanged() {
+    if (mounted) setState(() => _musicEnabled = AudioService().musicEnabled);
   }
 
   @override
   void dispose() {
     _urlController.dispose();
+    AudioService().removeListener(_onAudioChanged);
     super.dispose();
   }
 
@@ -70,6 +79,21 @@ class _SettingsPageState extends State<SettingsPage> {
                 onPressed: _save,
                 child: const Text('Enregistrer'),
               ),
+            ),
+            const SizedBox(height: 32),
+            const Divider(),
+            const SizedBox(height: 16),
+            Text('Musique', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Musique de fond'),
+              subtitle: const Text('Joue la musique Ascension en boucle'),
+              value: _musicEnabled,
+              onChanged: (value) {
+                setState(() => _musicEnabled = value);
+                AudioService().setMusicEnabled(value);
+              },
             ),
           ],
         ),

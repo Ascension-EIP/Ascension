@@ -22,18 +22,61 @@ tasks:
     outputs:
       - 'pose_landmarker.task'
 
-  install:
+  install_torch:
     command: '$CONDA_EXE'
-    args: ['run', '--prefix', './ai-env', 'python', '-m', 'pip', 'install', '-e', '.[dev]']
+    args: ['run', '--prefix', './ai-env', 'python', '-m', 'pip', 'install', '-r', 'requirements/torch.txt']
     inputs:
-      - 'pyproject.toml'
+      - 'requirements/torch.txt'
     deps:
       - 'setup'
       - 'download-model'
 
+  install_base:
+    command: '$CONDA_EXE'
+    args: ['run', '--prefix', './ai-env', 'python', '-m', 'pip', 'install', '-r', 'requirements/base.txt', '-r', 'requirements/app.txt']
+    inputs:
+      - 'requirements/base.txt'
+      - 'requirements/app.txt'
+    deps:
+      - 'install_torch'
+
+  install_detectron2:
+    command: '$CONDA_EXE'
+    args: ['run', '--prefix', './ai-env', 'python', '-m', 'pip', 'install', '--no-build-isolation', '--no-deps', '-r', 'requirements/detectron2.txt']
+    inputs:
+      - 'requirements/detectron2.txt'
+    deps:
+      - 'install_base'
+
+  install_moge:
+    command: '$CONDA_EXE'
+    args: ['run', '--prefix', './ai-env', 'python', '-m', 'pip', 'install', '-r', 'requirements/moge.txt']
+    inputs:
+      - 'requirements/moge.txt'
+    deps:
+      - 'install_detectron2'
+
+  install_dev:
+    command: '$CONDA_EXE'
+    args: ['run', '--prefix', './ai-env', 'python', '-m', 'pip', 'install', '-r', 'requirements/dev.txt']
+    inputs:
+      - 'requirements/dev.txt'
+    deps:
+      - 'install_moge'
+
+  install:
+    command: '$CONDA_EXE'
+    args: ['run', '--prefix', './ai-env', 'python', '-m', 'pip', 'install', '--no-deps', '-e', '.']
+    inputs:
+      - 'pyproject.toml'
+      - 'src/worker.py'
+      - 'pose_analysis.py'
+    deps:
+      - 'install_dev'
+
   dev:
     command: '$CONDA_EXE'
-    args: ['run', '--no-capture-output', '--prefix', './ai-env', 'python', '-u', 'src/consumer.py']
+    args: ['run', '--no-capture-output', '--prefix', './ai-env', 'python', '-u', 'src/worker.py']
     deps:
       - 'install'
     env:

@@ -1,5 +1,5 @@
-> **Last updated:** 3rd March 2026
-> **Version:** 2.1
+> **Last updated:** 11th March 2026
+> **Version:** 2.2
 > **Authors:** Gianni TUERO
 > **Status:** Done
 > {.is-success}
@@ -80,7 +80,8 @@ Ascension/ (Monorepo)
     │   ├── environment.yml
     │   ├── pyproject.toml
     │   ├── Dockerfile
-    │   └── consumer.py
+    │   └── src/
+    │       └── worker.py
     │
     └── mobile/              # Flutter mobile app
         ├── moon.yml         # moon project config
@@ -219,7 +220,7 @@ tasks:
 
   dev:
     command: 'conda'
-    args: ['run', '--name', 'ascension-ai', 'python', 'consumer.py']
+    args: ['run', '--name', 'ascension-ai', 'python', 'src/worker.py']
     deps:
       - 'install'
     env:
