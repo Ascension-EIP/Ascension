@@ -92,6 +92,7 @@ class AuthService extends ChangeNotifier {
     _userId = null;
     _username = null;
     _email = null;
+    _role = null;
     notifyListeners();
   }
 
