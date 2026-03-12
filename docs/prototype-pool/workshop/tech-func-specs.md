@@ -1,7 +1,7 @@
-> **Last updated:** 11th March 2026  
-> **Version:** 1.1  
-> **Authors:** Nicolas TORO  
-> **Status:** Done  
+> **Last updated:** 11th March 2026
+> **Version:** 1.1
+> **Authors:** Nicolas TORO
+> **Status:** Done
 > {.is-success}
 
 ---
