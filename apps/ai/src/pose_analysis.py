@@ -129,18 +129,22 @@ _ANGLE_HUMAN_NAMES = {
     "26": "genou_droit",
 }
 
+
 # ─── AI helpers ──────────────────────────────────────────────────
 def _summarize_for_ai(full_data, sample_rate=15):
     """Réduit le poids du JSON pour ne pas saturer l'API (échantillonnage)."""
     summary = []
     # On filtre pour ne garder que les moments où une pose est là
     valid_frames = [f for f in full_data["frames"] if f.get("pose_detected")]
-    
+
     for i, frame in enumerate(valid_frames):
         if i % sample_rate == 0:
             # Points : utilise les noms humains, ignore les indices inconnus
             reduced_lms = {
-                _LM_HUMAN_NAMES.get(k, k): {"x": round(v["x"], 3), "y": round(v["y"], 3)}
+                _LM_HUMAN_NAMES.get(k, k): {
+                    "x": round(v["x"], 3),
+                    "y": round(v["y"], 3),
+                }
                 for k, v in frame["landmarks"].items()
                 if k in _LM_HUMAN_NAMES
             }
@@ -150,12 +154,15 @@ def _summarize_for_ai(full_data, sample_rate=15):
                 for k, v in frame.get("angles", {}).items()
                 if k in _ANGLE_HUMAN_NAMES
             }
-            summary.append({
-                "time": frame["timestamp_ms"],
-                "points": reduced_lms,
-                "angles": named_angles,
-            })
+            summary.append(
+                {
+                    "time": frame["timestamp_ms"],
+                    "points": reduced_lms,
+                    "angles": named_angles,
+                }
+            )
     return summary
+
 
 def get_climbing_advice(result_dict):
     """Envoie une version légère des données à Gemini."""
@@ -163,7 +170,7 @@ def get_climbing_advice(result_dict):
         return "Clé API absente. Vérifie ton .env"
 
     ai_data = _summarize_for_ai(result_dict)
-    model = genai.GenerativeModel('models/gemini-2.5-flash')
+    model = genai.GenerativeModel("models/gemini-2.5-flash")
 
     prompt = (
         "Tu es un coach expert en escalade. Voici les données de mouvement (timestamps en ms) d'un grimpeur.\n"
@@ -354,7 +361,9 @@ def analyze(video_path: str, on_progress=None) -> dict:
                         try:
                             on_progress(pct)
                         except Exception as cb_err:  # noqa: BLE001
-                            logger.warning("on_progress callback raised: %s", cb_err)
+                            logger.warning(
+                                "on_progress callback raised: %s", cb_err
+                            )
 
                 i += 1  # un seul incrément, ici
 
@@ -520,7 +529,7 @@ if __name__ == "__main__":
     else:
         # 1. Analyse Vidéo
         result = analyze(args.video)
-        
+
         # 2. Sauvegarde JSON
         with open(args.output, "w") as f:
             json.dump(result, f)

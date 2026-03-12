@@ -50,7 +50,8 @@ const List<_PromoMessage> _promoMessages = [
   ),
   _PromoMessage(
     icon: Icons.tips_and_updates_rounded,
-    text: 'Le saviez-vous ? Ascension détecte jusqu\'à 33 points du corps humain.',
+    text:
+        'Le saviez-vous ? Ascension détecte jusqu\'à 33 points du corps humain.',
     isPromo: false,
   ),
   _PromoMessage(
@@ -80,7 +81,8 @@ const List<_PromoMessage> _promoMessages = [
   ),
   _PromoMessage(
     icon: Icons.psychology_rounded,
-    text: 'L\'IA Ascension apprend de chaque session pour mieux vous conseiller.',
+    text:
+        'L\'IA Ascension apprend de chaque session pour mieux vous conseiller.',
     isPromo: false,
   ),
 ];
@@ -112,9 +114,9 @@ class _VideoUploadState extends State<VideoUpload> {
   Map<String, dynamic>? _analysisResult;
 
   // Analysis progress tracking
-  int _analysisProgress = 0;        // real value 0–100 from the API
-  DateTime? _analysisStartedAt;     // when the analysing phase began
-  bool _isGeneratingHints = false;  // true while the server runs Gemini
+  int _analysisProgress = 0; // real value 0–100 from the API
+  DateTime? _analysisStartedAt; // when the analysing phase began
+  bool _isGeneratingHints = false; // true while the server runs Gemini
   static const int _analysisMaxPolls = 120; // 120 × 5 s = 10 min
 
   // Temporary hard-coded userId until auth is wired.
@@ -515,7 +517,9 @@ class _VideoUploadState extends State<VideoUpload> {
     if (seconds < 60) return '~$seconds s';
     final min = seconds ~/ 60;
     final sec = seconds % 60;
-    return sec == 0 ? '~$min min' : '~${min}m${sec.toString().padLeft(2, '0')}s';
+    return sec == 0
+        ? '~$min min'
+        : '~${min}m${sec.toString().padLeft(2, '0')}s';
   }
 
   Widget _buildError() {
@@ -610,7 +614,7 @@ class _VideoUploadState extends State<VideoUpload> {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                        builder: (_) => AnalysisViewPage(
+                      builder: (_) => AnalysisViewPage(
                         resultJson: resultJson,
                         processingMs: processingMs,
                         videoFile: _videoFile,
@@ -803,15 +807,14 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
     super.initState();
     _pageCtrl = PageController();
     // Auto-advance timer: drives a thin progress bar and flips the page when full.
-    _autoSlideCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 5),
-    )..addStatusListener((status) {
-        if (status == AnimationStatus.completed && mounted) {
-          _nextPage();
-          _autoSlideCtrl.forward(from: 0);
-        }
-      });
+    _autoSlideCtrl =
+        AnimationController(vsync: this, duration: const Duration(seconds: 5))
+          ..addStatusListener((status) {
+            if (status == AnimationStatus.completed && mounted) {
+              _nextPage();
+              _autoSlideCtrl.forward(from: 0);
+            }
+          });
     _autoSlideCtrl.forward();
   }
 
@@ -857,7 +860,9 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                         ? null
                         : (widget.progress > 0 ? widget.progress : null),
                     color: colorScheme.secondary,
-                    backgroundColor: colorScheme.secondary.withValues(alpha: 0.15),
+                    backgroundColor: colorScheme.secondary.withValues(
+                      alpha: 0.15,
+                    ),
                     strokeWidth: 8,
                   ),
                 ),
@@ -1000,11 +1005,16 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
 }
 
 /// Small left/right arrow button used beside the swipeable promo cards.
+// ignore: unused_element
 class _NavArrow extends StatelessWidget {
   final VoidCallback onTap;
   final IconData icon;
   final Color accent;
-  const _NavArrow({required this.onTap, required this.icon, required this.accent});
+  const _NavArrow({
+    required this.onTap,
+    required this.icon,
+    required this.accent,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1048,7 +1058,11 @@ class _PromoCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(msg.icon, size: 26, color: msg.isPromo ? accent : Colors.grey[400]),
+          Icon(
+            msg.icon,
+            size: 26,
+            color: msg.isPromo ? accent : Colors.grey[400],
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

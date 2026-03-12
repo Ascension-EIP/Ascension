@@ -136,6 +136,7 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
 
   int _currentFrame = 0;
   bool _isPlaying = false;
+
   /// Timestamp of the last manual seek. The video-position listener ignores
   /// updates for 300 ms after a seek so the arrows always land on exactly the
   /// requested frame.
@@ -348,11 +349,14 @@ class _SkeletonTab extends StatefulWidget {
   final VoidCallback onPlay;
   final VoidCallback onPause;
   final VoidCallback onReset;
+
   /// Optional markdown coaching hints shown in a scrollable panel below the
   /// video controls. Null when hints are not yet available.
   final String? hints;
+
   /// Called when the user taps a timecode link in the hints panel.
   final void Function(int ms)? onSeekToMs;
+
   /// External scroll controller — lets the parent scroll this tab to the top
   /// (e.g. after a timecode tap so the user sees the video jump).
   final ScrollController? scrollController;
@@ -476,16 +480,14 @@ class _SkeletonTabState extends State<_SkeletonTab> {
                         Icon(
                           Icons.straighten_rounded,
                           size: 13,
-                          color:
-                              _showAngles ? widget.accent : Colors.white38,
+                          color: _showAngles ? widget.accent : Colors.white38,
                         ),
                         const SizedBox(width: 5),
                         Text(
                           'Angles',
                           style: TextStyle(
                             fontSize: 12,
-                            color:
-                                _showAngles ? widget.accent : Colors.white38,
+                            color: _showAngles ? widget.accent : Colors.white38,
                             fontWeight: _showAngles
                                 ? FontWeight.bold
                                 : FontWeight.normal,
@@ -511,8 +513,7 @@ class _SkeletonTabState extends State<_SkeletonTab> {
                 inactiveTrackColor: Colors.white12,
                 overlayColor: widget.accent.withValues(alpha: 0.2),
                 trackHeight: 3,
-                thumbShape:
-                    const RoundSliderThumbShape(enabledThumbRadius: 8),
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
               ),
               child: Slider(
                 min: 0,
@@ -675,22 +676,22 @@ class _VideoWithOverlay extends StatelessWidget {
               // ── Video layer ──
               VideoPlayer(ctrl),
 
-            // ── Semi-transparent dark veil to make skeleton visible ──
-            Container(color: Colors.black.withValues(alpha: 0.25)),
+              // ── Semi-transparent dark veil to make skeleton visible ──
+              Container(color: Colors.black.withValues(alpha: 0.25)),
 
-            // ── Skeleton overlay — ignores pointer so video gestures work ──
-            IgnorePointer(
-              child: CustomPaint(
-                painter: _SkeletonPainter(
-                  frame: frame,
-                  accent: accent,
-                  fullFrame: true,
-                  showAngles: showAngles,
+              // ── Skeleton overlay — ignores pointer so video gestures work ──
+              IgnorePointer(
+                child: CustomPaint(
+                  painter: _SkeletonPainter(
+                    frame: frame,
+                    accent: accent,
+                    fullFrame: true,
+                    showAngles: showAngles,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     );
@@ -1706,10 +1707,7 @@ class _HintsView extends StatelessWidget {
         fontWeight: FontWeight.w600,
         height: 1.4,
       ),
-      strong: const TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
-      ),
+      strong: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
       em: const TextStyle(color: mutedColor, fontStyle: FontStyle.italic),
       listBullet: TextStyle(color: accent, fontSize: 14),
       listIndent: 20,
@@ -1733,9 +1731,7 @@ class _HintsView extends StatelessWidget {
       blockquoteDecoration: BoxDecoration(
         color: const Color(0xFF162032),
         borderRadius: BorderRadius.circular(4),
-        border: Border(
-          left: BorderSide(color: accent, width: 3),
-        ),
+        border: Border(left: BorderSide(color: accent, width: 3)),
       ),
       blockquote: const TextStyle(color: mutedColor, fontSize: 13, height: 1.5),
       horizontalRuleDecoration: const BoxDecoration(

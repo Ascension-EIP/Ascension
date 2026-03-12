@@ -236,14 +236,24 @@ def on_message(ch, method, _properties, body):
         # 5. Generate Gemini coaching hints (best-effort — never fails the job)
         hints = None
         try:
-            logger.info("Requesting Gemini coaching hints for analysis %s", analysis_id)
+            logger.info(
+                "Requesting Gemini coaching hints for analysis %s", analysis_id
+            )
             hints = get_climbing_advice(result)
-            logger.info("Gemini hints received (%d chars)", len(hints) if hints else 0)
+            logger.info(
+                "Gemini hints received (%d chars)", len(hints) if hints else 0
+            )
         except Exception:  # noqa: BLE001
-            logger.warning("Gemini hints generation failed for analysis %s", analysis_id, exc_info=True)
+            logger.warning(
+                "Gemini hints generation failed for analysis %s",
+                analysis_id,
+                exc_info=True,
+            )
 
         # 6. Save results to PostgreSQL (also sets progress=100)
-        _update_analysis(conn, analysis_id, "completed", result, processing_ms, hints=hints)
+        _update_analysis(
+            conn, analysis_id, "completed", result, processing_ms, hints=hints
+        )
         logger.info("Saved results for analysis %s", analysis_id)
 
         # 7. Publish completion event

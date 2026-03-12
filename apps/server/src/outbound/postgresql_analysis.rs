@@ -169,16 +169,16 @@ impl AnalysisRepository for Postgres {
         id: Uuid,
         progress: i32,
     ) -> Result<(), AnalysisRepositoryError> {
-        sqlx::query(
-            "UPDATE analyses SET progress = $1, updated_at = NOW() WHERE id = $2",
-        )
-        .bind(progress)
-        .bind(id.to_string())
-        .execute(&self.pool)
-        .await
-        .map_err(|e| {
-            AnalysisRepositoryError::Unknown(anyhow!(e).context("failed to update analysis progress"))
-        })?;
+        sqlx::query("UPDATE analyses SET progress = $1, updated_at = NOW() WHERE id = $2")
+            .bind(progress)
+            .bind(id.to_string())
+            .execute(&self.pool)
+            .await
+            .map_err(|e| {
+                AnalysisRepositoryError::Unknown(
+                    anyhow!(e).context("failed to update analysis progress"),
+                )
+            })?;
         Ok(())
     }
 }
