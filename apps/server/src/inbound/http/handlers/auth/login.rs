@@ -1,6 +1,7 @@
 use axum::{Json, extract::State, http::StatusCode, response::IntoResponse};
 use serde::{Deserialize, Serialize};
 use tower_cookies::{Cookie, Cookies};
+use utoipa::ToSchema;
 
 use crate::domain::{
     auth::{entity::LoginCredentials, error::AuthError},
@@ -12,30 +13,39 @@ use crate::inbound::http::AppState;
 pub const SESSION_COOKIE: &str = "session_token";
 
 /// Request body for `POST /v1/auth/login`.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct LoginRequest {
+    /// Registered email address
+    #[schema(example = "climber@example.com")]
     email: String,
+    /// Account password (min 8 characters)
+    #[schema(example = "securepassword")]
     password: String,
 }
 
 /// Response body for a successful login.
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct LoginResponse {
+    /// JWT access token
     access_token: String,
+    /// UUID of the authenticated user
     user_id: String,
 }
 
 /// Authenticate a user with email and password.
 ///
-/// On success the JWT is:
-/// 1. Returned in the JSON body as `access_token`.
-/// 2. Set as an `HttpOnly; SameSite=Strict` session cookie named `session_token`.
-///
-/// # Responses
-///
-/// - `200 OK` – valid credentials, token returned.
-/// - `401 Unauthorized` – wrong email or password.
-/// - `422 Unprocessable Entity` – malformed request fields.
+/// Returns a JWT in the body and sets an HttpOnly session cookie.
+#[utoipa::path(
+    post,
+    path = "/v1/auth/login",
+    request_body = LoginRequest,
+    responses(
+        (status = 200, description = "Valid credentials — token returned", body = LoginResponse),
+        (status = 401, description = "Wrong email or password"),
+        (status = 422, description = "Malformed request fields"),
+    ),
+    tag = "Auth"
+)]
 pub async fn login(
     State(state): State<AppState>,
     cookies: Cookies,

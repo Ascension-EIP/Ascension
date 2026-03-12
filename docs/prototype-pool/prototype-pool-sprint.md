@@ -8,10 +8,10 @@ editor: markdown
 dateCreated: 2026-03-02T11:17:35.272Z
 ---
 
-> **Last updated:** 2nd March 2026
-> **Version:** 1.0
-> **Authors:** Nicolas TORO
-> **Status:** Done
+> **Last updated:** 2nd March 2026  
+> **Version:** 1.0  
+> **Authors:** Nicolas TORO  
+> **Status:** Done  
 > {.is-success}
 
 ---

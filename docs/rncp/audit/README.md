@@ -1,7 +1,7 @@
-> **Last updated:** 16th February 2026
-> **Version:** 1.1
-> **Authors:** Lou PELLEGRINO, Gianni TUERO
-> **Status:** Done
+> **Last updated:** 16th February 2026  
+> **Version:** 1.1  
+> **Authors:** Lou PELLEGRINO, Gianni TUERO  
+> **Status:** Done  
 > {.is-success}
 
 ---

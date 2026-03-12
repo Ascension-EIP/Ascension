@@ -1,6 +1,7 @@
 use axum::http::StatusCode;
 use axum::{Json, extract::State};
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use crate::domain::user::{
     entity::{
@@ -12,11 +13,17 @@ use crate::domain::user::{
 use crate::inbound::http::AppState;
 
 /// The body of a [User] creation request.
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, ToSchema)]
 pub struct CreateUserRequest {
+    /// 8–24 chars, alphanumeric + underscores
+    #[schema(example = "climber42")]
     username: String,
+    #[schema(example = "climber@example.com")]
     email: String,
+    #[schema(example = "securepassword")]
     password: String,
+    /// `"user"` or `"admin"`
+    #[schema(example = "user")]
     role: String,
 }
 
@@ -34,8 +41,9 @@ impl TryFrom<CreateUserRequest> for NewUser {
 }
 
 /// The response body data field for successful [User] creation.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 pub struct CreateUserResponse {
+    /// UUID of the newly created user
     id: String,
 }
 
@@ -47,12 +55,17 @@ impl From<&User> for CreateUserResponse {
     }
 }
 
-/// Create a new [User].
-///
-/// # Responses
-///
-/// - 201 Created: the [User] was successfully created.
-/// - 422 Unprocessable entity: An [User] with the email name already exists.
+/// Create a new user account.
+#[utoipa::path(
+    post,
+    path = "/v1/users",
+    request_body = CreateUserRequest,
+    responses(
+        (status = 201, description = "User created", body = CreateUserResponse),
+        (status = 422, description = "Validation failed or email already exists"),
+    ),
+    tag = "Users"
+)]
 pub async fn create_user(
     State(state): State<AppState>,
     Json(body): Json<CreateUserRequest>,

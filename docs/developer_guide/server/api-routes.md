@@ -1,5 +1,5 @@
-> **Last updated:** 9th March 2026  
-> **Version:** 1.0  
+> **Last updated:** 12th March 2026  
+> **Version:** 1.1  
 > **Authors:** Nicolas  
 > **Status:** Done  
 > {.is-success}
@@ -22,6 +22,10 @@ No prior Rust knowledge is needed to use this reference.
   - [Response Format](#response-format)
   - [Authentication](#authentication)
   - [Rate Limiting](#rate-limiting)
+  - [Auth](#auth)
+    - [POST /v1/auth/register — Register a new account](#post-v1authregister--register-a-new-account)
+    - [POST /v1/auth/login — Log in](#post-v1authlogin--log-in)
+    - [POST /v1/auth/logout — Log out](#post-v1authlogout--log-out)
   - [Users](#users)
     - [POST /v1/users — Create a user](#post-v1users--create-a-user)
     - [GET /v1/users — List all users](#get-v1users--list-all-users)
@@ -98,6 +102,108 @@ A global rate limiter is applied to **all routes**:
 - **Limit:** 10 requests per second per IP address.
 - **Excess requests:** receive `429 Too Many Requests`.
 - The limiter state is cleaned up every 60 seconds.
+
+---
+
+## Auth
+
+All auth endpoints live under `/v1/auth`. They do **not** require an `Authorization` header —
+they are the entry points that produce tokens.
+
+On successful login or registration, the server:
+
+1. Returns a JSON body with `access_token` and `user_id`.
+2. Sets an **`HttpOnly; SameSite=Strict`** session cookie named `session_token` so browsers carry the token automatically.
+
+### POST /v1/auth/register — Register a new account
+
+Creates a new user account with the `user` role, hashes the password with bcrypt,
+and returns a JWT token.
+
+**Request body:**
+
+```json
+{
+  "username": "climber42",
+  "email": "climber@example.com",
+  "password": "securepassword"
+}
+```
+
+| Field      | Type   | Rules                                |
+|------------|--------|--------------------------------------|
+| `username` | string | 8–24 characters, `[a-zA-Z0-9_]` only |
+| `email`    | string | Must be a valid email address        |
+| `password` | string | Minimum 8 characters                 |
+
+**Responses:**
+
+| Status                     | Meaning                       | Body                                              |
+|----------------------------|-------------------------------|---------------------------------------------------|
+| `201 Created`              | Account created, token issued | `{ "access_token": "<jwt>", "user_id": "<uuid>" }` |
+| `409 Conflict`             | Email already registered      | Plain text error                                  |
+| `422 Unprocessable Entity` | Validation failed             | Plain text error                                  |
+
+**Example response (201):**
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+---
+
+### POST /v1/auth/login — Log in
+
+Authenticates a user with email and password. Returns a JWT token in both the body
+and as an `HttpOnly` cookie.
+
+**Request body:**
+
+```json
+{
+  "email": "climber@example.com",
+  "password": "securepassword"
+}
+```
+
+| Field      | Type   | Rules                         |
+|------------|--------|-------------------------------|
+| `email`    | string | Must be a valid email address |
+| `password` | string | Minimum 8 characters          |
+
+**Responses:**
+
+| Status                     | Meaning                          | Body                                              |
+|----------------------------|----------------------------------|---------------------------------------------------|
+| `200 OK`                   | Valid credentials, token returned | `{ "access_token": "<jwt>", "user_id": "<uuid>" }` |
+| `401 Unauthorized`         | Wrong email or password          | Plain text error                                  |
+| `422 Unprocessable Entity` | Malformed request fields         | Plain text error                                  |
+
+**Example response (200):**
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+---
+
+### POST /v1/auth/logout — Log out
+
+Clears the `session_token` cookie. Safe to call even when not logged in.
+
+**No request body.**
+
+**Responses:**
+
+| Status           | Meaning        | Body |
+|------------------|----------------|------|
+| `204 No Content` | Cookie cleared | —    |
 
 ---
 

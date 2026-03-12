@@ -1,5 +1,5 @@
-> **Last updated:** 9th March 2026  
-> **Version:** 1.0  
+> **Last updated:** 12th March 2026  
+> **Version:** 1.1  
 > **Authors:** Nicolas  
 > **Status:** Done  
 > {.is-success}
@@ -10,7 +10,7 @@
 
 This guide covers everything a new developer needs to start working on the Ascension
 backend server. It complements the [architecture overview](./architecture.md) and
-the [API routes reference](./api-routes.md).
+the [API routes reference](./api-routes.md) and the [Swagger UI guide](./swagger.md).
 
 ---
 

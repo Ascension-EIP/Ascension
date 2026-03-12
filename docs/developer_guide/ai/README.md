@@ -1,7 +1,7 @@
-> **Last updated:** 11th March 2026
-> **Version:** 1.4
-> **Authors:** Darius
-> **Status:** Done
+> **Last updated:** 12th March 2026  
+> **Version:** 1.5  
+> **Authors:** Darius  
+> **Status:** Done  
 > {.is-success}
 
 ---
@@ -22,10 +22,18 @@
     - [Job Message Format](#job-message-format)
     - [End-to-End Flow](#end-to-end-flow)
     - [Output Stored in PostgreSQL](#output-stored-in-postgresql)
-  - [The pose\_analysis Module](#the-pose_analysis-module)
+  - [The ai\_mediapipe Module (MediaPipe)](#the-ai_mediapipe-module-mediapipe)
     - [What It Does](#what-it-does)
     - [Tracked Landmarks](#tracked-landmarks)
     - [Output Format](#output-format)
+  - [The ai\_sam3d Module (SAM 3D Body)](#the-ai_sam3d-module-sam-3d-body)
+    - [SAM 3D Body Overview](#sam-3d-body-overview)
+    - [Public API](#public-api)
+      - [`create_estimator(**kwargs) → SAM3DBodyEstimator`](#create_estimatorkwargs--sam3dbodyestimator)
+      - [`analyze(video_path, estimator, sample_every=3) → dict`](#analyzevideo_path-estimator-sample_every3--dict)
+      - [`render_annotated_video(video_path, json_path, output_path)`](#render_annotated_videovideo_path-json_path-output_path)
+    - [Keypoints \& Joint Angles](#keypoints--joint-angles)
+    - [SAM 3D Body Output Format](#sam-3d-body-output-format)
   - [General Pipeline Pattern](#general-pipeline-pattern)
   - [Error Handling Strategy](#error-handling-strategy)
   - [RabbitMQ Startup Retry](#rabbitmq-startup-retry)
@@ -184,7 +192,7 @@ The `analyses` table is updated with:
 
 ---
 
-## The pose_analysis Module
+## The ai_mediapipe Module (MediaPipe)
 
 **Source:** `apps/ai/pose_analysis.py`
 
@@ -252,6 +260,144 @@ A landmark is included in a frame only if its **presence score ≥ 0.8**.
   between the upper arm and forearm vectors). Additional joints will be added in future
   iterations.
 - Frames with `pose_detected: false` contain no `landmarks` or `angles` keys.
+
+---
+
+## The ai_sam3d Module (SAM 3D Body)
+
+**Source:** `apps/ai/src/ai_sam3d.py`
+
+### SAM 3D Body Overview
+
+`ai_sam3d` is the second
+vision-transformer model). Unlike the MediaPipe module which produces 2D landmarks
+normalised to the frame, `ai_sam3d` produces both **pixel-space 2D keypoints** and
+**metric-space 3D keypoints** for the full MHR-70 skeleton (70 joints), along with
+**joint angles** computed from the 3D data.
+
+This module is designed for higher-accuracy analysis — notably for computing meaningful
+biomechanical angles in 3D — at the cost of a heavier model checkpoint (~GB range).
+
+The worker is not yet wired into the RabbitMQ pipeline. It is currently used standalone
+for research and offline evaluation. Integration will follow the [General Pipeline Pattern](#general-pipeline-pattern).
+
+---
+
+### Public API
+
+The module exposes two public functions:
+
+#### `create_estimator(**kwargs) → SAM3DBodyEstimator`
+
+Loads the SAM 3D Body model checkpoint and auxiliary modules (detector, segmentor, FOV
+estimator) once. Returns a `SAM3DBodyEstimator` to reuse across many videos.
+
+| Parameter          | Default / Env Var                  | Description                                  |
+|--------------------|------------------------------------|----------------------------------------------|
+| `checkpoint_path`  | `SAM3D_CHECKPOINT_PATH` env var    | Path to the SAM 3D Body model checkpoint     |
+| `mhr_path`         | `SAM3D_MHR_PATH` env var           | Path to the MHR model asset                  |
+| `detector_name`    | `""` (disabled)                    | Optional human detector (`HumanDetector`)    |
+| `segmentor_name`   | `""` (disabled)                    | Optional human segmentor (`HumanSegmentor`)  |
+| `fov_name`         | `""` (disabled)                    | Optional FOV estimator                       |
+| `detector_path`    | `SAM3D_DETECTOR_PATH` env var      | Path to detector weights (if used)           |
+| `segmentor_path`   | `SAM3D_SEGMENTOR_PATH` env var     | Path to segmentor weights (if used)          |
+| `fov_path`         | `SAM3D_FOV_PATH` env var           | Path to FOV estimator weights (if used)      |
+
+#### `analyze(video_path, estimator, sample_every=3) → dict`
+
+Runs per-frame pose estimation on the given video. Pass a pre-built estimator to avoid
+reloading the model between videos.
+
+| Parameter      | Type                 | Description                                           |
+|----------------|----------------------|-------------------------------------------------------|
+| `video_path`   | `str`                | Path to the input video file                          |
+| `estimator`    | `SAM3DBodyEstimator` | Pre-built estimator (or `None` to create from env)    |
+| `sample_every` | `int` (default: `3`) | Inference on 1 frame out of every N; others reuse last |
+
+Returns a dict: `{ "fps": …, "width": …, "height": …, "frames": [ … ] }`.
+
+#### `render_annotated_video(video_path, json_path, output_path)`
+
+Renders an annotated MP4 from a JSON produced by `analyze()`. Draws the MHR skeleton,
+keypoint dots, bounding box, and per-joint angle labels on each frame. For debugging only — not called in production.
+
+---
+
+### Keypoints & Joint Angles
+
+SAM 3D Body produces **70 keypoints** (MHR-70 skeleton). The module keeps a named
+subset of the main body joints:
+
+| Index | Name             |
+|-------|------------------|
+| 0     | `nose`           |
+| 5     | `left_shoulder`  |
+| 6     | `right_shoulder` |
+| 7     | `left_elbow`     |
+| 8     | `right_elbow`    |
+| 9     | `left_hip`       |
+| 10    | `right_hip`      |
+| 11    | `left_knee`      |
+| 12    | `right_knee`     |
+| 13    | `left_ankle`     |
+| 14    | `right_ankle`    |
+| 41    | `right_wrist`    |
+| 62    | `left_wrist`     |
+
+Eight joint angles are computed from the 3D keypoints (vector dot-product method):
+
+| Angle name        | Joint vertex     | Arms                          |
+|-------------------|------------------|-------------------------------|
+| `left_elbow`      | Left elbow       | Shoulder → Elbow → Wrist      |
+| `right_elbow`     | Right elbow      | Shoulder → Elbow → Wrist      |
+| `left_shoulder`   | Left shoulder    | Elbow → Shoulder → Hip        |
+| `right_shoulder`  | Right shoulder   | Elbow → Shoulder → Hip        |
+| `left_knee`       | Left knee        | Hip → Knee → Ankle            |
+| `right_knee`      | Right knee       | Hip → Knee → Ankle            |
+| `left_hip`        | Left hip         | Shoulder → Hip → Knee         |
+| `right_hip`       | Right hip        | Shoulder → Hip → Knee         |
+
+---
+
+### SAM 3D Body Output Format
+
+```json
+{
+  "frame": 0,
+  "timestamp_ms": 0,
+  "sampled": true,
+  "n_people": 1,
+  "people": [
+    {
+      "bbox": [120.5, 30.2, 500.1, 720.0],
+      "landmarks": {
+        "nose":           { "x": 312.4, "y": 45.1, "z": -0.00123 },
+        "left_shoulder":  { "x": 280.0, "y": 130.5, "z": 0.00421 }
+      },
+      "keypoints_2d": [[312.4, 45.1], "..."],
+      "keypoints_3d": [[0.12345, -0.33210, -0.00123], "..."],
+      "focal_length": 1150.2345,
+      "pred_cam_t": [0.01234, -0.00543, 5.43210],
+      "angles": {
+        "left_elbow":    142.75,
+        "right_elbow":   138.20,
+        "left_shoulder": 87.40,
+        "right_shoulder": 91.10,
+        "left_knee":     165.30,
+        "right_knee":    172.80,
+        "left_hip":      95.50,
+        "right_hip":     98.20
+      }
+    }
+  ]
+}
+```
+
+- `landmarks` pixel coordinates (`x`, `y`) are in **pixel space** (not normalised).
+- `keypoints_3d` are in **metric camera space** (metres).
+- `sampled: false` frames reuse the `people` array from the previous sampled frame.
+- `focal_length` and `pred_cam_t` are the camera intrinsic and extrinsic parameters
+  estimated by the model per person.
 
 ---
 

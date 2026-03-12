@@ -1,7 +1,7 @@
-> **Last updated:** 26th February 2026
-> **Version:** 1.0
-> **Authors:** Nicolas
-> **Status:** In Progress
+> **Last updated:** 26th February 2026  
+> **Version:** 1.0  
+> **Authors:** Nicolas  
+> **Status:** In Progress  
 > {.is-warning}
 
 ---

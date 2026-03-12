@@ -2,19 +2,22 @@ use axum::Json;
 use axum::extract::{Query, State};
 use axum::http::StatusCode;
 use serde::{Deserialize, Serialize};
+use utoipa::{IntoParams, ToSchema};
 
 use crate::domain::user::entity::pagination::Pagination;
 use crate::domain::user::entity::user::User;
 use crate::domain::user::error::UserError;
 use crate::inbound::http::AppState;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, IntoParams)]
 pub struct QueryPagination {
+    /// Page number (1-based, default: 1)
     pub page: Option<usize>,
+    /// Items per page (default: 20)
     pub per_page: Option<usize>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 pub struct ListUserResponse {
     pub id: String,
     pub username: String,
@@ -33,7 +36,7 @@ impl From<&User> for ListUserResponse {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 pub struct ListUsersResponse {
     pub users: Vec<ListUserResponse>,
 }
@@ -46,11 +49,16 @@ impl From<&Vec<User>> for ListUsersResponse {
     }
 }
 
-/// List all [User]s.
-///
-/// # Responses
-///
-/// - 200 OK: the list of [User]s was successfully retrieved.
+/// List all users (paginated).
+#[utoipa::path(
+    get,
+    path = "/v1/users",
+    params(QueryPagination),
+    responses(
+        (status = 200, description = "List of users", body = ListUsersResponse),
+    ),
+    tag = "Users"
+)]
 pub async fn list_users(
     State(state): State<AppState>,
     Query(params): Query<QueryPagination>,
