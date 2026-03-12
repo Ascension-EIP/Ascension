@@ -19,8 +19,14 @@ type LoginForm struct {
 }
 
 type Tokens struct {
-	AccessToken  string
 	RefreshToken uuid.UUID
+	AccessToken
+}
+
+type AccessToken struct {
+	Token     string
+	TokenType string
+	ExpiresIn uint
 }
 
 type NewSession struct {

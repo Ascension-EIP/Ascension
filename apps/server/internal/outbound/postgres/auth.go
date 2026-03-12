@@ -35,6 +35,31 @@ func (r *PostgresRepo) CreateSession(ctx context.Context, newSession *model.NewS
 	return session.ToSession(), nil
 }
 
+func (r *PostgresRepo) GetUserByUnexpiredSessionID(ctx context.Context, sessionID uuid.UUID) (*model.User, error) {
+	var user *dto.User
+	if err := pgx.BeginFunc(ctx, r.Pool, func(tx pgx.Tx) error {
+		rows, err := tx.Query(ctx, `
+			SELECT u.*
+			FROM sessions s
+			JOIN users u ON u.id = s.user_id
+			WHERE s.id = $1 AND s.expires_at > NOW()
+		`, sessionID)
+		if err != nil {
+			return err
+		}
+
+		user, err = pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
+		if err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return user.ToUser(), nil
+}
+
 // func (r *Repo) GetSession(ctx context.Context, id string) (*entity.Session, error) {
 // 	var session model.Session
 // 	if err := r.db.WithContext(ctx).

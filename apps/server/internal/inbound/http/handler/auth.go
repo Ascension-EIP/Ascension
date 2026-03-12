@@ -64,7 +64,11 @@ func (h *AuthHandler) Login(c *gin.Context) {
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
-	var userID uuid.UUID
+	userID, err := utils.GetFromContext[uuid.UUID](c, "userID")
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
 
 	var req request.RefreshToken
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -81,16 +85,23 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 }
 
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
+	userID, err := utils.GetFromContext[uuid.UUID](c, "userID")
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
 	var req request.RefreshToken
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
 
-	// if err := h.s.Logout(c.Request.Context(), req.Token, req.Token); err != nil {
-	// 	utils.Error(c, err, h.l)
-	// 	return
-	// }
+	accessToken, err := h.s.RefreshAccessToken(c.Request.Context(), userID, req.Token)
+	if err != nil {
+		utils.Error(c, err, h.l)
+		return
+	}
 
-	c.Status(http.StatusNoContent)
+	c.JSON(http.StatusCreated, response.AccessTokenToResponse(accessToken))
 }

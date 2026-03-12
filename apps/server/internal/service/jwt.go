@@ -22,7 +22,7 @@ func NewJWTService(cfg config.JWTConfig) JWTService {
 	}
 }
 
-func (s *JWTService) CreateAccessToken(ctx context.Context, user *model.User) (string, error) {
+func (s *JWTService) CreateAccessToken(ctx context.Context, user *model.User) (model.AccessToken, error) {
 	claims := model.JWTClaims{
 		UserID:   user.ID,
 		UserRole: user.Role,
@@ -33,7 +33,16 @@ func (s *JWTService) CreateAccessToken(ctx context.Context, user *model.User) (s
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(s.secret))
+	tokenSigned, err := token.SignedString([]byte(s.secret))
+	if err != nil {
+		return model.AccessToken{}, err
+	}
+
+	return model.AccessToken{
+		Token:     tokenSigned,
+		TokenType: "Bearer",
+		ExpiresIn: uint(s.exp.Seconds()),
+	}, nil
 }
 
 func (s *JWTService) ValidateAccessToken(ctx context.Context, tokenStr string) (*model.JWTClaims, error) {

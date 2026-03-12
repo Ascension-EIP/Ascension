@@ -79,50 +79,13 @@ func (s *AuthService) Logout(ctx context.Context, userID uuid.UUID, sessionID uu
 	return nil
 }
 
-// func (s *AuthService) ValidateSession(c context.Context, sessionID string) (uint, error) {
-// 	session, err := s.repo.GetUnexpiredSession(c, sessionID)
-// 	if err != nil {
-// 		return 0, entity.ErrUnauthorized
-// 	}
-// 	return session.UserID, nil
-// }
-//
-// func (s *AuthService) RefreshSession(c context.Context, sessionID string) error {
-// 	session := &entity.Session{
-// 		ID:        sessionID,
-// 		ExpiresAt: time.Now().Add(s.cfg.CookieExp),
-// 	}
-// 	if err := s.repo.UpdateSession(c, session); err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
-//
-// func (s *AuthService) CleanExpiredSession(c context.Context) error {
-// 	if err := s.repo.DeleteExpiredSessions(c); err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
-//
-// func (s *AuthService) IsAdmin(c context.Context, id uint) error {
-// 	user, err := s.r.GetUserByID(c, id)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if user.Role != entity.RoleAdmin {
-// 		return user.ErrForbidden
-// 	}
-// 	return nil
-// }
-//
-// func (s *AuthService) IsUser(c context.Context, id uint) error {
-// 	user, err := s.r.GetUserByID(c, id)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if user.Role != entity.RoleUser {
-// 		return user.ErrForbidden
-// 	}
-// 	return nil
-// }
+func (s *AuthService) RefreshAccessToken(ctx context.Context, userID uuid.UUID, sessionID uuid.UUID) (*model.AccessToken, error) {
+	user := &model.User{}
+
+	accessToken, err := s.jwtS.CreateAccessToken(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &accessToken, nil
+}
