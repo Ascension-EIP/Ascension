@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
+import 'package:mobile/core/auth/auth_service.dart';
 import 'package:mobile/core/network/api_service.dart';
 import 'package:mobile/features/upload/presentation/pages/analysis_page.dart';
 
@@ -128,10 +129,6 @@ class _VideoUploadState extends State<VideoUpload> {
   DateTime? _analysisStartedAt; // when the analysing phase began
   static const int _analysisMaxPolls = 120; // 120 × 5 s = 10 min
 
-  // Temporary hard-coded userId until auth is wired.
-  // Replace with your actual user UUID from the DB.
-  static const String _tempUserId = '00000000-0000-0000-0000-000000000001';
-
   Future<void> _pickVideo(ImageSource source) async {
     final picked = await ImagePicker().pickVideo(
       source: source,
@@ -169,9 +166,11 @@ class _VideoUploadState extends State<VideoUpload> {
 
       // 1. Get presigned PUT URL from backend
       setState(() => _uploadProgress = 0.1);
+      final userId = AuthService().userId;
+      if (userId == null) throw Exception('User not logged in');
       final urlData = await api.getUploadUrl(
         filename: filename,
-        userId: _tempUserId,
+        userId: userId,
       );
       final videoId = urlData['video_id'] as String;
       final uploadUrl = urlData['upload_url'] as String;
