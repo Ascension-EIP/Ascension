@@ -127,7 +127,7 @@ class AnalysisViewPage extends StatefulWidget {
 }
 
 class _AnalysisViewPageState extends State<AnalysisViewPage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final List<_FrameData> _frames;
   late final TabController _tabCtrl;
 
@@ -136,11 +136,19 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
 
   int _currentFrame = 0;
   bool _isPlaying = false;
+  /// Timestamp of the last manual seek. The video-position listener ignores
+  /// updates for 300 ms after a seek so the arrows always land on exactly the
+  /// requested frame.
+  DateTime? _lastManualSeek;
+
+  // ── Shared scroll controller (given to _SkeletonTab so we can
+  //    scroll to top when a timecode link is tapped) ─────────────
+  final ScrollController _skeletonScrollCtrl = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _tabCtrl = TabController(length: 4, vsync: this);
+    _tabCtrl = TabController(length: 3, vsync: this);
 
     final parsed = jsonDecode(widget.resultJson) as Map<String, dynamic>;
     _frames = ((parsed['frames'] as List?) ?? [])
@@ -164,6 +172,11 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
   /// to the closest analysis frame so the skeleton overlay stays in sync.
   void _onVideoPositionChanged() {
     if (!mounted || _videoCtrl == null) return;
+    // Ignore ticks for 300 ms after a manual seek so the arrows don't drift.
+    if (_lastManualSeek != null &&
+        DateTime.now().difference(_lastManualSeek!).inMilliseconds < 300) {
+      return;
+    }
     // Add a small lookahead to compensate for the decoder pipeline delay
     // (video_player reports the last decoded frame, not the currently displayed one).
     const kLookaheadMs =
@@ -202,6 +215,7 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
   @override
   void dispose() {
     _videoCtrl?.removeListener(_onVideoPositionChanged);
+    _skeletonScrollCtrl.dispose();
     _tabCtrl.dispose();
     _videoCtrl?.dispose();
     super.dispose();
@@ -211,6 +225,7 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
   void _seekVideoToFrame(int frameIndex) {
     if (_videoCtrl == null || !_videoReady) return;
     if (frameIndex < 0 || frameIndex >= _frames.length) return;
+    _lastManualSeek = DateTime.now();
     final ms = _frames[frameIndex].timestampMs;
     _videoCtrl!.seekTo(Duration(milliseconds: ms));
   }
@@ -243,7 +258,6 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
             Tab(icon: Icon(Icons.person_outline), text: 'Squelette'),
             Tab(icon: Icon(Icons.show_chart), text: 'Angles'),
             Tab(icon: Icon(Icons.analytics_outlined), text: 'Stats'),
-            Tab(icon: Icon(Icons.tips_and_updates_outlined), text: 'Conseils'),
           ],
         ),
       ),
@@ -264,6 +278,7 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
                   accent: accent,
                   videoCtrl: _videoCtrl,
                   videoReady: _videoReady,
+                  hints: widget.hints,
                   onFrameChanged: (i) {
                     setState(() => _currentFrame = i);
                     _seekVideoToFrame(i);
@@ -281,20 +296,17 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
                       _currentFrame = 0;
                     });
                   },
-                ),
-                _AngleChartTab(frames: _frames, accent: accent),
-                _StatsTab(
-                  frames: _frames,
-                  processingMs: widget.processingMs,
-                  accent: accent,
-                ),
-                _HintsTab(
-                  hints: widget.hints,
-                  frames: _frames,
-                  accent: accent,
                   onSeekToMs: (ms) {
-                    if (_videoCtrl == null || !_videoReady) return;
-                    _videoCtrl!.seekTo(Duration(milliseconds: ms));
+                    _lastManualSeek = DateTime.now();
+                    _videoCtrl?.seekTo(Duration(milliseconds: ms));
+                    // Scroll back to the top so the user sees the video jump
+                    if (_skeletonScrollCtrl.hasClients) {
+                      _skeletonScrollCtrl.animateTo(
+                        0,
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeInOut,
+                      );
+                    }
                     // Sync skeleton to nearest frame
                     int lo = 0, hi = _frames.length - 1, best = 0;
                     while (lo <= hi) {
@@ -307,8 +319,14 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
                       }
                     }
                     setState(() => _currentFrame = best);
-                    _tabCtrl.animateTo(0);
                   },
+                  scrollController: _skeletonScrollCtrl,
+                ),
+                _AngleChartTab(frames: _frames, accent: accent),
+                _StatsTab(
+                  frames: _frames,
+                  processingMs: widget.processingMs,
+                  accent: accent,
                 ),
               ],
             ),
@@ -328,6 +346,14 @@ class _SkeletonTab extends StatefulWidget {
   final VoidCallback onPlay;
   final VoidCallback onPause;
   final VoidCallback onReset;
+  /// Optional markdown coaching hints shown in a scrollable panel below the
+  /// video controls. Null when hints are not yet available.
+  final String? hints;
+  /// Called when the user taps a timecode link in the hints panel.
+  final void Function(int ms)? onSeekToMs;
+  /// External scroll controller — lets the parent scroll this tab to the top
+  /// (e.g. after a timecode tap so the user sees the video jump).
+  final ScrollController? scrollController;
 
   const _SkeletonTab({
     required this.frames,
@@ -340,6 +366,9 @@ class _SkeletonTab extends StatefulWidget {
     required this.onReset,
     this.videoCtrl,
     this.videoReady = false,
+    this.hints,
+    this.onSeekToMs,
+    this.scrollController,
   });
 
   @override
@@ -353,201 +382,258 @@ class _SkeletonTabState extends State<_SkeletonTab> {
   Widget build(BuildContext context) {
     final frame = widget.frames[widget.currentIndex];
     final hasVideo = widget.videoCtrl != null && widget.videoReady;
+    final hasHints = widget.hints != null && widget.hints!.trim().isNotEmpty;
 
-    return Column(
-      children: [
-        // ── Video + skeleton overlay ──
-        Expanded(
+    // Constrain the video to at most 45 % of the screen height.
+    final double maxVideoHeight = MediaQuery.of(context).size.height * 0.45;
+
+    // We always use a single CustomScrollView so that:
+    //  - the video section has a well-defined size via AspectRatio inside a
+    //    SliverToBoxAdapter (no unbounded-height issues),
+    //  - hints (when present) scroll naturally below the controls.
+    return CustomScrollView(
+      controller: widget.scrollController,
+      slivers: [
+        // ── Video + skeleton overlay ──────────────────────────────
+        SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.all(12),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                color: const Color(0xFF0D1B2A),
-                child: hasVideo
-                    ? _VideoWithOverlay(
-                        ctrl: widget.videoCtrl!,
-                        frame: frame,
-                        accent: widget.accent,
-                        showAngles: _showAngles,
-                      )
-                    // No video file: show skeleton on plain background
-                    : CustomPaint(
-                        painter: _SkeletonPainter(
+            child: LimitedBox(
+              maxHeight: maxVideoHeight,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  color: const Color(0xFF0D1B2A),
+                  child: hasVideo
+                      ? _VideoWithOverlay(
+                          ctrl: widget.videoCtrl!,
                           frame: frame,
                           accent: widget.accent,
-                          fullFrame: false,
                           showAngles: _showAngles,
+                        )
+                      : CustomPaint(
+                          painter: _SkeletonPainter(
+                            frame: frame,
+                            accent: widget.accent,
+                            fullFrame: false,
+                            showAngles: _showAngles,
+                          ),
+                          child: const SizedBox.expand(),
                         ),
-                        child: const SizedBox.expand(),
-                      ),
+                ),
               ),
             ),
           ),
         ),
 
-        // ── Frame info + angles toggle ──
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              // Left: frame index
-              SizedBox(
-                width: 70,
-                child: Text(
-                  'Frame ${frame.frameIndex}',
-                  style: const TextStyle(color: Colors.white54, fontSize: 12),
-                ),
-              ),
-              // Centre: timestamp
-              Expanded(
-                child: Text(
-                  _fmtMs(frame.timestampMs),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
+        // ── Frame info + angles toggle ────────────────────────────
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 70,
+                  child: Text(
+                    'Frame ${frame.frameIndex}',
+                    style: const TextStyle(color: Colors.white54, fontSize: 12),
                   ),
                 ),
-              ),
-              // ── Angles toggle chip ──
-              GestureDetector(
-                onTap: () => setState(() => _showAngles = !_showAngles),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _showAngles
-                        ? widget.accent.withValues(alpha: 0.18)
-                        : Colors.white10,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: _showAngles ? widget.accent : Colors.white24,
-                      width: 1,
+                Expanded(
+                  child: Text(
+                    _fmtMs(frame.timestampMs),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.straighten_rounded,
-                        size: 13,
-                        color: _showAngles ? widget.accent : Colors.white38,
+                ),
+                GestureDetector(
+                  onTap: () => setState(() => _showAngles = !_showAngles),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _showAngles
+                          ? widget.accent.withValues(alpha: 0.18)
+                          : Colors.white10,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: _showAngles ? widget.accent : Colors.white24,
+                        width: 1,
                       ),
-                      const SizedBox(width: 5),
-                      Text(
-                        'Angles',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: _showAngles ? widget.accent : Colors.white38,
-                          fontWeight: _showAngles
-                              ? FontWeight.bold
-                              : FontWeight.normal,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.straighten_rounded,
+                          size: 13,
+                          color:
+                              _showAngles ? widget.accent : Colors.white38,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 5),
+                        Text(
+                          'Angles',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color:
+                                _showAngles ? widget.accent : Colors.white38,
+                            fontWeight: _showAngles
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 6),
-
-        // ── Scrubber ──
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              activeTrackColor: widget.accent,
-              thumbColor: widget.accent,
-              inactiveTrackColor: Colors.white12,
-              overlayColor: widget.accent.withValues(alpha: 0.2),
-              trackHeight: 3,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-            ),
-            child: Slider(
-              min: 0,
-              max: (widget.frames.length - 1).toDouble(),
-              value: widget.currentIndex.toDouble(),
-              onChanged: (v) => widget.onFrameChanged(v.round()),
+              ],
             ),
           ),
         ),
 
-        // ── Controls ──
-        Padding(
-          padding: const EdgeInsets.only(bottom: 20, top: 4),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                onPressed: widget.onReset,
-                icon: const Icon(
-                  Icons.skip_previous_rounded,
-                  color: Colors.white70,
-                ),
-                iconSize: 32,
+        // ── Scrubber ─────────────────────────────────────────────
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                activeTrackColor: widget.accent,
+                thumbColor: widget.accent,
+                inactiveTrackColor: Colors.white12,
+                overlayColor: widget.accent.withValues(alpha: 0.2),
+                trackHeight: 3,
+                thumbShape:
+                    const RoundSliderThumbShape(enabledThumbRadius: 8),
               ),
-              const SizedBox(width: 8),
-              IconButton(
-                onPressed: widget.currentIndex > 0
-                    ? () => widget.onFrameChanged(widget.currentIndex - 1)
-                    : null,
-                icon: const Icon(
-                  Icons.chevron_left_rounded,
-                  color: Colors.white70,
-                ),
-                iconSize: 36,
+              child: Slider(
+                min: 0,
+                max: (widget.frames.length - 1).toDouble(),
+                value: widget.currentIndex.toDouble(),
+                onChanged: (v) => widget.onFrameChanged(v.round()),
               ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: widget.isPlaying ? widget.onPause : widget.onPlay,
-                child: Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
+            ),
+          ),
+        ),
+
+        // ── Playback controls ─────────────────────────────────────
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 12, top: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  onPressed: widget.onReset,
+                  icon: const Icon(
+                    Icons.skip_previous_rounded,
+                    color: Colors.white70,
+                  ),
+                  iconSize: 32,
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: widget.currentIndex > 0
+                      ? () => widget.onFrameChanged(widget.currentIndex - 1)
+                      : null,
+                  icon: const Icon(
+                    Icons.chevron_left_rounded,
+                    color: Colors.white70,
+                  ),
+                  iconSize: 36,
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: widget.isPlaying ? widget.onPause : widget.onPlay,
+                  child: Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: widget.accent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      widget.isPlaying
+                          ? Icons.pause_rounded
+                          : Icons.play_arrow_rounded,
+                      color: Colors.black,
+                      size: 30,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: widget.currentIndex < widget.frames.length - 1
+                      ? () => widget.onFrameChanged(widget.currentIndex + 1)
+                      : null,
+                  icon: const Icon(
+                    Icons.chevron_right_rounded,
+                    color: Colors.white70,
+                  ),
+                  iconSize: 36,
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: () =>
+                      widget.onFrameChanged(widget.frames.length - 1),
+                  icon: const Icon(
+                    Icons.skip_next_rounded,
+                    color: Colors.white70,
+                  ),
+                  iconSize: 32,
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // ── Coaching hints (only when available) ─────────────────
+        if (hasHints) ...[
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.tips_and_updates_rounded,
                     color: widget.accent,
-                    shape: BoxShape.circle,
+                    size: 18,
                   ),
-                  child: Icon(
-                    widget.isPlaying
-                        ? Icons.pause_rounded
-                        : Icons.play_arrow_rounded,
-                    color: Colors.black,
-                    size: 30,
+                  const SizedBox(width: 8),
+                  Text(
+                    'Conseils IA',
+                    style: TextStyle(
+                      color: widget.accent,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
+                ],
               ),
-              const SizedBox(width: 8),
-              IconButton(
-                onPressed: widget.currentIndex < widget.frames.length - 1
-                    ? () => widget.onFrameChanged(widget.currentIndex + 1)
-                    : null,
-                icon: const Icon(
-                  Icons.chevron_right_rounded,
-                  color: Colors.white70,
-                ),
-                iconSize: 36,
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                onPressed: () =>
-                    widget.onFrameChanged(widget.frames.length - 1),
-                icon: const Icon(
-                  Icons.skip_next_rounded,
-                  color: Colors.white70,
-                ),
-                iconSize: 32,
-              ),
-            ],
+            ),
           ),
-        ),
+          const SliverToBoxAdapter(
+            child: Divider(
+              color: Colors.white12,
+              height: 1,
+              indent: 16,
+              endIndent: 16,
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: _HintsView(
+              hintsMarkdown: _preprocessHints(widget.hints!),
+              accent: widget.accent,
+              onSeekToMs: widget.onSeekToMs ?? (_) {},
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -1518,12 +1604,10 @@ class _LandmarkHeatmap extends StatelessWidget {
   }
 }
 
-// ─── Tab 4 — Coaching hints ──────────────────────────────────────
+// ─── Tab 1 (inline) — Coaching hints rendered below the video ────
 
 /// Regex that matches timecode tokens of the form `[1234ms]` or `[1m23s]`.
-/// Groups:
-///   1 — raw milliseconds (pure-ms format)
-///   2 — minutes, 3 — seconds (min:sec format)
+/// Groups: 1 — raw ms, 2 — minutes, 3 — seconds.
 final _kTimecodeRe = RegExp(
   r'\[(?:(\d+)ms|(\d+)m(\d+)s)\]',
   caseSensitive: false,
@@ -1548,82 +1632,17 @@ String _msToLabel(int ms) {
   return '${m.toString().padLeft(2, '0')}:${(s % 60).toString().padLeft(2, '0')}';
 }
 
-/// Pre-process the hints markdown so every timecode becomes an inline
-/// markdown link: `[⏱ 00:01](timecode://1000)`.  Links are rendered inline
-/// by flutter_markdown without any line break, unlike custom widget builders.
+/// Pre-process hints markdown: strip backtick-wrapped timecodes and convert
+/// every `[Xms]` / `[XmYs]` to an inline markdown link `[⏱ MM:SS](timecode://ms)`.
 String _preprocessHints(String raw) {
-  // 1. Strip backticks Gemini may have put around timecodes.
-  var out = raw.replaceAllMapped(
-    _kBacktickTimecodeRe,
-    (m) => m.group(1)!,
-  );
-  // 2. Replace every bare [Xms] / [XmYs] with a markdown link.
+  var out = raw.replaceAllMapped(_kBacktickTimecodeRe, (m) => m.group(1)!);
   out = out.replaceAllMapped(_kTimecodeRe, (m) {
     final ms = _tcToMs(m);
-    final label = _msToLabel(ms);
-    return '[⏱ $label](timecode://$ms)';
+    return '[⏱ ${_msToLabel(ms)}](timecode://$ms)';
   });
   return out;
 }
 
-class _HintsTab extends StatelessWidget {
-  final String? hints;
-  final List<_FrameData> frames;
-  final Color accent;
-
-  /// Called when the user taps a timecode chip; receives the target ms value.
-  final void Function(int ms) onSeekToMs;
-
-  const _HintsTab({
-    required this.hints,
-    required this.frames,
-    required this.accent,
-    required this.onSeekToMs,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (hints == null || hints!.trim().isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.tips_and_updates_outlined,
-              size: 64,
-              color: accent.withValues(alpha: 0.4),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Aucun conseil disponible',
-              style: TextStyle(
-                color: Colors.white54,
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Les conseils sont générés par Gemini\naprès l\'analyse de la pose.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white38, fontSize: 13),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return _HintsView(
-      hintsMarkdown: _preprocessHints(hints!),
-      accent: accent,
-      onSeekToMs: onSeekToMs,
-    );
-  }
-}
-
-/// Renders the hints markdown. Timecodes are converted by [_preprocessHints]
-/// into standard markdown links `[⏱ 00:01](timecode://1000)` so they render
-/// fully inline without any line break.
 class _HintsView extends StatelessWidget {
   final String hintsMarkdown;
   final Color accent;
@@ -1637,17 +1656,23 @@ class _HintsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Markdown(
-      data: hintsMarkdown,
-      selectable: false, // must be false to allow link taps
-      styleSheet: _buildStyleSheet(context),
-      onTapLink: (text, href, title) {
-        if (href != null && href.startsWith('timecode://')) {
-          final ms = int.tryParse(href.substring('timecode://'.length));
-          if (ms != null) onSeekToMs(ms);
-        }
-      },
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+    // MarkdownBody is non-scrollable (unlike Markdown which is a ListView).
+    // This is required here because _HintsView lives inside a SliverToBoxAdapter
+    // inside a CustomScrollView — nesting a scrollable Markdown inside a sliver
+    // causes "Vertical viewport was given unbounded height".
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+      child: MarkdownBody(
+        data: hintsMarkdown,
+        selectable: false,
+        styleSheet: _buildStyleSheet(context),
+        onTapLink: (text, href, title) {
+          if (href != null && href.startsWith('timecode://')) {
+            final ms = int.tryParse(href.substring('timecode://'.length));
+            if (ms != null) onSeekToMs(ms);
+          }
+        },
+      ),
     );
   }
 

@@ -122,36 +122,10 @@ class _VideoUploadState extends State<VideoUpload> {
   static const String _tempUserId = '00000000-0000-0000-0000-000000000001';
 
   Future<void> _pickVideo(ImageSource source) async {
-    XFile? picked;
-
-    if (source == ImageSource.gallery) {
-      // pickMedia instead of pickVideo: shows ALL video files regardless of
-      // whether they have an audio track (silent climbing footage is common).
-      picked = await ImagePicker().pickMedia(imageQuality: null);
-      // If the user picked an image by mistake, discard it.
-      if (picked != null) {
-        final ext = picked.path.split('.').last.toLowerCase();
-        const videoExts = {
-          'mp4', 'mov', 'avi', 'mkv', 'webm', 'flv', 'm4v', '3gp', 'ts', 'mts',
-        };
-        if (!videoExts.contains(ext)) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Veuillez sélectionner une vidéo.'),
-              ),
-            );
-          }
-          return;
-        }
-      }
-    } else {
-      // Camera source: pickVideo is fine (always records with audio capability)
-      picked = await ImagePicker().pickVideo(
-        source: source,
-        maxDuration: const Duration(minutes: 10),
-      );
-    }
+    XFile? picked = await ImagePicker().pickVideo(
+      source: source,
+      maxDuration: const Duration(minutes: 10),
+    );
     if (picked == null) return;
 
     final file = File(picked.path);
@@ -820,54 +794,54 @@ class _AnalysingScreen extends StatefulWidget {
 
 class _AnalysingScreenState extends State<_AnalysingScreen>
     with SingleTickerProviderStateMixin {
-  int _promoIndex = 0;
-  late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
-
-  static const Duration _promoInterval = Duration(seconds: 4);
+  late final PageController _pageCtrl;
+  late AnimationController _autoSlideCtrl;
+  int _pageIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(
+    _pageCtrl = PageController();
+    // Auto-advance timer: drives a thin progress bar and flips the page when full.
+    _autoSlideCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeInOut,
-    );
-    _fadeController.forward();
-    _scheduleNext();
+      duration: const Duration(seconds: 5),
+    )..addStatusListener((status) {
+        if (status == AnimationStatus.completed && mounted) {
+          _nextPage();
+          _autoSlideCtrl.forward(from: 0);
+        }
+      });
+    _autoSlideCtrl.forward();
   }
 
-  void _scheduleNext() {
-    Future.delayed(_promoInterval, () {
-      if (!mounted) return;
-      _fadeController.reverse().then((_) {
-        if (!mounted) return;
-        setState(() {
-          _promoIndex = (_promoIndex + 1) % _promoMessages.length;
-        });
-        _fadeController.forward().then((_) => _scheduleNext());
-      });
-    });
+  void _nextPage() {
+    _goToPage((_pageIndex + 1) % _promoMessages.length);
+  }
+
+  void _goToPage(int index) {
+    setState(() => _pageIndex = index);
+    _pageCtrl.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 380),
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
   void dispose() {
-    _fadeController.dispose();
+    _autoSlideCtrl.dispose();
+    _pageCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final msg = _promoMessages[_promoIndex];
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -879,7 +853,6 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                   width: 120,
                   height: 120,
                   child: CircularProgressIndicator(
-                    // Indeterminate while Gemini is running
                     value: widget.isGeneratingHints
                         ? null
                         : (widget.progress > 0 ? widget.progress : null),
@@ -893,7 +866,7 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '${widget.percent} %',
+                        '${widget.percent} %',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -902,10 +875,7 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                       ),
                       Text(
                         widget.remainingLabel,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[500],
-                        ),
+                        style: TextStyle(fontSize: 11, color: Colors.grey[500]),
                       ),
                     ],
                   )
@@ -932,92 +902,183 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey[500], fontSize: 14),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
 
-            // ── Promotional / tips banner ──
-            FadeTransition(
-              opacity: _fadeAnimation,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: msg.isPromo
-                      ? colorScheme.secondary.withValues(alpha: 0.10)
-                      : colorScheme.surface,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: msg.isPromo
-                        ? colorScheme.secondary.withValues(alpha: 0.35)
-                        : Colors.grey.withValues(alpha: 0.20),
-                  ),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      msg.icon,
-                      size: 28,
-                      color: msg.isPromo ? colorScheme.secondary : Colors.grey[400],
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (msg.isPromo)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 4),
-                              child: Text(
-                                '✦ MODE PREMIUM',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: colorScheme.secondary,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                            ),
-                          Text(
-                            msg.text,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: msg.isPromo ? Colors.white : Colors.grey[400],
-                              height: 1.4,
-                            ),
-                          ),
-                        ],
+            // ── Swipeable promo / tips cards ──
+            Row(
+              children: [
+                //_NavArrow(
+                //  onTap: () {
+                //    _autoSlideCtrl.forward(from: 0);
+                //    _goToPage(
+                //      (_pageIndex - 1 + _promoMessages.length) %
+                //          _promoMessages.length,
+                //    );
+                //  },
+                //  icon: Icons.chevron_left_rounded,
+                //  accent: colorScheme.secondary,
+                //),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: SizedBox(
+                    height: 110,
+                    child: PageView.builder(
+                      controller: _pageCtrl,
+                      itemCount: _promoMessages.length,
+                      onPageChanged: (i) {
+                        setState(() => _pageIndex = i);
+                        _autoSlideCtrl.forward(from: 0);
+                      },
+                      itemBuilder: (context, i) => _PromoCard(
+                        msg: _promoMessages[i],
+                        accent: colorScheme.secondary,
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+                //const SizedBox(width: 4),
+                //_NavArrow(
+                //  onTap: () {
+                //    _autoSlideCtrl.forward(from: 0);
+                //    _nextPage();
+                //  },
+                //  icon: Icons.chevron_right_rounded,
+                //  accent: colorScheme.secondary,
+                //),
+              ],
             ),
 
-            // ── Dot indicators ──
-            const SizedBox(height: 16),
+            // ── Dot indicators (tappable) ──
+            const SizedBox(height: 14),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
                 _promoMessages.length,
-                (i) => AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  width: i == _promoIndex ? 18 : 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: i == _promoIndex
-                        ? colorScheme.secondary
-                        : Colors.grey.withValues(alpha: 0.35),
-                    borderRadius: BorderRadius.circular(3),
+                (i) => GestureDetector(
+                  onTap: () {
+                    _autoSlideCtrl.forward(from: 0);
+                    _goToPage(i);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: i == _pageIndex ? 18 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: i == _pageIndex
+                          ? colorScheme.secondary
+                          : Colors.grey.withValues(alpha: 0.35),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
                   ),
+                ),
+              ),
+            ),
+
+            // ── Thin auto-advance progress bar ──
+            const SizedBox(height: 10),
+            AnimatedBuilder(
+              animation: _autoSlideCtrl,
+              builder: (context, _) => ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: _autoSlideCtrl.value,
+                  color: colorScheme.secondary.withValues(alpha: 0.5),
+                  backgroundColor: colorScheme.secondary.withValues(alpha: 0.1),
+                  minHeight: 3,
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Small left/right arrow button used beside the swipeable promo cards.
+class _NavArrow extends StatelessWidget {
+  final VoidCallback onTap;
+  final IconData icon;
+  final Color accent;
+  const _NavArrow({required this.onTap, required this.icon, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 30,
+        height: 30,
+        decoration: BoxDecoration(
+          color: accent.withValues(alpha: 0.10),
+          shape: BoxShape.circle,
+          border: Border.all(color: accent.withValues(alpha: 0.25)),
+        ),
+        child: Icon(icon, size: 20, color: accent.withValues(alpha: 0.7)),
+      ),
+    );
+  }
+}
+
+/// A single promotional / tips card shown inside the PageView.
+class _PromoCard extends StatelessWidget {
+  final _PromoMessage msg;
+  final Color accent;
+  const _PromoCard({required this.msg, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: msg.isPromo
+            ? accent.withValues(alpha: 0.10)
+            : Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: msg.isPromo
+              ? accent.withValues(alpha: 0.35)
+              : Colors.grey.withValues(alpha: 0.20),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(msg.icon, size: 26, color: msg.isPromo ? accent : Colors.grey[400]),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (msg.isPromo)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text(
+                      '✦ MODE PREMIUM',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: accent,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ),
+                Text(
+                  msg.text,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: msg.isPromo ? Colors.white : Colors.grey[400],
+                    height: 1.4,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
