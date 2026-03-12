@@ -4,7 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
+import 'package:mobile/core/auth/auth_service.dart';
 import 'package:mobile/core/network/api_service.dart';
+import 'package:mobile/core/services/analysis_history_service.dart';
 import 'package:mobile/features/upload/presentation/pages/analysis_page.dart';
 
 /// video_player is only supported on Android, iOS, and Web.
@@ -119,10 +121,6 @@ class _VideoUploadState extends State<VideoUpload> {
   bool _isGeneratingHints = false; // true while the server runs Gemini
   static const int _analysisMaxPolls = 120; // 120 × 5 s = 10 min
 
-  // Temporary hard-coded userId until auth is wired.
-  // Replace with your actual user UUID from the DB.
-  static const String _tempUserId = '00000000-0000-0000-0000-000000000001';
-
   Future<void> _pickVideo(ImageSource source) async {
     XFile? picked = await ImagePicker().pickVideo(
       source: source,
@@ -160,9 +158,11 @@ class _VideoUploadState extends State<VideoUpload> {
 
       // 1. Get presigned PUT URL from backend
       setState(() => _uploadProgress = 0.1);
+      final userId = AuthService().userId;
+      if (userId == null) throw Exception('User not logged in');
       final urlData = await api.getUploadUrl(
         filename: filename,
-        userId: _tempUserId,
+        userId: userId,
       );
       final videoId = urlData['video_id'] as String;
       final uploadUrl = urlData['upload_url'] as String;
@@ -226,6 +226,23 @@ class _VideoUploadState extends State<VideoUpload> {
           'Vérifiez l\'état du worker et réessayez.',
         );
       }
+
+      // Save to local history (userId is guaranteed non-null at this point)
+      final createdAtRaw = result['created_at'] as String?;
+      final completedAtRaw = result['completed_at'] as String?;
+      final historyEntry = AnalysisHistoryEntry(
+        analysisId: result['id'] as String? ?? '',
+        createdAt: createdAtRaw != null
+            ? (DateTime.tryParse(createdAtRaw) ?? DateTime.now())
+            : DateTime.now(),
+        completedAt: completedAtRaw != null
+            ? DateTime.tryParse(completedAtRaw)
+            : null,
+        processingTimeMs: result['processing_time_ms'] as int?,
+        resultJson: result['result_json'] as String?,
+        status: result['status'] as String? ?? 'unknown',
+      );
+      await AnalysisHistoryService().saveEntry(userId, historyEntry);
 
       setState(() {
         _analysisResult = result;

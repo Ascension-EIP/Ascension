@@ -51,6 +51,8 @@ class _RegisterPageState extends State<RegisterPage> {
         accessToken: data['access_token'] as String,
         refreshToken: data['refresh_token'] as String? ?? '',
         userId: data['user_id'] as String,
+        username: _usernameController.text.trim(),
+        email: _emailController.text.trim(),
       );
     } catch (e) {
       setState(() => _errorMessage = _parseError(e));

@@ -17,6 +17,37 @@
 - Prototype dependency note in `docs/rncp/prototype-pool.md`
 **Rationale:** Keeps onboarding docs aligned with executable moon tasks and avoids environment drift.
 
+## 2026-03-03: AI Docker hardening proposal captured (informational)
+**By:** Arthur (DevOps)
+**Context:** PR review on the AI environment setup surfaced Docker build-context bloat and configuration drift risks around `apps/ai/`.
+**What:** Arthur proposed preserving the repo-local `./ai-env` developer contract, keeping current Docker runtime compatibility intact for now, excluding local artifacts from the AI Docker build context, and preferring `.env` plus `${VAR:-default}` compose fallbacks over hardcoded credentials.
+**Status:** Proposal recorded for future DevOps follow-up; not ratified here as a team-wide implementation decision.
+
+## 2026-03-03: `ai-env` is the canonical local AI environment contract
+**By:** Gianni TUERO (via Copilot)
+**Context:** PR #70 review feedback and documentation updates exposed drift between named-environment wording and the repo-local prefix workflow.
+**Decision:** Keep `./ai-env` as the single source of truth for the local AI conda environment contract across onboarding and developer task execution.
+**Why:** Prevents local setup drift and keeps the executable developer workflow canonical.
+
+## 2026-03-03: Ralph uses suggestions-first review remediation
+**By:** Gianni TUERO (via Copilot), reinforced by Eric (Lead)
+**Context:** Ralph needed a stricter flow for handling `CHANGES_REQUESTED` review outcomes.
+**Decision:** Ralph must request clear suggestion-style fix patches or plans before any implementation and must wait for explicit user confirmation before code changes begin.
+**Guardrails:** Ralph must not auto-apply fixes, auto-commit, or auto-push.
+**Why:** Keeps review remediation explicit and user-controlled.
+
+## 2026-03-03: Ralph review output starts with a single H1 reviewer title
+**By:** Gianni TUERO (via Copilot)
+**Decision:** Ralph review output must start with a Markdown H1 containing the reviewer name, optionally prefixed by one role emoji, without extra emoji noise.
+**Why:** Keeps automated review comments consistent and easy to scan.
+
+## 2026-03-03: Canonical AI environment contract needs one identity everywhere
+**By:** Eric (Lead)
+**Context:** PR #70 introduced a Conda-based AI setup but still mixed prefix-based and named-environment identities across moon, Docker, and docs.
+**Decision:** The AI environment must use one canonical identity contract across execution surfaces, with `./ai-env` retained as the accepted local developer contract.
+**Follow-up:** Add a CI smoke path that exercises environment creation, editable install, and a worker startup sanity check once the end-to-end contract is finalized.
+**Why:** Mixed environment identities create reproducibility and onboarding drift.
+
 ## 2026-03-02: AI Layer Documentation Created (Informational)
 **By:** Darius (Docs)
 **Triggered by:** feat(ai): implement vision.skeleton pipeline
@@ -56,3 +87,10 @@
 **By:** Gianni TUERO
 **What:** Les agents ne doivent PAS faire de git commit automatiquement après chaque feature. Les commits sont gérés manuellement par l'utilisateur ou sur demande explicite.
 **Why:** Préférence utilisateur — le contrôle des commits reste humain.
+
+## 2026-03-11: AI worker entrypoint renamed from `consumer.py` to `worker.py`
+**By:** Quentin (AI Dev) and Darius (Docs)
+**Context:** The Python AI service naming had shifted to `worker`, but tracked runtime, packaging, and documentation references still pointed to `consumer.py`.
+**Decision:** Standardize the AI queue worker entrypoint on `apps/ai/src/worker.py` and align all tracked references and metadata to `worker` naming.
+**Applied:** Updated `apps/ai/moon.yml`, `apps/ai/pyproject.toml`, `apps/ai/Dockerfile`, README and docs references, and cleaned repo-local metadata in `apps/ai/ascension_ai.egg-info/` and `apps/ai/src/ascension_ai.egg-info/`.
+**Why:** Keeps the entrypoint name aligned with the service role and removes stale tracked metadata after the rename.

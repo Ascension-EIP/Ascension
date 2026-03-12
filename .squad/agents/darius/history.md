@@ -5,6 +5,11 @@
 
 ## Learnings
 
+### 2026-03-11: AI consumer entrypoint documentation renamed to worker
+- Updated AI and architecture documentation to replace `apps/ai/consumer.py` references with `apps/ai/worker.py`.
+- Standardized visible wording from `consumer` to `worker` where the docs referred to the per-queue Python entrypoint naming.
+- Key files synced: `docs/developer_guide/ai/README.md`, `docs/developer_guide/architecture/system-overview.md`, `docs/developer_guide/architecture/monorepo-guide.md`, `docs/developer_guide/architecture/deployment/development.md`, `docs/ai/pre-prompt-en.md`, `docs/ai/pre-prompt-fr.md`.
+
 ### 2026-03-03: AI docs aligned to moon prefix-based conda contract
 - Confirmed `apps/ai/moon.yml` is prefix-based (`-p ./ai-env` and `conda run --prefix ./ai-env`) and should remain the source of truth.
 - Updated `docs/developer_guide/ai/README.md` to remove named-env wording (`ascension-ai`) and align setup/run examples with `./ai-env`.

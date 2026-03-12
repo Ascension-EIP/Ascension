@@ -22,14 +22,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = [
-    "ruff>=0.9,<1",
-    "pytest>=8,<10",
-    "build>=1,<2",
-]
+dev = ["pytest", "ruff", "black"]
 
 [project.scripts]
-ascension-worker = "consumer:main"
+ascension-worker = "worker:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
