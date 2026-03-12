@@ -79,8 +79,11 @@ func (s *AuthService) Logout(ctx context.Context, userID uuid.UUID, sessionID uu
 	return nil
 }
 
-func (s *AuthService) RefreshAccessToken(ctx context.Context, userID uuid.UUID, sessionID uuid.UUID) (*model.AccessToken, error) {
-	user := &model.User{}
+func (s *AuthService) RefreshAccessToken(ctx context.Context, sessionID uuid.UUID) (*model.AccessToken, error) {
+	user, err := s.sessionS.GetUserBySessionID(ctx, sessionID)
+	if err != nil {
+		return nil, err
+	}
 
 	accessToken, err := s.jwtS.CreateAccessToken(ctx, user)
 	if err != nil {
