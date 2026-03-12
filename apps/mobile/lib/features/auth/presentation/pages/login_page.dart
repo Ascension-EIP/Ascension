@@ -45,6 +45,7 @@ class _LoginPageState extends State<LoginPage> {
         accessToken: data['access_token'] as String,
         refreshToken: data['refresh_token'] as String? ?? '',
         userId: data['user_id'] as String,
+        email: _emailController.text.trim(),
       );
     } catch (e) {
       setState(() => _errorMessage = _parseError(e));
