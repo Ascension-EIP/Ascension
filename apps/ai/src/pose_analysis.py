@@ -101,6 +101,34 @@ def _angle_between(v1, v2):
     return float(np.degrees(np.arccos(np.clip(np.dot(u1, u2), -1, 1))))
 
 
+# Human-readable names for each landmark sent to Gemini.
+_LM_HUMAN_NAMES = {
+    "11": "épaule_gauche",
+    "12": "épaule_droite",
+    "13": "coude_gauche",
+    "14": "coude_droit",
+    "15": "poignet_gauche",
+    "16": "poignet_droit",
+    "23": "hanche_gauche",
+    "24": "hanche_droite",
+    "25": "genou_gauche",
+    "26": "genou_droit",
+    "27": "cheville_gauche",
+    "28": "cheville_droite",
+}
+
+# Human-readable names for angle joints sent to Gemini.
+_ANGLE_HUMAN_NAMES = {
+    "11": "épaule_gauche",
+    "12": "épaule_droite",
+    "13": "coude_gauche",
+    "14": "coude_droit",
+    "23": "hanche_gauche",
+    "24": "hanche_droite",
+    "25": "genou_gauche",
+    "26": "genou_droit",
+}
+
 # ─── AI helpers ──────────────────────────────────────────────────
 def _summarize_for_ai(full_data, sample_rate=15):
     """Réduit le poids du JSON pour ne pas saturer l'API (échantillonnage)."""
@@ -110,15 +138,22 @@ def _summarize_for_ai(full_data, sample_rate=15):
     
     for i, frame in enumerate(valid_frames):
         if i % sample_rate == 0:
-            # On simplifie : seulement X, Y et les angles (pas de Z/pres)
+            # Points : utilise les noms humains, ignore les indices inconnus
             reduced_lms = {
-                k: {"x": round(v["x"], 3), "y": round(v["y"], 3)}
+                _LM_HUMAN_NAMES.get(k, k): {"x": round(v["x"], 3), "y": round(v["y"], 3)}
                 for k, v in frame["landmarks"].items()
+                if k in _LM_HUMAN_NAMES
+            }
+            # Angles : utilise les noms humains
+            named_angles = {
+                _ANGLE_HUMAN_NAMES.get(k, k): round(v, 1)
+                for k, v in frame.get("angles", {}).items()
+                if k in _ANGLE_HUMAN_NAMES
             }
             summary.append({
                 "time": frame["timestamp_ms"],
                 "points": reduced_lms,
-                "angles": frame["angles"]
+                "angles": named_angles,
             })
     return summary
 
@@ -126,16 +161,37 @@ def get_climbing_advice(result_dict):
     """Envoie une version légère des données à Gemini."""
     if not GEMINI_API_KEY:
         return "Clé API absente. Vérifie ton .env"
-    
+
     ai_data = _summarize_for_ai(result_dict)
     model = genai.GenerativeModel('models/gemini-2.5-flash')
-    
+
     prompt = (
-        "Tu es un coach expert en escalade. Voici les coordonnées de mouvement d'un grimpeur.\n"
-        f"Données : {json.dumps(ai_data)}\n\n"
-        "Analyse le centre de gravité, la flexion des bras et des jambes, puis donne 3 conseils."
+        "Tu es un coach expert en escalade. Voici les données de mouvement (timestamps en ms) d'un grimpeur.\n"
+        f"Données : {json.dumps(ai_data, ensure_ascii=False)}\n\n"
+        "Génère exactement 3 conseils en respectant SCRUPULEUSEMENT le format ci-dessous.\n\n"
+        "FORMAT OBLIGATOIRE (reproduis exactement cette structure, remplace uniquement les parties entre < >) :\n\n"
+        "## <Titre court du conseil 1>\n"
+        "- <Point actionnable 1>\n"
+        "- <Point actionnable 2>\n"
+        "- <Point actionnable 3 avec timecode : À [Xms], tu peux constater...>\n\n"
+        "## <Titre court du conseil 2>\n"
+        "- <Point actionnable 1>\n"
+        "- <Point actionnable 2>\n"
+        "- <Point actionnable 3 avec timecode : À [Xms], tu peux constater...>\n\n"
+        "## <Titre court du conseil 3>\n"
+        "- <Point actionnable 1>\n"
+        "- <Point actionnable 2>\n"
+        "- <Point actionnable 3 avec timecode : À [Xms], tu peux constater...>\n\n"
+        "RÈGLES ABSOLUES :\n"
+        "1. Commence DIRECTEMENT par le premier '##'. Zéro phrase d'introduction, zéro résumé, zéro observation générale.\n"
+        "2. Uniquement des listes à puces sous chaque titre. Pas de paragraphes, pas de texte libre.\n"
+        "3. Les timecodes s'écrivent [Xms] (ex: [3200ms]) ou [XmYs] (ex: [1m23s]). "
+        "JAMAIS entre backticks, JAMAIS entre guillemets. Ils doivent apparaître directement dans le texte d'une puce.\n"
+        "4. Utilise uniquement les noms anatomiques français (épaule, coude, poignet, hanche, genou, cheville). "
+        "N'utilise jamais de numéros d'indices.\n"
+        "5. Réponds uniquement en français.\n"
     )
-    
+
     try:
         response = model.generate_content(prompt)
         return response.text
