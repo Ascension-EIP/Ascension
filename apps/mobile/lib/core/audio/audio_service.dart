@@ -11,13 +11,13 @@ class AudioService extends ChangeNotifier {
   static const String _assetPath = 'assets/audio/ascension.mp3';
 
   final AudioPlayer _player = AudioPlayer();
-  bool _musicEnabled = true;
+  bool _musicEnabled = false;
 
   bool get musicEnabled => _musicEnabled;
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    _musicEnabled = prefs.getBool(_prefKey) ?? true;
+    _musicEnabled = prefs.getBool(_prefKey) ?? false;
 
     await _player.setAsset(_assetPath);
     await _player.setLoopMode(LoopMode.one);

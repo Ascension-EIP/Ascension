@@ -158,8 +158,10 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
 
     if (widget.videoFile != null) {
       _videoCtrl = VideoPlayerController.file(widget.videoFile!)
-        ..initialize().then((_) {
+        ..initialize().then((_) async {
           if (mounted) {
+            // Mute: the user is viewing the skeleton overlay, not watching the film
+            await _videoCtrl!.setVolume(0);
             setState(() => _videoReady = true);
             // Listen to video position changes to keep skeleton in sync
             _videoCtrl!.addListener(_onVideoPositionChanged);
@@ -663,13 +665,15 @@ class _VideoWithOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     final aspectRatio = ctrl.value.aspectRatio;
     return Center(
-      child: AspectRatio(
-        aspectRatio: aspectRatio,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // ── Video layer ──
-            VideoPlayer(ctrl),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: AspectRatio(
+          aspectRatio: aspectRatio,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // ── Video layer ──
+              VideoPlayer(ctrl),
 
             // ── Semi-transparent dark veil to make skeleton visible ──
             Container(color: Colors.black.withValues(alpha: 0.25)),
@@ -686,6 +690,7 @@ class _VideoWithOverlay extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
       ),
     );

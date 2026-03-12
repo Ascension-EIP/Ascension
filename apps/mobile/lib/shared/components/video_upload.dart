@@ -921,7 +921,7 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                 const SizedBox(width: 4),
                 Expanded(
                   child: SizedBox(
-                    height: 110,
+                    height: 85,
                     child: PageView.builder(
                       controller: _pageCtrl,
                       itemCount: _promoMessages.length,
@@ -929,14 +929,17 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                         setState(() => _pageIndex = i);
                         _autoSlideCtrl.forward(from: 0);
                       },
-                      itemBuilder: (context, i) => _PromoCard(
-                        msg: _promoMessages[i],
-                        accent: colorScheme.secondary,
+                      itemBuilder: (context, i) => Padding(
+                        // Horizontal gap between cards when paging
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: _PromoCard(
+                          msg: _promoMessages[i],
+                          accent: colorScheme.secondary,
+                        ),
                       ),
                     ),
                   ),
                 ),
-                //const SizedBox(width: 4),
                 //_NavArrow(
                 //  onTap: () {
                 //    _autoSlideCtrl.forward(from: 0);
