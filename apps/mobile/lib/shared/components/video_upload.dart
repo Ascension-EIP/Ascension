@@ -198,15 +198,27 @@ class _VideoUploadState extends State<VideoUpload> {
         final status = a['status'] as String;
         // Read the real progress written by the AI worker.
         final rawProgress = a['progress'];
+        int? nextProgress;
+        bool? nextIsGeneratingHints;
         if (rawProgress is int) {
-          setState(() => _analysisProgress = rawProgress);
+          nextProgress = rawProgress;
         }
         // Show a dedicated spinner while Gemini is generating coaching hints.
         if (status == 'generating_hints') {
-          setState(() => _isGeneratingHints = true);
+          nextIsGeneratingHints = true;
         } else if (_isGeneratingHints && status != 'generating_hints') {
           // Gemini finished — revert to normal display
-          setState(() => _isGeneratingHints = false);
+          nextIsGeneratingHints = false;
+        }
+        if (nextProgress != null || nextIsGeneratingHints != null) {
+          setState(() {
+            if (nextProgress != null) {
+              _analysisProgress = nextProgress;
+            }
+            if (nextIsGeneratingHints != null) {
+              _isGeneratingHints = nextIsGeneratingHints;
+            }
+          });
         }
         if (status == 'completed') {
           result = a;

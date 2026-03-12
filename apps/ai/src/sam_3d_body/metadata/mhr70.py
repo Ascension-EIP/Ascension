@@ -160,16 +160,32 @@ pose_info = dict(
     keypoint_info={
         0: dict(name="nose", id=0, color=[51, 153, 255], type="upper", swap=""),
         1: dict(
-            name="left_eye", id=1, color=[51, 153, 255], type="upper", swap="right_eye"
+            name="left_eye",
+            id=1,
+            color=[51, 153, 255],
+            type="upper",
+            swap="right_eye",
         ),
         2: dict(
-            name="right_eye", id=2, color=[51, 153, 255], type="upper", swap="left_eye"
+            name="right_eye",
+            id=2,
+            color=[51, 153, 255],
+            type="upper",
+            swap="left_eye",
         ),
         3: dict(
-            name="left_ear", id=3, color=[51, 153, 255], type="upper", swap="right_ear"
+            name="left_ear",
+            id=3,
+            color=[51, 153, 255],
+            type="upper",
+            swap="right_ear",
         ),
         4: dict(
-            name="right_ear", id=4, color=[51, 153, 255], type="upper", swap="left_ear"
+            name="right_ear",
+            id=4,
+            color=[51, 153, 255],
+            type="upper",
+            swap="left_ear",
         ),
         5: dict(
             name="left_shoulder",
@@ -200,10 +216,18 @@ pose_info = dict(
             swap="left_elbow",
         ),
         9: dict(
-            name="left_hip", id=9, color=[51, 153, 255], type="lower", swap="right_hip"
+            name="left_hip",
+            id=9,
+            color=[51, 153, 255],
+            type="lower",
+            swap="right_hip",
         ),
         10: dict(
-            name="right_hip", id=10, color=[51, 153, 255], type="lower", swap="left_hip"
+            name="right_hip",
+            id=10,
+            color=[51, 153, 255],
+            type="lower",
+            swap="left_hip",
         ),
         11: dict(
             name="left_knee",
@@ -620,33 +644,61 @@ pose_info = dict(
         3: dict(link=("right_knee", "right_hip"), id=3, color=[255, 128, 0]),
         4: dict(link=("left_hip", "right_hip"), id=4, color=[51, 153, 255]),
         5: dict(link=("left_shoulder", "left_hip"), id=5, color=[51, 153, 255]),
-        6: dict(link=("right_shoulder", "right_hip"), id=6, color=[51, 153, 255]),
-        7: dict(link=("left_shoulder", "right_shoulder"), id=7, color=[51, 153, 255]),
+        6: dict(
+            link=("right_shoulder", "right_hip"), id=6, color=[51, 153, 255]
+        ),
+        7: dict(
+            link=("left_shoulder", "right_shoulder"), id=7, color=[51, 153, 255]
+        ),
         8: dict(link=("left_shoulder", "left_elbow"), id=8, color=[0, 255, 0]),
-        9: dict(link=("right_shoulder", "right_elbow"), id=9, color=[255, 128, 0]),
+        9: dict(
+            link=("right_shoulder", "right_elbow"), id=9, color=[255, 128, 0]
+        ),
         10: dict(link=("left_elbow", "left_wrist"), id=10, color=[0, 255, 0]),
-        11: dict(link=("right_elbow", "right_wrist"), id=11, color=[255, 128, 0]),
+        11: dict(
+            link=("right_elbow", "right_wrist"), id=11, color=[255, 128, 0]
+        ),
         12: dict(link=("left_eye", "right_eye"), id=12, color=[51, 153, 255]),
         13: dict(link=("nose", "left_eye"), id=13, color=[51, 153, 255]),
         14: dict(link=("nose", "right_eye"), id=14, color=[51, 153, 255]),
         15: dict(link=("left_eye", "left_ear"), id=15, color=[51, 153, 255]),
         16: dict(link=("right_eye", "right_ear"), id=16, color=[51, 153, 255]),
-        17: dict(link=("left_ear", "left_shoulder"), id=17, color=[51, 153, 255]),
-        18: dict(link=("right_ear", "right_shoulder"), id=18, color=[51, 153, 255]),
+        17: dict(
+            link=("left_ear", "left_shoulder"), id=17, color=[51, 153, 255]
+        ),
+        18: dict(
+            link=("right_ear", "right_shoulder"), id=18, color=[51, 153, 255]
+        ),
         19: dict(link=("left_ankle", "left_big_toe"), id=19, color=[0, 255, 0]),
-        20: dict(link=("left_ankle", "left_small_toe"), id=20, color=[0, 255, 0]),
+        20: dict(
+            link=("left_ankle", "left_small_toe"), id=20, color=[0, 255, 0]
+        ),
         21: dict(link=("left_ankle", "left_heel"), id=21, color=[0, 255, 0]),
-        22: dict(link=("right_ankle", "right_big_toe"), id=22, color=[255, 128, 0]),
-        23: dict(link=("right_ankle", "right_small_toe"), id=23, color=[255, 128, 0]),
-        24: dict(link=("right_ankle", "right_heel"), id=24, color=[255, 128, 0]),
+        22: dict(
+            link=("right_ankle", "right_big_toe"), id=22, color=[255, 128, 0]
+        ),
+        23: dict(
+            link=("right_ankle", "right_small_toe"), id=23, color=[255, 128, 0]
+        ),
+        24: dict(
+            link=("right_ankle", "right_heel"), id=24, color=[255, 128, 0]
+        ),
         25: dict(
-            link=("left_wrist", "left_thumb_third_joint"), id=25, color=[255, 128, 0]
+            link=("left_wrist", "left_thumb_third_joint"),
+            id=25,
+            color=[255, 128, 0],
         ),
         26: dict(
-            link=("left_thumb_third_joint", "left_thumb2"), id=26, color=[255, 128, 0]
+            link=("left_thumb_third_joint", "left_thumb2"),
+            id=26,
+            color=[255, 128, 0],
         ),
-        27: dict(link=("left_thumb2", "left_thumb3"), id=27, color=[255, 128, 0]),
-        28: dict(link=("left_thumb3", "left_thumb4"), id=28, color=[255, 128, 0]),
+        27: dict(
+            link=("left_thumb2", "left_thumb3"), id=27, color=[255, 128, 0]
+        ),
+        28: dict(
+            link=("left_thumb3", "left_thumb4"), id=28, color=[255, 128, 0]
+        ),
         29: dict(
             link=("left_wrist", "left_forefinger_third_joint"),
             id=29,
@@ -658,10 +710,14 @@ pose_info = dict(
             color=[255, 153, 255],
         ),
         31: dict(
-            link=("left_forefinger2", "left_forefinger3"), id=31, color=[255, 153, 255]
+            link=("left_forefinger2", "left_forefinger3"),
+            id=31,
+            color=[255, 153, 255],
         ),
         32: dict(
-            link=("left_forefinger3", "left_forefinger4"), id=32, color=[255, 153, 255]
+            link=("left_forefinger3", "left_forefinger4"),
+            id=32,
+            color=[255, 153, 255],
         ),
         33: dict(
             link=("left_wrist", "left_middle_finger_third_joint"),
@@ -694,10 +750,14 @@ pose_info = dict(
             color=[255, 51, 51],
         ),
         39: dict(
-            link=("left_ring_finger2", "left_ring_finger3"), id=39, color=[255, 51, 51]
+            link=("left_ring_finger2", "left_ring_finger3"),
+            id=39,
+            color=[255, 51, 51],
         ),
         40: dict(
-            link=("left_ring_finger3", "left_ring_finger4"), id=40, color=[255, 51, 51]
+            link=("left_ring_finger3", "left_ring_finger4"),
+            id=40,
+            color=[255, 51, 51],
         ),
         41: dict(
             link=("left_wrist", "left_pinky_finger_third_joint"),
@@ -710,19 +770,31 @@ pose_info = dict(
             color=[0, 255, 0],
         ),
         43: dict(
-            link=("left_pinky_finger2", "left_pinky_finger3"), id=43, color=[0, 255, 0]
+            link=("left_pinky_finger2", "left_pinky_finger3"),
+            id=43,
+            color=[0, 255, 0],
         ),
         44: dict(
-            link=("left_pinky_finger3", "left_pinky_finger4"), id=44, color=[0, 255, 0]
+            link=("left_pinky_finger3", "left_pinky_finger4"),
+            id=44,
+            color=[0, 255, 0],
         ),
         45: dict(
-            link=("right_wrist", "right_thumb_third_joint"), id=45, color=[255, 128, 0]
+            link=("right_wrist", "right_thumb_third_joint"),
+            id=45,
+            color=[255, 128, 0],
         ),
         46: dict(
-            link=("right_thumb_third_joint", "right_thumb2"), id=46, color=[255, 128, 0]
+            link=("right_thumb_third_joint", "right_thumb2"),
+            id=46,
+            color=[255, 128, 0],
         ),
-        47: dict(link=("right_thumb2", "right_thumb3"), id=47, color=[255, 128, 0]),
-        48: dict(link=("right_thumb3", "right_thumb4"), id=48, color=[255, 128, 0]),
+        47: dict(
+            link=("right_thumb2", "right_thumb3"), id=47, color=[255, 128, 0]
+        ),
+        48: dict(
+            link=("right_thumb3", "right_thumb4"), id=48, color=[255, 128, 0]
+        ),
         49: dict(
             link=("right_wrist", "right_forefinger_third_joint"),
             id=49,

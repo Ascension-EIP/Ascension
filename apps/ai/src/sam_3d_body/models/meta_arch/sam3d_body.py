@@ -25,7 +25,6 @@ from ..modules.transformer import FFN, MLP
 
 from .base_model import BaseModel
 
-
 logger = get_pylogger(__name__)
 
 
@@ -45,17 +44,23 @@ class SAM3DBody(BaseModel):
 
     def _initialze_model(self):
         self.register_buffer(
-            "image_mean", torch.tensor(self.cfg.MODEL.IMAGE_MEAN).view(-1, 1, 1), False
+            "image_mean",
+            torch.tensor(self.cfg.MODEL.IMAGE_MEAN).view(-1, 1, 1),
+            False,
         )
         self.register_buffer(
-            "image_std", torch.tensor(self.cfg.MODEL.IMAGE_STD).view(-1, 1, 1), False
+            "image_std",
+            torch.tensor(self.cfg.MODEL.IMAGE_STD).view(-1, 1, 1),
+            False,
         )
 
         # Create backbone feature extractor for human crops
         self.backbone = create_backbone(self.cfg.MODEL.BACKBONE.TYPE, self.cfg)
 
         # Create header for pose estimation output
-        self.head_pose = build_head(self.cfg, self.cfg.MODEL.PERSON_HEAD.POSE_TYPE)
+        self.head_pose = build_head(
+            self.cfg, self.cfg.MODEL.PERSON_HEAD.POSE_TYPE
+        )
         self.head_pose.hand_pose_comps_ori = nn.Parameter(
             self.head_pose.hand_pose_comps.clone(), requires_grad=False
         )
@@ -69,7 +74,9 @@ class SAM3DBody(BaseModel):
 
         # Define header for hand pose estimation
         self.head_pose_hand = build_head(
-            self.cfg, self.cfg.MODEL.PERSON_HEAD.POSE_TYPE, enable_hand_model=True
+            self.cfg,
+            self.cfg.MODEL.PERSON_HEAD.POSE_TYPE,
+            enable_hand_model=True,
         )
         self.head_pose_hand.hand_pose_comps_ori = nn.Parameter(
             self.head_pose_hand.hand_pose_comps.clone(), requires_grad=False
@@ -79,7 +86,9 @@ class SAM3DBody(BaseModel):
         )
         self.init_pose_hand = nn.Embedding(1, self.head_pose_hand.npose)
 
-        self.head_camera = build_head(self.cfg, self.cfg.MODEL.PERSON_HEAD.CAMERA_TYPE)
+        self.head_camera = build_head(
+            self.cfg, self.cfg.MODEL.PERSON_HEAD.CAMERA_TYPE
+        )
         self.init_camera = nn.Embedding(1, self.head_camera.ncam)
         nn.init.zeros_(self.init_camera.weight)
 
@@ -102,7 +111,9 @@ class SAM3DBody(BaseModel):
         self.prev_to_token_mhr = nn.Linear(
             init_dim - cond_dim, self.cfg.MODEL.DECODER.DIM
         )
-        self.init_to_token_mhr_hand = nn.Linear(init_dim, self.cfg.MODEL.DECODER.DIM)
+        self.init_to_token_mhr_hand = nn.Linear(
+            init_dim, self.cfg.MODEL.DECODER.DIM
+        )
         self.prev_to_token_mhr_hand = nn.Linear(
             init_dim - cond_dim, self.cfg.MODEL.DECODER.DIM
         )
@@ -132,13 +143,18 @@ class SAM3DBody(BaseModel):
                 prompt_keypoints=self.prompt_keypoints,
                 keybody_idx=(
                     KEY_BODY
-                    if not self.cfg.MODEL.PROMPT_ENCODER.get("SAMPLE_HAND", False)
+                    if not self.cfg.MODEL.PROMPT_ENCODER.get(
+                        "SAMPLE_HAND", False
+                    )
                     else KEY_RIGHT_HAND
                 ),
             )
             # To keep track of prompting history
             self.prompt_hist = np.zeros(
-                (len(set(self.prompt_keypoints.values())) + 2, self.max_num_clicks),
+                (
+                    len(set(self.prompt_keypoints.values())) + 2,
+                    self.max_num_clicks,
+                ),
                 dtype=np.float32,
             )
 
@@ -154,7 +170,9 @@ class SAM3DBody(BaseModel):
         self.decoder_hand = build_decoder(
             self.cfg.MODEL.DECODER, context_dim=self.backbone.embed_dims
         )
-        self.hand_pe_layer = PositionEmbeddingRandom(self.backbone.embed_dims // 2)
+        self.hand_pe_layer = PositionEmbeddingRandom(
+            self.backbone.embed_dims // 2
+        )
 
         # Manually convert the torso of the model to fp16.
         if self.cfg.TRAIN.USE_FP16:
@@ -273,12 +291,17 @@ class SAM3DBody(BaseModel):
                     .contiguous()
                 )[:, [0, 1], [2, 2]]
                 condition_info = torch.cat(
-                    [cx - full_img_cxy[:, [0]], cy - full_img_cxy[:, [1]], b], dim=-1
+                    [cx - full_img_cxy[:, [0]], cy - full_img_cxy[:, [1]], b],
+                    dim=-1,
                 )
-            condition_info[:, :2] = condition_info[:, :2] / focal_length.unsqueeze(
+            condition_info[:, :2] = condition_info[
+                :, :2
+            ] / focal_length.unsqueeze(
                 -1
             )  # [-1, 1]
-            condition_info[:, 2] = condition_info[:, 2] / focal_length  # [-1, 1]
+            condition_info[:, 2] = (
+                condition_info[:, 2] / focal_length
+            )  # [-1, 1]
         elif self.cfg.MODEL.DECODER.CONDITION_TYPE == "none":
             return None
         else:
@@ -313,11 +336,13 @@ class SAM3DBody(BaseModel):
 
         # Initial estimation for residual prediction.
         if init_estimate is None:
-            init_pose = self.init_pose.weight.expand(batch_size, -1).unsqueeze(dim=1)
+            init_pose = self.init_pose.weight.expand(batch_size, -1).unsqueeze(
+                dim=1
+            )
             if hasattr(self, "init_camera"):
-                init_camera = self.init_camera.weight.expand(batch_size, -1).unsqueeze(
-                    dim=1
-                )
+                init_camera = self.init_camera.weight.expand(
+                    batch_size, -1
+                ).unsqueeze(dim=1)
 
             init_estimate = (
                 init_pose
@@ -370,7 +395,9 @@ class SAM3DBody(BaseModel):
                     image_embeddings.shape[-2:]
                 )  # (1, C, H, W)
 
-            image_embeddings = self.ray_cond_emb(image_embeddings, batch["ray_cond"])
+            image_embeddings = self.ray_cond_emb(
+                image_embeddings, batch["ray_cond"]
+            )
 
             # To start, keypoints is all [0, 0, -2]. The points get sent into self.pe_layer._pe_encoding,
             # the labels determine the embedding weight (special one for -2, -1, then each of joint.)
@@ -425,7 +452,9 @@ class SAM3DBody(BaseModel):
             token_embeddings = torch.cat(
                 [
                     token_embeddings,
-                    self.keypoint_embedding.weight[None, :, :].repeat(batch_size, 1, 1),
+                    self.keypoint_embedding.weight[None, :, :].repeat(
+                        batch_size, 1, 1
+                    ),
                 ],
                 dim=1,
             )  # B x 3 + 70 x 1024
@@ -433,7 +462,9 @@ class SAM3DBody(BaseModel):
             token_augment = torch.cat(
                 [
                     token_augment,
-                    torch.zeros_like(token_embeddings[:, token_augment.shape[1] :, :]),
+                    torch.zeros_like(
+                        token_embeddings[:, token_augment.shape[1] :, :]
+                    ),
                 ],
                 dim=1,
             )  # B x 3 + 70 x 1024
@@ -492,7 +523,9 @@ class SAM3DBody(BaseModel):
         # Combine the 2D and 3D functionse
         def keypoint_token_update_fn_comb(*args):
             if kp_token_update_fn is not None:
-                args = kp_token_update_fn(kps_emb_start_idx, image_embeddings, *args)
+                args = kp_token_update_fn(
+                    kps_emb_start_idx, image_embeddings, *args
+                )
             if kp3d_token_update_fn is not None:
                 args = kp3d_token_update_fn(kps3d_emb_start_idx, *args)
             return args
@@ -509,7 +542,9 @@ class SAM3DBody(BaseModel):
 
         if self.cfg.MODEL.DECODER.get("DO_HAND_DETECT_TOKENS", False):
             return (
-                pose_token[:, hand_det_emb_start_idx : hand_det_emb_start_idx + 2],
+                pose_token[
+                    :, hand_det_emb_start_idx : hand_det_emb_start_idx + 2
+                ],
                 pose_output,
             )
         else:
@@ -542,9 +577,9 @@ class SAM3DBody(BaseModel):
 
         # Initial estimation for residual prediction.
         if init_estimate is None:
-            init_pose = self.init_pose_hand.weight.expand(batch_size, -1).unsqueeze(
-                dim=1
-            )
+            init_pose = self.init_pose_hand.weight.expand(
+                batch_size, -1
+            ).unsqueeze(dim=1)
             if hasattr(self, "init_camera_hand"):
                 init_camera = self.init_camera_hand.weight.expand(
                     batch_size, -1
@@ -584,12 +619,16 @@ class SAM3DBody(BaseModel):
                 "vit_l",
             ]:
                 # ViT backbone assumes a different aspect ratio as input size
-                image_augment = self.hand_pe_layer((16, 16)).unsqueeze(0)[:, :, :, 2:-2]
+                image_augment = self.hand_pe_layer((16, 16)).unsqueeze(0)[
+                    :, :, :, 2:-2
+                ]
             elif self.cfg.MODEL.BACKBONE.TYPE in [
                 "vit_hmr_512_384",
             ]:
                 # ViT backbone assumes a different aspect ratio as input size
-                image_augment = self.hand_pe_layer((32, 32)).unsqueeze(0)[:, :, :, 4:-4]
+                image_augment = self.hand_pe_layer((32, 32)).unsqueeze(0)[
+                    :, :, :, 4:-4
+                ]
             else:
                 image_augment = self.hand_pe_layer(
                     image_embeddings.shape[-2:]
@@ -664,7 +703,9 @@ class SAM3DBody(BaseModel):
             token_augment = torch.cat(
                 [
                     token_augment,
-                    torch.zeros_like(token_embeddings[:, token_augment.shape[1] :, :]),
+                    torch.zeros_like(
+                        token_embeddings[:, token_augment.shape[1] :, :]
+                    ),
                 ],
                 dim=1,
             )  # B x 3 + 70 x 1024
@@ -675,9 +716,9 @@ class SAM3DBody(BaseModel):
                 token_embeddings = torch.cat(
                     [
                         token_embeddings,
-                        self.keypoint3d_embedding_hand.weight[None, :, :].repeat(
-                            batch_size, 1, 1
-                        ),
+                        self.keypoint3d_embedding_hand.weight[
+                            None, :, :
+                        ].repeat(batch_size, 1, 1),
                     ],
                     dim=1,
                 )  # B x 3 + 70 + 70 x 1024
@@ -725,7 +766,9 @@ class SAM3DBody(BaseModel):
         # Combine the 2D and 3D functionse
         def keypoint_token_update_fn_comb(*args):
             if kp_token_update_fn is not None:
-                args = kp_token_update_fn(kps_emb_start_idx, image_embeddings, *args)
+                args = kp_token_update_fn(
+                    kps_emb_start_idx, image_embeddings, *args
+                )
             if kp3d_token_update_fn is not None:
                 args = kp3d_token_update_fn(kps3d_emb_start_idx, *args)
             return args
@@ -742,7 +785,9 @@ class SAM3DBody(BaseModel):
 
         if self.cfg.MODEL.DECODER.get("DO_HAND_DETECT_TOKENS", False):
             return (
-                pose_token[:, hand_det_emb_start_idx : hand_det_emb_start_idx + 2],
+                pose_token[
+                    :, hand_det_emb_start_idx : hand_det_emb_start_idx + 2
+                ],
                 pose_output,
             )
         else:
@@ -765,8 +810,10 @@ class SAM3DBody(BaseModel):
 
     def _get_mask_prompt(self, batch, image_embeddings):
         x_mask = self._flatten_person(batch["mask"])
-        mask_embeddings, no_mask_embeddings = self.prompt_encoder.get_mask_embeddings(
-            x_mask, image_embeddings.shape[0], image_embeddings.shape[2:]
+        mask_embeddings, no_mask_embeddings = (
+            self.prompt_encoder.get_mask_embeddings(
+                x_mask, image_embeddings.shape[0], image_embeddings.shape[2:]
+            )
         )
         if self.cfg.MODEL.BACKBONE.TYPE in [
             "vit_hmr",
@@ -807,12 +854,17 @@ class SAM3DBody(BaseModel):
             ).unsqueeze(dim=1)
             if hasattr(self, "init_camera"):
                 prev_estimate = torch.cat(
-                    [prev_estimate, pose_output["pred_cam"].detach().unsqueeze(1)],
+                    [
+                        prev_estimate,
+                        pose_output["pred_cam"].detach().unsqueeze(1),
+                    ],
                     dim=-1,
                 )
             prev_shape = prev_estimate.shape[1:]
 
-            pred_keypoints_2d = output["mhr"]["pred_keypoints_2d"].detach().clone()
+            pred_keypoints_2d = (
+                output["mhr"]["pred_keypoints_2d"].detach().clone()
+            )
             kpt_shape = pred_keypoints_2d.shape[1:]
 
         if "mhr_hand" in output and output["mhr_hand"] is not None:
@@ -844,7 +896,8 @@ class SAM3DBody(BaseModel):
             kpt_shape = pred_keypoints_2d_hand.shape[1:]
 
         all_prev_estimate = torch.zeros(
-            (image_embeddings.shape[0], *prev_shape), device=image_embeddings.device
+            (image_embeddings.shape[0], *prev_shape),
+            device=image_embeddings.device,
         )
         if "mhr" in output and output["mhr"] is not None:
             all_prev_estimate[self.body_batch_idx] = prev_estimate
@@ -853,16 +906,21 @@ class SAM3DBody(BaseModel):
 
         # Get keypoint prompts
         all_pred_keypoints_2d = torch.zeros(
-            (image_embeddings.shape[0], *kpt_shape), device=image_embeddings.device
+            (image_embeddings.shape[0], *kpt_shape),
+            device=image_embeddings.device,
         )
         if "mhr" in output and output["mhr"] is not None:
             all_pred_keypoints_2d[self.body_batch_idx] = pred_keypoints_2d
         if "mhr_hand" in output and output["mhr_hand"] is not None:
             all_pred_keypoints_2d[self.hand_batch_idx] = pred_keypoints_2d_hand
 
-        keypoint_prompt = self._get_keypoint_prompt(batch, all_pred_keypoints_2d)
+        keypoint_prompt = self._get_keypoint_prompt(
+            batch, all_pred_keypoints_2d
+        )
         if len(prev_prompt):
-            cur_keypoint_prompt = torch.cat(prev_prompt + [keypoint_prompt], dim=1)
+            cur_keypoint_prompt = torch.cat(
+                prev_prompt + [keypoint_prompt], dim=1
+            )
         else:
             cur_keypoint_prompt = keypoint_prompt  # [B, 1, 3]
 
@@ -897,20 +955,25 @@ class SAM3DBody(BaseModel):
     ) -> torch.Tensor:
         """Convert full-image keypoints coordinates to crop and normalize to [-0.5. 0.5]"""
         pred_keypoints_2d_cropped = torch.cat(
-            [pred_keypoints_2d, torch.ones_like(pred_keypoints_2d[:, :, [-1]])], dim=-1
+            [pred_keypoints_2d, torch.ones_like(pred_keypoints_2d[:, :, [-1]])],
+            dim=-1,
         )
         if batch_idx is not None:
-            affine_trans = self._flatten_person(batch["affine_trans"])[batch_idx].to(
-                pred_keypoints_2d_cropped
-            )
-            img_size = self._flatten_person(batch["img_size"])[batch_idx].unsqueeze(1)
+            affine_trans = self._flatten_person(batch["affine_trans"])[
+                batch_idx
+            ].to(pred_keypoints_2d_cropped)
+            img_size = self._flatten_person(batch["img_size"])[
+                batch_idx
+            ].unsqueeze(1)
         else:
             affine_trans = self._flatten_person(batch["affine_trans"]).to(
                 pred_keypoints_2d_cropped
             )
             img_size = self._flatten_person(batch["img_size"]).unsqueeze(1)
         pred_keypoints_2d_cropped = pred_keypoints_2d_cropped @ affine_trans.mT
-        pred_keypoints_2d_cropped = pred_keypoints_2d_cropped[..., :2] / img_size - 0.5
+        pred_keypoints_2d_cropped = (
+            pred_keypoints_2d_cropped[..., :2] / img_size - 0.5
+        )
 
         return pred_keypoints_2d_cropped
 
@@ -941,7 +1004,9 @@ class SAM3DBody(BaseModel):
                 .expand(-1, batch["img"].shape[1], -1, -1)
                 .contiguous()
             )[self.body_batch_idx],
-            use_intrin_center=self.cfg.MODEL.DECODER.get("USE_INTRIN_CENTER", False),
+            use_intrin_center=self.cfg.MODEL.DECODER.get(
+                "USE_INTRIN_CENTER", False
+            ),
         )
 
         if pose_output.get("pred_vertices", None) is not None:
@@ -949,8 +1014,12 @@ class SAM3DBody(BaseModel):
                 pose_output["pred_vertices"],
                 pred_cam,
                 self._flatten_person(batch["bbox_center"])[self.body_batch_idx],
-                self._flatten_person(batch["bbox_scale"])[self.body_batch_idx, 0],
-                self._flatten_person(batch["ori_img_size"])[self.body_batch_idx],
+                self._flatten_person(batch["bbox_scale"])[
+                    self.body_batch_idx, 0
+                ],
+                self._flatten_person(batch["ori_img_size"])[
+                    self.body_batch_idx
+                ],
                 self._flatten_person(
                     batch["cam_int"]
                     .unsqueeze(1)
@@ -996,7 +1065,9 @@ class SAM3DBody(BaseModel):
                 .expand(-1, batch["img"].shape[1], -1, -1)
                 .contiguous()
             )[self.hand_batch_idx],
-            use_intrin_center=self.cfg.MODEL.DECODER.get("USE_INTRIN_CENTER", False),
+            use_intrin_center=self.cfg.MODEL.DECODER.get(
+                "USE_INTRIN_CENTER", False
+            ),
         )
 
         if pose_output.get("pred_vertices", None) is not None:
@@ -1004,8 +1075,12 @@ class SAM3DBody(BaseModel):
                 pose_output["pred_vertices"],
                 pred_cam,
                 self._flatten_person(batch["bbox_center"])[self.hand_batch_idx],
-                self._flatten_person(batch["bbox_scale"])[self.hand_batch_idx, 0],
-                self._flatten_person(batch["ori_img_size"])[self.hand_batch_idx],
+                self._flatten_person(batch["bbox_scale"])[
+                    self.hand_batch_idx, 0
+                ],
+                self._flatten_person(batch["ori_img_size"])[
+                    self.hand_batch_idx
+                ],
                 self._flatten_person(
                     batch["cam_int"]
                     .unsqueeze(1)
@@ -1028,13 +1103,15 @@ class SAM3DBody(BaseModel):
         B, N, _, H, W = batch["img"].shape
         meshgrid_xy = (
             torch.stack(
-                torch.meshgrid(torch.arange(H), torch.arange(W), indexing="xy"), dim=2
+                torch.meshgrid(torch.arange(H), torch.arange(W), indexing="xy"),
+                dim=2,
             )[None, None, :, :, :]
             .repeat(B, N, 1, 1, 1)
             .cuda()
         )  # B x N x H x W x 2
         meshgrid_xy = (
-            meshgrid_xy / batch["affine_trans"][:, :, None, None, [0, 1], [0, 1]]
+            meshgrid_xy
+            / batch["affine_trans"][:, :, None, None, [0, 1], [0, 1]]
         )
         meshgrid_xy = (
             meshgrid_xy
@@ -1074,7 +1151,9 @@ class SAM3DBody(BaseModel):
         )
 
         # Optionally get ray conditioining
-        ray_cond = self.get_ray_condition(batch)  # This is B x num_person x 2 x H x W
+        ray_cond = self.get_ray_condition(
+            batch
+        )  # This is B x num_person x 2 x H x W
         ray_cond = self._flatten_person(ray_cond)
         if self.cfg.MODEL.BACKBONE.TYPE in [
             "vit_hmr",
@@ -1103,7 +1182,10 @@ class SAM3DBody(BaseModel):
         image_embeddings = image_embeddings.type(x.dtype)
 
         # Mask condition if available
-        if self.cfg.MODEL.PROMPT_ENCODER.get("MASK_EMBED_TYPE", None) is not None:
+        if (
+            self.cfg.MODEL.PROMPT_ENCODER.get("MASK_EMBED_TYPE", None)
+            is not None
+        ):
             # v1: non-iterative mask conditioning
             if self.cfg.MODEL.PROMPT_ENCODER.get("MASK_PROMPT", "v1") == "v1":
                 mask_embeddings = self._get_mask_prompt(batch, image_embeddings)
@@ -1115,7 +1197,9 @@ class SAM3DBody(BaseModel):
         condition_info = self._get_decoder_condition(batch)
 
         # Initial estimate with a dummy prompt
-        keypoints_prompt = torch.zeros((batch_size * num_person, 1, 3)).to(batch["img"])
+        keypoints_prompt = torch.zeros((batch_size * num_person, 1, 3)).to(
+            batch["img"]
+        )
         keypoints_prompt[:, :, -1] = -2
 
         # Forward promptable decoder to get updated pose tokens and regression output
@@ -1228,9 +1312,9 @@ class SAM3DBody(BaseModel):
         left_xyxy, right_xyxy = self._get_hand_box(pose_output, batch)
         ori_local_wrist_rotmat = roma.euler_to_rotmat(
             "XZY",
-            pose_output["mhr"]["body_pose"][:, [41, 43, 42, 31, 33, 32]].unflatten(
-                1, (2, 3)
-            ),
+            pose_output["mhr"]["body_pose"][
+                :, [41, 43, 42, 31, 33, 32]
+            ].unflatten(1, (2, 3)),
         )
 
         # Step 2. Re-run with each hand
@@ -1262,14 +1346,14 @@ class SAM3DBody(BaseModel):
             - scale_l_hands_mean
         ) / scale_l_hands_std
         ## Get the right hand global rotation, flip it, put it in as left.
-        lhand_output["mhr_hand"]["joint_global_rots"][:, 78] = lhand_output["mhr_hand"][
-            "joint_global_rots"
-        ][:, 42].clone()
+        lhand_output["mhr_hand"]["joint_global_rots"][:, 78] = lhand_output[
+            "mhr_hand"
+        ]["joint_global_rots"][:, 42].clone()
         lhand_output["mhr_hand"]["joint_global_rots"][:, 78, [1, 2], :] *= -1
         ### Flip hand pose
-        lhand_output["mhr_hand"]["hand"][:, :54] = lhand_output["mhr_hand"]["hand"][
-            :, 54:
-        ]
+        lhand_output["mhr_hand"]["hand"][:, :54] = lhand_output["mhr_hand"][
+            "hand"
+        ][:, 54:]
         ### Unflip box
         batch_lhand["bbox_center"][:, :, 0] = (
             width - batch_lhand["bbox_center"][:, :, 0] - 1
@@ -1287,9 +1371,13 @@ class SAM3DBody(BaseModel):
         joint_rotations = pose_output["mhr"]["joint_global_rots"]
         ### Get lowarm
         lowarm_joint_idxs = torch.LongTensor([76, 40]).cuda()  # left, right
-        lowarm_joint_rotations = joint_rotations[:, lowarm_joint_idxs]  # B x 2 x 3 x 3
+        lowarm_joint_rotations = joint_rotations[
+            :, lowarm_joint_idxs
+        ]  # B x 2 x 3 x 3
         ### Get zero-wrist pose
-        wrist_twist_joint_idxs = torch.LongTensor([77, 41]).cuda()  # left, right
+        wrist_twist_joint_idxs = torch.LongTensor(
+            [77, 41]
+        ).cuda()  # left, right
         wrist_zero_rot_pose = (
             lowarm_joint_rotations
             @ self.head_pose.joint_rotation[wrist_twist_joint_idxs]
@@ -1317,12 +1405,14 @@ class SAM3DBody(BaseModel):
         hand_box_size_thresh = 64
         hand_box_size_valid_mask = torch.stack(
             [
-                (batch_lhand["bbox_scale"].flatten(0, 1) > hand_box_size_thresh).all(
-                    dim=1
-                ),
-                (batch_rhand["bbox_scale"].flatten(0, 1) > hand_box_size_thresh).all(
-                    dim=1
-                ),
+                (
+                    batch_lhand["bbox_scale"].flatten(0, 1)
+                    > hand_box_size_thresh
+                ).all(dim=1),
+                (
+                    batch_rhand["bbox_scale"].flatten(0, 1)
+                    > hand_box_size_thresh
+                ).all(dim=1),
             ],
             dim=1,
         )
@@ -1353,16 +1443,18 @@ class SAM3DBody(BaseModel):
         left_kps_full = lhand_output["mhr_hand"]["pred_keypoints_2d"][
             :, [kps_right_wrist_idx]
         ].clone()
-        left_kps_full[:, :, 0] = width - left_kps_full[:, :, 0] - 1  # Flip left hand
+        left_kps_full[:, :, 0] = (
+            width - left_kps_full[:, :, 0] - 1
+        )  # Flip left hand
         body_right_kps_full = pose_output["mhr"]["pred_keypoints_2d"][
             :, [kps_right_wrist_idx]
         ].clone()
         body_left_kps_full = pose_output["mhr"]["pred_keypoints_2d"][
             :, [kps_left_wrist_idx]
         ].clone()
-        right_kps_dist = (right_kps_full - body_right_kps_full).flatten(0, 1).norm(
-            dim=-1
-        ) / batch_lhand["bbox_scale"].flatten(0, 1)[:, 0]
+        right_kps_dist = (right_kps_full - body_right_kps_full).flatten(
+            0, 1
+        ).norm(dim=-1) / batch_lhand["bbox_scale"].flatten(0, 1)[:, 0]
         left_kps_dist = (left_kps_full - body_left_kps_full).flatten(0, 1).norm(
             dim=-1
         ) / batch_rhand["bbox_scale"].flatten(0, 1)[:, 0]
@@ -1397,7 +1489,9 @@ class SAM3DBody(BaseModel):
         left_kps_full = lhand_output["mhr_hand"]["pred_keypoints_2d"][
             :, [kps_right_wrist_idx]
         ].clone()
-        left_kps_full[:, :, 0] = width - left_kps_full[:, :, 0] - 1  # Flip left hand
+        left_kps_full[:, :, 0] = (
+            width - left_kps_full[:, :, 0] - 1
+        )  # Flip left hand
 
         # Next, get them to crop-normalized space.
         right_kps_crop = self._full_to_crop(batch, right_kps_full)
@@ -1419,7 +1513,12 @@ class SAM3DBody(BaseModel):
 
         # Assemble them into keypoint prompts
         keypoint_prompt = torch.cat(
-            [right_kps_crop, left_kps_crop, right_kps_elbow_crop, left_kps_elbow_crop],
+            [
+                right_kps_crop,
+                left_kps_crop,
+                right_kps_elbow_crop,
+                left_kps_elbow_crop,
+            ],
             dim=1,
         )
         keypoint_prompt = torch.cat(
@@ -1444,7 +1543,9 @@ class SAM3DBody(BaseModel):
             keypoint_prompt[:, :, :2] = torch.clamp(
                 keypoint_prompt[:, :, :2] + 0.5, min=0.0, max=1.0
             )  # [-0.5, 0.5] --> [0, 1]
-            keypoint_prompt = torch.where(invalid_prompt, dummy_prompt, keypoint_prompt)
+            keypoint_prompt = torch.where(
+                invalid_prompt, dummy_prompt, keypoint_prompt
+            )
         else:
             # Only keep valid keypoints
             valid_keypoint = (
@@ -1506,10 +1607,14 @@ class SAM3DBody(BaseModel):
 
         # Get lowarm
         lowarm_joint_idxs = torch.LongTensor([76, 40]).cuda()  # left, right
-        lowarm_joint_rotations = joint_rotations[:, lowarm_joint_idxs]  # B x 2 x 3 x 3
+        lowarm_joint_rotations = joint_rotations[
+            :, lowarm_joint_idxs
+        ]  # B x 2 x 3 x 3
 
         # Get zero-wrist pose
-        wrist_twist_joint_idxs = torch.LongTensor([77, 41]).cuda()  # left, right
+        wrist_twist_joint_idxs = torch.LongTensor(
+            [77, 41]
+        ).cuda()  # left, right
         wrist_zero_rot_pose = (
             lowarm_joint_rotations
             @ self.head_pose.joint_rotation[wrist_twist_joint_idxs]
@@ -1556,7 +1661,10 @@ class SAM3DBody(BaseModel):
         ).flatten(1, 2)
 
         hand_scale = torch.stack(
-            [pose_output["mhr"]["scale"][:, 9], pose_output["mhr"]["scale"][:, 8]],
+            [
+                pose_output["mhr"]["scale"][:, 9],
+                pose_output["mhr"]["scale"][:, 8],
+            ],
             dim=1,
         )
         updated_hand_scale = torch.stack(
@@ -1629,20 +1737,22 @@ class SAM3DBody(BaseModel):
             pose_output["mhr"]["pred_keypoints_3d"]
             + pose_output["mhr"]["pred_cam_t"][:, None, :]
         )
-        pred_keypoints_3d_proj[:, :, [0, 1]] *= pose_output["mhr"]["focal_length"][
-            :, None, None
-        ]
+        pred_keypoints_3d_proj[:, :, [0, 1]] *= pose_output["mhr"][
+            "focal_length"
+        ][:, None, None]
         pred_keypoints_3d_proj[:, :, [0, 1]] = (
             pred_keypoints_3d_proj[:, :, [0, 1]]
-            + torch.FloatTensor([width / 2, height / 2]).to(pred_keypoints_3d_proj)[
-                None, None, :
-            ]
+            + torch.FloatTensor([width / 2, height / 2]).to(
+                pred_keypoints_3d_proj
+            )[None, None, :]
             * pred_keypoints_3d_proj[:, :, [2]]
         )
         pred_keypoints_3d_proj[:, :, :2] = (
             pred_keypoints_3d_proj[:, :, :2] / pred_keypoints_3d_proj[:, :, [2]]
         )
-        pose_output["mhr"]["pred_keypoints_2d"] = pred_keypoints_3d_proj[:, :, :2]
+        pose_output["mhr"]["pred_keypoints_2d"] = pred_keypoints_3d_proj[
+            :, :, :2
+        ]
 
         return pose_output, batch_lhand, batch_rhand, lhand_output, rhand_output
 
@@ -1694,11 +1804,15 @@ class SAM3DBody(BaseModel):
         # Change boxes into squares
         batch["left_center"] = pred_left_hand_box[:, :2]
         batch["left_scale"] = (
-            pred_left_hand_box[:, 2:].max(axis=1, keepdims=True).repeat(2, axis=1)
+            pred_left_hand_box[:, 2:]
+            .max(axis=1, keepdims=True)
+            .repeat(2, axis=1)
         )
         batch["right_center"] = pred_right_hand_box[:, :2]
         batch["right_scale"] = (
-            pred_right_hand_box[:, 2:].max(axis=1, keepdims=True).repeat(2, axis=1)
+            pred_right_hand_box[:, 2:]
+            .max(axis=1, keepdims=True)
+            .repeat(2, axis=1)
         )
 
         # Crop to full. batch["affine_trans"] is full-to-crop, right application
@@ -1722,16 +1836,20 @@ class SAM3DBody(BaseModel):
         left_xyxy = np.concatenate(
             [
                 (
-                    batch["left_center"][:, 0] - batch["left_scale"][:, 0] * 1 / 2
+                    batch["left_center"][:, 0]
+                    - batch["left_scale"][:, 0] * 1 / 2
                 ).reshape(-1, 1),
                 (
-                    batch["left_center"][:, 1] - batch["left_scale"][:, 1] * 1 / 2
+                    batch["left_center"][:, 1]
+                    - batch["left_scale"][:, 1] * 1 / 2
                 ).reshape(-1, 1),
                 (
-                    batch["left_center"][:, 0] + batch["left_scale"][:, 0] * 1 / 2
+                    batch["left_center"][:, 0]
+                    + batch["left_scale"][:, 0] * 1 / 2
                 ).reshape(-1, 1),
                 (
-                    batch["left_center"][:, 1] + batch["left_scale"][:, 1] * 1 / 2
+                    batch["left_center"][:, 1]
+                    + batch["left_scale"][:, 1] * 1 / 2
                 ).reshape(-1, 1),
             ],
             axis=1,
@@ -1739,16 +1857,20 @@ class SAM3DBody(BaseModel):
         right_xyxy = np.concatenate(
             [
                 (
-                    batch["right_center"][:, 0] - batch["right_scale"][:, 0] * 1 / 2
+                    batch["right_center"][:, 0]
+                    - batch["right_scale"][:, 0] * 1 / 2
                 ).reshape(-1, 1),
                 (
-                    batch["right_center"][:, 1] - batch["right_scale"][:, 1] * 1 / 2
+                    batch["right_center"][:, 1]
+                    - batch["right_scale"][:, 1] * 1 / 2
                 ).reshape(-1, 1),
                 (
-                    batch["right_center"][:, 0] + batch["right_scale"][:, 0] * 1 / 2
+                    batch["right_center"][:, 0]
+                    + batch["right_scale"][:, 0] * 1 / 2
                 ).reshape(-1, 1),
                 (
-                    batch["right_center"][:, 1] + batch["right_scale"][:, 1] * 1 / 2
+                    batch["right_center"][:, 1]
+                    + batch["right_scale"][:, 1] * 1 / 2
                 ).reshape(-1, 1),
             ],
             axis=1,
@@ -1801,9 +1923,10 @@ class SAM3DBody(BaseModel):
         )
 
         # Run them through the prompt encoder's pos emb function
-        token_augment[:, kps_emb_start_idx : kps_emb_start_idx + num_keypoints, :] = (
-            self.keypoint_posemb_linear(pred_keypoints_2d_cropped)
-            * (~invalid_mask[:, :, None])
+        token_augment[
+            :, kps_emb_start_idx : kps_emb_start_idx + num_keypoints, :
+        ] = self.keypoint_posemb_linear(pred_keypoints_2d_cropped) * (
+            ~invalid_mask[:, :, None]
         )
 
         # Also maybe update token_embeddings with the grid sampled 2D feature.
@@ -1828,7 +1951,9 @@ class SAM3DBody(BaseModel):
         pred_keypoints_2d_cropped_feats = (
             F.grid_sample(
                 image_embeddings,
-                pred_keypoints_2d_cropped_sample_points[:, :, None, :],  # -1 ~ 1, xy
+                pred_keypoints_2d_cropped_sample_points[
+                    :, :, None, :
+                ],  # -1 ~ 1, xy
                 mode="bilinear",
                 padding_mode="zeros",
                 align_corners=False,
@@ -1935,9 +2060,10 @@ class SAM3DBody(BaseModel):
         )
 
         # Run them through the prompt encoder's pos emb function
-        token_augment[:, kps_emb_start_idx : kps_emb_start_idx + num_keypoints, :] = (
-            self.keypoint_posemb_linear_hand(pred_keypoints_2d_cropped)
-            * (~invalid_mask[:, :, None])
+        token_augment[
+            :, kps_emb_start_idx : kps_emb_start_idx + num_keypoints, :
+        ] = self.keypoint_posemb_linear_hand(pred_keypoints_2d_cropped) * (
+            ~invalid_mask[:, :, None]
         )
 
         # Also maybe update token_embeddings with the grid sampled 2D feature.
@@ -1962,7 +2088,9 @@ class SAM3DBody(BaseModel):
         pred_keypoints_2d_cropped_feats = (
             F.grid_sample(
                 image_embeddings,
-                pred_keypoints_2d_cropped_sample_points[:, :, None, :],  # -1 ~ 1, xy
+                pred_keypoints_2d_cropped_sample_points[
+                    :, :, None, :
+                ],  # -1 ~ 1, xy
                 mode="bilinear",
                 padding_mode="zeros",
                 align_corners=False,
@@ -2012,7 +2140,9 @@ class SAM3DBody(BaseModel):
         )
 
         # Get the kps we care about, _after_ pelvis norm (just in case idxs shift)
-        pred_keypoints_3d = pred_keypoints_3d[:, self.keypoint3d_embedding_idxs_hand]
+        pred_keypoints_3d = pred_keypoints_3d[
+            :, self.keypoint3d_embedding_idxs_hand
+        ]
 
         # Run through embedding MLP & put in
         token_augment = token_augment.clone()

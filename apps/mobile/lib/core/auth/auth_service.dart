@@ -49,9 +49,12 @@ class AuthService extends ChangeNotifier {
     await prefs.setString(AppConstants.accessTokenKey, accessToken);
     await prefs.setString(AppConstants.refreshTokenKey, refreshToken);
     await prefs.setString(AppConstants.userIdKey, userId);
-    if (username != null)
+    if (username != null) {
       await prefs.setString(AppConstants.usernameKey, username);
-    if (email != null) await prefs.setString(AppConstants.emailKey, email);
+    }
+    if (email != null) {
+      await prefs.setString(AppConstants.emailKey, email);
+    }
     _userId = userId;
     _username = username ?? _username;
     _email = email ?? _email;

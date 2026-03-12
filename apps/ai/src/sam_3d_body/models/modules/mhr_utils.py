@@ -1,15 +1,9 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 
-import json
-import math
-import os.path as osp
-import pickle
 
 import cv2
 
-import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 
 
@@ -96,7 +90,9 @@ def batch6DFromXYZ(r, return_9D=False):
     sy = rs[..., 1]
     sz = rs[..., 2]
 
-    result = torch.empty(list(r.shape[:-1]) + [3, 3], dtype=r.dtype).to(r.device)
+    result = torch.empty(list(r.shape[:-1]) + [3, 3], dtype=r.dtype).to(
+        r.device
+    )
 
     result[..., 0, 0] = cy * cz
     result[..., 0, 1] = -cx * sz + sx * sy * cz
@@ -131,7 +127,8 @@ def batchXYZfrom6D(poses):
     # Now get it into euler
     # https://github.com/papagina/RotationContinuity/blob/758b0ce551c06372cab7022d4c0bdf331c89c696/shapenet/code/tools.py#L412
     sy = torch.sqrt(
-        matrix[..., 0, 0] * matrix[..., 0, 0] + matrix[..., 1, 0] * matrix[..., 1, 0]
+        matrix[..., 0, 0] * matrix[..., 0, 0]
+        + matrix[..., 1, 0] * matrix[..., 1, 0]
     )
     singular = sy < 1e-6
     singular = singular.float()
@@ -165,7 +162,9 @@ def resize_image(image_array, scale_factor, interpolation=cv2.INTER_LINEAR):
 def compact_cont_to_model_params_hand(hand_cont):
     # These are ordered by joint, not model params ^^
     assert hand_cont.shape[-1] == 54
-    hand_dofs_in_order = torch.tensor([3, 1, 1, 3, 1, 1, 3, 1, 1, 3, 1, 1, 2, 3, 1, 1])
+    hand_dofs_in_order = torch.tensor(
+        [3, 1, 1, 3, 1, 1, 3, 1, 1, 3, 1, 1, 2, 3, 1, 1]
+    )
     assert sum(hand_dofs_in_order) == 27
     # Mask of 3DoFs into hand_cont
     mask_cont_threedofs = torch.cat(
@@ -186,8 +185,12 @@ def compact_cont_to_model_params_hand(hand_cont):
 
     # Convert hand_cont to eulers
     ## First for 3DoFs
-    hand_cont_threedofs = hand_cont[..., mask_cont_threedofs].unflatten(-1, (-1, 6))
-    hand_model_params_threedofs = batchXYZfrom6D(hand_cont_threedofs).flatten(-2, -1)
+    hand_cont_threedofs = hand_cont[..., mask_cont_threedofs].unflatten(
+        -1, (-1, 6)
+    )
+    hand_model_params_threedofs = batchXYZfrom6D(hand_cont_threedofs).flatten(
+        -2, -1
+    )
     ## Next for 1DoFs
     hand_cont_onedofs = hand_cont[..., mask_cont_onedofs].unflatten(
         -1, (-1, 2)
@@ -198,8 +201,12 @@ def compact_cont_to_model_params_hand(hand_cont):
 
     # Finally, assemble into a 27-dim vector, ordered by joint, then XYZ.
     hand_model_params = torch.zeros(*hand_cont.shape[:-1], 27).to(hand_cont)
-    hand_model_params[..., mask_model_params_threedofs] = hand_model_params_threedofs
-    hand_model_params[..., mask_model_params_onedofs] = hand_model_params_onedofs
+    hand_model_params[..., mask_model_params_threedofs] = (
+        hand_model_params_threedofs
+    )
+    hand_model_params[..., mask_model_params_onedofs] = (
+        hand_model_params_onedofs
+    )
 
     return hand_model_params
 
@@ -207,7 +214,9 @@ def compact_cont_to_model_params_hand(hand_cont):
 def compact_model_params_to_cont_hand(hand_model_params):
     # These are ordered by joint, not model params ^^
     assert hand_model_params.shape[-1] == 27
-    hand_dofs_in_order = torch.tensor([3, 1, 1, 3, 1, 1, 3, 1, 1, 3, 1, 1, 2, 3, 1, 1])
+    hand_dofs_in_order = torch.tensor(
+        [3, 1, 1, 3, 1, 1, 3, 1, 1, 3, 1, 1, 2, 3, 1, 1]
+    )
     assert sum(hand_dofs_in_order) == 27
     # Mask of 3DoFs into hand_cont
     mask_cont_threedofs = torch.cat(
@@ -231,15 +240,22 @@ def compact_model_params_to_cont_hand(hand_model_params):
     hand_model_params_threedofs = hand_model_params[
         ..., mask_model_params_threedofs
     ].unflatten(-1, (-1, 3))
-    hand_cont_threedofs = batch6DFromXYZ(hand_model_params_threedofs).flatten(-2, -1)
+    hand_cont_threedofs = batch6DFromXYZ(hand_model_params_threedofs).flatten(
+        -2, -1
+    )
     ## Next for 1DoFs
-    hand_model_params_onedofs = hand_model_params[..., mask_model_params_onedofs]
+    hand_model_params_onedofs = hand_model_params[
+        ..., mask_model_params_onedofs
+    ]
     hand_cont_onedofs = torch.stack(
-        [hand_model_params_onedofs.sin(), hand_model_params_onedofs.cos()], dim=-1
+        [hand_model_params_onedofs.sin(), hand_model_params_onedofs.cos()],
+        dim=-1,
     ).flatten(-2, -1)
 
     # Finally, assemble into a 27-dim vector, ordered by joint, then XYZ.
-    hand_cont = torch.zeros(*hand_model_params.shape[:-1], 54).to(hand_model_params)
+    hand_cont = torch.zeros(*hand_model_params.shape[:-1], 54).to(
+        hand_model_params
+    )
     hand_cont[..., mask_cont_threedofs] = hand_cont_threedofs
     hand_cont[..., mask_cont_onedofs] = hand_cont_onedofs
 
@@ -296,7 +312,9 @@ def compact_cont_to_rotmat_body(body_pose_cont, inflate_trans=False):
     body_cont_1dofs = body_pose_cont[
         ..., 2 * num_3dof_angles : 2 * num_3dof_angles + 2 * num_1dof_angles
     ]
-    body_cont_trans = body_pose_cont[..., 2 * num_3dof_angles + 2 * num_1dof_angles :]
+    body_cont_trans = body_pose_cont[
+        ..., 2 * num_3dof_angles + 2 * num_1dof_angles :
+    ]
     # Convert conts to model params
     ## First for 3dofs
     body_cont_3dofs = body_cont_3dofs.unflatten(-1, (-1, 6))
@@ -335,18 +353,24 @@ def compact_cont_to_model_params_body(body_pose_cont):
     body_cont_1dofs = body_pose_cont[
         ..., 2 * num_3dof_angles : 2 * num_3dof_angles + 2 * num_1dof_angles
     ]
-    body_cont_trans = body_pose_cont[..., 2 * num_3dof_angles + 2 * num_1dof_angles :]
+    body_cont_trans = body_pose_cont[
+        ..., 2 * num_3dof_angles + 2 * num_1dof_angles :
+    ]
     # Convert conts to model params
     ## First for 3dofs
     body_cont_3dofs = body_cont_3dofs.unflatten(-1, (-1, 6))
     body_params_3dofs = batchXYZfrom6D(body_cont_3dofs).flatten(-2, -1)
     ## Next for 1dofs
     body_cont_1dofs = body_cont_1dofs.unflatten(-1, (-1, 2))  # (sincos)
-    body_params_1dofs = torch.atan2(body_cont_1dofs[..., -2], body_cont_1dofs[..., -1])
+    body_params_1dofs = torch.atan2(
+        body_cont_1dofs[..., -2], body_cont_1dofs[..., -1]
+    )
     ## Nothing to do for trans
     body_params_trans = body_cont_trans
     # Put them together
-    body_pose_params = torch.zeros(*body_pose_cont.shape[:-1], 133).to(body_pose_cont)
+    body_pose_params = torch.zeros(*body_pose_cont.shape[:-1], 133).to(
+        body_pose_cont
+    )
     body_pose_params[..., all_param_3dof_rot_idxs.flatten()] = body_params_3dofs
     body_pose_params[..., all_param_1dof_rot_idxs] = body_params_1dofs
     body_pose_params[..., all_param_1dof_trans_idxs] = body_params_trans
@@ -370,9 +394,9 @@ def compact_model_params_to_cont_body(body_pose_params):
     body_params_1dofs = body_pose_params[..., all_param_1dof_rot_idxs]
     body_params_trans = body_pose_params[..., all_param_1dof_trans_idxs]
     # params to cont
-    body_cont_3dofs = batch6DFromXYZ(body_params_3dofs.unflatten(-1, (-1, 3))).flatten(
-        -2, -1
-    )
+    body_cont_3dofs = batch6DFromXYZ(
+        body_params_3dofs.unflatten(-1, (-1, 3))
+    ).flatten(-2, -1)
     body_cont_1dofs = torch.stack(
         [body_params_1dofs.sin(), body_params_1dofs.cos()], dim=-1
     ).flatten(-2, -1)
@@ -387,6 +411,8 @@ def compact_model_params_to_cont_body(body_pose_params):
 # fmt: off
 mhr_param_hand_idxs = [62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115]
 mhr_cont_hand_idxs = [72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237]
-mhr_param_hand_mask = torch.zeros(133).bool(); mhr_param_hand_mask[mhr_param_hand_idxs] = True
-mhr_cont_hand_mask = torch.zeros(260).bool(); mhr_cont_hand_mask[mhr_cont_hand_idxs] = True
+mhr_param_hand_mask = torch.zeros(133).bool()
+mhr_param_hand_mask[mhr_param_hand_idxs] = True
+mhr_cont_hand_mask = torch.zeros(260).bool()
+mhr_cont_hand_mask[mhr_cont_hand_idxs] = True
 # fmt: on

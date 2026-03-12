@@ -1,15 +1,14 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 
-from .keypoint_prompt_sampler import build_keypoint_sampler
-from .prompt_encoder import PromptEncoder
-from .promptable_decoder import PromptableDecoder
+from .keypoint_prompt_sampler import build_keypoint_sampler as build_keypoint_sampler
+from .prompt_encoder import PromptEncoder as PromptEncoder
+from .promptable_decoder import PromptableDecoder as PromptableDecoder
 
 
 def build_decoder(cfg, context_dim=None):
-    from .promptable_decoder import PromptableDecoder
 
     if cfg.TYPE == "sam":
-        return PromptableDecoder(
+        return PromptableDecoder(  # noqa: F811
             dims=cfg.DIM,
             context_dims=context_dim,
             depth=cfg.DEPTH,

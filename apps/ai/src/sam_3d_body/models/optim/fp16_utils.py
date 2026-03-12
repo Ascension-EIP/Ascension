@@ -25,22 +25,22 @@ def convert_to_fp16_safe(module, dtype=torch.float16):
         module.to(dtype)
 
 
-def convert_module_to_f16(l, dtype=torch.float16):
+def convert_module_to_f16(module, dtype=torch.float16):
     """
     Convert primitive modules to float16.
     """
-    if isinstance(l, FP16_MODULES):
-        for p in l.parameters():
+    if isinstance(module, FP16_MODULES):
+        for p in module.parameters():
             # p.data = p.data.half()
             p.data = p.data.to(dtype)
 
 
-def convert_module_to_f32(l):
+def convert_module_to_f32(module):
     """
     Convert primitive modules to float32, undoing convert_module_to_f16().
     """
-    if isinstance(l, FP16_MODULES):
-        for p in l.parameters():
+    if isinstance(module, FP16_MODULES):
+        for p in module.parameters():
             p.data = p.data.float()
 
 

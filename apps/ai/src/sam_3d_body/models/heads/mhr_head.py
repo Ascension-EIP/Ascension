@@ -28,7 +28,7 @@ try:
     else:
         warnings.warn("Momentum is not enabled")
         raise ImportError
-except:
+except Exception:
     MOMENTUM_ENABLED = False
     warnings.warn("Momentum is not enabled")
 
@@ -81,10 +81,16 @@ class MHRHead(nn.Module):
         self.num_hand_pose_comps = self.num_hand_comps
 
         # Buffers to be filled in by model state dict
-        self.joint_rotation = nn.Parameter(torch.zeros(127, 3, 3), requires_grad=False)
+        self.joint_rotation = nn.Parameter(
+            torch.zeros(127, 3, 3), requires_grad=False
+        )
         self.scale_mean = nn.Parameter(torch.zeros(68), requires_grad=False)
-        self.scale_comps = nn.Parameter(torch.zeros(28, 68), requires_grad=False)
-        self.faces = nn.Parameter(torch.zeros(36874, 3).long(), requires_grad=False)
+        self.scale_comps = nn.Parameter(
+            torch.zeros(28, 68), requires_grad=False
+        )
+        self.faces = nn.Parameter(
+            torch.zeros(36874, 3).long(), requires_grad=False
+        )
         self.hand_pose_mean = nn.Parameter(torch.zeros(54), requires_grad=False)
         self.hand_pose_comps = nn.Parameter(torch.eye(54), requires_grad=False)
         self.hand_joint_idxs_left = nn.Parameter(
@@ -97,9 +103,13 @@ class MHRHead(nn.Module):
             torch.zeros(308, 18439 + 127), requires_grad=False
         )
         # Some special buffers for the hand-version
-        self.right_wrist_coords = nn.Parameter(torch.zeros(3), requires_grad=False)
+        self.right_wrist_coords = nn.Parameter(
+            torch.zeros(3), requires_grad=False
+        )
         self.root_coords = nn.Parameter(torch.zeros(3), requires_grad=False)
-        self.local_to_world_wrist = nn.Parameter(torch.zeros(3, 3), requires_grad=False)
+        self.local_to_world_wrist = nn.Parameter(
+            torch.zeros(3, 3), requires_grad=False
+        )
         self.nonhand_param_idxs = nn.Parameter(
             torch.zeros(145).long(), requires_grad=False
         )
@@ -107,7 +117,9 @@ class MHRHead(nn.Module):
         # Load MHR itself
         if MOMENTUM_ENABLED:
             self.mhr = MHR.from_files(
-                device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+                device=torch.device(
+                    "cuda" if torch.cuda.is_available() else "cpu"
+                ),
                 lod=1,
             )
         else:
@@ -155,8 +167,12 @@ class MHRHead(nn.Module):
         )
 
         # Drop it in
-        full_pose_params[:, self.hand_joint_idxs_left] = left_hand_params_model_params
-        full_pose_params[:, self.hand_joint_idxs_right] = right_hand_params_model_params
+        full_pose_params[:, self.hand_joint_idxs_left] = (
+            left_hand_params_model_params
+        )
+        full_pose_params[:, self.hand_joint_idxs_right] = (
+            right_hand_params_model_params
+        )
 
         return full_pose_params  # B x 207
 
@@ -184,7 +200,8 @@ class MHRHead(nn.Module):
             global_trans_ori = global_trans.clone()
             global_rot = roma.rotmat_to_euler(
                 "xyz",
-                roma.euler_to_rotmat("xyz", global_rot_ori) @ self.local_to_world_wrist,
+                roma.euler_to_rotmat("xyz", global_rot_ori)
+                @ self.local_to_world_wrist,
             )
             global_trans = (
                 -(
@@ -292,7 +309,9 @@ class MHRHead(nn.Module):
         count = 6
         global_rot_6d = pred[:, :count]
         global_rot_rotmat = rot6d_to_rotmat(global_rot_6d)  # B x 3 x 3
-        global_rot_euler = roma.rotmat_to_euler("ZYX", global_rot_rotmat)  # B x 3
+        global_rot_euler = roma.rotmat_to_euler(
+            "ZYX", global_rot_rotmat
+        )  # B x 3
         global_trans = torch.zeros_like(global_rot_euler)
 
         ## Next, get body pose.
@@ -359,7 +378,9 @@ class MHRHead(nn.Module):
                 verts.reshape(batch_size, -1, 3) if verts is not None else None
             ),
             "pred_joint_coords": (
-                jcoords.reshape(batch_size, -1, 3) if jcoords is not None else None
+                jcoords.reshape(batch_size, -1, 3)
+                if jcoords is not None
+                else None
             ),
             "faces": self.faces.cpu().numpy(),
             "joint_global_rots": joint_global_rots,

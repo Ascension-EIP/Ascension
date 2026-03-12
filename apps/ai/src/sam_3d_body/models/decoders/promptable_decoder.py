@@ -1,6 +1,5 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 
-import pickle
 from typing import Dict, Optional
 
 import torch
@@ -119,7 +118,9 @@ class PromptableDecoder(nn.Module):
                 if len(hand_augment) == 1:
                     # inflate batch dimension
                     assert len(hand_augment.shape) == 3
-                    hand_augment = hand_augment.repeat(len(hand_embeddings), 1, 1)
+                    hand_augment = hand_augment.repeat(
+                        len(hand_embeddings), 1, 1
+                    )
 
         if self.do_interm_preds:
             assert token_to_pose_output_fn is not None
@@ -148,7 +149,9 @@ class PromptableDecoder(nn.Module):
                 curr_pose_output = token_to_pose_output_fn(
                     self.norm_final(token_embedding),
                     prev_pose_output=(
-                        all_pose_outputs[-1] if len(all_pose_outputs) > 0 else None
+                        all_pose_outputs[-1]
+                        if len(all_pose_outputs) > 0
+                        else None
                     ),
                     layer_idx=layer_idx,
                 )
@@ -156,8 +159,13 @@ class PromptableDecoder(nn.Module):
 
                 if self.keypoint_token_update:
                     assert keypoint_token_update_fn is not None
-                    token_embedding, token_augment, _, _ = keypoint_token_update_fn(
-                        token_embedding, token_augment, curr_pose_output, layer_idx
+                    token_embedding, token_augment, _, _ = (
+                        keypoint_token_update_fn(
+                            token_embedding,
+                            token_augment,
+                            curr_pose_output,
+                            layer_idx,
+                        )
                     )
 
         out = self.norm_final(token_embedding)

@@ -244,9 +244,20 @@ def on_message(ch, method, _properties, body):
             logger.info(
                 "Requesting Gemini coaching hints for analysis %s", analysis_id
             )
-            hints = get_climbing_advice(result)
+            raw_hints = get_climbing_advice(result)
+            # Normalize hints: treat empty/sentinel values (e.g. "no hints available")
+            # as None so they are not persisted/displayed as actual coaching advice.
+            if isinstance(raw_hints, str):
+                normalized = raw_hints.strip()
+                if normalized and normalized.lower() != "no hints available":
+                    hints = normalized
+                else:
+                    hints = None
+            else:
+                hints = None
             logger.info(
-                "Gemini hints received (%d chars)", len(hints) if hints else 0
+                "Gemini hints received (%d chars)",
+                len(hints) if isinstance(hints, str) else 0,
             )
         except Exception:  # noqa: BLE001
             logger.warning(

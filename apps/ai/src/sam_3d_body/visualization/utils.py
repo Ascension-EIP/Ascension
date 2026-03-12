@@ -57,7 +57,13 @@ def draw_text(
             y = min(image_size[1], y)
 
     return cv2.putText(
-        image, texts, (x, y), cv2.FONT_HERSHEY_SIMPLEX, font_scale, color, thickness - 1
+        image,
+        texts,
+        (x, y),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        font_scale,
+        color,
+        thickness - 1,
     )
 
 
@@ -184,7 +190,7 @@ def parse_pose_metainfo(metainfo: Union[str, Dict]):
         - "sigmas" (numpy.ndarray): Same as the ``"sigmas"`` in the input
     """
 
-    if type(metainfo) == str:
+    if isinstance(metainfo, str):
         if not os.path.isfile(metainfo):
             raise ValueError("Invalid metainfo file path: ", metainfo)
         metainfo = OmegaConf.to_container(LazyConfig.load(metainfo).pose_info)
@@ -294,7 +300,9 @@ def parse_pose_metainfo(metainfo: Union[str, Dict]):
         parsed["skeleton_links"], mapping=parsed["keypoint_name2id"]
     )
 
-    parsed["keypoint_colors"] = np.array(parsed["keypoint_colors"], dtype=np.uint8)
+    parsed["keypoint_colors"] = np.array(
+        parsed["keypoint_colors"], dtype=np.uint8
+    )
     parsed["skeleton_link_colors"] = np.array(
         parsed["skeleton_link_colors"], dtype=np.uint8
     )

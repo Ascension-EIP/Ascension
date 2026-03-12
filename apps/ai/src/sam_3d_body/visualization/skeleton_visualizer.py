@@ -39,7 +39,9 @@ class SkeletonVisualizer:
         self.pose_meta = parsed_meta.copy()
         self.bbox_color = parsed_meta.get("bbox_color", self.bbox_color)
         self.kpt_color = parsed_meta.get("keypoint_colors", self.kpt_color)
-        self.link_color = parsed_meta.get("skeleton_link_colors", self.link_color)
+        self.link_color = parsed_meta.get(
+            "skeleton_link_colors", self.link_color
+        )
         self.skeleton = parsed_meta.get("skeleton_links", self.skeleton)
 
     def draw_skeleton(
@@ -216,7 +218,8 @@ class SkeletonVisualizer:
             correct = cur_keypoints[:, -1]
 
             kpt_color = [
-                [0, 255, 0] if correct[kid] else [0, 0, 255] for kid in range(len(kpts))
+                [0, 255, 0] if correct[kid] else [0, 0, 255]
+                for kid in range(len(kpts))
             ]
             kpt_color = np.array(kpt_color, dtype=np.uint8)
 

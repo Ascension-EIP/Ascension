@@ -14,14 +14,11 @@ Standalone usage::
 import argparse
 import json
 import os
-import time
 
 import cv2
 import numpy as np
 import torch
 from sam_3d_body import load_sam_3d_body, SAM3DBodyEstimator
-from sam_3d_body.metadata.mhr70 import mhr_names
-from tools.utils import setup_visualizer
 from tqdm import tqdm
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -49,12 +46,18 @@ class KP:
 
     NAMES = {
         0: "nose",
-        5: "left_shoulder", 6: "right_shoulder",
-        7: "left_elbow",    8: "right_elbow",
-        9: "left_hip",      10: "right_hip",
-        11: "left_knee",    12: "right_knee",
-        13: "left_ankle",   14: "right_ankle",
-        41: "right_wrist",  62: "left_wrist",
+        5: "left_shoulder",
+        6: "right_shoulder",
+        7: "left_elbow",
+        8: "right_elbow",
+        9: "left_hip",
+        10: "right_hip",
+        11: "left_knee",
+        12: "right_knee",
+        13: "left_ankle",
+        14: "right_ankle",
+        41: "right_wrist",
+        62: "left_wrist",
     }
 
 
@@ -78,14 +81,14 @@ _BODY_CONNECTIONS = [
 
 # Angle definitions: (name, idx_a, idx_joint, idx_b)
 _ANGLE_DEFS = [
-    ("left_elbow",     KP.L_SHOULDER, KP.L_ELBOW,    KP.L_WRIST),
-    ("right_elbow",    KP.R_SHOULDER, KP.R_ELBOW,    KP.R_WRIST),
-    ("left_shoulder",  KP.L_ELBOW,    KP.L_SHOULDER, KP.L_HIP),
-    ("right_shoulder", KP.R_ELBOW,    KP.R_SHOULDER, KP.R_HIP),
-    ("left_knee",      KP.L_HIP,     KP.L_KNEE,     KP.L_ANKLE),
-    ("right_knee",     KP.R_HIP,     KP.R_KNEE,     KP.R_ANKLE),
-    ("left_hip",       KP.L_SHOULDER, KP.L_HIP,     KP.L_KNEE),
-    ("right_hip",      KP.R_SHOULDER, KP.R_HIP,     KP.R_KNEE),
+    ("left_elbow", KP.L_SHOULDER, KP.L_ELBOW, KP.L_WRIST),
+    ("right_elbow", KP.R_SHOULDER, KP.R_ELBOW, KP.R_WRIST),
+    ("left_shoulder", KP.L_ELBOW, KP.L_SHOULDER, KP.L_HIP),
+    ("right_shoulder", KP.R_ELBOW, KP.R_SHOULDER, KP.R_HIP),
+    ("left_knee", KP.L_HIP, KP.L_KNEE, KP.L_ANKLE),
+    ("right_knee", KP.R_HIP, KP.R_KNEE, KP.R_ANKLE),
+    ("left_hip", KP.L_SHOULDER, KP.L_HIP, KP.L_KNEE),
+    ("right_hip", KP.R_SHOULDER, KP.R_HIP, KP.R_KNEE),
 ]
 
 # Map angle name → keypoint index (for label placement during rendering)
@@ -132,29 +135,51 @@ def create_estimator(
     )
     mhr_path = mhr_path or os.environ.get(
         "SAM3D_MHR_PATH",
-        os.path.join(BASE_DIR, "checkpoints/sam-3d-body-dinov3/assets/mhr_model.pt"),
+        os.path.join(
+            BASE_DIR, "checkpoints/sam-3d-body-dinov3/assets/mhr_model.pt"
+        ),
     )
     detector_path = detector_path or os.environ.get("SAM3D_DETECTOR_PATH", "")
-    segmentor_path = segmentor_path or os.environ.get("SAM3D_SEGMENTOR_PATH", "")
+    segmentor_path = segmentor_path or os.environ.get(
+        "SAM3D_SEGMENTOR_PATH", ""
+    )
     fov_path = fov_path or os.environ.get("SAM3D_FOV_PATH", "")
 
-    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    device = (
+        torch.device("cuda")
+        if torch.cuda.is_available()
+        else torch.device("cpu")
+    )
     print(f"[sam3d] Loading model from {checkpoint_path} on {device}...")
-    model, model_cfg = load_sam_3d_body(checkpoint_path, device=device, mhr_path=mhr_path)
+    model, model_cfg = load_sam_3d_body(
+        checkpoint_path, device=device, mhr_path=mhr_path
+    )
 
     human_detector, human_segmentor, fov_estimator = None, None, None
 
     if detector_name:
         from tools.build_detector import HumanDetector
-        human_detector = HumanDetector(name=detector_name, device=device, path=detector_path)
 
-    if segmentor_name and ((segmentor_name == "sam2" and len(segmentor_path)) or segmentor_name != "sam2"):
+        human_detector = HumanDetector(
+            name=detector_name, device=device, path=detector_path
+        )
+
+    if segmentor_name and (
+        (segmentor_name == "sam2" and len(segmentor_path))
+        or segmentor_name != "sam2"
+    ):
         from tools.build_sam import HumanSegmentor
-        human_segmentor = HumanSegmentor(name=segmentor_name, device=device, path=segmentor_path)
+
+        human_segmentor = HumanSegmentor(
+            name=segmentor_name, device=device, path=segmentor_path
+        )
 
     if fov_name:
         from tools.build_fov_estimator import FOVEstimator
-        fov_estimator = FOVEstimator(name=fov_name, device=device, path=fov_path)
+
+        fov_estimator = FOVEstimator(
+            name=fov_name, device=device, path=fov_path
+        )
 
     estimator = SAM3DBodyEstimator(
         sam_3d_body_model=model,
@@ -172,9 +197,9 @@ def _serialise_frame_outputs(outputs):
     """Convert SAM 3D Body outputs for one frame to JSON-serialisable dicts."""
     people = []
     for person in outputs:
-        kpts_2d = person["pred_keypoints_2d"]   # (N, 2) pixel coords
-        kpts_3d = person["pred_keypoints_3d"]   # (N, 3)
-        bbox = person["bbox"]                   # (4,)
+        kpts_2d = person["pred_keypoints_2d"]  # (N, 2) pixel coords
+        kpts_3d = person["pred_keypoints_3d"]  # (N, 3)
+        bbox = person["bbox"]  # (4,)
 
         angles = _compute_angles(kpts_3d)
 
@@ -185,18 +210,30 @@ def _serialise_frame_outputs(outputs):
                 landmarks[name] = {
                     "x": round(float(kpts_2d[idx][0]), 2),
                     "y": round(float(kpts_2d[idx][1]), 2),
-                    "z": round(float(kpts_3d[idx][2]), 5) if idx < len(kpts_3d) else 0.0,
+                    "z": (
+                        round(float(kpts_3d[idx][2]), 5)
+                        if idx < len(kpts_3d)
+                        else 0.0
+                    ),
                 }
 
-        people.append({
-            "bbox": [round(float(x), 2) for x in bbox],
-            "landmarks": landmarks,
-            "keypoints_2d": [[round(float(x), 2) for x in kp] for kp in kpts_2d],
-            "keypoints_3d": [[round(float(x), 5) for x in kp] for kp in kpts_3d],
-            "focal_length": round(float(person["focal_length"]), 4),
-            "pred_cam_t": [round(float(x), 5) for x in person["pred_cam_t"]],
-            "angles": angles,
-        })
+        people.append(
+            {
+                "bbox": [round(float(x), 2) for x in bbox],
+                "landmarks": landmarks,
+                "keypoints_2d": [
+                    [round(float(x), 2) for x in kp] for kp in kpts_2d
+                ],
+                "keypoints_3d": [
+                    [round(float(x), 5) for x in kp] for kp in kpts_3d
+                ],
+                "focal_length": round(float(person["focal_length"]), 4),
+                "pred_cam_t": [
+                    round(float(x), 5) for x in person["pred_cam_t"]
+                ],
+                "angles": angles,
+            }
+        )
     return people
 
 
@@ -235,10 +272,14 @@ def analyze(
     n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    print(f"[sam3d] Video loaded: {n_frames} frames at {fps} FPS ({width}x{height})")
+    print(
+        f"[sam3d] Video loaded: {n_frames} frames at {fps} FPS ({width}x{height})"
+    )
     if sample_every > 1:
-        print(f"[sam3d] Subsampling: inference every {sample_every} frames "
-              f"(~{n_frames // sample_every} inferred)")
+        print(
+            f"[sam3d] Subsampling: inference every {sample_every} frames "
+            f"(~{n_frames // sample_every} inferred)"
+        )
 
     if estimator is None:
         estimator = create_estimator(**model_kwargs)
@@ -264,13 +305,15 @@ def analyze(
                 print(f"[sam3d] Frame {i} failed: {e}")
                 last_people = []
 
-        output["frames"].append({
-            "frame": i,
-            "timestamp_ms": timestamp_ms,
-            "sampled": i % sample_every == 0,
-            "n_people": len(last_people),
-            "people": last_people,
-        })
+        output["frames"].append(
+            {
+                "frame": i,
+                "timestamp_ms": timestamp_ms,
+                "sampled": i % sample_every == 0,
+                "n_people": len(last_people),
+                "people": last_people,
+            }
+        )
 
     cap.release()
     print(f"[sam3d] Done — {len(output['frames'])} frames processed")
@@ -320,7 +363,7 @@ def render_annotated_video(
 
         fd = frames_index.get(frame_idx, {})
         for pid, person in enumerate(fd.get("people", [])):
-            kpts_2d = person["keypoints_2d"]   # list of [x, y]
+            kpts_2d = person["keypoints_2d"]  # list of [x, y]
             bbox = person["bbox"]
 
             # --- Skeleton lines ---
@@ -334,20 +377,29 @@ def render_annotated_video(
             for idx in KP.NAMES:
                 if idx < len(kpts_2d):
                     px, py = int(kpts_2d[idx][0]), int(kpts_2d[idx][1])
-                    cv2.circle(frame, (px, py), 5, (0, 100, 255), -1, cv2.LINE_AA)
-                    cv2.circle(frame, (px, py), 5, (255, 255, 255), 1, cv2.LINE_AA)
+                    cv2.circle(
+                        frame, (px, py), 5, (0, 100, 255), -1, cv2.LINE_AA
+                    )
+                    cv2.circle(
+                        frame, (px, py), 5, (255, 255, 255), 1, cv2.LINE_AA
+                    )
 
             # --- Bounding box ---
             cv2.rectangle(
                 frame,
                 (int(bbox[0]), int(bbox[1])),
                 (int(bbox[2]), int(bbox[3])),
-                (0, 255, 0), 2,
+                (0, 255, 0),
+                2,
             )
             cv2.putText(
-                frame, f"Person {pid}",
+                frame,
+                f"Person {pid}",
                 (int(bbox[0]), int(bbox[1] - 10)),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2,
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.6,
+                (0, 255, 0),
+                2,
             )
 
             # --- Angle labels ---
@@ -356,16 +408,26 @@ def render_annotated_video(
                 if kp_idx is not None and kp_idx < len(kpts_2d):
                     px, py = int(kpts_2d[kp_idx][0]), int(kpts_2d[kp_idx][1])
                     cv2.putText(
-                        frame, f"{deg:.0f}\u00b0",
+                        frame,
+                        f"{deg:.0f}\u00b0",
                         (px + 8, py - 8),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.4,
-                        (255, 255, 0), 1, cv2.LINE_AA,
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.4,
+                        (255, 255, 0),
+                        1,
+                        cv2.LINE_AA,
                     )
 
         # Frame counter
         cv2.putText(
-            frame, f"frame {frame_idx}", (10, 25),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1, cv2.LINE_AA,
+            frame,
+            f"frame {frame_idx}",
+            (10, 25),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.6,
+            (200, 200, 200),
+            1,
+            cv2.LINE_AA,
         )
 
         writer.write(frame)
@@ -385,12 +447,14 @@ if __name__ == "__main__":
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
-        "video", nargs="?",
+        "video",
+        nargs="?",
         default=os.path.join(BASE_DIR, "vid.mp4"),
         help="Path to input video (default: vid.mp4)",
     )
     parser.add_argument(
-        "-o", "--output",
+        "-o",
+        "--output",
         default=os.path.join(BASE_DIR, "biomechanics.json"),
         help="JSON output path (default: biomechanics.json)",
     )
@@ -404,26 +468,42 @@ if __name__ == "__main__":
         default="./checkpoints/sam-3d-body-vith/assets/mhr_model.pt",
         help="Path to MHR model asset",
     )
-    parser.add_argument("--detector_name", default="", help="Human detector name")
-    parser.add_argument("--segmentor_name", default="", help="Human segmentor name (default: disabled)")
     parser.add_argument(
-        "--sample-every", type=int, default=3, metavar="N",
+        "--detector_name", default="", help="Human detector name"
+    )
+    parser.add_argument(
+        "--segmentor_name",
+        default="",
+        help="Human segmentor name (default: disabled)",
+    )
+    parser.add_argument(
+        "--sample-every",
+        type=int,
+        default=3,
+        metavar="N",
         help="Run inference on 1 frame out of every N (default: 1 = every frame)",
     )
     parser.add_argument("--fov_name", default="", help="FOV estimator name")
-    parser.add_argument("--detector_path", default="", help="Human detector path")
-    parser.add_argument("--segmentor_path", default="", help="Human segmentor path")
+    parser.add_argument(
+        "--detector_path", default="", help="Human detector path"
+    )
+    parser.add_argument(
+        "--segmentor_path", default="", help="Human segmentor path"
+    )
     parser.add_argument("--fov_path", default="", help="FOV estimator path")
     parser.add_argument(
-        "--render", action="store_true",
+        "--render",
+        action="store_true",
         help="Generate annotated video after analysis",
     )
     parser.add_argument(
-        "--render-only", metavar="JSON",
+        "--render-only",
+        metavar="JSON",
         help="Skip analysis — render video from existing JSON",
     )
     parser.add_argument(
-        "--render-output", metavar="PATH",
+        "--render-output",
+        metavar="PATH",
         help="Annotated video output path (default: <video>-postanalyse.mp4)",
     )
     args = parser.parse_args()
@@ -436,7 +516,8 @@ if __name__ == "__main__":
 
     if args.render_only:
         render_annotated_video(
-            args.video, args.render_only,
+            args.video,
+            args.render_only,
             _render_out(args.video, args.render_output),
         )
     else:
@@ -450,13 +531,16 @@ if __name__ == "__main__":
             segmentor_path=args.segmentor_path,
             fov_path=args.fov_path,
         )
-        result = analyze(args.video, estimator=estimator, sample_every=args.sample_every)
+        result = analyze(
+            args.video, estimator=estimator, sample_every=args.sample_every
+        )
         with open(args.output, "w") as f:
             json.dump(result, f)
         print(f"Saved to {args.output}")
 
         if args.render:
             render_annotated_video(
-                args.video, args.output,
+                args.video,
+                args.output,
                 _render_out(args.video, args.render_output),
             )

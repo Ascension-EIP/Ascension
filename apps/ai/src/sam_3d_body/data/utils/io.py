@@ -61,7 +61,9 @@ def load_image(
         elif backend == "cv2":
             img = _cv2_load(path, image_format)
         else:
-            raise ValueError("Invalid backend {} for loading image.".format(backend))
+            raise ValueError(
+                "Invalid backend {} for loading image.".format(backend)
+            )
 
         if img is not None:
             return img
@@ -85,7 +87,9 @@ def resize_image(img, target_size, center=None, scale=None):
         new_height = target_size
 
     # Resize the image using OpenCV
-    resized_img = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_AREA)
+    resized_img = cv2.resize(
+        img, (new_width, new_height), interpolation=cv2.INTER_AREA
+    )
 
     # Create a new blank image with the target size
     final_img = np.ones((target_size, target_size, 3), dtype=np.uint8) * 255

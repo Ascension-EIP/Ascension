@@ -6,7 +6,12 @@ from torch import nn
 
 class Dinov3Backbone(nn.Module):
     def __init__(
-        self, name="dinov2_vitb14", pretrained_weight=None, cfg=None, *args, **kwargs
+        self,
+        name="dinov2_vitb14",
+        pretrained_weight=None,
+        cfg=None,
+        *args,
+        **kwargs,
     ):
         super().__init__()
         self.name = name
@@ -32,7 +37,9 @@ class Dinov3Backbone(nn.Module):
         """
         assert extra_embed is None, "Not Implemented Yet"
 
-        y = self.encoder.get_intermediate_layers(x, n=1, reshape=True, norm=True)[-1]
+        y = self.encoder.get_intermediate_layers(
+            x, n=1, reshape=True, norm=True
+        )[-1]
 
         return y
 

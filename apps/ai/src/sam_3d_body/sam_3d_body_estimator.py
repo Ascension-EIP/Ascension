@@ -48,14 +48,18 @@ class SAM3DBodyEstimator:
         self.transform = Compose(
             [
                 GetBBoxCenterScale(),
-                TopdownAffine(input_size=self.cfg.MODEL.IMAGE_SIZE, use_udp=False),
+                TopdownAffine(
+                    input_size=self.cfg.MODEL.IMAGE_SIZE, use_udp=False
+                ),
                 VisionTransformWrapper(ToTensor()),
             ]
         )
         self.transform_hand = Compose(
             [
                 GetBBoxCenterScale(padding=0.9),
-                TopdownAffine(input_size=self.cfg.MODEL.IMAGE_SIZE, use_udp=False),
+                TopdownAffine(
+                    input_size=self.cfg.MODEL.IMAGE_SIZE, use_udp=False
+                ),
                 VisionTransformWrapper(ToTensor()),
             ]
         )
@@ -96,7 +100,7 @@ class SAM3DBodyEstimator:
         self.prev_prompt = []
         torch.cuda.empty_cache()
 
-        if type(img) == str:
+        if isinstance(img, str):
             img = load_image(img, backend="cv2", image_format="bgr")
             image_format = "bgr"
         else:
@@ -220,19 +224,23 @@ class SAM3DBodyEstimator:
                     [
                         (
                             batch_lhand["bbox_center"].flatten(0, 1)[idx][0]
-                            - batch_lhand["bbox_scale"].flatten(0, 1)[idx][0] / 2
+                            - batch_lhand["bbox_scale"].flatten(0, 1)[idx][0]
+                            / 2
                         ).item(),
                         (
                             batch_lhand["bbox_center"].flatten(0, 1)[idx][1]
-                            - batch_lhand["bbox_scale"].flatten(0, 1)[idx][1] / 2
+                            - batch_lhand["bbox_scale"].flatten(0, 1)[idx][1]
+                            / 2
                         ).item(),
                         (
                             batch_lhand["bbox_center"].flatten(0, 1)[idx][0]
-                            + batch_lhand["bbox_scale"].flatten(0, 1)[idx][0] / 2
+                            + batch_lhand["bbox_scale"].flatten(0, 1)[idx][0]
+                            / 2
                         ).item(),
                         (
                             batch_lhand["bbox_center"].flatten(0, 1)[idx][1]
-                            + batch_lhand["bbox_scale"].flatten(0, 1)[idx][1] / 2
+                            + batch_lhand["bbox_scale"].flatten(0, 1)[idx][1]
+                            / 2
                         ).item(),
                     ]
                 )
@@ -240,19 +248,23 @@ class SAM3DBodyEstimator:
                     [
                         (
                             batch_rhand["bbox_center"].flatten(0, 1)[idx][0]
-                            - batch_rhand["bbox_scale"].flatten(0, 1)[idx][0] / 2
+                            - batch_rhand["bbox_scale"].flatten(0, 1)[idx][0]
+                            / 2
                         ).item(),
                         (
                             batch_rhand["bbox_center"].flatten(0, 1)[idx][1]
-                            - batch_rhand["bbox_scale"].flatten(0, 1)[idx][1] / 2
+                            - batch_rhand["bbox_scale"].flatten(0, 1)[idx][1]
+                            / 2
                         ).item(),
                         (
                             batch_rhand["bbox_center"].flatten(0, 1)[idx][0]
-                            + batch_rhand["bbox_scale"].flatten(0, 1)[idx][0] / 2
+                            + batch_rhand["bbox_scale"].flatten(0, 1)[idx][0]
+                            / 2
                         ).item(),
                         (
                             batch_rhand["bbox_center"].flatten(0, 1)[idx][1]
-                            + batch_rhand["bbox_scale"].flatten(0, 1)[idx][1] / 2
+                            + batch_rhand["bbox_scale"].flatten(0, 1)[idx][1]
+                            / 2
                         ).item(),
                     ]
                 )

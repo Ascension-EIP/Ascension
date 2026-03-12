@@ -3,7 +3,7 @@ Utility functions for SAM 3D Body demo notebook
 """
 
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import cv2
 import matplotlib.pyplot as plt
@@ -85,14 +85,16 @@ def setup_sam_3d_body(
         fov_estimator=fov_estimator,
     )
 
-    print(f"Setup complete!")
+    print("Setup complete!")
     print(
         f"  Human detector: {'✓' if human_detector else '✗ (will use full image or manual bbox)'}"
     )
     print(
         f"  Human segmentor: {'✓' if human_segmentor else '✗ (mask inference disabled)'}"
     )
-    print(f"  FOV estimator: {'✓' if fov_estimator else '✗ (will use default FOV)'}")
+    print(
+        f"  FOV estimator: {'✓' if fov_estimator else '✗ (will use default FOV)'}"
+    )
 
     return estimator
 
@@ -105,7 +107,9 @@ def setup_visualizer():
 
 
 def visualize_2d_results(
-    img_cv2: np.ndarray, outputs: List[Dict[str, Any]], visualizer: SkeletonVisualizer
+    img_cv2: np.ndarray,
+    outputs: List[Dict[str, Any]],
+    visualizer: SkeletonVisualizer,
 ) -> List[np.ndarray]:
     """Visualize 2D keypoints and bounding boxes"""
     results = []
@@ -154,7 +158,9 @@ def visualize_3d_mesh(
 
     for pid, person_output in enumerate(outputs):
         # Create renderer for this person
-        renderer = Renderer(focal_length=person_output["focal_length"], faces=faces)
+        renderer = Renderer(
+            focal_length=person_output["focal_length"], faces=faces
+        )
 
         # 1. Original image
         img_orig = img_cv2.copy()
@@ -222,18 +228,24 @@ def save_mesh_results(
     # Save focal length
     if outputs:
         focal_length_data = {"focal_length": float(outputs[0]["focal_length"])}
-        focal_length_path = os.path.join(save_dir, f"{image_name}_focal_length.json")
+        focal_length_path = os.path.join(
+            save_dir, f"{image_name}_focal_length.json"
+        )
         with open(focal_length_path, "w") as f:
             json.dump(focal_length_data, f, indent=2)
         print(f"Saved focal length: {focal_length_path}")
 
     for pid, person_output in enumerate(outputs):
         # Create renderer for this person
-        renderer = Renderer(focal_length=person_output["focal_length"], faces=faces)
+        renderer = Renderer(
+            focal_length=person_output["focal_length"], faces=faces
+        )
 
         # Store individual mesh
         tmesh = renderer.vertices_to_trimesh(
-            person_output["pred_vertices"], person_output["pred_cam_t"], LIGHT_BLUE
+            person_output["pred_vertices"],
+            person_output["pred_cam_t"],
+            LIGHT_BLUE,
         )
         mesh_filename = f"{image_name}_mesh_{pid:03d}.ply"
         mesh_path = os.path.join(save_dir, mesh_filename)
@@ -276,7 +288,9 @@ def save_mesh_results(
 
 
 def display_results_grid(
-    images: List[np.ndarray], titles: List[str], figsize_per_image: tuple = (6, 6)
+    images: List[np.ndarray],
+    titles: List[str],
+    figsize_per_image: tuple = (6, 6),
 ):
     """Display multiple images in a grid"""
     n_images = len(images)
@@ -289,7 +303,9 @@ def display_results_grid(
     rows = (n_images + cols - 1) // cols
 
     fig, axes = plt.subplots(
-        rows, cols, figsize=(figsize_per_image[0] * cols, figsize_per_image[1] * rows)
+        rows,
+        cols,
+        figsize=(figsize_per_image[0] * cols, figsize_per_image[1] * rows),
     )
 
     # Handle single image case
@@ -338,7 +354,9 @@ def process_image_with_mask(estimator, image_path: str, mask_path: str):
     mask_binary = (mask > 127).astype(np.uint8) * 255
 
     print(f"Processing image with external mask: {mask_path}")
-    print(f"Mask shape: {mask_binary.shape}, unique values: {np.unique(mask_binary)}")
+    print(
+        f"Mask shape: {mask_binary.shape}, unique values: {np.unique(mask_binary)}"
+    )
 
     # Compute bounding box from mask (required by refactored code)
     # Find all non-zero pixels in the mask
@@ -355,6 +373,8 @@ def process_image_with_mask(estimator, image_path: str, mask_path: str):
 
     # Process with external mask and computed bbox
     # Note: The mask needs to match the number of bboxes (1 bbox -> 1 mask)
-    outputs = estimator.process_one_image(image_path, bboxes=bbox, masks=mask_binary)
+    outputs = estimator.process_one_image(
+        image_path, bboxes=bbox, masks=mask_binary
+    )
 
     return outputs
