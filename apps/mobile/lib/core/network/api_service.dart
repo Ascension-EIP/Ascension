@@ -65,6 +65,17 @@ class ApiService {
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
+  // ── Users ────────────────────────────────────────────────────────────────────
+
+  /// Fetch a user by ID.
+  /// Returns `{ id, username, email, role }`.
+  Future<Map<String, dynamic>> getUser(String userId) async {
+    final uri = Uri.parse('$baseUrl/v1/users/$userId');
+    final response = await http.get(uri);
+    _assertOk(response, 'get user');
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
   // ── Videos ──────────────────────────────────────────────────────────────────
 
   /// Request a presigned PUT URL to upload a video directly to MinIO.
