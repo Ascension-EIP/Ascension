@@ -1,5 +1,5 @@
-> **Last updated:** 3rd March 2026
-> **Version:** 2.1
+> **Last updated:** 11th March 2026
+> **Version:** 2.2
 > **Authors:** Gianni TUERO
 > **Status:** Done
 > {.is-success}
@@ -143,7 +143,8 @@ Ascension/                      # Monorepo root
     │   ├── environment.yml
     │   ├── pyproject.toml
     │   ├── Dockerfile
-    │   └── consumer.py
+    │   └── src/
+    │       └── worker.py
     │
     └── mobile/                 # Flutter mobile app
         ├── moon.yml
@@ -376,7 +377,7 @@ This downloads:
 moon run ai:dev
 
 # Or directly
-cd apps/ai && conda run --name ascension-ai python consumer.py
+cd apps/ai && conda run --name ascension-ai python src/worker.py
 ```
 
 Or using Docker:
@@ -915,7 +916,7 @@ For faster iteration during development:
    ```bash
    cd apps/ai
   conda run --name ascension-ai python -m pip install watchdog
-  conda run --name ascension-ai watchmedo auto-restart --patterns="*.py" --recursive -- python consumer.py
+  conda run --name ascension-ai watchmedo auto-restart --patterns="*.py" --recursive -- python src/worker.py
    ```
 
    Or via moon:

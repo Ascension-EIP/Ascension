@@ -1,5 +1,5 @@
-> **Last updated:** 23rd February 2026  
-> **Version:** 1.0  
+> **Last updated:** 11th March 2026  
+> **Version:** 1.1  
 > **Authors:** Nicolas TORO  
 > **Status:** Done  
 > {.is-success}
@@ -351,7 +351,7 @@ graph TB
 |                           |                                                                                                                                                                                                                                                                                                                                                |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Decision**              | Python workers using MediaPipe for pose estimation, OpenCV for video frame processing, PyTorch for model fine-tuning                                                                                                                                                                                                                           |
-| **Rationale**             | Python is the lingua franca of AI/ML research. MediaPipe provides a production-ready, pre-trained human pose estimation model (33 landmarks) that runs without GPU for prototyping. The asynchronous worker pattern (RabbitMQ consumer) isolates Python's GIL from the Rust API entirely. The team's AI specialist has deep PyTorch expertise. |
+| **Rationale**             | Python is the lingua franca of AI/ML research. MediaPipe provides a production-ready, pre-trained human pose estimation model (33 landmarks) that runs without GPU for prototyping. The asynchronous worker pattern (RabbitMQ worker) isolates Python's GIL from the Rust API entirely. The team's AI specialist has deep PyTorch expertise. |
 | **Alternatives rejected** | **TensorFlow** — team prefers PyTorch ecosystem; **ONNX Runtime** — faster inference but harder to iterate on custom climbing-specific models; **Rust ML (burn)** — ecosystem too immature.                                                                                                                                                    |
 | **Trade-offs**            | Python is slower than Rust, but since workers are I/O-bound (reading video from S3) and CPU-bound in isolation, the GIL is not a bottleneck at our scale.                                                                                                                                                                                      |
 

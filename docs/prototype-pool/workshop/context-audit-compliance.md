@@ -1,5 +1,5 @@
-> **Last updated:** 3rd March 2026  
-> **Version:** 1.0  
+> **Last updated:** 11th March 2026  
+> **Version:** 1.1  
 > **Authors:** Nicolas TORO  
 > **Status:** Done  
 > {.is-success}
@@ -93,7 +93,7 @@ This audit was conducted using three complementary approaches:
 
 2. **User Feedback Collection:** Interviews with early-adopter climbers at partner gyms (Arkose, Climb Up) and analysis of the two validated personas. Key insight: users accept a 30–60 s analysis delay provided they receive a **push notification** on completion — synchronous waiting is the main UX pain point.
 
-3. **Code & Configuration Inspection:** Direct examination of `consumer.py` (AI Worker), `pose_analysis.py` (MediaPipe pipeline), `Cargo.toml` (Rust dependencies), and `pubspec.yaml` (Flutter dependencies) to validate that implementation matches documented specifications.
+3. **Code & Configuration Inspection:** Direct examination of `src/worker.py` (AI Worker), `pose_analysis.py` (MediaPipe pipeline), `Cargo.toml` (Rust dependencies), and `pubspec.yaml` (Flutter dependencies) to validate that implementation matches documented specifications.
 
 ---
 
@@ -135,7 +135,7 @@ Each app declares its tasks in a `moon.yml`. The toolchain ensures reproducible 
 
 - `mediapipe` (Python): The project currently uses MediaPipe Pose Landmarker on general-purpose models. The model is **not fine-tuned for climbing postures** — this is the highest-criticality technical risk (criticality score: 20/25). A climbing-specific dataset of ≥ 500 labelled videos is required for fine-tuning.
 - `sqlx` (Rust): Compile-time query validation eliminates SQL injection at build time — a significant security advantage.
-- `pika` (Python): AMQP client connecting workers to RabbitMQ. Retry logic is implemented in `consumer.py` with exponential backoff (up to 12 retries, 60 s total).
+- `pika` (Python): AMQP client connecting workers to RabbitMQ. Retry logic is implemented in `src/worker.py` with exponential backoff (up to 12 retries, 60 s total).
 
 ---
 

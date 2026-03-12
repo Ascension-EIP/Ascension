@@ -20,7 +20,8 @@ import pika
 import psycopg2
 from dotenv import load_dotenv
 
-from pose_analysis_v2 import analyze, create_estimator
+# from ai_sam3d import analyze, create_estimator
+from ai_mediapipe import analyze
 
 # Load .env from project root (two levels up from apps/ai/) so that
 # RABBITMQ_HOST, MINIO_ENDPOINT, DB_URI etc. are available when the

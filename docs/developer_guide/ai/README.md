@@ -1,5 +1,5 @@
-> **Last updated:** 9th March 2026  
-> **Version:** 1.3  
+> **Last updated:** 11th March 2026  
+> **Version:** 1.4  
 > **Authors:** Darius  
 > **Status:** Done  
 > {.is-success}  
@@ -36,7 +36,7 @@
 
 The AI layer is a Python worker service (`apps/ai/`) that processes climbing video jobs
 dispatched by the Rust API via RabbitMQ. Each pipeline is implemented as a **dedicated
-consumer process** that subscribes to a single queue, processes the job, persists results
+worker process** that subscribes to a single queue, processes the job, persists results
 to PostgreSQL, and publishes a completion event to the `ascension.events` topic exchange.
 
 The first pipeline shipped is **`vision.skeleton`**, which extracts per-frame body
@@ -48,8 +48,9 @@ landmark data from a climbing video using MediaPipe Pose.
 
 ```
 apps/ai/
-├── consumer.py          # RabbitMQ consumer — vision.skeleton pipeline
-├── pose_analysis.py     # MediaPipe pose landmark extraction module
+├── src/
+│   ├── worker.py        # RabbitMQ worker — vision.skeleton pipeline
+│   └── ai_mediapipe.py  # MediaPipe pose landmark extraction module
 ├── pose_landmarker.task # MediaPipe model asset (bundled)
 ├── environment.yml      # Conda environment definition
 ├── pyproject.toml
@@ -123,14 +124,14 @@ Equivalent raw commands from `apps/ai/moon.yml`:
 conda env create --file environment.yml -p ./ai-env --force
 bash -c 'if [ ! -f pose_landmarker.task ]; then curl -fsSL -o pose_landmarker.task <mediapipe-cdn>; fi'
 conda run --prefix ./ai-env python -m pip install -e .[dev]
-conda run --prefix ./ai-env python consumer.py
+conda run --prefix ./ai-env python -u src/worker.py
 ```
 
 ---
 
 ## The vision.skeleton Pipeline
 
-**Source:** `apps/ai/consumer.py`
+**Source:** `apps/ai/src/worker.py`
 
 **Queue:** `vision.skeleton` (durable)
 
@@ -154,7 +155,7 @@ conda run --prefix ./ai-env python consumer.py
 sequenceDiagram
     autonumber
     participant RMQ as RabbitMQ<br/>(vision.skeleton)
-    participant W as AI Worker<br/>(consumer.py)
+    participant W as AI Worker<br/>(src/worker.py)
     participant S3 as MinIO / S3
     participant MP as pose_analysis.analyze()
     participant DB as PostgreSQL<br/>(analyses table)
@@ -267,7 +268,7 @@ All future AI pipelines (`vision.hold_detection`, `vision.advice`, `vision.ghost
 5. ACK/NACK  — basic_ack on success; basic_nack (requeue=True) on exception
 ```
 
-Each pipeline should be its own consumer module (following `consumer.py`) that:
+Each pipeline should be its own worker module (following `src/worker.py`) that:
 
 - Declares its queue as **durable** at startup.
 - Declares the `ascension.events` exchange as **topic + durable** at startup.
@@ -293,7 +294,7 @@ this is tracked as a future infrastructure improvement.
 
 ## RabbitMQ Startup Retry
 
-The consumer retries the initial RabbitMQ connection up to **12 times with a 5-second
+The worker retries the initial RabbitMQ connection up to **12 times with a 5-second
 delay** (~60 seconds total) to handle the startup race condition in Docker Compose where
 the worker container starts before RabbitMQ is ready. If all retries are exhausted, the
 process exits with code 1 and Docker Compose restarts it.

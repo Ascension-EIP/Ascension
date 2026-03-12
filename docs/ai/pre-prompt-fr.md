@@ -1,5 +1,5 @@
-> **Last updated:** 3rd March 2026  
-> **Version:** 1.1  
+> **Last updated:** 11th March 2026  
+> **Version:** 1.2  
 > **Authors:** Nicolas TORO  
 > **Status:** Done  
 > {.is-success}
@@ -154,10 +154,10 @@ Les étapes 2–4 réutilisent le même JSON squelette — la vidéo est traité
 5. ACK/NACK  — basic_ack en succès ; basic_nack(requeue=True) en exception
 ```
 
-Chaque consommateur : déclare sa queue comme durable, définit `prefetch_count=1`, réessaie la connexion RabbitMQ jusqu'à 12 × 5 s au démarrage.
+Chaque worker : déclare sa queue comme durable, définit `prefetch_count=1`, réessaie la connexion RabbitMQ jusqu'à 12 × 5 s au démarrage.
 
 **État d'implémentation actuel :**
-- ✅ `vision.skeleton` — implémenté dans `apps/ai/consumer.py`
+- ✅ `vision.skeleton` — implémenté dans `apps/ai/src/worker.py`
 - 🔲 `vision.hold_detection`, `vision.advice`, `vision.ghost`, `training.program` — planifiés
 
 ---

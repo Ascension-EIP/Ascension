@@ -12,7 +12,7 @@ requires-python = ">=3.11"
 dev = ["pytest", "ruff", "black"]
 
 [project.scripts]
-ascension-worker = "consumer:main"
+ascension-worker = "worker:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

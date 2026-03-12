@@ -1,7 +1,7 @@
 """SAM 3D Body pose analysis module.
 
 Expose ``create_estimator`` (one-time model load) and ``analyze`` (per-video
-inference) so the consumer can load the model once and process many videos.
+inference) so the worker can load the model once and process many videos.
 
 Also provides ``render_annotated_video`` to bake 2D skeleton overlays onto a
 video from a previously-saved JSON.

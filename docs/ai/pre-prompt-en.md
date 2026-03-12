@@ -1,5 +1,5 @@
-> **Last updated:** 3rd March 2026  
-> **Version:** 1.1  
+> **Last updated:** 11th March 2026  
+> **Version:** 1.2  
 > **Authors:** Nicolas TORO  
 > **Status:** Done  
 > {.is-success}
@@ -125,7 +125,7 @@ Mobile App
 
 ## 5. AI Pipelines
 
-The Python service (`apps/ai/`) implements two independent pipelines, each as a dedicated RabbitMQ consumer.
+The Python service (`apps/ai/`) implements two independent pipelines, each as a dedicated RabbitMQ worker.
 
 ### Pipeline 1 — Vision (GPU-intensive)
 
@@ -154,10 +154,10 @@ Steps 2–4 reuse the same skeleton JSON — the video is processed only once.
 5. ACK/NACK  — basic_ack on success; basic_nack(requeue=True) on exception
 ```
 
-Each consumer: declares its queue as durable, sets `prefetch_count=1`, retries RabbitMQ connection up to 12 × 5 s on startup.
+Each worker: declares its queue as durable, sets `prefetch_count=1`, retries RabbitMQ connection up to 12 × 5 s on startup.
 
 **Current implementation status:**
-- ✅ `vision.skeleton` — implemented in `apps/ai/consumer.py`
+- ✅ `vision.skeleton` — implemented in `apps/ai/src/worker.py`
 - 🔲 `vision.hold_detection`, `vision.advice`, `vision.ghost`, `training.program` — planned
 
 ---

@@ -1,5 +1,5 @@
-> **Last updated:** 12th February 2026  
-> **Version:** 1.0  
+> **Last updated:** 11th March 2026  
+> **Version:** 1.1  
 > **Authors:** Gianni TUERO  
 > **Status:** Done  
 > {.is-success}
@@ -273,11 +273,11 @@ This pipeline does **not** require GPU or video processing. It runs as a lightwe
 
 #### Worker Architecture
 
-Each pipeline is implemented as a **dedicated consumer module** — one process per queue.
+Each pipeline is implemented as a **dedicated worker module** — one process per queue.
 This contrasts with a monolithic router approach and allows independent scaling and
 deployment of each pipeline.
 
-The canonical pipeline pattern (as implemented in `apps/ai/consumer.py` for
+The canonical pipeline pattern (as implemented in `apps/ai/src/worker.py` for
 `vision.skeleton`) is:
 
 ```
@@ -288,7 +288,7 @@ The canonical pipeline pattern (as implemented in `apps/ai/consumer.py` for
 5. ACK/NACK  — basic_ack on success; basic_nack(requeue=True) on exception
 ```
 
-Each consumer module:
+Each worker module:
 
 - Declares its queue as **durable** at startup.
 - Declares `ascension.events` as a **topic + durable** exchange at startup.
@@ -300,7 +300,7 @@ Each consumer module:
 
 | Queue | Module | Status |
 |---|---|---|
-| `vision.skeleton` | `apps/ai/consumer.py` | ✅ Implemented |
+| `vision.skeleton` | `apps/ai/src/worker.py` | ✅ Implemented |
 | `vision.hold_detection` | — | Planned |
 | `vision.advice` | — | Planned |
 | `vision.ghost` | — | Planned |

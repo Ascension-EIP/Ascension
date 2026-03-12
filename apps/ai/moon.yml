@@ -69,14 +69,14 @@ tasks:
     args: ['run', '--prefix', './ai-env', 'python', '-m', 'pip', 'install', '--no-deps', '-e', '.']
     inputs:
       - 'pyproject.toml'
-      - 'consumer.py'
+      - 'src/worker.py'
       - 'pose_analysis.py'
     deps:
       - 'install_dev'
 
   dev:
     command: '$CONDA_EXE'
-    args: ['run', '--no-capture-output', '--prefix', './ai-env', 'python', '-u', 'src/consumer.py']
+    args: ['run', '--no-capture-output', '--prefix', './ai-env', 'python', '-u', 'src/worker.py']
     deps:
       - 'install'
     env:
