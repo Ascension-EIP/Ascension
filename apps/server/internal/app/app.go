@@ -30,6 +30,7 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 	sessionS := service.NewSessionService(cfg.Auth.Session, &repo)
 	userS := service.NewUserService(&repo)
 	authS := service.NewAuthService(&jwtS, &sessionS, &repo)
+	videoS := service.NewVideoService()
 
 	authMW := middleware.Auth(&jwtS)
 	guestMW := middleware.Guest(&jwtS)
@@ -38,6 +39,7 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 
 	userH := handler.NewUserHandler(l, &userS)
 	authH := handler.NewAuthHandler(l, &authS)
+	videoH := handler.NewVideoHandler(l, &videoS)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -48,7 +50,6 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 	// }
 	// c.Start()
 
-	// gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
 	router.New(app, cfg, l,
 		authMW,
@@ -58,6 +59,7 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 
 		&userH,
 		&authH,
+		&videoH,
 	)
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(cfg.HTTP.Port),

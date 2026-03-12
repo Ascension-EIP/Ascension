@@ -23,6 +23,7 @@ func New(
 
 	userH *handler.UserHandler,
 	authH *handler.AuthHandler,
+	videoH *handler.VideoHandler,
 ) {
 	app.Use(middleware.RequestID())
 	app.Use(middleware.Logger(l))
@@ -33,10 +34,13 @@ func New(
 
 	v1 := app.Group("/v1")
 	{
-		v1.POST("/signup", middleware.RateLimiter(time.Minute, 5), guestMW, authH.Signup)
-		v1.POST("/login", middleware.RateLimiter(time.Minute, 10), guestMW, authH.Login)
-		v1.DELETE("/logout", middleware.RateLimiter(time.Minute, 10), authH.Logout)
-		v1.PUT("/refresh", middleware.RateLimiter(time.Minute, 10), authH.RefreshToken)
+		authGroup := v1.Group("/auth")
+		{
+			authGroup.POST("/register", middleware.RateLimiter(time.Minute, 5), guestMW, authH.Signup)
+			authGroup.POST("/login", middleware.RateLimiter(time.Minute, 10), guestMW, authH.Login)
+			authGroup.DELETE("/logout", middleware.RateLimiter(time.Minute, 10), authH.Logout)
+			authGroup.PUT("/refresh", middleware.RateLimiter(time.Minute, 10), authH.RefreshToken)
+		}
 
 		usersGroup := v1.Group("/users")
 		{
@@ -45,6 +49,11 @@ func New(
 			usersGroup.GET("/:id", middleware.RateLimiter(time.Minute, 100), authMW, adminMW, userH.GetByID)
 			usersGroup.PUT("/:id", middleware.RateLimiter(time.Minute, 25), authMW, adminMW, userH.Update)
 			usersGroup.DELETE("/:id", middleware.RateLimiter(time.Minute, 25), authMW, adminMW, userH.Delete)
+		}
+
+		videosGroup := v1.Group("/videos")
+		{
+			videosGroup.GET("/upload-url", middleware.RateLimiter(time.Minute, 5), authMW, userMW, videoH.GetUploadURL)
 		}
 	}
 }
