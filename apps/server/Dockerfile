@@ -1,4 +1,3 @@
-
 FROM golang:1.25-alpine AS go-builder
 WORKDIR /app
 
