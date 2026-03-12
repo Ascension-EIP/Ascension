@@ -39,10 +39,12 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _loadHistory() async {
     final userId = AuthService().userId;
     if (userId == null) {
+      if (!mounted) return;
       setState(() => _history = []);
       return;
     }
     final entries = await AnalysisHistoryService().getHistory(userId);
+    if (!mounted) return;
     setState(() => _history = entries);
   }
 
