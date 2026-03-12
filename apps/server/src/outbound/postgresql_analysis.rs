@@ -111,7 +111,7 @@ impl AnalysisRepository for Postgres {
 
     async fn get_analysis(&self, id: Uuid) -> Result<Analysis, AnalysisRepositoryError> {
         let row = sqlx::query(
-            "SELECT id, video_id, job_id, status, progress, result_json, processing_time_ms, completed_at, created_at FROM analyses WHERE id = $1",
+            "SELECT id, video_id, job_id, status, progress, result_json, hints, processing_time_ms, completed_at, created_at FROM analyses WHERE id = $1",
         )
         .bind(id.to_string())
         .fetch_one(&self.pool)
@@ -148,6 +148,9 @@ impl AnalysisRepository for Postgres {
                 .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
             result_json: row
                 .try_get("result_json")
+                .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
+            hints: row
+                .try_get("hints")
                 .map_err(|e| AnalysisRepositoryError::Unknown(anyhow!(e)))?,
             processing_time_ms: row
                 .try_get("processing_time_ms")
