@@ -106,9 +106,7 @@ impl<A: AnalysisRepository, V: VideoRepository> AnalysisService for AnalysisServ
                     AnalysisRepositoryError::NotFound { id } => {
                         AnalysisServiceError::NotFound { id }
                     }
-                    AnalysisRepositoryError::Unknown(cause) => {
-                        AnalysisServiceError::Unknown(cause)
-                    }
+                    AnalysisRepositoryError::Unknown(cause) => AnalysisServiceError::Unknown(cause),
                 }
             })
     }

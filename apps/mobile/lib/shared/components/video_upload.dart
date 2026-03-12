@@ -50,7 +50,8 @@ const List<_PromoMessage> _promoMessages = [
   ),
   _PromoMessage(
     icon: Icons.tips_and_updates_rounded,
-    text: 'Le saviez-vous ? MediaPipe détecte jusqu\'à 33 points du corps humain.',
+    text:
+        'Le saviez-vous ? MediaPipe détecte jusqu\'à 33 points du corps humain.',
     isPromo: false,
   ),
   _PromoMessage(
@@ -85,7 +86,8 @@ const List<_PromoMessage> _promoMessages = [
   ),
   _PromoMessage(
     icon: Icons.psychology_rounded,
-    text: 'L\'IA Ascension apprend de chaque session pour mieux vous conseiller.',
+    text:
+        'L\'IA Ascension apprend de chaque session pour mieux vous conseiller.',
     isPromo: false,
   ),
   _PromoMessage(
@@ -122,8 +124,8 @@ class _VideoUploadState extends State<VideoUpload> {
   Map<String, dynamic>? _analysisResult;
 
   // Analysis progress tracking
-  int _analysisProgress = 0;        // real value 0–100 from the API
-  DateTime? _analysisStartedAt;     // when the analysing phase began
+  int _analysisProgress = 0; // real value 0–100 from the API
+  DateTime? _analysisStartedAt; // when the analysing phase began
   static const int _analysisMaxPolls = 120; // 120 × 5 s = 10 min
 
   // Temporary hard-coded userId until auth is wired.
@@ -514,7 +516,9 @@ class _VideoUploadState extends State<VideoUpload> {
     if (seconds < 60) return '~$seconds s';
     final min = seconds ~/ 60;
     final sec = seconds % 60;
-    return sec == 0 ? '~$min min' : '~${min}m${sec.toString().padLeft(2, '0')}s';
+    return sec == 0
+        ? '~$min min'
+        : '~${min}m${sec.toString().padLeft(2, '0')}s';
   }
 
   Widget _buildError() {
@@ -850,7 +854,9 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                   child: CircularProgressIndicator(
                     value: widget.progress > 0 ? widget.progress : null,
                     color: colorScheme.secondary,
-                    backgroundColor: colorScheme.secondary.withValues(alpha: 0.15),
+                    backgroundColor: colorScheme.secondary.withValues(
+                      alpha: 0.15,
+                    ),
                     strokeWidth: 8,
                   ),
                 ),
@@ -867,10 +873,7 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                     ),
                     Text(
                       widget.remainingLabel,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey[500],
-                      ),
+                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
                     ),
                   ],
                 ),
@@ -915,7 +918,9 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                     Icon(
                       msg.icon,
                       size: 28,
-                      color: msg.isPromo ? colorScheme.secondary : Colors.grey[400],
+                      color: msg.isPromo
+                          ? colorScheme.secondary
+                          : Colors.grey[400],
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -939,7 +944,9 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                             msg.text,
                             style: TextStyle(
                               fontSize: 14,
-                              color: msg.isPromo ? Colors.white : Colors.grey[400],
+                              color: msg.isPromo
+                                  ? Colors.white
+                                  : Colors.grey[400],
                               height: 1.4,
                             ),
                           ),
