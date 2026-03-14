@@ -12,7 +12,6 @@ type Session struct {
 	UserID    uuid.UUID `db:"user_id"`
 	ExpiresAt time.Time `db:"expires_at"`
 	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
 }
 
 func (v *Session) ToSession() *model.Session {
@@ -21,6 +20,5 @@ func (v *Session) ToSession() *model.Session {
 		UserID:    v.UserID,
 		ExpiresAt: v.ExpiresAt,
 		CreatedAt: v.CreatedAt,
-		UpdatedAt: v.UpdatedAt,
 	}
 }

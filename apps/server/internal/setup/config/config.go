@@ -10,10 +10,11 @@ import (
 
 type (
 	Config struct {
-		DB   DBConfig   `envPrefix:"DB_"`
-		Auth AuthConfig `envPrefix:"AUTH_"`
-		HTTP HTTPConfig
-		Log  LogConfig `envPrefix:"LOG_"`
+		DB    DBConfig    `envPrefix:"DB_"`
+		MinIO MinIOConfig `envPrefix:"MINIO_"`
+		Auth  AuthConfig  `envPrefix:"AUTH_"`
+		HTTP  HTTPConfig
+		Log   LogConfig `envPrefix:"LOG_"`
 	}
 
 	DBConfig struct {
@@ -24,6 +25,16 @@ type (
 		Password  string `env:"PASS,unset,required"`
 		Params    string `env:"PARAMS" envDefault:"sslmode=disable"`
 		Migration string `env:"MIGRATION"`
+	}
+
+	MinIOConfig struct {
+		Endpoint    string        `env:"ENDPOINT,unset,required"`
+		ID          string        `env:"ID,unset,required"`
+		Secret      string        `env:"SECRET,unset,required"`
+		BucketName  string        `env:"BUCKET,required"`
+		SSL         bool          `env:"SSL" envDefault:"false"`
+		UploadExp   time.Duration `env:"UPLOAD_EXP" envDefault:"1h"`
+		DownloadExp time.Duration `env:"DOWNLAOD_EXP" envDefault:"1h"`
 	}
 
 	AuthConfig struct {
@@ -38,7 +49,7 @@ type (
 
 	SessionConfig struct {
 		Exp         time.Duration `env:"EXP" envDefault:"168h"`
-		RememberExp time.Duration `env:"EXP" envDefault:"720h"`
+		RememberExp time.Duration `env:"REMEMBER_EXP" envDefault:"720h"`
 	}
 
 	HTTPConfig struct {

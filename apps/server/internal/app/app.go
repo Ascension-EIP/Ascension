@@ -11,6 +11,7 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/handler"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/middleware"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/router"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/minio"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
@@ -25,12 +26,17 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 	if err != nil {
 		l.Fatal().Msg(err.Error())
 	}
+	storage, err := minio.New(&cfg.MinIO)
+	if err != nil {
+		l.Fatal().Msg(err.Error())
+	}
 
 	jwtS := service.NewJWTService(cfg.Auth.JWT)
 	sessionS := service.NewSessionService(cfg.Auth.Session, &repo)
 	userS := service.NewUserService(&repo)
 	authS := service.NewAuthService(&jwtS, &sessionS, &repo)
-	videoS := service.NewVideoService()
+	videoS := service.NewVideoService(&storage, &repo)
+	analyseS := service.NewAnalyseService()
 
 	authMW := middleware.Auth(&jwtS)
 	guestMW := middleware.Guest(&jwtS)
@@ -40,6 +46,7 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 	userH := handler.NewUserHandler(l, &userS)
 	authH := handler.NewAuthHandler(l, &authS)
 	videoH := handler.NewVideoHandler(l, &videoS)
+	analyseH := handler.NewAnalyseHandler(l, &analyseS)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -60,6 +67,7 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 		&userH,
 		&authH,
 		&videoH,
+		&analyseH,
 	)
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(cfg.HTTP.Port),

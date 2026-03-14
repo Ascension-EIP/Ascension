@@ -12,15 +12,15 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type PostgresRepo struct {
+type PostgresRepository struct {
 	Pool *pgxpool.Pool
 	l    *zerolog.Logger
 }
 
-func New(l *zerolog.Logger, dsn string, migrationDir string) (PostgresRepo, error) {
+func New(l *zerolog.Logger, dsn string, migrationDir string) (PostgresRepository, error) {
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
-		return PostgresRepo{}, err
+		return PostgresRepository{}, err
 	}
 
 	config.MaxConns = 25
@@ -29,21 +29,21 @@ func New(l *zerolog.Logger, dsn string, migrationDir string) (PostgresRepo, erro
 
 	pool, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
-		return PostgresRepo{}, err
+		return PostgresRepository{}, err
 	}
 
 	if err := pool.Ping(context.Background()); err != nil {
-		return PostgresRepo{}, err
+		return PostgresRepository{}, err
 	}
 
 	if migrationDir != "" {
 		if err := migrateDB(dsn, migrationDir); err != nil {
-			return PostgresRepo{}, err
+			return PostgresRepository{}, err
 		}
 		l.Info().Msg("migration completed successfully")
 	}
 
-	return PostgresRepo{Pool: pool}, nil
+	return PostgresRepository{Pool: pool}, nil
 }
 
 func migrateDB(dsn string, migrationDir string) error {

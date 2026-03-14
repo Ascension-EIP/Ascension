@@ -11,103 +11,90 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func (r *PostgresRepo) CreateUser(ctx context.Context, newUser *model.NewUser) (*model.User, error) {
+func (r *PostgresRepository) CreateUser(ctx context.Context, newUser *model.NewUser) (*model.User, error) {
 	if newUser == nil {
 		return nil, model.ErrUnknown
 	}
+	tx := r.getTx(ctx)
 
 	var user *dto.User
-	if err := pgx.BeginFunc(ctx, r.Pool, func(tx pgx.Tx) error {
-		rows, err := tx.Query(ctx,
-			"INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING *",
-			newUser.Name, newUser.Email, newUser.Password, newUser.Role)
-		if err != nil {
-			return err
-		}
+	rows, err := tx.Query(ctx,
+		"INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING *",
+		newUser.Name, newUser.Email, newUser.Password, newUser.Role)
+	if err != nil {
+		return nil, err
+	}
 
-		user, err = pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
-		if err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
+	user, err = pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
+	if err != nil {
 		return nil, err
 	}
 
 	return user.ToUser(), nil
 }
 
-func (r *PostgresRepo) GetUserByID(ctx context.Context, userID uuid.UUID) (*model.User, error) {
-	var user *dto.User
-	if err := pgx.BeginFunc(ctx, r.Pool, func(tx pgx.Tx) error {
-		rows, err := tx.Query(ctx,
-			"SELECT * FROM users WHERE id = $1",
-			userID)
-		if err != nil {
-			return err
-		}
+func (r *PostgresRepository) GetUserByID(ctx context.Context, userID uuid.UUID) (*model.User, error) {
+	tx := r.getTx(ctx)
 
-		user, err = pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
-		if err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
+	var user *dto.User
+	rows, err := tx.Query(ctx,
+		"SELECT * FROM users WHERE id = $1",
+		userID)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err = pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
+	if err != nil {
 		return nil, err
 	}
 
 	return user.ToUser(), nil
 }
 
-func (r *PostgresRepo) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
-	var user *dto.User
-	if err := pgx.BeginFunc(ctx, r.Pool, func(tx pgx.Tx) error {
-		rows, err := tx.Query(ctx,
-			"SELECT * FROM users WHERE email = $1",
-			email)
-		if err != nil {
-			return err
-		}
+func (r *PostgresRepository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
+	tx := r.getTx(ctx)
 
-		user, err = pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
-		if err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
+	var user *dto.User
+	rows, err := tx.Query(ctx,
+		"SELECT * FROM users WHERE email = $1",
+		email)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err = pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
+	if err != nil {
 		return nil, err
 	}
 
 	return user.ToUser(), nil
 }
 
-func (r *PostgresRepo) ListAllUsers(ctx context.Context) ([]*model.User, error) {
+func (r *PostgresRepository) ListAllUsers(ctx context.Context) ([]*model.User, error) {
+	tx := r.getTx(ctx)
+
 	var users []*dto.User
-	if err := pgx.BeginFunc(ctx, r.Pool, func(tx pgx.Tx) error {
-		rows, err := tx.Query(ctx,
-			"SELECT * FROM users")
-		if err != nil {
-			return err
-		}
+	rows, err := tx.Query(ctx,
+		"SELECT * FROM users")
+	if err != nil {
+		return nil, err
+	}
 
-		users, err = pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[dto.User])
-		if err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
+	users, err = pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[dto.User])
+	if err != nil {
 		return nil, err
 	}
 	return dto.UsersToUsers(users), nil
 }
 
-func (r *PostgresRepo) UpdateUser(ctx context.Context, partialUser *model.PartialUser) (*model.User, error) {
+func (r *PostgresRepository) UpdateUser(ctx context.Context, partialUser *model.PartialUser) (*model.User, error) {
 	if partialUser == nil {
 		return nil, model.ErrUnknown
 	}
 
 	setParts := []string{}
-	args := []interface{}{}
+	args := []any{}
 	argID := 1
 
 	if partialUser.Name != nil {
@@ -133,26 +120,23 @@ func (r *PostgresRepo) UpdateUser(ctx context.Context, partialUser *model.Partia
 	args = append(args, partialUser.ID)
 	query := fmt.Sprintf("UPDATE users SET %s WHERE id=$%d RETURNING *", strings.Join(setParts, ", "), argID)
 
+	tx := r.getTx(ctx)
+
 	var user *dto.User
-	if err := pgx.BeginFunc(ctx, r.Pool, func(tx pgx.Tx) error {
-		rows, err := tx.Query(context.Background(), query, args...)
-		if err != nil {
-			return err
-		}
-
-		user, err = pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}); err != nil {
+	rows, err := tx.Query(context.Background(), query, args...)
+	if err != nil {
 		return nil, err
 	}
+
+	user, err = pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
+	if err != nil {
+		return nil, err
+	}
+
 	return user.ToUser(), nil
 }
 
-func (r *PostgresRepo) DeleteUser(ctx context.Context, userID uuid.UUID) error {
+func (r *PostgresRepository) DeleteUser(ctx context.Context, userID uuid.UUID) error {
 	err := pgx.BeginFunc(ctx, r.Pool, func(tx pgx.Tx) error {
 		_, err := tx.Exec(ctx,
 			"DELETE FROM users WHERE id = $1",

@@ -3,12 +3,14 @@ package handler
 import (
 	"fmt"
 	"net/http"
-	"path/filepath"
 	"strconv"
-	"strings"
 
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
 
@@ -22,8 +24,15 @@ func NewVideoHandler(l *zerolog.Logger, s *service.VideoService) VideoHandler {
 }
 
 func (h *VideoHandler) GetUploadURL(c *gin.Context) {
-	filename := c.Query("filename")
-	if err := validateVideoFilename(filename); err != nil {
+	userID, err := utils.GetFromContext[uuid.UUID](c, "userID")
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	contentType := c.Query("content_type")
+	ext, err := getVideoExtension(contentType)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
@@ -34,36 +43,39 @@ func (h *VideoHandler) GetUploadURL(c *gin.Context) {
 		return
 	}
 
-	contentType := c.Query("content_type")
-	if err := validateVideoContentType(contentType); err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+	fileInfo := &model.FileInfo{
+		UserID:    userID,
+		Extension: ext,
+		Size:      size,
+	}
+
+	uploadUrl, err := h.s.GetUploadURL(c.Request.Context(), fileInfo)
+	if err != nil {
+		utils.Error(c, err, h.l)
 		return
 	}
 
-	size = size
-
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, response.UploadURLToResponse(uploadUrl))
 }
 
-func validateVideoFilename(filename string) error {
-	var allowedExtensions = map[string]bool{
-		".mp4":  true,
-		".webm": true,
-		".mov":  true,
-		".avi":  true,
+func getVideoExtension(contentType string) (string, error) {
+	var allowedContentTypes = map[string]string{
+		"video/mp4":       "mp4",
+		"video/webm":      "webm",
+		"video/quicktime": "mov",
+		"video/x-msvideo": "avi",
 	}
 
-	if filename == "" {
-		return fmt.Errorf("filename missing")
+	if contentType == "" {
+		return "", fmt.Errorf("content type missing")
 	}
 
-	ext := strings.ToLower(filepath.Ext(filename))
-
-	if !allowedExtensions[ext] {
-		return fmt.Errorf("extension unsupported: %s", ext)
+	ext, ok := allowedContentTypes[contentType]
+	if !ok {
+		return "", fmt.Errorf("content type unsupported: %s", contentType)
 	}
 
-	return nil
+	return ext, nil
 }
 
 func validateVideoSize(s string) (int, error) {
@@ -78,23 +90,4 @@ func validateVideoSize(s string) (int, error) {
 		return 0, fmt.Errorf("file too big: maximum 1GB")
 	}
 	return size, nil
-}
-
-func validateVideoContentType(contentType string) error {
-	var allowedContentTypes = map[string]bool{
-		"video/mp4":       true,
-		"video/webm":      true,
-		"video/quicktime": true,
-		"video/x-msvideo": true,
-	}
-
-	if contentType == "" {
-		return fmt.Errorf("content type missing")
-	}
-
-	if !allowedContentTypes[contentType] {
-		return fmt.Errorf("content type unsupported: %s", contentType)
-	}
-
-	return nil
 }

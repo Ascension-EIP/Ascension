@@ -39,5 +39,4 @@ type Session struct {
 	UserID    uuid.UUID
 	ExpiresAt time.Time
 	CreatedAt time.Time
-	UpdatedAt time.Time
 }

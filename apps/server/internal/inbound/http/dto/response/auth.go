@@ -14,7 +14,7 @@ func TokensUserToResponse(tokens *model.Tokens, user *model.User) *LoginResponse
 	return &LoginResponse{
 		RefreshToken: tokens.RefreshToken.String(),
 		AccessTokenResponse: AccessTokenResponse{
-			AccessToken: tokens.AccessToken.Token,
+			AccessToken: tokens.Token,
 			TokenType:   tokens.TokenType,
 			ExpiresIn:   tokens.ExpiresIn,
 		},
