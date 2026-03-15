@@ -2,8 +2,8 @@ use axum::Json;
 use axum::extract::State;
 use axum::http::StatusCode;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 use utoipa::ToSchema;
+use uuid::Uuid;
 
 use crate::domain::analysis::ports::AnalysisServiceError;
 use crate::inbound::http::AppState;

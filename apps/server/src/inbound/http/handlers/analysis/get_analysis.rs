@@ -1,8 +1,8 @@
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use serde::Serialize;
-use uuid::Uuid;
 use utoipa::ToSchema;
+use uuid::Uuid;
 
 use crate::inbound::http::AppState;
 use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};

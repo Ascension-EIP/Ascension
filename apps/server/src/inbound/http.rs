@@ -20,27 +20,25 @@ use crate::domain::auth::inbound::AuthService;
 use crate::domain::user::inbound::UserService;
 use crate::domain::video::ports::VideoService;
 use crate::inbound::http::handlers::analysis::create_analysis::{
-    create_analysis, CreateAnalysisRequest, CreateAnalysisResponse,
+    CreateAnalysisRequest, CreateAnalysisResponse, create_analysis,
 };
-use crate::inbound::http::handlers::analysis::get_analysis::{
-    get_analysis, GetAnalysisResponse,
-};
-use crate::inbound::http::handlers::auth::login::{login, LoginRequest, LoginResponse};
+use crate::inbound::http::handlers::analysis::get_analysis::{GetAnalysisResponse, get_analysis};
+use crate::inbound::http::handlers::auth::login::{LoginRequest, LoginResponse, login};
 use crate::inbound::http::handlers::auth::logout::logout;
-use crate::inbound::http::handlers::auth::register::{register, RegisterRequest, RegisterResponse};
+use crate::inbound::http::handlers::auth::register::{RegisterRequest, RegisterResponse, register};
 use crate::inbound::http::handlers::user::create_user::{
-    create_user, CreateUserRequest, CreateUserResponse,
+    CreateUserRequest, CreateUserResponse, create_user,
 };
 use crate::inbound::http::handlers::user::delete_user::delete_user;
-use crate::inbound::http::handlers::user::get_user::{get_user, GetUserResponse};
+use crate::inbound::http::handlers::user::get_user::{GetUserResponse, get_user};
 use crate::inbound::http::handlers::user::list_users::{
-    list_users, ListUserResponse, ListUsersResponse,
+    ListUserResponse, ListUsersResponse, list_users,
 };
 use crate::inbound::http::handlers::user::update_user::{
-    update_user, UpdateUserRequest, UpdateUserResponse,
+    UpdateUserRequest, UpdateUserResponse, update_user,
 };
 use crate::inbound::http::handlers::video::get_upload_url::{
-    get_upload_url, GetUploadUrlRequest, GetUploadUrlResponse,
+    GetUploadUrlRequest, GetUploadUrlResponse, get_upload_url,
 };
 
 /// Central OpenAPI document — aggregates all route schemas.

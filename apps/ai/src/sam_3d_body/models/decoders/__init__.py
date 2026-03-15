@@ -1,6 +1,8 @@
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 
-from .keypoint_prompt_sampler import build_keypoint_sampler as build_keypoint_sampler
+from .keypoint_prompt_sampler import (
+    build_keypoint_sampler as build_keypoint_sampler,
+)
 from .prompt_encoder import PromptEncoder as PromptEncoder
 from .promptable_decoder import PromptableDecoder as PromptableDecoder
 
