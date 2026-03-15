@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export PATH="$PATH:$HOME/.moon/bin"
+export CONDA_EXE='conda'
+
 moon run server:format
 moon run mobile:format
 moon run ai:format
