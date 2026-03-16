@@ -31,7 +31,7 @@ type UpdateUser struct {
 }
 
 func (req *UpdateUser) IntoPartialUser(idStr string) (model.PartialUser, error) {
-	id, err := IntoUserID(idStr)
+	id, err := IntoUUID(idStr)
 	if err != nil {
 		return model.PartialUser{}, err
 	}
@@ -50,7 +50,7 @@ func (req *UpdateUser) IntoPartialUser(idStr string) (model.PartialUser, error) 
 	}, nil
 }
 
-func IntoUserID(s string) (uuid.UUID, error) {
+func IntoUUID(s string) (uuid.UUID, error) {
 	id, err := uuid.Parse(s)
 	if err != nil {
 		return uuid.UUID{}, errors.New("invalid user id")

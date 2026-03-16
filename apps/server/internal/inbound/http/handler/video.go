@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/request"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
@@ -90,4 +91,26 @@ func validateVideoSize(s string) (int, error) {
 		return 0, fmt.Errorf("file too big: maximum 1GB")
 	}
 	return size, nil
+}
+
+func (h *VideoHandler) UploadComplete(c *gin.Context) {
+	userID, err := utils.GetFromContext[uuid.UUID](c, "userID")
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	id := c.Param("id")
+	videoID, err := request.IntoUUID(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+
+	if err := h.s.UploadComplete(c.Request.Context(), videoID, userID); err != nil {
+		utils.Error(c, err, h.l)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }

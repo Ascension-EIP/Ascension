@@ -7,11 +7,11 @@ import (
 	"github.com/google/uuid"
 )
 
-type VideoState string
+type VideoStatus string
 
 const (
-	VideoStatePending   = "pending"
-	VideoStateCompleted = "completed"
+	VideoStatusPending   VideoStatus = "pending"
+	VideoStatusCompleted VideoStatus = "completed"
 )
 
 type (
@@ -31,7 +31,15 @@ type (
 		ID        uuid.UUID
 		UserID    uuid.UUID
 		ObjectKey string
-		State     VideoState
+		Status    VideoStatus
 		ExpiresAt time.Time
+	}
+
+	PartialVideoInfo struct {
+		ID        uuid.UUID
+		UserID    uuid.UUID
+		ObjectKey *string
+		Status    *VideoStatus
+		ExpiresAt *time.Time
 	}
 )

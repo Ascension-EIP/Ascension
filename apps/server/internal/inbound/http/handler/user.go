@@ -44,7 +44,7 @@ func (h *UserHandler) Create(c *gin.Context) {
 
 func (h *UserHandler) GetByID(c *gin.Context) {
 	id := c.Param("id")
-	userID, err := request.IntoUserID(id)
+	userID, err := request.IntoUUID(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
@@ -96,7 +96,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 
 func (h *UserHandler) Delete(c *gin.Context) {
 	id := c.Param("id")
-	userID, err := request.IntoUserID(id)
+	userID, err := request.IntoUUID(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return

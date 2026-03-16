@@ -20,6 +20,7 @@ type videoStorage interface {
 
 type videoRepository interface {
 	CreateVideoInfo(context.Context, *model.VideoInfo) error
+	UpdateVideoInfo(context.Context, *model.PartialVideoInfo) (*model.VideoInfo, error)
 	WithTransaction(context.Context, func(context.Context) error) error
 }
 
@@ -47,7 +48,7 @@ func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo *model.FileInf
 			ID:        videoID,
 			UserID:    fileInfo.UserID,
 			ObjectKey: objectKey,
-			State:     model.VideoStatePending,
+			Status:    model.VideoStatusPending,
 			ExpiresAt: time.Now().Add(s.storage.UploadExp()),
 		}); err != nil {
 			return err
@@ -67,4 +68,12 @@ func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo *model.FileInf
 		URL:       url,
 		ExpiresAt: expiresAt,
 	}, nil
+}
+
+func (s *VideoService) UploadComplete(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) error {
+	status := model.VideoStatusCompleted
+	if _, err := s.repo.UpdateVideoInfo(ctx, &model.PartialVideoInfo{ID: videoID, UserID: userID, Status: &status}); err != nil {
+		return err
+	}
+	return nil
 }
