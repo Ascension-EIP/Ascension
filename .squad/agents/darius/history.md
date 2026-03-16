@@ -5,6 +5,12 @@
 
 ## Learnings
 
+### 2026-03-16: RNCP Bloc 1 M1 package documentaire consolidé (oral + preuves)
+- Création d’un pack complet sous `docs/30-compliance/rncp/block-1/` pour couvrir les attendus M1: analyse de besoins, audit existant, spécifications fonctionnelles/techniques, benchmark budgétaire, stratégie risques/évolution/migration.
+- Production d’un guide d’oral par observable (`O1` à `O11`) dans `docs/30-compliance/rncp/block-1/m1-oral-slides-by-observable.md`, avec structure répétable: titre, preuves à montrer, notes de pitch, question jury probable, pattern de réponse.
+- Alignement des preuves sur des artefacts réels du repo (`apps/server/src/inbound/http.rs`, `apps/ai/src/worker.py`, `apps/server/migrations/*.sql`, `docker-compose.yml`, workshop docs) pour éviter les affirmations non vérifiables.
+- Point d’attention confirmé: accessibilité PSH bien présente dans les specs produit mais encore à outiller davantage dans les preuves d’implémentation et de recette.
+
 ### 2026-03-11: AI consumer entrypoint documentation renamed to worker
 - Updated AI and architecture documentation to replace `apps/ai/consumer.py` references with `apps/ai/worker.py`.
 - Standardized visible wording from `consumer` to `worker` where the docs referred to the per-queue Python entrypoint naming.
@@ -42,3 +48,8 @@
   - General pipeline pattern for future pipelines (hold_detection, advice, ghost, training.program)
   - Error handling and RabbitMQ startup retry strategy
 - Updated `docs/developer_guide/architecture/system-overview.md` — replaced the conceptual `AscensionWorker` pseudocode in the Layer 4 Worker Architecture section with the actual per-pipeline consumer pattern and implementation status table.
+
+### 2026-03-16: RNCP Block 1 — nettoyage des effets de bord
+
+- Restauration des fichiers suivis `docs/30-compliance/rncp/block-1/audit/README.md`, `stack-summary.md` et `tech-stack.md` pour éliminer les suppressions involontaires.
+- Correction des références `audit-draft/*` vers les chemins canoniques `audit/*` dans la matrice d’observables pour préserver la traçabilité documentaire.
