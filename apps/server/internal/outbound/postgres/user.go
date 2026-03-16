@@ -17,7 +17,6 @@ func (r *PostgresRepository) CreateUser(ctx context.Context, newUser *model.NewU
 	}
 	tx := r.getTx(ctx)
 
-	var user *dto.User
 	rows, err := tx.Query(ctx,
 		"INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING *",
 		newUser.Name, newUser.Email, newUser.Password, newUser.Role)
@@ -25,7 +24,7 @@ func (r *PostgresRepository) CreateUser(ctx context.Context, newUser *model.NewU
 		return nil, err
 	}
 
-	user, err = pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
+	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
 	if err != nil {
 		return nil, err
 	}
@@ -36,15 +35,14 @@ func (r *PostgresRepository) CreateUser(ctx context.Context, newUser *model.NewU
 func (r *PostgresRepository) GetUserByID(ctx context.Context, userID uuid.UUID) (*model.User, error) {
 	tx := r.getTx(ctx)
 
-	var user *dto.User
 	rows, err := tx.Query(ctx,
-		"SELECT * FROM users WHERE id = $1",
+		"SELECT * FROM users WHERE id = $1 LIMIT 1",
 		userID)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err = pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
+	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
 	if err != nil {
 		return nil, err
 	}
@@ -55,15 +53,14 @@ func (r *PostgresRepository) GetUserByID(ctx context.Context, userID uuid.UUID) 
 func (r *PostgresRepository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
 	tx := r.getTx(ctx)
 
-	var user *dto.User
 	rows, err := tx.Query(ctx,
-		"SELECT * FROM users WHERE email = $1",
+		"SELECT * FROM users WHERE email = $1 LIMIT 1",
 		email)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err = pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
+	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
 	if err != nil {
 		return nil, err
 	}
@@ -74,14 +71,13 @@ func (r *PostgresRepository) GetUserByEmail(ctx context.Context, email string) (
 func (r *PostgresRepository) ListAllUsers(ctx context.Context) ([]*model.User, error) {
 	tx := r.getTx(ctx)
 
-	var users []*dto.User
 	rows, err := tx.Query(ctx,
 		"SELECT * FROM users")
 	if err != nil {
 		return nil, err
 	}
 
-	users, err = pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[dto.User])
+	users, err := pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[dto.User])
 	if err != nil {
 		return nil, err
 	}
@@ -122,13 +118,12 @@ func (r *PostgresRepository) UpdateUser(ctx context.Context, partialUser *model.
 
 	tx := r.getTx(ctx)
 
-	var user *dto.User
 	rows, err := tx.Query(context.Background(), query, args...)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err = pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
+	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
 	if err != nil {
 		return nil, err
 	}

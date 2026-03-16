@@ -31,3 +31,11 @@ func (s *MinIOStorage) Delete(ctx context.Context, objectKey string) error {
 	}
 	return nil
 }
+
+func (s *MinIOStorage) FileExist(ctx context.Context, objectKey string) error {
+	_, err := s.client.StatObject(ctx, s.cfg.BucketName, objectKey, minio.GetObjectOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}

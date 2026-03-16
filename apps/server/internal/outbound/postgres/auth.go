@@ -16,7 +16,6 @@ func (r *PostgresRepository) CreateSession(ctx context.Context, newSession *mode
 	}
 	tx := r.getTx(ctx)
 
-	var session *dto.Session
 	rows, err := tx.Query(ctx,
 		"INSERT INTO sessions (user_id, expires_at) VALUES ($1, $2) RETURNING *",
 		newSession.UserID, newSession.ExpiresAt)
@@ -24,7 +23,7 @@ func (r *PostgresRepository) CreateSession(ctx context.Context, newSession *mode
 		return nil, err
 	}
 
-	session, err = pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.Session])
+	session, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.Session])
 	if err != nil {
 		return nil, err
 	}
@@ -35,18 +34,18 @@ func (r *PostgresRepository) CreateSession(ctx context.Context, newSession *mode
 func (r *PostgresRepository) GetUserByUnexpiredSessionID(ctx context.Context, sessionID uuid.UUID) (*model.User, error) {
 	tx := r.getTx(ctx)
 
-	var user *dto.User
 	rows, err := tx.Query(ctx, `
 			SELECT u.*
 			FROM sessions s
 			JOIN users u ON u.id = s.user_id
 			WHERE s.id = $1 AND s.expires_at > NOW()
+			LIMIT 1
 		`, sessionID)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err = pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
+	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
 	if err != nil {
 		return nil, err
 	}

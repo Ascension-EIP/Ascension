@@ -7,6 +7,7 @@ import (
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres/dto"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -25,6 +26,22 @@ func (r *PostgresRepository) CreateVideoInfo(ctx context.Context, info *model.Vi
 	}
 
 	return nil
+}
+
+func (r *PostgresRepository) GetVideoInfoByUserID(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (*model.VideoInfo, error) {
+	tx := r.getTx(ctx)
+
+	rows, err := tx.Query(ctx, "SELECT * FROM videos WHERE id = $1 AND user_id = $2 LIMIT 1", videoID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	video, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.Video])
+	if err != nil {
+		return nil, err
+	}
+
+	return video.ToVideoInfo(), nil
 }
 
 func (r *PostgresRepository) UpdateVideoInfo(ctx context.Context, partialInfo *model.PartialVideoInfo) (*model.VideoInfo, error) {
@@ -57,13 +74,12 @@ func (r *PostgresRepository) UpdateVideoInfo(ctx context.Context, partialInfo *m
 
 	tx := r.getTx(ctx)
 
-	var video *dto.Video
 	rows, err := tx.Query(context.Background(), query, args...)
 	if err != nil {
 		return nil, err
 	}
 
-	video, err = pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.Video])
+	video, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.Video])
 	if err != nil {
 		return nil, err
 	}

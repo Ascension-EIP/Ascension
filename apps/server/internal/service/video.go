@@ -13,6 +13,7 @@ import (
 type videoStorage interface {
 	PresignedUploadURL(context.Context, string) (*url.URL, time.Time, error)
 	PresignedDownloadURL(context.Context, string) (*url.URL, time.Time, error)
+	FileExist(context.Context, string) error
 	Delete(context.Context, string) error
 	UploadExp() time.Duration
 	DownloadExp() time.Duration
@@ -20,6 +21,7 @@ type videoStorage interface {
 
 type videoRepository interface {
 	CreateVideoInfo(context.Context, *model.VideoInfo) error
+	GetVideoInfoByUserID(context.Context, uuid.UUID, uuid.UUID) (*model.VideoInfo, error)
 	UpdateVideoInfo(context.Context, *model.PartialVideoInfo) (*model.VideoInfo, error)
 	WithTransaction(context.Context, func(context.Context) error) error
 }
@@ -71,6 +73,15 @@ func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo *model.FileInf
 }
 
 func (s *VideoService) UploadComplete(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) error {
+	videoInfo, err := s.repo.GetVideoInfoByUserID(ctx, videoID, userID)
+	if err != nil {
+		return err
+	}
+
+	if err := s.storage.FileExist(ctx, videoInfo.ObjectKey); err != nil {
+		return err
+	}
+
 	status := model.VideoStatusCompleted
 	if _, err := s.repo.UpdateVideoInfo(ctx, &model.PartialVideoInfo{ID: videoID, UserID: userID, Status: &status}); err != nil {
 		return err
