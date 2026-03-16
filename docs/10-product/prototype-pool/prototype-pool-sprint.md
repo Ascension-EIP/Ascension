@@ -1,15 +1,5 @@
----
-title: prototype-pool
-description:
-published: true
-date: 2026-03-02T11:19:15.625Z
-tags:
-editor: markdown
-dateCreated: 2026-03-02T11:17:35.272Z
----
-
-> **Last updated:** 2nd March 2026  
-> **Version:** 1.0  
+> **Last updated:** 16th March 2026  
+> **Version:** 1.1  
 > **Authors:** Nicolas TORO  
 > **Status:** Done  
 > {.is-success}

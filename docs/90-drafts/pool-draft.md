@@ -1,59 +1,78 @@
-@EIP 
-**Pour résumé suite à notre conversion**
+> **Last updated:** 16th March 2026  
+> **Version:** 1.1  
+> **Authors:** Nicolas TORO  
+> **Status:** In Progress  
+> {.is-warning}
 
-Les objectifs seraient :
-- Avoir un début fonctionnel qui utilise toute nos technologie
+---
 
-Au niveau des scopes, on aimerait :
-- Une IA qui analyse les forces / affiche l'exos squelette 
-- Un linkage entre back et IA avec rabbit mq
-- Une front qui marche, qui permet d'upload une vidéo et de lancer une analyse
-- La vidéo doit être stocker sur MinIO
-- La DB doit être setup avec les bon schèma
+# Prototype Pool Draft Notes
 
-Voici comment on s'organise :
-- @livo3192 s'occupe de faire une première IA utilisant MediaPipe
-- @jundo va s'occuper du link entre l'IA et le Back-end grâce à RabbitMQ
-- @itskarmaoff va s'occuper du front, faire qu'on puisse upload la vidéo etc
-- @dimitri_lapoudre va s'occuper d'init le back et de travailler sur les premières routes
-- @nicolas_toro va s'occuper de tous les trucs pro, GitHub projects etc, et ensuite je rejoindrais Lou et on s'organisera.
+## Table of Contents
 
-Petit brouillons d'informations du flow :
-- Le back renvoie une URL ou tu peux upload une vidéo
-- Comme sa le mbile envoie la vidéo sur l'url
-- Un bouton analyse
-- Sa envoie la requête au back, le serveur avec rabbit envoie le truc à l'ia, elle envoie la réponse en JSON au serveur, il la stocke dans la db et envoie la réponse au front
-- Si on a finis on met l'auth
-- Une IA est sortie pour obtenir la profondeur à partir d'une IA -> SAM3
+- [Prototype Pool Draft Notes](#prototype-pool-draft-notes)
+  - [Sprint Intent](#sprint-intent)
+  - [Initial Scope](#initial-scope)
+  - [Team Ownership](#team-ownership)
+  - [Technical Flow Draft](#technical-flow-draft)
+  - [Key Stages and Deliverables](#key-stages-and-deliverables)
 
+---
 
+## Sprint Intent
 
-## Les étapes clés et rendus
+This draft captures the initial alignment notes for the prototyping pool sprint.
+The objective is to deliver a first end-to-end, functional slice using the core Ascension stack.
 
-### Étape 1 : Définition
+---
 
-Cette phase se concentre sur la délimitation du projet.
+## Initial Scope
 
--   **Objectifs :** Définir le périmètre (scope), les objectifs et le scénario de démonstration.
-    
--   **Livrables (Mardi) :** Un projet GitHub à jour, une milestone avec tâches assignées, la répartition documentée des tâches, la définition de l'environnement technique et la demande de matériel si nécessaire.
-    
+- Deliver a first AI analysis pipeline with skeleton extraction.
+- Connect backend and AI through RabbitMQ.
+- Provide a working frontend flow to upload a video and trigger analysis.
+- Store source videos in MinIO.
+- Initialize the database with the required schema.
 
-### Étape 2 : Parcours utilisateur et Prototypage
+---
 
-L'accent est mis sur l'essentiel et l'organisation agile.
+## Team Ownership
 
--   **Contrainte majeure :** Le projet doit être développé "en un seul tenant" ; il est interdit de présenter le projet en plusieurs parties distinctes.
-    
--   **Suivi (Jeudi et Lundi) :** Début puis démonstration du parcours utilisateur principal.
-    
--   **Finalisation (Mercredi) :** Le projet doit être finalisé, les jours suivants étant réservés aux ajustements.
-    
+- `@livo3192`: first AI implementation with MediaPipe.
+- `@jundo`: backend ↔ AI integration via RabbitMQ.
+- `@itskarmaoff`: frontend upload and analysis trigger flow.
+- `@dimitri_lapoudre`: backend initialization and first API routes.
+- `@nicolas_toro`: project management setup (GitHub Projects, planning), then support on cross-team coordination.
 
-### Étape 3 : Préparation et Présentation
+---
 
-La phase finale concerne la communication autour du prototype.
+## Technical Flow Draft
 
--   **Format :** Un pitch de 15 minutes.
-    
--   **Démonstration :** Une présentation publique incluant une démonstration réelle avec micros.
+- Backend returns a presigned upload URL.
+- Mobile uploads video directly to object storage.
+- User triggers analysis from the app.
+- Backend publishes analysis job to RabbitMQ.
+- AI worker processes the job and returns JSON results.
+- Backend persists results in the database and exposes them to frontend.
+- Authentication can be integrated once the core flow is stable.
+- Depth estimation exploration can leverage SAM3.
+
+---
+
+## Key Stages and Deliverables
+
+### Stage 1: Definition
+
+- Define scope, goals, and demo scenario.
+- Expected deliverables: up-to-date GitHub project, assigned milestone tasks, documented ownership, technical environment definition, and hardware request if needed.
+
+### Stage 2: User Flow and Prototyping
+
+- Build one cohesive demonstration flow (no fragmented demos).
+- Track progress with intermediate check-ins.
+- Finalize the prototype before the presentation window.
+
+### Stage 3: Presentation Readiness
+
+- Prepare a 15-minute pitch.
+- Deliver a public demo with a real user flow.

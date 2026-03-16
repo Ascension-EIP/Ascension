@@ -1,14 +1,105 @@
----
-title: Oral 25/02
-description: 
-published: true
-date: 2026-03-03T09:51:55.410Z
-tags: 
-editor: markdown
-dateCreated: 2026-03-02T13:39:39.882Z
+> **Last updated:** 16th March 2026  
+> **Version:** 1.0  
+> **Authors:** Nicolas  
+> **Status:** Done  
+> {.is-success}
+
 ---
 
 # Ascension - Analyse biomécanique pour l'escalade
+
+---
+
+## Table of Contents
+
+- [Ascension - Analyse biomécanique pour l'escalade](#ascension-analyse-biomécanique-pour-lescalade)
+  - [Workshop Costing & Technical Sizing - PowerPoint Structure](#workshop-costing-technical-sizing-powerpoint-structure)
+  - [**Slide 1 : Page de garde**](#slide-1-page-de-garde)
+- [PARTIE 1 : NEEDS & SCOPE](#partie-1-needs-scope)
+  - [**Slide 2 : Needs Validation & Inclusion**](#slide-2-needs-validation-inclusion)
+    - [Problématique identifiée](#problématique-identifiée)
+    - [Données externes validant le besoin](#données-externes-validant-le-besoin)
+    - [Personas cibles](#personas-cibles)
+    - [Contraintes handicap identifiées dès cette phase](#contraintes-handicap-identifiées-dès-cette-phase)
+  - [**Slide 3 : Scope Formalization (Backlog)**](#slide-3-scope-formalization-backlog)
+    - [User Stories principales](#user-stories-principales)
+  - [**Slide 4 : Prioritization Strategy (MVP)**](#slide-4-prioritization-strategy-mvp)
+    - [Distinction Must Have vs Future Evolutions](#distinction-must-have-vs-future-evolutions)
+    - [Scope MVP réaliste pour deadline](#scope-mvp-réaliste-pour-deadline)
+- [PARTIE 2 : CONTEXT & AUDIT](#partie-2-context-audit)
+  - [**Slide 5 : Existing Audit & Benchmark**](#slide-5-existing-audit-benchmark)
+    - [Comparaison solutions existantes](#comparaison-solutions-existantes)
+    - [State of the art technique - Technologies open-source disponibles](#state-of-the-art-technique-technologies-open-source-disponibles)
+  - [**Slide 6 : Legal Constraints & Security Analysis**](#slide-6-legal-constraints-security-analysis)
+    - [Conformité RGPD - Données sensibles](#conformité-rgpd-données-sensibles)
+    - [Menaces de sécurité identifiées & contre-mesures](#menaces-de-sécurité-identifiées-contre-mesures)
+  - [**Slide 7 : Resources / Skills Adequacy**](#slide-7-resources-skills-adequacy)
+    - [Matrice compétences équipe vs besoins projet](#matrice-compétences-équipe-vs-besoins-projet)
+    - [Plan de montée en compétences](#plan-de-montée-en-compétences)
+    - [Identification besoins externes](#identification-besoins-externes)
+- [PARTIE 3 : ARCHITECTURE & SPECS](#partie-3-architecture-specs)
+  - [**Slide 8 : Global System Architecture**](#slide-8-global-system-architecture)
+    - [Diagramme C4 - Niveau contexte](#diagramme-c4-niveau-contexte)
+    - [Annotations architecture](#annotations-architecture)
+  - [**Slide 9 : Justification of Technical Choices**](#slide-9-justification-of-technical-choices)
+    - [Choix techniques basés sur critères objectifs (audit benchmark)](#choix-techniques-basés-sur-critères-objectifs-audit-benchmark)
+    - [Lien avec l'audit (pas de préférence subjective)](#lien-avec-laudit-pas-de-préférence-subjective)
+  - [**Slide 10 : Data Modeling**](#slide-10-data-modeling)
+    - [Schéma entité-relation (ERD)](#schéma-entité-relation-erd)
+    - [Cohérence avec backlog](#cohérence-avec-backlog)
+    - [Optimisations](#optimisations)
+  - [**Slide 11 : Interface Design (UI/UX)**](#slide-11-interface-design-uiux)
+    - [Mockups Figma - Flows critiques](#mockups-figma-flows-critiques)
+    - [Conformité accessibilité validée](#conformité-accessibilité-validée)
+  - [**Slide 12 : Technical Flows & API**](#slide-12-technical-flows-api)
+    - [Séquence complète Upload → Analyse → Notification](#séquence-complète-upload-→-analyse-→-notification)
+    - [API Endpoints principaux](#api-endpoints-principaux)
+- [PARTIE 4 : COSTING & SIZING](#partie-4-costing-sizing)
+  - [**Slide 13 : Resource Inventory (Infra & Hardware)**](#slide-13-resource-inventory-infra-hardware)
+    - [Inventaire exhaustif - Infrastructure cloud](#inventaire-exhaustif-infrastructure-cloud)
+    - [CAPEX - Coûts uniques lancement](#capex-coûts-uniques-lancement)
+    - [Coûts cachés explicitement inclus](#coûts-cachés-explicitement-inclus)
+  - [**Slide 14 : Financial Benchmark**](#slide-14-financial-benchmark)
+    - [Comparaison providers - Infrastructure MVP équivalente](#comparaison-providers-infrastructure-mvp-équivalente)
+    - [Graphique visuel](#graphique-visuel)
+    - [Justification choix Hetzner](#justification-choix-hetzner)
+  - [**Slide 15 : Forecast Budget (CAPEX/OPEX)**](#slide-15-forecast-budget-capexopex)
+    - [Budget prévisionnel - 3 scénarii de croissance](#budget-prévisionnel-3-scénarii-de-croissance)
+    - [Détail évolution infrastructure Scale (1000 users)](#détail-évolution-infrastructure-scale-1000-users)
+    - [Projection financière 3 ans](#projection-financière-3-ans)
+- [PARTIE 5 : IMPACTS & RISKS](#partie-5-impacts-risks)
+  - [**Slide 16 : Risk Analysis (Matrix)**](#slide-16-risk-analysis-matrix)
+    - [Matrice Probabilité × Impact](#matrice-probabilité-×-impact)
+    - [Top 10 risques identifiés](#top-10-risques-identifiés)
+  - [**Slide 17 : Mitigation Strategy**](#slide-17-mitigation-strategy)
+  - [**Slide 18 : GreenIT & Societal Impact**](#slide-18-greenit-societal-impact)
+    - [Empreinte environnementale - Évaluation & optimisations](#empreinte-environnementale-évaluation-optimisations)
+    - [Actions éco-conception mises en œuvre](#actions-éco-conception-mises-en-œuvre)
+    - [Eco-score global : **B+**](#eco-score-global-b)
+    - [Impact sociétal positif](#impact-sociétal-positif)
+  - [**Slide 19 : Resilience & Continuity**](#slide-19-resilience-continuity)
+    - [Stratégie backup & disaster recovery](#stratégie-backup-disaster-recovery)
+    - [Haute disponibilité - Élimination SPOF](#haute-disponibilité-élimination-spof)
+    - [Plan de maintenance & updates](#plan-de-maintenance-updates)
+- [CONCLUSION](#conclusion)
+  - [**Slide 20 : Synthèse & Next Steps**](#slide-20-synthèse-next-steps)
+    - [Synthèse - Validation des attendus workshop](#synthèse-validation-des-attendus-workshop)
+    - [Indicateurs clés projet](#indicateurs-clés-projet)
+    - [Prochaines étapes - Roadmap 6 mois](#prochaines-étapes-roadmap-6-mois)
+    - [Vision long terme](#vision-long-terme)
+  - [**Slide 21 : Questions & Démo**](#slide-21-questions-démo)
+    - [Démo live (2 minutes)](#démo-live-2-minutes)
+    - [Contact & Ressources](#contact-ressources)
+  - [Notes de présentation](#notes-de-présentation)
+    - [Timing recommandé (20 min total)](#timing-recommandé-20-min-total)
+    - [Conseils présentation orale](#conseils-présentation-orale)
+
+---
+
+
+
+
+---
 
 ## Workshop Costing & Technical Sizing - PowerPoint Structure
 
@@ -689,6 +780,9 @@ Légende :
 | #12 - RGPD & Données biométriques | 15  | Cause : Art. 9 (sensible).<br><br>Impact : Amende 4% CA, réputation. | ÉVITER | • Consentement granulaire (3 types)<br><br>• Hébergement EU (Hetzner)<br><br>• Chiffrement AES-256 & Droit effacement<br><br>• Audit avocat spécialisé | Avant Beta |
 | #2 - Panne serveurs ML | 12  | Cause : Saturation/OOM. Impact : SLA non respecté, frustration. | RÉDUIRE | • Queue RabbitMQ persistante + retries automatiques (pika)<br><br>• Alerting Grafana / Slack<br><br>• Auto-scaling horizontal automatique<br><br>• Circuit breaker (dégradation gracieuse) | Sprint 5 |
 | #4 - Fuite de données | 10  | Cause : Hack / Breach S3. Impact : Exposition vidéos, plainte CNIL. | RÉDUIRE | • Chiffrement E2E (Repos/Transit)<br><br>• Hachage Argon2 (pas de MD5/SHA1)<br><br>• S3 Signed URLs (validité 1h)<br><br>• Pentest externe avant lancement | Sprint 6 |
+
+
+---
 
 ## **Slide 18 : GreenIT & Societal Impact**
 

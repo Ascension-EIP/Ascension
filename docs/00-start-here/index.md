@@ -1,10 +1,21 @@
----
-title: Start here
-description: Entrypoint and guidelines
-published: true
+> **Last updated:** 16th March 2026  
+> **Version:** 1.1  
+> **Authors:** Nicolas  
+> **Status:** Done  
+> {.is-success}
+
 ---
 
-# 00 — Start here
+# 00 — Start Here
 
-- Project docs home: [README](./old-readme.md)
-- Markdown guidelines: [Markdown Guidelines](./markdown-guidelines.md)
+## Table of Contents
+
+- [00 — Start Here](#00--start-here)
+  - [Core References](#core-references)
+
+---
+
+## Core References
+
+- [Project Glossary](./glossary.md)
+- [Markdown Guidelines](./guidelines/markdown-guidelines.md)

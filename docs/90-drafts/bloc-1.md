@@ -1,15 +1,5 @@
----
-title: bloc-1
-description: 
-published: true
-date: 2026-03-02T10:41:04.851Z
-tags: 
-editor: markdown
-dateCreated: 2026-02-11T20:40:56.361Z
----
-
-> **Last updated:** 10th February 2026  
-> **Version:** 1.0  
+> **Last updated:** 16th March 2026  
+> **Version:** 1.1  
 > **Authors:** Nicolas TORO  
 > **Status:** In Progress  
 > {.is-warning}

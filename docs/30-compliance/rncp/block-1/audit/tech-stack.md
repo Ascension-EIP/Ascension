@@ -10,6 +10,24 @@
 
 ---
 
+## Table of Contents
+
+- [Technology Stack Decisions](#technology-stack-decisions)
+  - [Overview](#overview)
+  - [Project Context](#project-context)
+    - [What We Need](#what-we-need)
+  - [Technology Decisions](#technology-decisions)
+    - [1. Mobile Framework: Flutter](#1-mobile-framework-flutter)
+    - [2. API Backend: Rust](#2-api-backend-rust)
+    - [3. AI/ML Stack: Python + MediaPipe](#3-aiml-stack-python-mediapipe)
+    - [4. Database: PostgreSQL](#4-database-postgresql)
+    - [5. Message Queue: RabbitMQ](#5-message-queue-rabbitmq)
+    - [6. Object Storage: MinIO (Self-Hosted)](#6-object-storage-minio-self-hosted)
+  - [Summary](#summary)
+  - [Future Considerations](#future-considerations)
+
+---
+
 ## Overview
 
 This document explains the main technology choices for the Ascension platform and why we made them.

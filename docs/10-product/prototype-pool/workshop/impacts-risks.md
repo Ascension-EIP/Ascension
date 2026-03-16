@@ -8,6 +8,27 @@
 
 # Impacts, Risks & Mitigation - Workshop Deliverable
 
+
+---
+
+## Table of Contents
+
+- [Impacts, Risks & Mitigation - Workshop Deliverable](#impacts-risks-mitigation-workshop-deliverable)
+  - [1. Risk Management](#1-risk-management)
+    - [Matrice des risques](#matrice-des-risques)
+    - [Visualisation Matrice (Impact vs Probabilité)](#visualisation-matrice-impact-vs-probabilité)
+    - [Détail des risques critiques (criticité >= 10)](#détail-des-risques-critiques-criticité-10)
+  - [2. Environmental Impact (GreenIT)](#2-environmental-impact-greenit)
+    - [Choix d'hébergement - Empreinte carbone datacenter](#choix-dhébergement-empreinte-carbone-datacenter)
+    - [Principes d'éco-conception appliqués](#principes-déco-conception-appliqués)
+    - [Estimation empreinte carbone infrastructure](#estimation-empreinte-carbone-infrastructure)
+  - [3. Deployment & Resilience](#3-deployment-resilience)
+    - [CI/CD — Automatisation des tests et déploiements](#cicd-automatisation-des-tests-et-déploiements)
+    - [Stratégie de migration (schema évolutif)](#stratégie-de-migration-schema-évolutif)
+    - [SPOF — Single Points of Failure identifiés](#spof-single-points-of-failure-identifiés)
+    - [Politique de sauvegarde (Backup Policy)](#politique-de-sauvegarde-backup-policy)
+    - [Plan de scalabilité (Roadmap Infrastructure)](#plan-de-scalabilité-roadmap-infrastructure)
+
 ---
 
 ## 1. Risk Management

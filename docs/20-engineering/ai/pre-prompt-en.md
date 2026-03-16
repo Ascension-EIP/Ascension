@@ -8,6 +8,37 @@
 
 # AI Pre-Prompt (English)
 
+
+---
+
+## Table of Contents
+
+- [AI Pre-Prompt (English)](#ai-pre-prompt-english)
+  - [1. Project Vision](#1-project-vision)
+  - [2. Key Features](#2-key-features)
+  - [3. Technical Stack](#3-technical-stack)
+    - [Overview](#overview)
+    - [Repository structure (monorepo)](#repository-structure-monorepo)
+  - [4. System Architecture](#4-system-architecture)
+    - [Design principles](#design-principles)
+    - [Result delivery comparison](#result-delivery-comparison)
+    - [Complete data flow](#complete-data-flow)
+  - [5. AI Pipelines](#5-ai-pipelines)
+    - [Pipeline 1 — Vision (GPU-intensive)](#pipeline-1-vision-gpu-intensive)
+    - [Pipeline 2 — Training (CPU-only)](#pipeline-2-training-cpu-only)
+    - [General worker pattern](#general-worker-pattern)
+  - [6. RabbitMQ Topology](#6-rabbitmq-topology)
+  - [7. Database Schema (PostgreSQL)](#7-database-schema-postgresql)
+  - [8. API Endpoints (Rust/Axum)](#8-api-endpoints-rustaxum)
+  - [9. Business Model](#9-business-model)
+  - [10. Team](#10-team)
+  - [11. Infrastructure (Docker Compose — local dev)](#11-infrastructure-docker-compose-local-dev)
+  - [12. Performance Targets](#12-performance-targets)
+
+---
+
+
+
 > Copy the block below and paste it at the start of any conversation with an AI assistant to give it full context about the Ascension project.
 
 ---

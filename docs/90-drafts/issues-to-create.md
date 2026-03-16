@@ -1,4 +1,42 @@
+> **Last updated:** 16th March 2026  
+> **Version:** 1.0  
+> **Authors:** Nicolas  
+> **Status:** Done  
+> {.is-success}
+
+---
+
 # Issues to Create — Ascension Repo Complete Analysis
+
+
+---
+
+## Table of Contents
+
+- [Issues to Create — Ascension Repo Complete Analysis](#issues-to-create-ascension-repo-complete-analysis)
+  - [Analysis: What has been done vs. what is tracked](#analysis-what-has-been-done-vs-what-is-tracked)
+  - [CI/CD Issues to Create](#cicd-issues-to-create)
+    - [CI-01 — CI/CD: Main CI pipeline (GitHub Actions)](#ci-01-cicd-main-ci-pipeline-github-actions)
+    - [CI-02 — CI/CD: Commit and branch validation scripts](#ci-02-cicd-commit-and-branch-validation-scripts)
+    - [CI-03 — CI/CD: Deploy workflow (Docker + APK + GitHub Release)](#ci-03-cicd-deploy-workflow-docker-apk-github-release)
+    - [CI-04 — CI/CD: dev-to-production workflow (promotion + semver tag + mirror)](#ci-04-cicd-dev-to-production-workflow-promotion-semver-tag-mirror)
+    - [CI-05 — CI/CD: docs-to-wiki workflow](#ci-05-cicd-docs-to-wiki-workflow)
+    - [CI-06 — CI/CD: Squad system (triage, assign, label cleaner, sync labels)](#ci-06-cicd-squad-system-triage-assign-label-cleaner-sync-labels)
+    - [CI-07 — CI/CD: Squad AI PR Review (automatic GPT-4o code review)](#ci-07-cicd-squad-ai-pr-review-automatic-gpt-4o-code-review)
+    - [CI-08 — CI/CD: Squad PR routing (automatic PR labeling by domain)](#ci-08-cicd-squad-pr-routing-automatic-pr-labeling-by-domain)
+    - [CI-09 — CI/CD: Dependabot (automatic dependency updates)](#ci-09-cicd-dependabot-automatic-dependency-updates)
+    - [CI-10 — CI/CD: Git hooks (commit-msg, pre-commit, pre-push)](#ci-10-cicd-git-hooks-commit-msg-pre-commit-pre-push)
+    - [CI-11 — CI/CD: Moon monorepo task runner (format, lint, build, test)](#ci-11-cicd-moon-monorepo-task-runner-format-lint-build-test)
+  - [Other already-done but untracked issues](#other-already-done-but-untracked-issues)
+    - [BACK-01 — SERVER: Full User CRUD](#back-01-server-full-user-crud)
+    - [BACK-02 — SERVER: JWT authentication middleware](#back-02-server-jwt-authentication-middleware)
+    - [MOBILE-01 — MOBILE: Settings page (backend URL configuration)](#mobile-01-mobile-settings-page-backend-url-configuration)
+    - [MOBILE-02 — MOBILE: Auth login and register pages (scaffold)](#mobile-02-mobile-auth-login-and-register-pages-scaffold)
+  - [Summary](#summary)
+
+---
+
+
 
 > Document generated on 03/09/2026. Do not create any issue without prior approval.
 

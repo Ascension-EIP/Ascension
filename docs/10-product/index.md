@@ -1,11 +1,32 @@
----
-title: Product
-description: Product specifications and tests
-published: true
+> **Last updated:** 16th March 2026  
+> **Version:** 1.1  
+> **Authors:** Nicolas  
+> **Status:** Done  
+> {.is-success}
+
 ---
 
 # 10 — Product
 
-- Prototype sprint brief: [Prototype Pool Sprint](./prototype-pool-sprint.md)
-- Workshop material: [workshop](./workshop/)
-- Tech & Func Specs: [workshop/tech-func-specs.md](./workshop/tech-func-specs.md)
+## Table of Contents
+
+- [10 — Product](#10--product)
+  - [Prototype Pool](#prototype-pool)
+  - [Workshop Documents](#workshop-documents)
+
+---
+
+## Prototype Pool
+
+- [Prototype Pool Sprint](./prototype-pool/prototype-pool-sprint.md)
+
+---
+
+## Workshop Documents
+
+- [Client Needs and Functional Scope](./prototype-pool/workshop/client-needs-and-functional-scope.md)
+- [Context Audit Compliance](./prototype-pool/workshop/context-audit-compliance.md)
+- [Costs](./prototype-pool/workshop/costs.md)
+- [Impacts and Risks](./prototype-pool/workshop/impacts-risks.md)
+- [Technical and Functional Specifications](./prototype-pool/workshop/tech-func-specs.md)
+- [Presentation Report](./prototype-pool/workshop/presentation/rapport.md)

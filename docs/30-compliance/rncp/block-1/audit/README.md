@@ -10,6 +10,30 @@
 
 ---
 
+## Table of Contents
+
+- [RNCP Audit - Overview](#rncp-audit-overview)
+  - [Compte-rendu d'audit technique, fonctionnel et de sécurité](#compte-rendu-daudit-technique-fonctionnel-et-de-sécurité)
+  - [Environnement d'exécution du projet](#environnement-dexécution-du-projet)
+  - [3. Audit technique](#3-audit-technique)
+    - [Architecture Cible (Kubernetes)](#architecture-cible-kubernetes)
+    - [3.1 Environnement d’exécution](#31-environnement-d’exécution)
+    - [3.2 Stack technique](#32-stack-technique)
+    - [3.3 Architecture](#33-architecture)
+    - [3.4 Exploitabilité](#34-exploitabilité)
+  - [4. Audit fonctionnel](#4-audit-fonctionnel)
+    - [4.1 Compréhension du besoin](#41-compréhension-du-besoin)
+    - [4.2 Adéquation solution / besoin](#42-adéquation-solution-besoin)
+    - [4.3 Parcours utilisateurs](#43-parcours-utilisateurs)
+  - [5. Audit sécurité](#5-audit-sécurité)
+    - [5.1 Sécurité de l’infrastructure](#51-sécurité-de-l’infrastructure)
+    - [5.2 Gestion des accès](#52-gestion-des-accès)
+    - [5.3 Sécurité applicative (niveau projet)](#53-sécurité-applicative-niveau-projet)
+    - [5.4 Conformité](#54-conformité)
+  - [6. Annexes](#6-annexes)
+
+---
+
 ## Compte-rendu d'audit technique, fonctionnel et de sécurité
 
 ---
@@ -178,11 +202,11 @@ graph TB
 ### 5.1 Sécurité de l’infrastructure
 
 - **Segmentation réseau** :
-	- Docker Compose network isolation (Hetzner VPS)
+  - Docker Compose network isolation (Hetzner VPS)
 - **Pare-feu / Security Groups** :
   - iptable open 22 443 user group for all container
 - **Exposition Internet** :
-	- port 22, 443
+  - port 22, 443
 - **Chiffrement des données** :
   - **En transit** : TLS 1.3 obligatoire.
   - **Au repos** : Chiffrement disque

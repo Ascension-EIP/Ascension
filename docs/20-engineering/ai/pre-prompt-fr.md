@@ -8,6 +8,37 @@
 
 # Instructions pour l'IA (Français)
 
+
+---
+
+## Table of Contents
+
+- [Instructions pour l'IA (Français)](#instructions-pour-lia-français)
+  - [1. Vision du projet](#1-vision-du-projet)
+  - [2. Fonctionnalités clés](#2-fonctionnalités-clés)
+  - [3. Stack technique](#3-stack-technique)
+    - [Vue d'ensemble](#vue-densemble)
+    - [Structure du dépôt (monorepo)](#structure-du-dépôt-monorepo)
+  - [4. Architecture système](#4-architecture-système)
+    - [Principes de conception](#principes-de-conception)
+    - [Comparaison de la livraison des résultats](#comparaison-de-la-livraison-des-résultats)
+    - [Flux de données complet](#flux-de-données-complet)
+  - [5. Pipelines IA](#5-pipelines-ia)
+    - [Pipeline 1 — Vision (GPU-intensif)](#pipeline-1-vision-gpu-intensif)
+    - [Pipeline 2 — Entraînement (CPU uniquement)](#pipeline-2-entraînement-cpu-uniquement)
+    - [Pattern général des workers](#pattern-général-des-workers)
+  - [6. Topologie RabbitMQ](#6-topologie-rabbitmq)
+  - [7. Schéma de base de données (PostgreSQL)](#7-schéma-de-base-de-données-postgresql)
+  - [8. Endpoints API (Rust/Axum)](#8-endpoints-api-rustaxum)
+  - [9. Modèle économique](#9-modèle-économique)
+  - [10. Équipe](#10-équipe)
+  - [11. Infrastructure (Docker Compose — dev local)](#11-infrastructure-docker-compose-dev-local)
+  - [12. Objectifs de performance](#12-objectifs-de-performance)
+
+---
+
+
+
 > Copie le bloc ci-dessous et colle-le au début de n'importe quelle conversation avec un assistant IA pour lui donner tout le contexte du projet Ascension.
 
 ---

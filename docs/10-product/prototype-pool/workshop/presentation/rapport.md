@@ -1,3 +1,11 @@
+> **Last updated:** 16th March 2026  
+> **Version:** 1.0  
+> **Authors:** Nicolas  
+> **Status:** Done  
+> {.is-success}
+
+---
+
 - Mettre les sources des chiffres
 - User story trop courte (faut pas trop d'éléments, plus grand, plus détaillé et dans le github project
 - Qu'est ce qu'on présent dans 2 semaine (faut augmenter le tableau et rajouter un coline)
