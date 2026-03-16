@@ -11,6 +11,7 @@
 ## Table of Contents
 
 - [RNCP Block 1 - Needs Checklist](#rncp-block-1---needs-checklist)
+  - [Table of Contents](#table-of-contents)
   - [Required Documents](#required-documents)
   - [Role of the Prototype](#role-of-the-prototype)
   - [Oral Defense Guidance (M1)](#oral-defense-guidance-m1)

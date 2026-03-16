@@ -53,3 +53,20 @@
 
 - Restauration des fichiers suivis `docs/30-compliance/rncp/block-1/audit/README.md`, `stack-summary.md` et `tech-stack.md` pour éliminer les suppressions involontaires.
 - Correction des références `audit-draft/*` vers les chemins canoniques `audit/*` dans la matrice d’observables pour préserver la traçabilité documentaire.
+otifications for docs changes across the codebase.
+
+### 2026-03-02: AI Layer Documentation Created
+- Documented the `feat(ai): implement vision.skeleton pipeline` commit (consumer.py + pose_analysis.py).
+- Created `docs/developer_guide/ai/README.md` — comprehensive AI worker docs covering:
+  - Worker architecture and per-pipeline consumer pattern
+  - `vision.skeleton` end-to-end flow with Mermaid sequence diagram
+  - `pose_analysis` module: tracked landmarks, output format, angle computation
+  - All required environment variables (RabbitMQ, MinIO, PostgreSQL)
+  - General pipeline pattern for future pipelines (hold_detection, advice, ghost, training.program)
+  - Error handling and RabbitMQ startup retry strategy
+- Updated `docs/developer_guide/architecture/system-overview.md` — replaced the conceptual `AscensionWorker` pseudocode in the Layer 4 Worker Architecture section with the actual per-pipeline consumer pattern and implementation status table.
+
+### 2026-03-16: RNCP Block 1 — nettoyage des effets de bord
+
+- Restauration des fichiers suivis `docs/30-compliance/rncp/block-1/audit/README.md`, `stack-summary.md` et `tech-stack.md` pour éliminer les suppressions involontaires.
+- Correction des références `audit-draft/*` vers les chemins canoniques `audit/*` dans la matrice d’observables pour préserver la traçabilité documentaire.
