@@ -11,7 +11,15 @@
 ## Table of Contents
 
 - [40 — Management](#40--management)
+  - [Table of Contents](#table-of-contents)
+  - [Roadmaps](#roadmaps)
   - [Team Memos](#team-memos)
+
+---
+
+## Roadmaps
+
+- [Roadmap fonctionnelle future (Action Plan → BTP → Post-EIP)](./roadmap-fonctionnalites-futures.md)
 
 ---
 
