@@ -1,4 +1,4 @@
-CREATE TABLE analyses (
+CREATE TABLE analysis (
 	id UUID PRIMARY KEY DEFAULT uuidv7(),
 	video_id UUID NOT NULL UNIQUE REFERENCES videos(id) ON DELETE CASCADE,
     status TEXT NOT NULL DEFAULT 'pending',

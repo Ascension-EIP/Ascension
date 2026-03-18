@@ -18,12 +18,12 @@ type NewAnalysis struct {
 }
 
 type Analysis struct {
-	ID                 uuid.UUID
-	VideoID            uuid.UUID
-	Status             AnalysisStatus
-	Result_json        *[]byte
-	Processing_time_ms *int
-	Completed_at       *time.Time
-	Created_at         time.Time
-	Updated_at         time.Time
+	ID               uuid.UUID
+	VideoID          uuid.UUID
+	Status           AnalysisStatus
+	ResultJSON       *[]byte
+	ProcessingTimeMS *int
+	CompletedAt      *time.Time
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }

@@ -1,1 +1,1 @@
-DROP TABLE analyses;
+DROP TABLE analysis;

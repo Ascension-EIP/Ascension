@@ -15,7 +15,6 @@ type RabbitMQ struct {
 }
 
 func New(cfg *config.RabbitMQConfig) (RabbitMQ, error) {
-	fmt.Println(cfg.DSN())
 	conn, err := amqp091.Dial(cfg.DSN())
 	if err != nil {
 		return RabbitMQ{}, fmt.Errorf("RabbitMQ.New: %w", err)

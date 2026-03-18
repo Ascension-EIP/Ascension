@@ -44,12 +44,6 @@ func (h *AnalyseHandler) Create(c *gin.Context) {
 }
 
 func (h *AnalyseHandler) GetByID(c *gin.Context) {
-	userID, err := utils.GetFromContext[uuid.UUID](c, "userID")
-	if err != nil {
-		c.Status(http.StatusInternalServerError)
-		return
-	}
-
 	idStr := c.Param("id")
 	id, err := request.IntoUUID(idStr)
 	if err != nil {
@@ -57,7 +51,7 @@ func (h *AnalyseHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	analysis, err := h.s.GetAnalysis(c.Request.Context(), id, userID)
+	analysis, err := h.s.GetAnalysis(c.Request.Context(), id)
 	if err != nil {
 		utils.Error(c, err, h.l)
 		return

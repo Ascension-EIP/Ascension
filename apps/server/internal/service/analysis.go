@@ -12,7 +12,7 @@ import (
 type analysisRepository interface {
 	GetVideoInfoByUserID(context.Context, uuid.UUID, uuid.UUID) (*model.VideoInfo, error)
 	CreateAnalysis(context.Context, *model.NewAnalysis) (*model.Analysis, error)
-	GetAnalysis(context.Context, uuid.UUID, uuid.UUID) (*model.Analysis, error)
+	GetAnalysis(context.Context, uuid.UUID) (*model.Analysis, error)
 	WithTransaction(context.Context, func(context.Context) error) error
 }
 
@@ -66,8 +66,8 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID
 	return analysis, nil
 }
 
-func (s *AnalysisService) GetAnalysis(ctx context.Context, id uuid.UUID, userID uuid.UUID) (*model.Analysis, error) {
-	analysis, err := s.repo.GetAnalysis(ctx, id, userID)
+func (s *AnalysisService) GetAnalysis(ctx context.Context, id uuid.UUID) (*model.Analysis, error) {
+	analysis, err := s.repo.GetAnalysis(ctx, id)
 	if err != nil {
 		return nil, err
 	}
