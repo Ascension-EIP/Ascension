@@ -10,11 +10,12 @@ import (
 
 type (
 	Config struct {
-		DB    DBConfig    `envPrefix:"DB_"`
-		MinIO MinIOConfig `envPrefix:"MINIO_"`
-		Auth  AuthConfig  `envPrefix:"AUTH_"`
-		HTTP  HTTPConfig
-		Log   LogConfig `envPrefix:"LOG_"`
+		DB       DBConfig       `envPrefix:"DB_"`
+		MinIO    MinIOConfig    `envPrefix:"MINIO_"`
+		RabbitMQ RabbitMQConfig `envPrefix:"RABBITMQ_"`
+		Auth     AuthConfig     `envPrefix:"AUTH_"`
+		HTTP     HTTPConfig
+		Log      LogConfig `envPrefix:"LOG_"`
 	}
 
 	DBConfig struct {
@@ -35,6 +36,16 @@ type (
 		SSL         bool          `env:"SSL" envDefault:"false"`
 		UploadExp   time.Duration `env:"UPLOAD_EXP" envDefault:"1h"`
 		DownloadExp time.Duration `env:"DOWNLAOD_EXP" envDefault:"1h"`
+	}
+
+	RabbitMQConfig struct {
+		Host        string `env:"HOST" envDefault:"localhost"`
+		Port        int    `env:"PORT" envDefault:"5672"`
+		User        string `env:"USER,unset,required"`
+		Password    string `env:"PASS,unset,required"`
+		TLS         bool   `env:"TLS" envDefault:"false"`
+		QueueAI     string `env:"QUEUE_AI" envDefault:"vision.skeleton"`
+		QueueServer string `env:"QUEUE_SERVER" envDefault:"ascension.events"`
 	}
 
 	AuthConfig struct {
@@ -63,13 +74,27 @@ type (
 	}
 )
 
-func (c DBConfig) DSN() string {
+func (c *DBConfig) DSN() string {
 	u := &url.URL{
 		Scheme:   "postgres",
 		User:     url.UserPassword(c.User, c.Password),
 		Host:     fmt.Sprintf("%s:%d", c.Host, c.Port),
 		Path:     "/" + c.Name,
 		RawQuery: c.Params,
+	}
+	return u.String()
+}
+
+func (c *RabbitMQConfig) DSN() string {
+	scheme := "amqp"
+	if c.TLS {
+		scheme += "s"
+	}
+	u := &url.URL{
+		Scheme: scheme,
+		User:   url.UserPassword(c.User, c.Password),
+		Host:   fmt.Sprintf("%s:%d", c.Host, c.Port),
+		Path:   "/",
 	}
 	return u.String()
 }

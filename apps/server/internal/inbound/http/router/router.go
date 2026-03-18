@@ -45,23 +45,26 @@ func New(
 
 		usersGroup := v1.Group("/users")
 		{
-			usersGroup.POST("/", middleware.RateLimiter(time.Minute, 25), authMW, adminMW, userH.Create)
-			usersGroup.GET("/", middleware.RateLimiter(time.Minute, 100), authMW, adminMW, userH.List)
-			usersGroup.GET("/:id", middleware.RateLimiter(time.Minute, 100), authMW, adminMW, userH.GetByID)
-			usersGroup.PUT("/:id", middleware.RateLimiter(time.Minute, 25), authMW, adminMW, userH.Update)
-			usersGroup.DELETE("/:id", middleware.RateLimiter(time.Minute, 25), authMW, adminMW, userH.Delete)
+			usersGroup.Use(authMW, adminMW)
+			usersGroup.POST("/", middleware.RateLimiter(time.Minute, 25), userH.Create)
+			usersGroup.GET("/", middleware.RateLimiter(time.Minute, 100), userH.List)
+			usersGroup.GET("/:id", middleware.RateLimiter(time.Minute, 100), userH.GetByID)
+			usersGroup.PUT("/:id", middleware.RateLimiter(time.Minute, 25), userH.Update)
+			usersGroup.DELETE("/:id", middleware.RateLimiter(time.Minute, 25), userH.Delete)
 		}
 
 		videosGroup := v1.Group("/videos")
 		{
-			videosGroup.GET("/upload-url", middleware.RateLimiter(time.Minute, 5), authMW, userMW, videoH.GetUploadURL)
-			videosGroup.PUT("/upload-done/:id", middleware.RateLimiter(time.Minute, 5), authMW, userMW, videoH.UploadComplete)
+			videosGroup.Use(authMW, userMW)
+			videosGroup.GET("/upload-url", middleware.RateLimiter(time.Minute, 10), videoH.GetUploadURL)
+			videosGroup.PUT("/upload-done/:id", middleware.RateLimiter(time.Minute, 15), videoH.UploadComplete)
 		}
 
-		analysesGroup := v1.Group("/analyses")
+		analysesGroup := v1.Group("/analysis")
 		{
-			analysesGroup.POST("/", middleware.RateLimiter(time.Minute, 5), authMW, userMW, analyseH.Create)
-			analysesGroup.GET("/:id", middleware.RateLimiter(time.Minute, 5), authMW, userMW, analyseH.GetByID)
+			analysesGroup.Use(authMW, userMW)
+			analysesGroup.POST("/", middleware.RateLimiter(time.Minute, 10), analyseH.Create)
+			analysesGroup.GET("/:id", middleware.RateLimiter(time.Minute, 10), analyseH.GetByID)
 		}
 	}
 }

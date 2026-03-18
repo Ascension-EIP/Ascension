@@ -13,6 +13,7 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/router"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/minio"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/rabbitmq"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
 	"github.com/gin-gonic/gin"
@@ -30,13 +31,17 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 	if err != nil {
 		l.Fatal().Msg(err.Error())
 	}
+	queue, err := rabbitmq.New(&cfg.RabbitMQ)
+	if err != nil {
+		l.Fatal().Msg(err.Error())
+	}
 
 	jwtS := service.NewJWTService(cfg.Auth.JWT)
 	sessionS := service.NewSessionService(cfg.Auth.Session, &repo)
 	userS := service.NewUserService(&repo)
 	authS := service.NewAuthService(&jwtS, &sessionS, &repo)
 	videoS := service.NewVideoService(&storage, &repo)
-	analyseS := service.NewAnalyseService()
+	analyseS := service.NewAnalysisService(&repo, &queue)
 
 	authMW := middleware.Auth(&jwtS)
 	guestMW := middleware.Guest(&jwtS)

@@ -17,6 +17,7 @@ type videoStorage interface {
 	Delete(context.Context, string) error
 	UploadExp() time.Duration
 	DownloadExp() time.Duration
+	VideoBucket() string
 }
 
 type videoRepository interface {
@@ -49,6 +50,7 @@ func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo *model.FileInf
 		if err := s.repo.CreateVideoInfo(ctx, &model.VideoInfo{
 			ID:        videoID,
 			UserID:    fileInfo.UserID,
+			Bucket:    s.storage.VideoBucket(),
 			ObjectKey: objectKey,
 			Status:    model.VideoStatusPending,
 			ExpiresAt: time.Now().Add(s.storage.UploadExp()),

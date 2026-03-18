@@ -19,8 +19,8 @@ func (r *PostgresRepository) CreateVideoInfo(ctx context.Context, info *model.Vi
 	tx := r.getTx(ctx)
 
 	_, err := tx.Exec(ctx,
-		"INSERT INTO videos (id, user_id, object_key, status, expires_at) VALUES ($1, $2, $3, $4, $5)",
-		info.ID, info.UserID, info.ObjectKey, info.Status, info.ExpiresAt)
+		"INSERT INTO videos (id, user_id, bucket, object_key, status, expires_at) VALUES ($1, $2, $3, $4, $5, $6)",
+		info.ID, info.UserID, info.Bucket, info.ObjectKey, info.Status, info.ExpiresAt)
 	if err != nil {
 		return err
 	}
@@ -53,6 +53,11 @@ func (r *PostgresRepository) UpdateVideoInfo(ctx context.Context, partialInfo *m
 	args := []any{}
 	argID := 1
 
+	if partialInfo.Bucket != nil {
+		setParts = append(setParts, fmt.Sprintf("bucket=$%d", argID))
+		args = append(args, *partialInfo.Bucket)
+		argID++
+	}
 	if partialInfo.ObjectKey != nil {
 		setParts = append(setParts, fmt.Sprintf("object_key=$%d", argID))
 		args = append(args, *partialInfo.ObjectKey)

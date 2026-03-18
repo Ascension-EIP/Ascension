@@ -30,6 +30,7 @@ type (
 	VideoInfo struct {
 		ID        uuid.UUID
 		UserID    uuid.UUID
+		Bucket    string
 		ObjectKey string
 		Status    VideoStatus
 		ExpiresAt time.Time
@@ -38,6 +39,7 @@ type (
 	PartialVideoInfo struct {
 		ID        uuid.UUID
 		UserID    uuid.UUID
+		Bucket    *string
 		ObjectKey *string
 		Status    *VideoStatus
 		ExpiresAt *time.Time

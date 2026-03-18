@@ -1,0 +1,2 @@
+ALTER TABLE videos
+DROP COLUMN bucket;

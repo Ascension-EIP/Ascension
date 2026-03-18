@@ -9,3 +9,7 @@ func (s *MinIOStorage) UploadExp() time.Duration {
 func (s *MinIOStorage) DownloadExp() time.Duration {
 	return s.cfg.DownloadExp
 }
+
+func (s *MinIOStorage) VideoBucket() string {
+	return s.cfg.BucketName
+}
