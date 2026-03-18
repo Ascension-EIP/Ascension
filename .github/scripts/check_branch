@@ -29,12 +29,15 @@ def load_keywords():
 
 def is_kebab_case(s):
     # kebab-case: lowercase letters/numbers separated by single hyphens, no leading/trailing hyphen
-    return re.match(r'^[a-z0-9/\\_]+(?:-[a-z0-9/\\_]+)*$', s) is not None
+    return re.match(r'^[a-z0-9/]+(?:-[a-z0-9/]+)*$', s) is not None
 
 def validate_branch(branch, keywords):
     # Allow exact names main and dev
     if branch in ("main", "dev"):
         return True, "Branch allowed: main or dev"
+    
+    if branch.startswith("dependabot/"):
+        return True, "Dependabot branch: skipping validation"
 
     if '/' not in branch:
         return False, "Branch must be either 'main'/'dev' or of form <type>/<description>"

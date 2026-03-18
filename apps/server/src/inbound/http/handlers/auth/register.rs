@@ -1,6 +1,7 @@
 use axum::{Json, extract::State, http::StatusCode};
 use serde::{Deserialize, Serialize};
 use tower_cookies::{Cookie, Cookies};
+use utoipa::ToSchema;
 
 use super::login::SESSION_COOKIE;
 use crate::domain::{
@@ -12,30 +13,42 @@ use crate::domain::{
 use crate::inbound::http::AppState;
 
 /// Request body for `POST /v1/auth/register`.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct RegisterRequest {
+    /// 8–24 characters, alphanumeric + underscores only
+    #[schema(example = "climber42")]
     username: String,
+    /// Must be a valid email address
+    #[schema(example = "climber@example.com")]
     email: String,
+    /// Minimum 8 characters
+    #[schema(example = "securepassword")]
     password: String,
 }
 
 /// Response body for a successful registration.
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct RegisterResponse {
+    /// JWT access token
     access_token: String,
+    /// UUID of the newly created user
     user_id: String,
 }
 
 /// Register a new user account.
 ///
-/// The password is hashed with bcrypt before being stored.
-/// On success a JWT session cookie is set and the token is returned in the body.
-///
-/// # Responses
-///
-/// - `201 Created` – account created, token returned.
-/// - `409 Conflict` – email already registered.
-/// - `422 Unprocessable Entity` – malformed request fields.
+/// Creates a `user`-role account, hashes the password with bcrypt, and returns a JWT.
+#[utoipa::path(
+    post,
+    path = "/v1/auth/register",
+    request_body = RegisterRequest,
+    responses(
+        (status = 201, description = "Account created — token returned", body = RegisterResponse),
+        (status = 409, description = "Email already registered"),
+        (status = 422, description = "Validation failed"),
+    ),
+    tag = "Auth"
+)]
 pub async fn register(
     State(state): State<AppState>,
     cookies: Cookies,

@@ -38,8 +38,12 @@ derive_more = { version = "2.1", features = ["full"] }
 regex = "1.12"
 chrono = { version = "0.4", features = ["serde"] }
 jsonwebtoken = { version = "10.3.0", features = ["use_pem", "rust_crypto"] }
-bcrypt = "0.17"
+bcrypt = "0.19"
 tower-cookies = "0.11"
+
+# Swagger / OpenAPI
+utoipa = { version = "5", features = ["axum_extras", "uuid", "chrono"] }
+utoipa-swagger-ui = { version = "9", features = ["axum"] }
 
 # log
 tracing = "0.1"

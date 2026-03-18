@@ -1,16 +1,18 @@
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use serde::Serialize;
+use utoipa::ToSchema;
 use uuid::Uuid;
 
 use crate::inbound::http::AppState;
 use crate::inbound::http::handlers::api::{ApiError, ApiSuccess};
 
-#[derive(Debug, Serialize, PartialEq)]
+#[derive(Debug, Serialize, PartialEq, ToSchema)]
 pub struct GetAnalysisResponse {
     pub id: Uuid,
     pub video_id: Uuid,
     pub job_id: Uuid,
+    /// `pending` | `processing` | `completed` | `failed`
     pub status: String,
     /// Real-time progress (0–100) updated by the AI worker while processing.
     pub progress: i32,
@@ -21,6 +23,19 @@ pub struct GetAnalysisResponse {
     pub processing_time_ms: Option<i32>,
 }
 
+/// Get the current state of an analysis (including result when complete).
+#[utoipa::path(
+    get,
+    path = "/v1/analyses/{id}",
+    params(
+        ("id" = Uuid, Path, description = "Analysis UUID returned by POST /v1/analyses"),
+    ),
+    responses(
+        (status = 200, description = "Analysis found", body = GetAnalysisResponse),
+        (status = 404, description = "No analysis with this ID"),
+    ),
+    tag = "Analyses"
+)]
 pub async fn get_analysis(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,

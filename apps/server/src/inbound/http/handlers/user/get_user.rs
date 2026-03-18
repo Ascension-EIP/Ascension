@@ -4,6 +4,7 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use serde::Serialize;
 use thiserror::Error;
+use utoipa::ToSchema;
 
 use crate::domain::user::entity::user::User;
 use crate::domain::user::error::UserError;
@@ -26,7 +27,7 @@ impl IntoResponse for GetUserRequestError {
 }
 
 /// The response body for successful [User] retrieval.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, ToSchema)]
 pub struct GetUserResponse {
     pub id: String,
     pub username: String,
@@ -45,13 +46,20 @@ impl From<&User> for GetUserResponse {
     }
 }
 
-/// Get an existing [User] by id.
-///
-/// # Responses
-///
-/// - 200 OK: the [User] was successfully retrieved.
-/// - 404 Not Found: no [User] with the given id exists.
-/// - 422 Unprocessable Entity: the provided id is not a valid UUID.
+/// Get a user by UUID.
+#[utoipa::path(
+    get,
+    path = "/v1/users/{id}",
+    params(
+        ("id" = String, Path, description = "User UUID"),
+    ),
+    responses(
+        (status = 200, description = "User found", body = GetUserResponse),
+        (status = 404, description = "No user with this ID"),
+        (status = 422, description = "ID is not a valid UUID"),
+    ),
+    tag = "Users"
+)]
 pub async fn get_user(
     Path(id): Path<String>,
     State(state): State<AppState>,

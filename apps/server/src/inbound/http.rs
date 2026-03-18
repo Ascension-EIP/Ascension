@@ -12,22 +12,75 @@ use tower_cookies::CookieManagerLayer;
 use tower_governor::GovernorLayer;
 use tower_governor::governor::GovernorConfigBuilder;
 use tower_http::trace::TraceLayer;
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
 use crate::domain::analysis::ports::AnalysisService;
 use crate::domain::auth::inbound::AuthService;
 use crate::domain::user::inbound::UserService;
 use crate::domain::video::ports::VideoService;
-use crate::inbound::http::handlers::analysis::create_analysis::create_analysis;
-use crate::inbound::http::handlers::analysis::get_analysis::get_analysis;
-use crate::inbound::http::handlers::auth::login::login;
+use crate::inbound::http::handlers::analysis::create_analysis::{
+    CreateAnalysisRequest, CreateAnalysisResponse, create_analysis,
+};
+use crate::inbound::http::handlers::analysis::get_analysis::{GetAnalysisResponse, get_analysis};
+use crate::inbound::http::handlers::auth::login::{LoginRequest, LoginResponse, login};
 use crate::inbound::http::handlers::auth::logout::logout;
-use crate::inbound::http::handlers::auth::register::register;
-use crate::inbound::http::handlers::user::create_user::create_user;
+use crate::inbound::http::handlers::auth::register::{RegisterRequest, RegisterResponse, register};
+use crate::inbound::http::handlers::user::create_user::{
+    CreateUserRequest, CreateUserResponse, create_user,
+};
 use crate::inbound::http::handlers::user::delete_user::delete_user;
-use crate::inbound::http::handlers::user::get_user::get_user;
-use crate::inbound::http::handlers::user::list_users::list_users;
-use crate::inbound::http::handlers::user::update_user::update_user;
-use crate::inbound::http::handlers::video::get_upload_url::get_upload_url;
+use crate::inbound::http::handlers::user::get_user::{GetUserResponse, get_user};
+use crate::inbound::http::handlers::user::list_users::{
+    ListUserResponse, ListUsersResponse, list_users,
+};
+use crate::inbound::http::handlers::user::update_user::{
+    UpdateUserRequest, UpdateUserResponse, update_user,
+};
+use crate::inbound::http::handlers::video::get_upload_url::{
+    GetUploadUrlRequest, GetUploadUrlResponse, get_upload_url,
+};
+
+/// Central OpenAPI document — aggregates all route schemas.
+#[derive(OpenApi)]
+#[openapi(
+    paths(
+        handlers::auth::login::login,
+        handlers::auth::register::register,
+        handlers::auth::logout::logout,
+        handlers::user::create_user::create_user,
+        handlers::user::list_users::list_users,
+        handlers::user::get_user::get_user,
+        handlers::user::update_user::update_user,
+        handlers::user::delete_user::delete_user,
+        handlers::video::get_upload_url::get_upload_url,
+        handlers::analysis::create_analysis::create_analysis,
+        handlers::analysis::get_analysis::get_analysis,
+    ),
+    components(schemas(
+        LoginRequest, LoginResponse,
+        RegisterRequest, RegisterResponse,
+        CreateUserRequest, CreateUserResponse,
+        ListUserResponse, ListUsersResponse,
+        GetUserResponse,
+        UpdateUserRequest, UpdateUserResponse,
+        GetUploadUrlRequest, GetUploadUrlResponse,
+        CreateAnalysisRequest, CreateAnalysisResponse,
+        GetAnalysisResponse,
+    )),
+    tags(
+        (name = "Auth",     description = "Authentication — register, login, logout"),
+        (name = "Users",    description = "User management (CRUD)"),
+        (name = "Videos",   description = "Video upload pre-signed URL"),
+        (name = "Analyses", description = "AI pose-analysis jobs"),
+    ),
+    info(
+        title = "Ascension API",
+        version = "1.0.0",
+        description = "AI-powered climbing coach — backend REST API",
+    )
+)]
+pub struct ApiDoc;
 
 mod handlers;
 mod middleware;
@@ -86,6 +139,7 @@ impl HttpServer {
         }
 
         let router = Router::new()
+            .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
             .route("/", get(|| async { StatusCode::OK }))
             .nest("/v1", v1_routes())
             .layer(

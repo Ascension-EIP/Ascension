@@ -2,6 +2,7 @@ use axum::Json;
 use axum::extract::State;
 use axum::http::StatusCode;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use uuid::Uuid;
 
 use crate::domain::analysis::ports::AnalysisServiceError;
@@ -26,18 +27,34 @@ impl From<AnalysisServiceError> for ApiError {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct CreateAnalysisRequest {
     pub video_id: Uuid,
 }
 
-#[derive(Debug, Serialize, PartialEq, Eq)]
+#[derive(Debug, Serialize, PartialEq, Eq, ToSchema)]
 pub struct CreateAnalysisResponse {
     pub analysis_id: Uuid,
     pub job_id: Uuid,
+    /// Always `"pending"` at creation time
     pub status: String,
 }
 
+/// Trigger a pose-analysis job for a video.
+///
+/// Publishes a job to the `vision.skeleton` RabbitMQ queue.
+/// Poll `GET /v1/analyses/{id}` to check completion.
+#[utoipa::path(
+    post,
+    path = "/v1/analyses",
+    request_body = CreateAnalysisRequest,
+    responses(
+        (status = 202, description = "Job queued", body = CreateAnalysisResponse),
+        (status = 404, description = "video_id does not exist"),
+        (status = 500, description = "RabbitMQ publish failed"),
+    ),
+    tag = "Analyses"
+)]
 pub async fn create_analysis(
     State(state): State<AppState>,
     Json(body): Json<CreateAnalysisRequest>,

@@ -3,11 +3,14 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mobile/core/accessibility/accessibility_announcer.dart';
+import 'package:mobile/core/accessibility/accessibility_settings_service.dart';
 import 'package:video_player/video_player.dart';
 import 'package:mobile/core/auth/auth_service.dart';
 import 'package:mobile/core/network/api_service.dart';
 import 'package:mobile/core/services/analysis_history_service.dart';
 import 'package:mobile/features/upload/presentation/pages/analysis_page.dart';
+import 'package:mobile/shared/localization/app_localizations.dart';
 
 /// video_player is only supported on Android, iOS, and Web.
 bool get _supportsVideoPlayer =>
@@ -22,80 +25,78 @@ enum _UploadState { idle, selected, uploading, analysing, done, error }
 const List<_PromoMessage> _promoMessages = [
   _PromoMessage(
     icon: Icons.rocket_launch_rounded,
-    text: 'Le mode Premium réduit le temps d\'analyse de 3×.',
+    textKey: 'video.promo.1',
     isPromo: true,
   ),
   _PromoMessage(
     icon: Icons.bolt_rounded,
-    text: 'Avec Premium, vos analyses passent en tête de file.',
+    textKey: 'video.promo.2',
     isPromo: true,
   ),
   _PromoMessage(
     icon: Icons.stars_rounded,
-    text: 'Passez au mode Premium pour seulement 20€/mois.',
+    textKey: 'video.promo.3',
     isPromo: true,
   ),
   _PromoMessage(
     icon: Icons.history_rounded,
-    text: 'Premium : accédez à tout l\'historique de vos sessions.',
+    textKey: 'video.promo.4',
     isPromo: true,
   ),
   _PromoMessage(
     icon: Icons.compare_arrows_rounded,
-    text: 'Comparez vos sessions côte à côte avec le mode Premium.',
+    textKey: 'video.promo.5',
     isPromo: true,
   ),
   _PromoMessage(
     icon: Icons.bar_chart_rounded,
-    text: 'Premium débloque des statistiques avancées par groupe musculaire.',
+    textKey: 'video.promo.6',
     isPromo: true,
   ),
   _PromoMessage(
     icon: Icons.tips_and_updates_rounded,
-    text:
-        'Le saviez-vous ? Ascension détecte jusqu\'à 33 points du corps humain.',
+    textKey: 'video.promo.7',
     isPromo: false,
   ),
   _PromoMessage(
     icon: Icons.wb_sunny_rounded,
-    text: 'Astuce : un bon éclairage améliore la précision des landmarks.',
+    textKey: 'video.promo.8',
     isPromo: false,
   ),
   _PromoMessage(
     icon: Icons.trending_up_rounded,
-    text: 'Votre progression est analysée image par image.',
+    textKey: 'video.promo.9',
     isPromo: false,
   ),
   _PromoMessage(
     icon: Icons.cloud_done_rounded,
-    text: 'Vos données sont stockées de façon sécurisée dans le cloud.',
+    textKey: 'video.promo.10',
     isPromo: false,
   ),
   _PromoMessage(
     icon: Icons.people_rounded,
-    text: 'Premium : partagez vos analyses avec votre coach en un tap.',
+    textKey: 'video.promo.11',
     isPromo: true,
   ),
   _PromoMessage(
     icon: Icons.emoji_events_rounded,
-    text: 'Premium : recevez des objectifs personnalisés chaque semaine.',
+    textKey: 'video.promo.12',
     isPromo: true,
   ),
   _PromoMessage(
     icon: Icons.psychology_rounded,
-    text:
-        'L\'IA Ascension apprend de chaque session pour mieux vous conseiller.',
+    textKey: 'video.promo.13',
     isPromo: false,
   ),
 ];
 
 class _PromoMessage {
   final IconData icon;
-  final String text;
+  final String textKey;
   final bool isPromo;
   const _PromoMessage({
     required this.icon,
-    required this.text,
+    required this.textKey,
     required this.isPromo,
   });
 }
@@ -108,6 +109,8 @@ class VideoUpload extends StatefulWidget {
 }
 
 class _VideoUploadState extends State<VideoUpload> {
+  final AccessibilitySettingsService _a11y = AccessibilitySettingsService();
+
   _UploadState _state = _UploadState.idle;
   File? _videoFile;
   VideoPlayerController? _playerController;
@@ -142,14 +145,25 @@ class _VideoUploadState extends State<VideoUpload> {
       _playerController = controller;
       _state = _UploadState.selected;
     });
+    if (!mounted) return;
+    AccessibilityAnnouncer.announce(
+      context,
+      AppLocalizations.of(context).t('video.announceSelected'),
+    );
   }
 
   Future<void> _upload() async {
+    final localizations = AppLocalizations.of(context);
+
     setState(() {
       _state = _UploadState.uploading;
       _uploadProgress = 0;
       _errorMessage = null;
     });
+    AccessibilityAnnouncer.announce(
+      context,
+      localizations.t('video.announceUploading'),
+    );
 
     try {
       final file = _videoFile!;
@@ -159,7 +173,9 @@ class _VideoUploadState extends State<VideoUpload> {
       // 1. Get presigned PUT URL from backend
       setState(() => _uploadProgress = 0.1);
       final userId = AuthService().userId;
-      if (userId == null) throw Exception('User not logged in');
+      if (userId == null) {
+        throw Exception(localizations.t('video.errorNotLoggedIn'));
+      }
       final urlData = await api.getUploadUrl(
         filename: filename,
         userId: userId,
@@ -184,6 +200,11 @@ class _VideoUploadState extends State<VideoUpload> {
         _analysisProgress = 0;
         _analysisStartedAt = DateTime.now();
       });
+      if (!mounted) return;
+      AccessibilityAnnouncer.announce(
+        context,
+        localizations.t('video.announceAnalysing'),
+      );
       final analysisData = await api.triggerAnalysis(videoId: videoId);
       final analysisId = analysisData['analysis_id'] as String;
 
@@ -233,10 +254,7 @@ class _VideoUploadState extends State<VideoUpload> {
       }
 
       if (result == null) {
-        throw Exception(
-          'L\'analyse a dépassé le délai d\'attente (10 min). '
-          'Vérifiez l\'état du worker et réessayez.',
-        );
+        throw Exception(localizations.t('video.timeoutError'));
       }
 
       // Save to local history (userId is guaranteed non-null at this point)
@@ -260,11 +278,21 @@ class _VideoUploadState extends State<VideoUpload> {
         _analysisResult = result;
         _state = _UploadState.done;
       });
+      if (!mounted) return;
+      AccessibilityAnnouncer.announce(
+        context,
+        localizations.t('video.announceDone'),
+      );
     } catch (e) {
       setState(() {
         _errorMessage = e.toString();
         _state = _UploadState.error;
       });
+      if (!mounted) return;
+      AccessibilityAnnouncer.announce(
+        context,
+        localizations.t('video.announceError'),
+      );
     }
   }
 
@@ -316,6 +344,7 @@ class _VideoUploadState extends State<VideoUpload> {
   }
 
   Widget _buildIdle() {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -338,7 +367,7 @@ class _VideoUploadState extends State<VideoUpload> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Sélectionnez ou filmez votre session',
+                  l10n.t('video.pickOrRecord'),
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                 ),
@@ -351,7 +380,7 @@ class _VideoUploadState extends State<VideoUpload> {
               Expanded(
                 child: _PickerButton(
                   icon: Icons.videocam_rounded,
-                  label: 'Filmer',
+                  label: l10n.t('video.record'),
                   onTap: () => _pickVideo(ImageSource.camera),
                 ),
               ),
@@ -359,7 +388,7 @@ class _VideoUploadState extends State<VideoUpload> {
               Expanded(
                 child: _PickerButton(
                   icon: Icons.photo_library_rounded,
-                  label: 'Importer',
+                  label: l10n.t('video.import'),
                   onTap: () => _pickVideo(ImageSource.gallery),
                 ),
               ),
@@ -371,6 +400,7 @@ class _VideoUploadState extends State<VideoUpload> {
   }
 
   Widget _buildSelected() {
+    final l10n = AppLocalizations.of(context);
     final controller = _playerController;
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -395,10 +425,8 @@ class _VideoUploadState extends State<VideoUpload> {
                           ),
                           ValueListenableBuilder(
                             valueListenable: controller,
-                            builder: (_, value, _) => AnimatedOpacity(
-                              duration: const Duration(milliseconds: 200),
-                              opacity: value.isPlaying ? 0 : 1,
-                              child: Container(
+                            builder: (_, value, _) {
+                              final playIndicator = Container(
                                 decoration: const BoxDecoration(
                                   color: Colors.black45,
                                   shape: BoxShape.circle,
@@ -409,8 +437,20 @@ class _VideoUploadState extends State<VideoUpload> {
                                   size: 48,
                                   color: Colors.white,
                                 ),
-                              ),
-                            ),
+                              );
+
+                              if (_a11y.reducedMotion) {
+                                return value.isPlaying
+                                    ? const SizedBox.shrink()
+                                    : playIndicator;
+                              }
+
+                              return AnimatedOpacity(
+                                duration: const Duration(milliseconds: 200),
+                                opacity: value.isPlaying ? 0 : 1,
+                                child: playIndicator,
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -436,7 +476,7 @@ class _VideoUploadState extends State<VideoUpload> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Aperçu non disponible sur bureau',
+                          l10n.t('video.previewUnavailable'),
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey[400],
@@ -459,7 +499,7 @@ class _VideoUploadState extends State<VideoUpload> {
               OutlinedButton.icon(
                 onPressed: _reset,
                 icon: const Icon(Icons.close_rounded),
-                label: const Text('Annuler'),
+                label: Text(AppLocalizations.of(context).t('profile.cancel')),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     vertical: 14,
@@ -472,7 +512,7 @@ class _VideoUploadState extends State<VideoUpload> {
                 child: FilledButton.icon(
                   onPressed: _upload,
                   icon: const Icon(Icons.upload_rounded),
-                  label: const Text('Analyser'),
+                  label: Text(l10n.t('video.analyze')),
                   style: FilledButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.secondary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -487,6 +527,7 @@ class _VideoUploadState extends State<VideoUpload> {
   }
 
   Widget _buildUploading() {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -499,7 +540,9 @@ class _VideoUploadState extends State<VideoUpload> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Envoi en cours… ${(_uploadProgress * 100).toInt()} %',
+              l10n.tr('video.uploadingProgress', {
+                'progress': '${(_uploadProgress * 100).toInt()}',
+              }),
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 12),
@@ -525,12 +568,17 @@ class _VideoUploadState extends State<VideoUpload> {
     // Compute ETA from elapsed time and current speed.
     // Only shown once we have at least 2 % progress to avoid wild estimates.
     // Hidden during the Gemini phase (we can't estimate Gemini duration).
-    String remainingLabel = 'calcul en cours…';
+    String remainingLabel = AppLocalizations.of(
+      context,
+    ).t('video.remainingCalculating');
     final started = _analysisStartedAt;
     if (!_isGeneratingHints && started != null && percent >= 2) {
       final elapsedSecs = DateTime.now().difference(started).inSeconds;
       final remainingSecs = (elapsedSecs / percent * (100 - percent)).round();
-      remainingLabel = _formatRemaining(remainingSecs);
+      remainingLabel = _formatRemaining(
+        AppLocalizations.of(context),
+        remainingSecs,
+      );
     }
 
     return _AnalysingScreen(
@@ -538,11 +586,12 @@ class _VideoUploadState extends State<VideoUpload> {
       percent: percent,
       remainingLabel: remainingLabel,
       isGeneratingHints: _isGeneratingHints,
+      reducedMotion: _a11y.reducedMotion,
     );
   }
 
-  static String _formatRemaining(int seconds) {
-    if (seconds <= 0) return 'bientôt…';
+  static String _formatRemaining(AppLocalizations l10n, int seconds) {
+    if (seconds <= 0) return l10n.t('video.remainingSoon');
     if (seconds < 60) return '~$seconds s';
     final min = seconds ~/ 60;
     final sec = seconds % 60;
@@ -552,6 +601,7 @@ class _VideoUploadState extends State<VideoUpload> {
   }
 
   Widget _buildError() {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -560,13 +610,13 @@ class _VideoUploadState extends State<VideoUpload> {
           children: [
             const Icon(Icons.error_rounded, size: 72, color: Colors.redAccent),
             const SizedBox(height: 16),
-            const Text(
-              'Une erreur est survenue',
+            Text(
+              l10n.t('video.errorTitle'),
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
-              _errorMessage ?? 'Erreur inconnue',
+              _errorMessage ?? l10n.t('video.errorUnknown'),
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey[500], fontSize: 13),
             ),
@@ -576,7 +626,7 @@ class _VideoUploadState extends State<VideoUpload> {
               style: FilledButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.secondary,
               ),
-              child: const Text('Réessayer'),
+              child: Text(l10n.t('video.retry')),
             ),
           ],
         ),
@@ -585,6 +635,7 @@ class _VideoUploadState extends State<VideoUpload> {
   }
 
   Widget _buildDone() {
+    final l10n = AppLocalizations.of(context);
     final result = _analysisResult;
     final status = result?['status'] as String? ?? '—';
     final processingMs = result?['processing_time_ms'] as int?;
@@ -615,19 +666,23 @@ class _VideoUploadState extends State<VideoUpload> {
           ),
           const SizedBox(height: 16),
           Text(
-            isCompleted ? 'Analyse terminée !' : 'Analyse échouée',
+            isCompleted
+                ? l10n.t('video.doneSuccess')
+                : l10n.t('video.doneFailed'),
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           if (processingMs != null)
             Text(
-              'Traitement : ${(processingMs / 1000).toStringAsFixed(1)} s',
+              l10n.tr('video.processingTime', {
+                'seconds': (processingMs / 1000).toStringAsFixed(1),
+              }),
               style: TextStyle(color: Colors.grey[500], fontSize: 14),
             ),
           if (frameCount != null) ...[
             const SizedBox(height: 4),
             Text(
-              '$frameCount frames analysées',
+              l10n.tr('video.framesAnalyzed', {'count': '$frameCount'}),
               style: TextStyle(color: Colors.grey[500], fontSize: 14),
             ),
           ],
@@ -653,7 +708,7 @@ class _VideoUploadState extends State<VideoUpload> {
                   );
                 },
                 icon: const Icon(Icons.play_circle_outline_rounded),
-                label: const Text('Visualiser l\'analyse'),
+                label: Text(l10n.t('video.viewAnalysis')),
                 style: FilledButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.secondary,
                   padding: const EdgeInsets.symmetric(vertical: 14),
@@ -669,7 +724,7 @@ class _VideoUploadState extends State<VideoUpload> {
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              child: const Text('Analyser une autre vidéo'),
+              child: Text(l10n.t('video.analyzeAnother')),
             ),
           ),
         ],
@@ -684,6 +739,7 @@ class _AnalysisSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     Map<String, dynamic>? data;
     try {
       data = jsonDecode(resultJson) as Map<String, dynamic>;
@@ -713,7 +769,7 @@ class _AnalysisSummaryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Résultats',
+            l10n.t('video.results'),
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
@@ -721,9 +777,12 @@ class _AnalysisSummaryCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          _StatRow(label: 'Frames totales', value: '${frames.length}'),
           _StatRow(
-            label: 'Pose détectée',
+            label: l10n.t('video.totalFrames'),
+            value: '${frames.length}',
+          ),
+          _StatRow(
+            label: l10n.t('video.poseDetected'),
             value:
                 '$detectedFrames frames (${detectionRate.toStringAsFixed(0)} %)',
           ),
@@ -769,35 +828,42 @@ class _PickerButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 24),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Theme.of(context).colorScheme.secondary,
-            width: 1.5,
-          ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 36,
+    final l10n = AppLocalizations.of(context);
+    return Semantics(
+      button: true,
+      label: label,
+      hint: l10n.tr('video.tapHint', {'action': label}),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 72),
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          decoration: BoxDecoration(
+            border: Border.all(
               color: Theme.of(context).colorScheme.secondary,
+              width: 1.5,
             ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF00B5D3),
-                fontWeight: FontWeight.w600,
-                fontSize: 15,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                size: 36,
+                color: Theme.of(context).colorScheme.secondary,
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Color(0xFF00B5D3),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -813,12 +879,14 @@ class _AnalysingScreen extends StatefulWidget {
   final int percent;
   final String remainingLabel;
   final bool isGeneratingHints;
+  final bool reducedMotion;
 
   const _AnalysingScreen({
     required this.progress,
     required this.percent,
     required this.remainingLabel,
     this.isGeneratingHints = false,
+    this.reducedMotion = false,
   });
 
   @override
@@ -844,7 +912,9 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
               _autoSlideCtrl.forward(from: 0);
             }
           });
-    _autoSlideCtrl.forward();
+    if (!widget.reducedMotion) {
+      _autoSlideCtrl.forward();
+    }
   }
 
   void _nextPage() {
@@ -853,6 +923,10 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
 
   void _goToPage(int index) {
     setState(() => _pageIndex = index);
+    if (widget.reducedMotion) {
+      _pageCtrl.jumpToPage(index);
+      return;
+    }
     _pageCtrl.animateToPage(
       index,
       duration: const Duration(milliseconds: 380),
@@ -869,6 +943,7 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Center(
@@ -924,15 +999,15 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
             const SizedBox(height: 28),
             Text(
               widget.isGeneratingHints
-                  ? 'Génération des conseils IA…'
-                  : 'Analyse en cours…',
+                  ? l10n.t('video.generatingHints')
+                  : l10n.t('video.analysisInProgress'),
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 6),
             Text(
               widget.isGeneratingHints
-                  ? 'Ascension analyse votre session et rédige vos conseils personnalisés.'
-                  : 'Ascension analyse votre session d\'escalade.',
+                  ? l10n.t('video.generatingHintsSubtitle')
+                  : l10n.t('video.analysisSubtitle'),
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey[500], fontSize: 14),
             ),
@@ -961,7 +1036,9 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                       itemCount: _promoMessages.length,
                       onPageChanged: (i) {
                         setState(() => _pageIndex = i);
-                        _autoSlideCtrl.forward(from: 0);
+                        if (!widget.reducedMotion) {
+                          _autoSlideCtrl.forward(from: 0);
+                        }
                       },
                       itemBuilder: (context, i) => Padding(
                         // Horizontal gap between cards when paging
@@ -991,21 +1068,30 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
                 _promoMessages.length,
-                (i) => GestureDetector(
-                  onTap: () {
-                    _autoSlideCtrl.forward(from: 0);
-                    _goToPage(i);
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    margin: const EdgeInsets.symmetric(horizontal: 3),
-                    width: i == _pageIndex ? 18 : 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: i == _pageIndex
-                          ? colorScheme.secondary
-                          : Colors.grey.withValues(alpha: 0.35),
-                      borderRadius: BorderRadius.circular(3),
+                (i) => Semantics(
+                  button: true,
+                  label: l10n.tr('video.tip', {'index': '${i + 1}'}),
+                  selected: i == _pageIndex,
+                  child: InkWell(
+                    onTap: () {
+                      if (!widget.reducedMotion) {
+                        _autoSlideCtrl.forward(from: 0);
+                      }
+                      _goToPage(i);
+                    },
+                    child: AnimatedContainer(
+                      duration: widget.reducedMotion
+                          ? Duration.zero
+                          : const Duration(milliseconds: 300),
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      width: i == _pageIndex ? 18 : 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: i == _pageIndex
+                            ? colorScheme.secondary
+                            : Colors.grey.withValues(alpha: 0.35),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
                     ),
                   ),
                 ),
@@ -1019,7 +1105,7 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
               builder: (context, _) => ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: LinearProgressIndicator(
-                  value: _autoSlideCtrl.value,
+                  value: widget.reducedMotion ? 0 : _autoSlideCtrl.value,
                   color: colorScheme.secondary.withValues(alpha: 0.5),
                   backgroundColor: colorScheme.secondary.withValues(alpha: 0.1),
                   minHeight: 3,
@@ -1071,6 +1157,7 @@ class _PromoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
@@ -1102,7 +1189,7 @@ class _PromoCard extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Text(
-                      '✦ MODE PREMIUM',
+                      l10n.t('video.promoBadge'),
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
@@ -1112,7 +1199,7 @@ class _PromoCard extends StatelessWidget {
                     ),
                   ),
                 Text(
-                  msg.text,
+                  l10n.t(msg.textKey),
                   style: TextStyle(
                     fontSize: 13,
                     color: msg.isPromo ? Colors.white : Colors.grey[400],

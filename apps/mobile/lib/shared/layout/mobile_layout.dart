@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:mobile/core/accessibility/accessibility_settings_service.dart';
 import 'package:mobile/features/home/presentation/pages/home_page.dart';
 import 'package:mobile/features/upload/presentation/pages/upload_page.dart';
 import 'package:mobile/features/stats/presentation/pages/stats_page.dart';
 import 'package:mobile/features/profile/presentation/pages/profile_page.dart';
+import 'package:mobile/shared/localization/app_localizations.dart';
 
 class MobileLayout extends StatefulWidget {
   const MobileLayout({super.key});
@@ -26,32 +28,38 @@ class _MobileLayoutState extends State<MobileLayout> {
     _NavItemData(
       icon: CupertinoIcons.house,
       selectedIcon: CupertinoIcons.house_fill,
-      label: 'Home',
+      labelKey: 'nav.home',
     ),
     _NavItemData(
       icon: CupertinoIcons.cloud_upload,
       selectedIcon: CupertinoIcons.cloud_upload_fill,
-      label: 'Upload',
+      labelKey: 'nav.upload',
     ),
     _NavItemData(
       icon: CupertinoIcons.graph_square,
       selectedIcon: CupertinoIcons.graph_square_fill,
-      label: 'Stats',
+      labelKey: 'nav.stats',
     ),
     _NavItemData(
       icon: CupertinoIcons.person,
       selectedIcon: CupertinoIcons.person_solid,
-      label: 'Profile',
+      labelKey: 'nav.profile',
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final settings = AccessibilitySettingsService();
+
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: FocusTraversalGroup(
+        policy: OrderedTraversalPolicy(),
+        child: IndexedStack(index: _currentIndex, children: _pages),
+      ),
       bottomNavigationBar: _CustomNavBar(
         currentIndex: _currentIndex,
         items: _items,
+        reducedMotion: settings.reducedMotion,
         onTap: (index) => setState(() => _currentIndex = index),
       ),
     );
@@ -61,23 +69,25 @@ class _MobileLayoutState extends State<MobileLayout> {
 class _NavItemData {
   final IconData icon;
   final IconData selectedIcon;
-  final String label;
+  final String labelKey;
 
   const _NavItemData({
     required this.icon,
     required this.selectedIcon,
-    required this.label,
+    required this.labelKey,
   });
 }
 
 class _CustomNavBar extends StatelessWidget {
   final int currentIndex;
   final List<_NavItemData> items;
+  final bool reducedMotion;
   final ValueChanged<int> onTap;
 
   const _CustomNavBar({
     required this.currentIndex,
     required this.items,
+    required this.reducedMotion,
     required this.onTap,
   });
 
@@ -92,6 +102,7 @@ class _CustomNavBar extends StatelessWidget {
               child: _NavItem(
                 data: items[index],
                 isSelected: index == currentIndex,
+                reducedMotion: reducedMotion,
                 onTap: () => onTap(index),
               ),
             );
@@ -105,11 +116,13 @@ class _CustomNavBar extends StatelessWidget {
 class _NavItem extends StatefulWidget {
   final _NavItemData data;
   final bool isSelected;
+  final bool reducedMotion;
   final VoidCallback onTap;
 
   const _NavItem({
     required this.data,
     required this.isSelected,
+    required this.reducedMotion,
     required this.onTap,
   });
 
@@ -142,31 +155,50 @@ class _NavItemState extends State<_NavItem>
   }
 
   void _onTap() {
-    _controller.forward(from: 0);
+    if (!widget.reducedMotion) {
+      _controller.forward(from: 0);
+    }
     widget.onTap();
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ScaleTransition(
-            scale: _scale,
-            child: Icon(
-              widget.isSelected ? widget.data.selectedIcon : widget.data.icon,
-              size: 32,
-            ),
+    final l10n = AppLocalizations.of(context);
+    final label = l10n.t(widget.data.labelKey);
+    final icon = Icon(
+      widget.isSelected ? widget.data.selectedIcon : widget.data.icon,
+      size: 32,
+    );
+
+    return Semantics(
+      container: true,
+      button: true,
+      selected: widget.isSelected,
+      label: l10n.tr('nav.semanticLabel', {'label': label}),
+      hint: widget.isSelected
+          ? l10n.t('nav.currentTabHint')
+          : l10n.tr('nav.openTabHint', {'label': label}),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 48),
+        child: InkWell(
+          onTap: _onTap,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              widget.reducedMotion
+                  ? icon
+                  : ScaleTransition(scale: _scale, child: icon),
+              const SizedBox(height: 3),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 3),
-          Text(
-            widget.data.label,
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
-          ),
-        ],
+        ),
       ),
     );
   }

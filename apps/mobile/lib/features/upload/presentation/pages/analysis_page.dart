@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../../shared/localization/app_localizations.dart';
+
 // ─── Landmark indices (mirrors pose_analysis.py LM class) ──────
 class _LM {
   static const lShoulder = 11;
@@ -23,18 +25,18 @@ class _LM {
   static const rAnkle = 28;
 
   static const names = {
-    11: 'Épaule G',
-    12: 'Épaule D',
-    13: 'Coude G',
-    14: 'Coude D',
-    15: 'Poignet G',
-    16: 'Poignet D',
-    23: 'Hanche G',
-    24: 'Hanche D',
-    25: 'Genou G',
-    26: 'Genou D',
-    27: 'Cheville G',
-    28: 'Cheville D',
+    11: 'landmark.leftShoulder',
+    12: 'landmark.rightShoulder',
+    13: 'landmark.leftElbow',
+    14: 'landmark.rightElbow',
+    15: 'landmark.leftWrist',
+    16: 'landmark.rightWrist',
+    23: 'landmark.leftHip',
+    24: 'landmark.rightHip',
+    25: 'landmark.leftKnee',
+    26: 'landmark.rightKnee',
+    27: 'landmark.leftAnkle',
+    28: 'landmark.rightAnkle',
   };
 
   static const connections = [
@@ -242,33 +244,43 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
   @override
   Widget build(BuildContext context) {
     final accent = Theme.of(context).colorScheme.secondary;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: const Color(0xFF0D1B2A),
       appBar: AppBar(
         backgroundColor: const Color(0xFF0D1B2A),
         foregroundColor: Colors.white,
-        title: const Text(
-          'Visualisation',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.t('analysis.title'),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         bottom: TabBar(
           controller: _tabCtrl,
           indicatorColor: accent,
           labelColor: accent,
           unselectedLabelColor: Colors.grey,
-          tabs: const [
-            Tab(icon: Icon(Icons.person_outline), text: 'Squelette'),
-            Tab(icon: Icon(Icons.show_chart), text: 'Angles'),
-            Tab(icon: Icon(Icons.analytics_outlined), text: 'Stats'),
+          tabs: [
+            Tab(
+              icon: const Icon(Icons.person_outline),
+              text: l10n.t('analysis.tabSkeleton'),
+            ),
+            Tab(
+              icon: const Icon(Icons.show_chart),
+              text: l10n.t('analysis.tabAngles'),
+            ),
+            Tab(
+              icon: const Icon(Icons.analytics_outlined),
+              text: l10n.t('analysis.tabStats'),
+            ),
           ],
         ),
       ),
       body: _frames.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
-                'Aucune donnée disponible',
-                style: TextStyle(color: Colors.white54),
+                l10n.t('analysis.emptyData'),
+                style: const TextStyle(color: Colors.white54),
               ),
             )
           : TabBarView(
@@ -386,6 +398,7 @@ class _SkeletonTabState extends State<_SkeletonTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final frame = widget.frames[widget.currentIndex];
     final hasVideo = widget.videoCtrl != null && widget.videoReady;
     final hasHints = widget.hints != null && widget.hints!.trim().isNotEmpty;
@@ -421,6 +434,7 @@ class _SkeletonTabState extends State<_SkeletonTab> {
                           painter: _SkeletonPainter(
                             frame: frame,
                             accent: widget.accent,
+                            noPoseLabel: l10n.t('analysis.noPoseDetected'),
                             fullFrame: false,
                             showAngles: _showAngles,
                           ),
@@ -441,7 +455,7 @@ class _SkeletonTabState extends State<_SkeletonTab> {
                 SizedBox(
                   width: 70,
                   child: Text(
-                    'Frame ${frame.frameIndex}',
+                    '${l10n.t('analysis.frame')} ${frame.frameIndex}',
                     style: const TextStyle(color: Colors.white54, fontSize: 12),
                   ),
                 ),
@@ -484,7 +498,7 @@ class _SkeletonTabState extends State<_SkeletonTab> {
                         ),
                         const SizedBox(width: 5),
                         Text(
-                          'Angles',
+                          l10n.t('analysis.tabAngles'),
                           style: TextStyle(
                             fontSize: 12,
                             color: _showAngles ? widget.accent : Colors.white38,
@@ -610,7 +624,7 @@ class _SkeletonTabState extends State<_SkeletonTab> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Conseils IA',
+                    l10n.t('analysis.aiTips'),
                     style: TextStyle(
                       color: widget.accent,
                       fontSize: 15,
@@ -664,6 +678,7 @@ class _VideoWithOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final aspectRatio = ctrl.value.aspectRatio;
     return Center(
       child: ClipRRect(
@@ -685,6 +700,7 @@ class _VideoWithOverlay extends StatelessWidget {
                   painter: _SkeletonPainter(
                     frame: frame,
                     accent: accent,
+                    noPoseLabel: l10n.t('analysis.noPoseDetected'),
                     fullFrame: true,
                     showAngles: showAngles,
                   ),
@@ -702,6 +718,7 @@ class _VideoWithOverlay extends StatelessWidget {
 class _SkeletonPainter extends CustomPainter {
   final _FrameData frame;
   final Color accent;
+  final String noPoseLabel;
 
   /// When true, landmarks (already normalised 0-1 by MediaPipe) are mapped
   /// directly to pixel coordinates: x*width, y*height.  This is the correct
@@ -715,6 +732,7 @@ class _SkeletonPainter extends CustomPainter {
   const _SkeletonPainter({
     required this.frame,
     required this.accent,
+    required this.noPoseLabel,
     this.fullFrame = false,
     this.showAngles = true,
   });
@@ -724,9 +742,9 @@ class _SkeletonPainter extends CustomPainter {
     if (!frame.poseDetected || frame.landmarks.isEmpty) {
       if (!fullFrame) {
         final tp = TextPainter(
-          text: const TextSpan(
-            text: 'Aucune pose détectée',
-            style: TextStyle(color: Colors.white38, fontSize: 14),
+          text: TextSpan(
+            text: noPoseLabel,
+            style: const TextStyle(color: Colors.white38, fontSize: 14),
           ),
           textDirection: TextDirection.ltr,
         )..layout();
@@ -845,14 +863,14 @@ class _SkeletonPainter extends CustomPainter {
 
 /// All joints for which we compute angles, in display order.
 const _kAngleJoints = <int, String>{
-  _LM.lElbow: 'Coude G',
-  _LM.rElbow: 'Coude D',
-  _LM.lShoulder: 'Épaule G',
-  _LM.rShoulder: 'Épaule D',
-  _LM.lHip: 'Hanche G',
-  _LM.rHip: 'Hanche D',
-  _LM.lKnee: 'Genou G',
-  _LM.rKnee: 'Genou D',
+  _LM.lElbow: 'joint.leftElbow',
+  _LM.rElbow: 'joint.rightElbow',
+  _LM.lShoulder: 'joint.leftShoulder',
+  _LM.rShoulder: 'joint.rightShoulder',
+  _LM.lHip: 'joint.leftHip',
+  _LM.rHip: 'joint.rightHip',
+  _LM.lKnee: 'joint.leftKnee',
+  _LM.rKnee: 'joint.rightKnee',
 };
 
 /// Distinct colors per joint so curves are easy to differentiate.
@@ -900,6 +918,7 @@ class _AngleChartTabState extends State<_AngleChartTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // Precompute spots for visible joints that actually have data
     final seriesData = <int, List<FlSpot>>{};
     for (final id in _kAngleJoints.keys) {
@@ -916,7 +935,7 @@ class _AngleChartTabState extends State<_AngleChartTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionTitle('Angles articulaires', accent: widget.accent),
+          _SectionTitle(l10n.t('analysis.jointAngles'), accent: widget.accent),
           const SizedBox(height: 12),
 
           // ── Joint selector chips ──
@@ -930,7 +949,7 @@ class _AngleChartTabState extends State<_AngleChartTab> {
               final color = _kJointColors[id] ?? widget.accent;
               return FilterChip(
                 label: Text(
-                  e.value,
+                  l10n.t(e.value),
                   style: TextStyle(
                     fontSize: 11,
                     color: selected ? Colors.black : Colors.white60,
@@ -962,7 +981,7 @@ class _AngleChartTabState extends State<_AngleChartTab> {
 
           // ── Chart ──
           if (visibleSeries.isEmpty)
-            _EmptyCard('Sélectionnez au moins une articulation')
+            _EmptyCard(l10n.t('analysis.selectAtLeastOneJoint'))
           else
             _ChartCard(
               child: LineChart(
@@ -978,9 +997,12 @@ class _AngleChartTabState extends State<_AngleChartTab> {
                   borderData: FlBorderData(show: false),
                   titlesData: FlTitlesData(
                     leftTitles: AxisTitles(
-                      axisNameWidget: const Text(
-                        'Angle (°)',
-                        style: TextStyle(color: Colors.white54, fontSize: 11),
+                      axisNameWidget: Text(
+                        l10n.t('analysis.angleAxis'),
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 11,
+                        ),
                       ),
                       sideTitles: SideTitles(
                         showTitles: true,
@@ -995,9 +1017,12 @@ class _AngleChartTabState extends State<_AngleChartTab> {
                       ),
                     ),
                     bottomTitles: AxisTitles(
-                      axisNameWidget: const Text(
-                        'Temps (s)',
-                        style: TextStyle(color: Colors.white54, fontSize: 11),
+                      axisNameWidget: Text(
+                        l10n.t('analysis.timeAxis'),
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 11,
+                        ),
                       ),
                       sideTitles: SideTitles(
                         showTitles: true,
@@ -1037,7 +1062,11 @@ class _AngleChartTabState extends State<_AngleChartTab> {
                       getTooltipColor: (_) => const Color(0xFF1E3050),
                       getTooltipItems: (touchedSpots) => touchedSpots.map((s) {
                         final jointId = visibleSeries[s.barIndex].key;
-                        final name = _kAngleJoints[jointId] ?? 'Joint $jointId';
+                        final name = _kAngleJoints[jointId] != null
+                            ? l10n.t(_kAngleJoints[jointId]!)
+                            : l10n.tr('analysis.jointFallback', {
+                                'id': '$jointId',
+                              });
                         return LineTooltipItem(
                           '$name\n${s.y.toStringAsFixed(1)}°',
                           TextStyle(
@@ -1062,7 +1091,9 @@ class _AngleChartTabState extends State<_AngleChartTab> {
               runSpacing: 8,
               children: visibleSeries.map((e) {
                 final color = _kJointColors[e.key] ?? widget.accent;
-                final name = _kAngleJoints[e.key] ?? 'Joint ${e.key}';
+                final name = _kAngleJoints[e.key] != null
+                    ? l10n.t(_kAngleJoints[e.key]!)
+                    : l10n.tr('analysis.jointFallback', {'id': '${e.key}'});
                 return _Legend(color: color, label: name);
               }).toList(),
             ),
@@ -1093,6 +1124,7 @@ class _StatsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final detected = frames.where((f) => f.poseDetected).toList();
     final detRate = frames.isEmpty
         ? 0.0
@@ -1117,32 +1149,32 @@ class _StatsTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionTitle('Résumé de la session', accent: accent),
+          _SectionTitle(l10n.t('analysis.sessionSummary'), accent: accent),
           const SizedBox(height: 12),
           _StatCard(
             accent: accent,
             children: [
               _StatRow(
-                'Durée analysée',
+                l10n.t('analysis.durationAnalyzed'),
                 _fmtMs(durationMs),
                 icon: Icons.timer_outlined,
                 accent: accent,
               ),
               _StatRow(
-                'Frames analysées',
+                l10n.t('analysis.framesAnalyzed'),
                 '${frames.length}',
                 icon: Icons.video_library_outlined,
                 accent: accent,
               ),
               if (processingMs != null)
                 _StatRow(
-                  'Temps de traitement IA',
+                  l10n.t('analysis.aiProcessingTime'),
                   '${(processingMs! / 1000).toStringAsFixed(1)} s',
                   icon: Icons.memory_outlined,
                   accent: accent,
                 ),
               _StatRow(
-                'Taux de détection',
+                l10n.t('analysis.detectionRate'),
                 '${detRate.toStringAsFixed(1)} %',
                 icon: Icons.person_search_outlined,
                 accent: accent,
@@ -1153,7 +1185,7 @@ class _StatsTab extends StatelessWidget {
                     : Colors.redAccent,
               ),
               _StatRow(
-                'Articulations mesurées',
+                l10n.t('analysis.measuredJoints'),
                 '${jointStats.length} / ${_kAngleJoints.length}',
                 icon: Icons.architecture_outlined,
                 accent: accent,
@@ -1164,12 +1196,14 @@ class _StatsTab extends StatelessWidget {
           // ── Per-joint angle stats ──
           if (jointStats.isNotEmpty) ...[
             const SizedBox(height: 24),
-            _SectionTitle('Angles par articulation', accent: accent),
+            _SectionTitle(l10n.t('analysis.anglesByJoint'), accent: accent),
             const SizedBox(height: 12),
             ...jointStats.entries.map((entry) {
               final id = entry.key;
               final s = entry.value;
-              final name = _kAngleJoints[id] ?? 'Joint $id';
+              final name = _kAngleJoints[id] != null
+                  ? l10n.t(_kAngleJoints[id]!)
+                  : l10n.tr('analysis.jointFallback', {'id': '$id'});
               final color = _kJointColors[id] ?? accent;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
@@ -1202,27 +1236,27 @@ class _StatsTab extends StatelessWidget {
                       accent: accent,
                       children: [
                         _StatRow(
-                          'Minimum',
+                          l10n.t('analysis.minimum'),
                           '${s.min.toStringAsFixed(1)}°',
                           icon: Icons.arrow_downward_rounded,
                           accent: accent,
                           valueColor: Colors.lightBlueAccent,
                         ),
                         _StatRow(
-                          'Maximum',
+                          l10n.t('analysis.maximum'),
                           '${s.max.toStringAsFixed(1)}°',
                           icon: Icons.arrow_upward_rounded,
                           accent: accent,
                           valueColor: Colors.orangeAccent,
                         ),
                         _StatRow(
-                          'Moyenne',
+                          l10n.t('analysis.average'),
                           '${s.avg.toStringAsFixed(1)}°',
                           icon: Icons.show_chart,
                           accent: accent,
                         ),
                         _StatRow(
-                          'Amplitude',
+                          l10n.t('analysis.amplitude'),
                           '${(s.max - s.min).toStringAsFixed(1)}°',
                           icon: Icons.swap_vert_rounded,
                           accent: accent,
@@ -1243,7 +1277,7 @@ class _StatsTab extends StatelessWidget {
           ],
 
           const SizedBox(height: 20),
-          _SectionTitle('Landmarks détectés', accent: accent),
+          _SectionTitle(l10n.t('analysis.detectedLandmarks'), accent: accent),
           const SizedBox(height: 12),
           _LandmarkHeatmap(frames: frames, accent: accent),
         ],
@@ -1426,6 +1460,7 @@ class _AngleRangeBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1436,9 +1471,9 @@ class _AngleRangeBar extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Amplitude angulaire',
-            style: TextStyle(color: Colors.white60, fontSize: 12),
+          Text(
+            l10n.t('analysis.angularAmplitude'),
+            style: const TextStyle(color: Colors.white60, fontSize: 12),
           ),
           const SizedBox(height: 12),
           Row(
@@ -1489,7 +1524,7 @@ class _AngleRangeBar extends StatelessWidget {
           const SizedBox(height: 6),
           Center(
             child: Text(
-              'Moy. ${avg.toStringAsFixed(1)}°',
+              '${l10n.t('analysis.averageShort')} ${avg.toStringAsFixed(1)}°',
               style: TextStyle(color: accent, fontSize: 11),
             ),
           ),
@@ -1536,6 +1571,7 @@ class _LandmarkHeatmap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // Count how many frames each landmark appears in
     final counts = <int, int>{};
     for (final f in frames) {
@@ -1567,7 +1603,7 @@ class _LandmarkHeatmap extends StatelessWidget {
                 SizedBox(
                   width: 90,
                   child: Text(
-                    e.value,
+                    l10n.t(e.value),
                     style: const TextStyle(color: Colors.white54, fontSize: 11),
                   ),
                 ),

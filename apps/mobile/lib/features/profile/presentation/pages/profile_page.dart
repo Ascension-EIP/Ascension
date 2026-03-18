@@ -4,6 +4,7 @@ import 'package:mobile/core/services/analysis_history_service.dart';
 import 'package:mobile/features/upload/presentation/pages/analysis_page.dart';
 import 'package:mobile/core/network/api_service.dart';
 import 'package:mobile/shared/components/header.dart';
+import 'package:mobile/shared/localization/app_localizations.dart';
 import 'package:mobile/shared/theme/app_colors.dart';
 import 'package:mobile/features/profile/presentation/pages/settings_page.dart';
 
@@ -59,22 +60,23 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _logout() async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Déconnexion'),
-        content: const Text('Voulez-vous vous déconnecter ?'),
+        title: Text(l10n.t('profile.logoutTitle')),
+        content: Text(l10n.t('profile.logoutPrompt')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Annuler'),
+            child: Text(l10n.t('profile.cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('Déconnexion'),
+            child: Text(l10n.t('profile.logoutTitle')),
           ),
         ],
       ),
@@ -86,13 +88,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: Header(
-        title: 'Profil',
+        title: l10n.t('profile.title'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            tooltip: 'Paramètres',
+            tooltip: l10n.t('common.settings'),
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const SettingsPage()),
@@ -133,10 +137,12 @@ class _UserCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = AuthService();
+    final l10n = AppLocalizations.of(context);
     final username = auth.username;
     final email = auth.email;
 
-    final displayName = username ?? email?.split('@').first ?? 'Utilisateur';
+    final displayName =
+        username ?? email?.split('@').first ?? l10n.t('profile.defaultUser');
     final initials = _initials(displayName);
 
     return Container(
@@ -176,7 +182,7 @@ class _UserCard extends StatelessWidget {
           IconButton(
             onPressed: onEdit,
             icon: const Icon(Icons.edit_outlined, size: 20),
-            tooltip: 'Modifier le profil',
+            tooltip: l10n.t('profile.editProfile'),
             style: IconButton.styleFrom(
               foregroundColor: AppColors.primary,
               backgroundColor: AppColors.primary.withValues(alpha: 0.1),
@@ -243,6 +249,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final bottom = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
@@ -269,8 +276,8 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Modifier le profil',
+            Text(
+              l10n.t('profile.editProfile'),
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -281,13 +288,13 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
             TextFormField(
               controller: _usernameController,
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(
-                labelText: "Nom d'utilisateur",
+              decoration: InputDecoration(
+                labelText: l10n.t('profile.username'),
                 prefixIcon: Icon(Icons.person_outline),
               ),
               validator: (v) {
                 if (v != null && v.trim().isNotEmpty && v.trim().length < 3) {
-                  return 'Minimum 3 caractères';
+                  return l10n.t('auth.register.usernameMin3');
                 }
                 return null;
               },
@@ -298,13 +305,13 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.done,
               onFieldSubmitted: (_) => _save(),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Email',
                 prefixIcon: Icon(Icons.email_outlined),
               ),
               validator: (v) {
                 if (v != null && v.trim().isNotEmpty && !v.contains('@')) {
-                  return 'Email invalide';
+                  return l10n.t('auth.invalidEmail');
                 }
                 return null;
               },
@@ -315,7 +322,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text('Annuler'),
+                    child: Text(l10n.t('profile.cancel')),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -331,7 +338,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
                               color: Colors.white,
                             ),
                           )
-                        : const Text('Enregistrer'),
+                        : Text(l10n.t('profile.save')),
                   ),
                 ),
               ],
@@ -390,6 +397,7 @@ class _StatsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final entries = history ?? [];
     final total = entries.length;
     final completed = entries.where((e) => e.isCompleted).toList();
@@ -401,8 +409,8 @@ class _StatsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Statistiques globales',
+        Text(
+          l10n.t('profile.globalStats'),
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -416,7 +424,7 @@ class _StatsSection extends StatelessWidget {
               child: _StatCard(
                 icon: Icons.analytics_outlined,
                 value: '$total',
-                label: 'Analyses',
+                label: l10n.t('profile.analyses'),
                 color: AppColors.primary,
                 loading: history == null,
               ),
@@ -426,7 +434,7 @@ class _StatsSection extends StatelessWidget {
               child: _StatCard(
                 icon: Icons.check_circle_outline_rounded,
                 value: '${completed.length}',
-                label: 'Réussies',
+                label: l10n.t('profile.successes'),
                 color: AppColors.success,
                 loading: history == null,
               ),
@@ -436,7 +444,7 @@ class _StatsSection extends StatelessWidget {
               child: _StatCard(
                 icon: Icons.person_outline_rounded,
                 value: '${avgDetection.toStringAsFixed(0)}%',
-                label: 'Détection',
+                label: l10n.t('profile.detection'),
                 color: AppColors.warning,
                 loading: history == null,
               ),
@@ -511,14 +519,15 @@ class _RecentAnalyses extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final entries = history ?? [];
     final recent = entries.take(3).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Dernières analyses',
+        Text(
+          l10n.t('profile.latestAnalyses'),
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -552,6 +561,7 @@ class _RecentAnalyses extends StatelessWidget {
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 32),
@@ -565,12 +575,12 @@ class _EmptyState extends StatelessWidget {
           Icon(Icons.videocam_outlined, size: 40, color: Colors.grey[600]),
           const SizedBox(height: 10),
           Text(
-            'Aucune analyse pour l\'instant',
+            l10n.t('profile.emptyTitle'),
             style: TextStyle(color: Colors.grey[500], fontSize: 14),
           ),
           const SizedBox(height: 4),
           Text(
-            'Uploadez une vidéo pour commencer.',
+            l10n.t('profile.emptySubtitle'),
             style: TextStyle(color: Colors.grey[600], fontSize: 12),
           ),
         ],
@@ -585,6 +595,7 @@ class _MiniAnalysisCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final isCompleted = entry.isCompleted;
     final statusColor = isCompleted ? AppColors.success : AppColors.danger;
@@ -619,7 +630,7 @@ class _MiniAnalysisCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _formatDate(entry.createdAt),
+                  _formatDate(context, entry.createdAt),
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -629,12 +640,17 @@ class _MiniAnalysisCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 if (isCompleted && entry.frameCount > 0)
                   Text(
-                    '${entry.frameCount} frames · ${entry.detectionRate.toStringAsFixed(0)}% détecté',
+                    l10n.tr('profile.framesDetected', {
+                      'frames': '${entry.frameCount}',
+                      'rate': entry.detectionRate.toStringAsFixed(0),
+                    }),
                     style: TextStyle(fontSize: 11, color: Colors.grey[500]),
                   )
                 else
                   Text(
-                    isCompleted ? 'Analyse terminée' : 'Analyse échouée',
+                    isCompleted
+                        ? l10n.t('profile.analysisCompleted')
+                        : l10n.t('profile.analysisFailed'),
                     style: TextStyle(
                       fontSize: 11,
                       color: isCompleted ? Colors.grey[500] : AppColors.danger,
@@ -669,16 +685,26 @@ class _MiniAnalysisCard extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime dt) {
+  String _formatDate(BuildContext context, DateTime dt) {
+    final l10n = AppLocalizations.of(context);
     final now = DateTime.now();
     final diff = now.difference(dt);
+    final time = '${_pad(dt.hour)}:${_pad(dt.minute)}';
     if (diff.inDays == 0) {
-      return "Aujourd'hui à ${_pad(dt.hour)}:${_pad(dt.minute)}";
+      return l10n.tr('date.todayAt', {'time': time});
     } else if (diff.inDays == 1) {
-      return "Hier à ${_pad(dt.hour)}:${_pad(dt.minute)}";
+      return l10n.tr('date.yesterdayAt', {'time': time});
     } else if (diff.inDays < 7) {
-      const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-      return "${days[dt.weekday - 1]} ${_pad(dt.day)}/${_pad(dt.month)}";
+      final days = [
+        l10n.t('date.dayShort.monday'),
+        l10n.t('date.dayShort.tuesday'),
+        l10n.t('date.dayShort.wednesday'),
+        l10n.t('date.dayShort.thursday'),
+        l10n.t('date.dayShort.friday'),
+        l10n.t('date.dayShort.saturday'),
+        l10n.t('date.dayShort.sunday'),
+      ];
+      return '${days[dt.weekday - 1]} ${_pad(dt.day)}/${_pad(dt.month)}';
     } else {
       return "${_pad(dt.day)}/${_pad(dt.month)}/${dt.year}";
     }
@@ -695,12 +721,13 @@ class _LogoutButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: onLogout,
         icon: const Icon(Icons.logout_rounded, size: 18),
-        label: const Text('Se déconnecter'),
+        label: Text(l10n.t('profile.logoutAction')),
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.danger,
           side: BorderSide(color: AppColors.danger.withValues(alpha: 0.5)),

@@ -2,6 +2,7 @@ use axum::Json;
 use axum::extract::State;
 use axum::http::StatusCode;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use uuid::Uuid;
 
 use crate::domain::video::ports::VideoServiceError;
@@ -21,15 +22,16 @@ impl From<VideoServiceError> for ApiError {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct GetUploadUrlRequest {
     /// Original filename of the video, e.g. "climb.mp4"
+    #[schema(example = "my-climb.mp4")]
     pub filename: String,
     /// The user ID requesting the upload (temporary — will come from JWT)
     pub user_id: Uuid,
 }
 
-#[derive(Debug, Serialize, PartialEq, Eq)]
+#[derive(Debug, Serialize, PartialEq, Eq, ToSchema)]
 pub struct GetUploadUrlResponse {
     /// The UUID of the video record created in the database.
     pub video_id: Uuid,
@@ -37,6 +39,20 @@ pub struct GetUploadUrlResponse {
     pub upload_url: String,
 }
 
+/// Request a presigned upload URL for a video.
+///
+/// Returns a pre-signed PUT URL. The client uploads the video directly to MinIO
+/// using this URL, then calls `POST /v1/analyses` to trigger processing.
+#[utoipa::path(
+    post,
+    path = "/v1/videos/upload-url",
+    request_body = GetUploadUrlRequest,
+    responses(
+        (status = 201, description = "Upload URL generated", body = GetUploadUrlResponse),
+        (status = 500, description = "MinIO presign failed"),
+    ),
+    tag = "Videos"
+)]
 pub async fn get_upload_url(
     State(state): State<AppState>,
     Json(body): Json<GetUploadUrlRequest>,

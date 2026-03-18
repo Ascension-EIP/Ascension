@@ -23,7 +23,7 @@ jobs:
   ########################## DEPLOY TO VPS ####################################
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.repository == 'Ascension-EIP/Ascension' }}
 
     ######################## STEPS ############################################
     steps:
@@ -35,7 +35,7 @@ jobs:
         run: echo "prefix=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
 
       - name: Copy compose files to VPS
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}

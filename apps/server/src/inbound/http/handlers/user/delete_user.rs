@@ -23,13 +23,20 @@ impl IntoResponse for DeleteUserRequestError {
     }
 }
 
-/// Delete an existing [User] by id.
-///
-/// # Responses
-///
-/// - 200 OK: the [User] was successfully deleted.
-/// - 404 Not Found: no [User] with the given id exists.
-/// - 422 Unprocessable Entity: the provided id is not a valid UUID.
+/// Permanently delete a user.
+#[utoipa::path(
+    delete,
+    path = "/v1/users/{id}",
+    params(
+        ("id" = String, Path, description = "User UUID"),
+    ),
+    responses(
+        (status = 200, description = "User deleted"),
+        (status = 404, description = "No user with this ID"),
+        (status = 422, description = "ID is not a valid UUID"),
+    ),
+    tag = "Users"
+)]
 pub async fn delete_user(
     Path(id): Path<String>,
     State(state): State<AppState>,
