@@ -14,7 +14,7 @@ hydra-colorlog==1.2.0
 pyrootutils==1.0.4
 webdataset==1.0.2
 chump==1.6.0
-networkx==3.2.1
+networkx==3.6.1
 roma==1.5.6
 joblib==1.5.3
 seaborn==0.13.2
