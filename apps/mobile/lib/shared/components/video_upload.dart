@@ -153,6 +153,8 @@ class _VideoUploadState extends State<VideoUpload> {
   }
 
   Future<void> _upload() async {
+    final localizations = AppLocalizations.of(context);
+
     setState(() {
       _state = _UploadState.uploading;
       _uploadProgress = 0;
@@ -160,7 +162,7 @@ class _VideoUploadState extends State<VideoUpload> {
     });
     AccessibilityAnnouncer.announce(
       context,
-      AppLocalizations.of(context).t('video.announceUploading'),
+      localizations.t('video.announceUploading'),
     );
 
     try {
@@ -172,9 +174,7 @@ class _VideoUploadState extends State<VideoUpload> {
       setState(() => _uploadProgress = 0.1);
       final userId = AuthService().userId;
       if (userId == null) {
-        throw Exception(
-          AppLocalizations.of(context).t('video.errorNotLoggedIn'),
-        );
+        throw Exception(localizations.t('video.errorNotLoggedIn'));
       }
       final urlData = await api.getUploadUrl(
         filename: filename,
@@ -203,7 +203,7 @@ class _VideoUploadState extends State<VideoUpload> {
       if (!mounted) return;
       AccessibilityAnnouncer.announce(
         context,
-        AppLocalizations.of(context).t('video.announceAnalysing'),
+        localizations.t('video.announceAnalysing'),
       );
       final analysisData = await api.triggerAnalysis(videoId: videoId);
       final analysisId = analysisData['analysis_id'] as String;
@@ -254,7 +254,7 @@ class _VideoUploadState extends State<VideoUpload> {
       }
 
       if (result == null) {
-        throw Exception(AppLocalizations.of(context).t('video.timeoutError'));
+        throw Exception(localizations.t('video.timeoutError'));
       }
 
       // Save to local history (userId is guaranteed non-null at this point)
@@ -281,7 +281,7 @@ class _VideoUploadState extends State<VideoUpload> {
       if (!mounted) return;
       AccessibilityAnnouncer.announce(
         context,
-        AppLocalizations.of(context).t('video.announceDone'),
+        localizations.t('video.announceDone'),
       );
     } catch (e) {
       setState(() {
@@ -291,7 +291,7 @@ class _VideoUploadState extends State<VideoUpload> {
       if (!mounted) return;
       AccessibilityAnnouncer.announce(
         context,
-        AppLocalizations.of(context).t('video.announceError'),
+        localizations.t('video.announceError'),
       );
     }
   }
