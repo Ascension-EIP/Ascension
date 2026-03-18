@@ -37,7 +37,7 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID
 
 	var analysis *model.Analysis
 	if err := s.repo.WithTransaction(ctx, func(ctx context.Context) error {
-		analysis, err := s.repo.CreateAnalysis(ctx, &model.NewAnalysis{VideoID: userID})
+		analysis, err = s.repo.CreateAnalysis(ctx, &model.NewAnalysis{VideoID: videoID})
 		if err != nil {
 			return err
 		}
@@ -45,8 +45,8 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID
 		videoURL := fmt.Sprintf("s3://%s/%s", videoInfo.Bucket, videoInfo.ObjectKey)
 
 		data, err := json.Marshal(struct {
-			AnalysisID uuid.UUID
-			VideoURL   string
+			AnalysisID uuid.UUID `json:"analysis_id"`
+			VideoURL   string    `json:"video_url"`
 		}{
 			AnalysisID: analysis.ID,
 			VideoURL:   videoURL,
@@ -63,6 +63,7 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID
 	}); err != nil {
 		return nil, err
 	}
+
 	return analysis, nil
 }
 

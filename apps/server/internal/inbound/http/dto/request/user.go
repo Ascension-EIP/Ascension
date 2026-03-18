@@ -53,7 +53,7 @@ func (req *UpdateUser) IntoPartialUser(idStr string) (model.PartialUser, error) 
 func IntoUUID(s string) (uuid.UUID, error) {
 	id, err := uuid.Parse(s)
 	if err != nil {
-		return uuid.UUID{}, errors.New("invalid user id")
+		return uuid.UUID{}, errors.New("invalid uuid")
 	}
 	return id, nil
 }

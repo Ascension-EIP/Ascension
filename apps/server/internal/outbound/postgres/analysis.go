@@ -35,7 +35,7 @@ func (r *PostgresRepository) GetAnalysis(ctx context.Context, ID uuid.UUID) (*mo
 	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx,
-		"SELECT * FROM analysis WHERE id = $1  LIMIT 1",
+		"SELECT * FROM analysis WHERE id = $1 LIMIT 1",
 		ID)
 	if err != nil {
 		return nil, err
