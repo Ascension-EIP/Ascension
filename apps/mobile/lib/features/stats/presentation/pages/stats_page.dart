@@ -3,6 +3,7 @@ import 'package:mobile/core/auth/auth_service.dart';
 import 'package:mobile/core/services/analysis_history_service.dart';
 import 'package:mobile/features/upload/presentation/pages/analysis_page.dart';
 import 'package:mobile/shared/components/header.dart';
+import 'package:mobile/shared/localization/app_localizations.dart';
 
 class StatsPage extends StatefulWidget {
   const StatsPage({super.key});
@@ -34,16 +35,19 @@ class _StatsPageState extends State<StatsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: Header(
-        title: 'Statistiques',
-        description: 'Analyse détaillée de vos performances',
+        title: l10n.t('stats.title'),
+        description: l10n.t('stats.description'),
       ),
       body: RefreshIndicator(onRefresh: _loadHistory, child: _buildBody()),
     );
   }
 
   Widget _buildBody() {
+    final l10n = AppLocalizations.of(context);
     final history = _history;
     if (history == null) {
       return ListView(
@@ -64,7 +68,7 @@ class _StatsPageState extends State<StatsPage> {
               Icon(Icons.history_rounded, size: 72, color: Colors.grey[300]),
               const SizedBox(height: 16),
               Text(
-                'Aucune analyse pour l\'instant',
+                l10n.t('stats.emptyTitle'),
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey[500],
@@ -73,7 +77,7 @@ class _StatsPageState extends State<StatsPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Vos analyses apparaîtront ici après\nle traitement d\'une vidéo.',
+                l10n.t('stats.emptySubtitle'),
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 13, color: Colors.grey[400]),
               ),
@@ -98,6 +102,7 @@ class _AnalysisCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final isCompleted = entry.isCompleted;
 
@@ -129,7 +134,7 @@ class _AnalysisCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    _formatDate(entry.createdAt),
+                    _formatDate(context, entry.createdAt),
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
@@ -148,7 +153,9 @@ class _AnalysisCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    isCompleted ? 'Terminée' : 'Échouée',
+                    isCompleted
+                        ? l10n.t('stats.statusCompleted')
+                        : l10n.t('stats.statusFailed'),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -175,15 +182,18 @@ class _AnalysisCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     _StatChip(
                       icon: Icons.video_file_outlined,
-                      label: '${entry.frameCount} frames',
+                      label: l10n.tr('stats.frames', {
+                        'count': '${entry.frameCount}',
+                      }),
                     ),
                   ],
                   if (entry.frameCount > 0) ...[
                     const SizedBox(width: 8),
                     _StatChip(
                       icon: Icons.person_outlined,
-                      label:
-                          '${entry.detectionRate.toStringAsFixed(0)} % détecté',
+                      label: l10n.tr('stats.detectedRate', {
+                        'rate': entry.detectionRate.toStringAsFixed(0),
+                      }),
                     ),
                   ],
                 ],
@@ -208,7 +218,7 @@ class _AnalysisCard extends StatelessWidget {
                       Icons.play_circle_outline_rounded,
                       size: 18,
                     ),
-                    label: const Text('Visualiser'),
+                    label: Text(l10n.t('stats.view')),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: colorScheme.secondary,
                       side: BorderSide(color: colorScheme.secondary, width: 1),
@@ -228,26 +238,30 @@ class _AnalysisCard extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime dt) {
+  String _formatDate(BuildContext context, DateTime dt) {
+    final l10n = AppLocalizations.of(context);
     final now = DateTime.now();
     final diff = now.difference(dt);
+    final time = '${_pad(dt.hour)}:${_pad(dt.minute)}';
+    final date = '${_pad(dt.day)}/${_pad(dt.month)}/${dt.year}';
+
     if (diff.inDays == 0) {
-      return "Aujourd'hui à ${_pad(dt.hour)}:${_pad(dt.minute)}";
+      return l10n.tr('date.todayAt', {'time': time});
     } else if (diff.inDays == 1) {
-      return "Hier à ${_pad(dt.hour)}:${_pad(dt.minute)}";
+      return l10n.tr('date.yesterdayAt', {'time': time});
     } else if (diff.inDays < 7) {
-      const days = [
-        'Lundi',
-        'Mardi',
-        'Mercredi',
-        'Jeudi',
-        'Vendredi',
-        'Samedi',
-        'Dimanche',
+      final days = [
+        l10n.t('date.day.monday'),
+        l10n.t('date.day.tuesday'),
+        l10n.t('date.day.wednesday'),
+        l10n.t('date.day.thursday'),
+        l10n.t('date.day.friday'),
+        l10n.t('date.day.saturday'),
+        l10n.t('date.day.sunday'),
       ];
-      return "${days[dt.weekday - 1]} à ${_pad(dt.hour)}:${_pad(dt.minute)}";
+      return l10n.tr('date.at', {'day': days[dt.weekday - 1], 'time': time});
     } else {
-      return "${_pad(dt.day)}/${_pad(dt.month)}/${dt.year} à ${_pad(dt.hour)}:${_pad(dt.minute)}";
+      return l10n.tr('date.full', {'date': date, 'time': time});
     }
   }
 

@@ -240,6 +240,7 @@ Required options:
 - Reduced motion toggle.
 - Simplified interface mode.
 - Captions default on/off.
+- Application language selector (`French` / `English`).
 - Haptic intensity preferences.
 - Reading and playback speed controls.
 - Dyslexia-friendly typography and spacing profile.
@@ -251,6 +252,12 @@ Each setting must include:
 - clear explanatory text,
 - reset to defaults,
 - persistence across sessions.
+
+Language setting requirements:
+
+- Must apply immediately across the interface.
+- Must support at least `French` and `English` in production.
+- Must remain compatible with screen readers (labels updated in selected language).
 
 ---
 
