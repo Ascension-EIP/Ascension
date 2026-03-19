@@ -10,7 +10,7 @@ import (
 )
 
 type analysisRepository interface {
-	GetVideoInfoByUserID(context.Context, uuid.UUID, uuid.UUID) (*model.VideoInfo, error)
+	GetCompletedVideoInfoByUserID(context.Context, uuid.UUID, uuid.UUID) (*model.VideoInfo, error)
 	CreateAnalysis(context.Context, *model.NewAnalysis) (*model.Analysis, error)
 	GetAnalysis(context.Context, uuid.UUID) (*model.Analysis, error)
 	WithTransaction(context.Context, func(context.Context) error) error
@@ -30,7 +30,7 @@ func NewAnalysisService(repo analysisRepository, queue analysisQueue) AnalysisSe
 }
 
 func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (*model.Analysis, error) {
-	videoInfo, err := s.repo.GetVideoInfoByUserID(ctx, videoID, userID)
+	videoInfo, err := s.repo.GetCompletedVideoInfoByUserID(ctx, videoID, userID)
 	if err != nil {
 		return nil, err
 	}
