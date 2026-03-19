@@ -42,6 +42,27 @@ func (h *AuthHandler) Signup(c *gin.Context) {
 	c.JSON(http.StatusCreated, response.UserToResponse(user))
 }
 
+func (h *AuthHandler) SignupLogin(c *gin.Context) {
+	var req request.SignupLoginForm
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+	form, err := req.IntoSignupLoginForm()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+
+	user, tokens, err := h.s.SignupAndLogin(c.Request.Context(), &form)
+	if err != nil {
+		utils.Error(c, err, h.l)
+		return
+	}
+
+	c.JSON(http.StatusCreated, response.TokensUserToResponse(tokens, user))
+}
+
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req request.LoginForm
 	if err := c.ShouldBindJSON(&req); err != nil {

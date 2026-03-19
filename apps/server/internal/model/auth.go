@@ -12,6 +12,13 @@ type SignupForm struct {
 	Password []byte
 }
 
+type SignupLoginForm struct {
+	Name     string
+	Email    string
+	Password []byte
+	Remember bool
+}
+
 type LoginForm struct {
 	Email    string
 	Password []byte

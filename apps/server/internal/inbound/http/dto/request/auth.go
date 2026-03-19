@@ -19,6 +19,22 @@ func (req *SignupForm) IntoSignupForm() (model.SignupForm, error) {
 	}, nil
 }
 
+type SignupLoginForm struct {
+	Name     string `json:"name" binding:"required,min=3,max=20,alphanumunicode|contains=_"`
+	Email    string `json:"email" binding:"omitempty,email"`
+	Password string `json:"password" binding:"required,min=8"`
+	Remember bool   `json:"remember"`
+}
+
+func (req *SignupLoginForm) IntoSignupLoginForm() (model.SignupLoginForm, error) {
+	return model.SignupLoginForm{
+		Name:     req.Name,
+		Email:    req.Email,
+		Password: []byte(req.Password),
+		Remember: req.Remember,
+	}, nil
+}
+
 type LoginForm struct {
 	Email    string `json:"email" binding:"omitempty,email"`
 	Password string `json:"password" binding:"required,min=8"`

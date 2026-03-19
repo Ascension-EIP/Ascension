@@ -37,7 +37,7 @@ func New(
 	{
 		authGroup := v1.Group("/auth")
 		{
-			authGroup.POST("/register", middleware.RateLimiter(time.Minute, 5), guestMW, authH.Signup)
+			authGroup.POST("/signup", middleware.RateLimiter(time.Minute, 5), guestMW, authH.SignupLogin)
 			authGroup.POST("/login", middleware.RateLimiter(time.Minute, 10), guestMW, authH.Login)
 			authGroup.DELETE("/logout", middleware.RateLimiter(time.Minute, 10), authH.Logout)
 			authGroup.PUT("/refresh", middleware.RateLimiter(time.Minute, 10), authH.RefreshToken)

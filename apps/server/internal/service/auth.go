@@ -11,6 +11,7 @@ import (
 type authRepository interface {
 	CreateUser(context.Context, *model.NewUser) (*model.User, error)
 	GetUserByEmail(context.Context, string) (*model.User, error)
+	WithTransaction(context.Context, func(context.Context) error) error
 }
 
 type AuthService struct {
@@ -25,6 +26,38 @@ func NewAuthService(jwtS *JWTService, sessionS *SessionService, repo authReposit
 		sessionS: sessionS,
 		repo:     repo,
 	}
+}
+
+func (s *AuthService) SignupAndLogin(ctx context.Context, form *model.SignupLoginForm) (*model.User, *model.Tokens, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, nil, model.ErrUnknown
+	}
+
+	user, err := s.repo.CreateUser(ctx, &model.NewUser{
+		Name:     form.Name,
+		Email:    form.Email,
+		Password: hash,
+		Role:     model.UserRoleUser,
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	accessToken, err := s.jwtS.CreateAccessToken(ctx, user)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	refreshToken, err := s.sessionS.CreateRefreshToken(ctx, user.ID, form.Remember)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return user, &model.Tokens{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}, nil
 }
 
 func (s *AuthService) Signup(ctx context.Context, form *model.SignupForm) (*model.User, error) {
