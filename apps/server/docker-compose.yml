@@ -1,16 +1,16 @@
 services:
-  postgres:
-    image: postgres:18
-    container_name: postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - pg_data:/var/lib/postgresql
-    environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASS}
-      - POSTGRES_DB=${DB_NAME}
-
+  # postgres:
+  #   image: postgres:18
+  #   container_name: postgres
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - pg_data:/var/lib/postgresql
+  #   environment:
+  #     - POSTGRES_USER=${DB_USER}
+  #     - POSTGRES_PASSWORD=${DB_PASS}
+  #     - POSTGRES_DB=${DB_NAME}
+  #
   minio:
     image: minio/minio:RELEASE.2025-09-07T16-13-09Z
     container_name: minio
@@ -35,6 +35,18 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
+
+  postgres_test:
+    build: ./postgres
+    container_name: postgres_test
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
 
 volumes:
   pg_data:
