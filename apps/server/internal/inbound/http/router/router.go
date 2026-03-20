@@ -58,6 +58,7 @@ func New(
 			videosGroup.Use(authMW, userMW)
 			videosGroup.GET("/upload-url", middleware.RateLimiter(time.Minute, 10), videoH.GetUploadURL)
 			videosGroup.PUT("/upload-done/:id", middleware.RateLimiter(time.Minute, 15), videoH.UploadComplete)
+			videosGroup.GET("/download-url/:id", middleware.RateLimiter(time.Minute, 10), videoH.GetDownloadURL)
 		}
 
 		analysesGroup := v1.Group("/analysis")

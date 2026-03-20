@@ -22,6 +22,7 @@ type videoStorage interface {
 
 type videoRepository interface {
 	CreateVideoInfo(context.Context, *model.VideoInfo) error
+	GetVideoInfoByUserID(context.Context, uuid.UUID, uuid.UUID) (*model.VideoInfo, error)
 	GetCompletedVideoInfoByUserID(context.Context, uuid.UUID, uuid.UUID) (*model.VideoInfo, error)
 	UpdateVideoInfo(context.Context, *model.PartialVideoInfo) (*model.VideoInfo, error)
 	WithTransaction(context.Context, func(context.Context) error) error
@@ -34,6 +35,23 @@ type VideoService struct {
 
 func NewVideoService(storage videoStorage, repo videoRepository) VideoService {
 	return VideoService{storage: storage, repo: repo}
+}
+
+func (s *VideoService) GetDownloadURL(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (*model.DownloadVideoURL, error) {
+	videoInfo, err := s.repo.GetCompletedVideoInfoByUserID(ctx, videoID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	url, expiresAt, err := s.storage.PresignedDownloadURL(ctx, videoInfo.ObjectKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.DownloadVideoURL{
+		URL:       url,
+		ExpiresAt: expiresAt,
+	}, nil
 }
 
 func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo *model.FileInfo) (*model.UploadVideoURL, error) {
@@ -75,7 +93,7 @@ func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo *model.FileInf
 }
 
 func (s *VideoService) UploadComplete(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) error {
-	videoInfo, err := s.repo.GetCompletedVideoInfoByUserID(ctx, videoID, userID)
+	videoInfo, err := s.repo.GetVideoInfoByUserID(ctx, videoID, userID)
 	if err != nil {
 		return err
 	}

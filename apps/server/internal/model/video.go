@@ -21,6 +21,11 @@ type (
 		Size      int
 	}
 
+	DownloadVideoURL struct {
+		URL       *url.URL
+		ExpiresAt time.Time
+	}
+
 	UploadVideoURL struct {
 		VideoID   uuid.UUID
 		URL       *url.URL

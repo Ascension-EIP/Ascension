@@ -17,7 +17,7 @@ func (s *MinIOStorage) PresignedUploadURL(ctx context.Context, objectKey string)
 }
 
 func (s *MinIOStorage) PresignedDownloadURL(ctx context.Context, objectKey string) (*url.URL, time.Time, error) {
-	url, err := s.client.PresignedGetObject(ctx, s.cfg.BucketName, objectKey, s.cfg.UploadExp, url.Values{})
+	url, err := s.client.PresignedGetObject(ctx, s.cfg.BucketName, objectKey, s.cfg.DownloadExp, url.Values{})
 	if err != nil {
 		return nil, time.Time{}, err
 	}

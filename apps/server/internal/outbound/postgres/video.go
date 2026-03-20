@@ -28,6 +28,22 @@ func (r *PostgresRepository) CreateVideoInfo(ctx context.Context, info *model.Vi
 	return nil
 }
 
+func (r *PostgresRepository) GetVideoInfoByUserID(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (*model.VideoInfo, error) {
+	tx := r.getTx(ctx)
+
+	rows, err := tx.Query(ctx, "SELECT * FROM videos WHERE id = $1 AND user_id = $2 LIMIT 1", videoID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	video, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.Video])
+	if err != nil {
+		return nil, err
+	}
+
+	return video.ToVideoInfo(), nil
+}
+
 func (r *PostgresRepository) GetCompletedVideoInfoByUserID(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (*model.VideoInfo, error) {
 	tx := r.getTx(ctx)
 

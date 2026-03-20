@@ -24,6 +24,29 @@ func NewVideoHandler(l *zerolog.Logger, s *service.VideoService) VideoHandler {
 	return VideoHandler{l: l, s: s}
 }
 
+func (h *VideoHandler) GetDownloadURL(c *gin.Context) {
+	userID, err := utils.GetFromContext[uuid.UUID](c, "userID")
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	id := c.Param("id")
+	videoID, err := request.IntoUUID(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+
+	downloadURL, err := h.s.GetDownloadURL(c.Request.Context(), videoID, userID)
+	if err != nil {
+		utils.Error(c, err, h.l)
+		return
+	}
+
+	c.JSON(http.StatusOK, response.DownloadURLToResponse(downloadURL))
+}
+
 func (h *VideoHandler) GetUploadURL(c *gin.Context) {
 	userID, err := utils.GetFromContext[uuid.UUID](c, "userID")
 	if err != nil {
@@ -31,8 +54,7 @@ func (h *VideoHandler) GetUploadURL(c *gin.Context) {
 		return
 	}
 
-	contentType := c.Query("content_type")
-	ext, err := getVideoExtension(contentType)
+	ext, err := getVideoExtension(c.Query("content_type"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
@@ -50,13 +72,13 @@ func (h *VideoHandler) GetUploadURL(c *gin.Context) {
 		Size:      size,
 	}
 
-	uploadUrl, err := h.s.GetUploadURL(c.Request.Context(), fileInfo)
+	uploadURL, err := h.s.GetUploadURL(c.Request.Context(), fileInfo)
 	if err != nil {
 		utils.Error(c, err, h.l)
 		return
 	}
 
-	c.JSON(http.StatusOK, response.UploadURLToResponse(uploadUrl))
+	c.JSON(http.StatusOK, response.UploadURLToResponse(uploadURL))
 }
 
 func getVideoExtension(contentType string) (string, error) {
