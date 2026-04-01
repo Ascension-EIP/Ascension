@@ -1,0 +1,84 @@
+language: "rust"
+
+project:
+  name: "server"
+  description: "Rust/Axum backend server for Ascension"
+
+tasks:
+  install:
+    command: "cargo"
+    args: ["install", "sqlx-cli", "--no-default-features", "--features", "native-tls,postgres"]
+    options:
+      cache: false
+    deps:
+      - "root:setup-git-config"
+
+  migrate:
+    command: "sqlx"
+    args: ["migrate", "run", "--source", "migrations"]
+    inputs:
+      - "migrations/**/*.sql"
+    options:
+      envFile: true
+    deps:
+      - "install"
+
+  build:
+    command: "cargo"
+    args: ["build"]
+    env:
+      SQLX_OFFLINE: "true"
+    inputs:
+      - "src/**/*"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".sqlx/**/*"
+    deps:
+      - "root:setup-git-config"
+
+  build-release:
+    command: "cargo"
+    args: ["build", "--release"]
+    inputs:
+      - "src/**/*"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".sqlx/**/*"
+    deps:
+      - "lint"
+
+  dev:
+    command: "cargo"
+    args: ["run"]
+    env:
+      RUST_LOG: "debug"
+    options:
+      envFile: true
+
+  test:
+    command: "cargo"
+    args: ["test"]
+    inputs:
+      - "src/**/*"
+      - "Cargo.toml"
+      - ".sqlx/**/*"
+
+  lint:
+    command: "cargo"
+    args: ["clippy", "--", "-D", "warnings"]
+    inputs:
+      - "src/**/*"
+      - "Cargo.toml"
+      - ".sqlx/**/*"
+    env:
+      SQLX_OFFLINE: "true"
+    deps:
+      - "root:setup-git-config"
+
+  format:
+    command: "cargo"
+    args: ["fmt", "--all"]
+
+  format-check:
+    command: "cargo"
+    args: ["fmt", "--all", "--check"]
