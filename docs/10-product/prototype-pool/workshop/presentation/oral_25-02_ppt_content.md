@@ -12,87 +12,91 @@
 
 ## Table of Contents
 
-- [Ascension - Analyse biomécanique pour l'escalade](#ascension-analyse-biomécanique-pour-lescalade)
-  - [Workshop Costing & Technical Sizing - PowerPoint Structure](#workshop-costing-technical-sizing-powerpoint-structure)
-  - [**Slide 1 : Page de garde**](#slide-1-page-de-garde)
-- [PARTIE 1 : NEEDS & SCOPE](#partie-1-needs-scope)
-  - [**Slide 2 : Needs Validation & Inclusion**](#slide-2-needs-validation-inclusion)
+- [Ascension - Analyse biomécanique pour l'escalade](#ascension---analyse-biomécanique-pour-lescalade)
+  - [Table of Contents](#table-of-contents)
+  - [Workshop Costing \& Technical Sizing - PowerPoint Structure](#workshop-costing--technical-sizing---powerpoint-structure)
+  - [**Slide 1 : Page de garde**](#slide-1--page-de-garde)
+- [PARTIE 1 : NEEDS \& SCOPE](#partie-1--needs--scope)
+  - [**Slide 2 : Needs Validation \& Inclusion**](#slide-2--needs-validation--inclusion)
     - [Problématique identifiée](#problématique-identifiée)
     - [Données externes validant le besoin](#données-externes-validant-le-besoin)
     - [Personas cibles](#personas-cibles)
     - [Contraintes handicap identifiées dès cette phase](#contraintes-handicap-identifiées-dès-cette-phase)
-  - [**Slide 3 : Scope Formalization (Backlog)**](#slide-3-scope-formalization-backlog)
+  - [**Slide 3 : Scope Formalization (Backlog)**](#slide-3--scope-formalization-backlog)
     - [User Stories principales](#user-stories-principales)
-  - [**Slide 4 : Prioritization Strategy (MVP)**](#slide-4-prioritization-strategy-mvp)
+  - [**Slide 4 : Prioritization Strategy (MVP)**](#slide-4--prioritization-strategy-mvp)
     - [Distinction Must Have vs Future Evolutions](#distinction-must-have-vs-future-evolutions)
     - [Scope MVP réaliste pour deadline](#scope-mvp-réaliste-pour-deadline)
-- [PARTIE 2 : CONTEXT & AUDIT](#partie-2-context-audit)
-  - [**Slide 5 : Existing Audit & Benchmark**](#slide-5-existing-audit-benchmark)
+- [PARTIE 2 : CONTEXT \& AUDIT](#partie-2--context--audit)
+  - [**Slide 5 : Existing Audit \& Benchmark**](#slide-5--existing-audit--benchmark)
     - [Comparaison solutions existantes](#comparaison-solutions-existantes)
-    - [State of the art technique - Technologies open-source disponibles](#state-of-the-art-technique-technologies-open-source-disponibles)
-  - [**Slide 6 : Legal Constraints & Security Analysis**](#slide-6-legal-constraints-security-analysis)
-    - [Conformité RGPD - Données sensibles](#conformité-rgpd-données-sensibles)
-    - [Menaces de sécurité identifiées & contre-mesures](#menaces-de-sécurité-identifiées-contre-mesures)
-  - [**Slide 7 : Resources / Skills Adequacy**](#slide-7-resources-skills-adequacy)
+    - [State of the art technique - Technologies open-source disponibles](#state-of-the-art-technique---technologies-open-source-disponibles)
+  - [**Slide 6 : Legal Constraints \& Security Analysis**](#slide-6--legal-constraints--security-analysis)
+    - [Conformité RGPD - Données sensibles](#conformité-rgpd---données-sensibles)
+    - [Menaces de sécurité identifiées \& contre-mesures](#menaces-de-sécurité-identifiées--contre-mesures)
+  - [**Slide 7 : Resources / Skills Adequacy**](#slide-7--resources--skills-adequacy)
     - [Matrice compétences équipe vs besoins projet](#matrice-compétences-équipe-vs-besoins-projet)
     - [Plan de montée en compétences](#plan-de-montée-en-compétences)
     - [Identification besoins externes](#identification-besoins-externes)
-- [PARTIE 3 : ARCHITECTURE & SPECS](#partie-3-architecture-specs)
-  - [**Slide 8 : Global System Architecture**](#slide-8-global-system-architecture)
-    - [Diagramme C4 - Niveau contexte](#diagramme-c4-niveau-contexte)
+- [PARTIE 3 : ARCHITECTURE \& SPECS](#partie-3--architecture--specs)
+  - [**Slide 8 : Global System Architecture**](#slide-8--global-system-architecture)
+    - [Diagramme C4 - Niveau contexte](#diagramme-c4---niveau-contexte)
     - [Annotations architecture](#annotations-architecture)
-  - [**Slide 9 : Justification of Technical Choices**](#slide-9-justification-of-technical-choices)
+  - [**Slide 9 : Justification of Technical Choices**](#slide-9--justification-of-technical-choices)
     - [Choix techniques basés sur critères objectifs (audit benchmark)](#choix-techniques-basés-sur-critères-objectifs-audit-benchmark)
     - [Lien avec l'audit (pas de préférence subjective)](#lien-avec-laudit-pas-de-préférence-subjective)
-  - [**Slide 10 : Data Modeling**](#slide-10-data-modeling)
+  - [**Slide 10 : Data Modeling**](#slide-10--data-modeling)
     - [Schéma entité-relation (ERD)](#schéma-entité-relation-erd)
     - [Cohérence avec backlog](#cohérence-avec-backlog)
     - [Optimisations](#optimisations)
-  - [**Slide 11 : Interface Design (UI/UX)**](#slide-11-interface-design-uiux)
-    - [Mockups Figma - Flows critiques](#mockups-figma-flows-critiques)
+  - [**Slide 11 : Interface Design (UI/UX)**](#slide-11--interface-design-uiux)
+    - [Mockups Figma - Flows critiques](#mockups-figma---flows-critiques)
     - [Conformité accessibilité validée](#conformité-accessibilité-validée)
-  - [**Slide 12 : Technical Flows & API**](#slide-12-technical-flows-api)
-    - [Séquence complète Upload → Analyse → Notification](#séquence-complète-upload-→-analyse-→-notification)
+  - [**Slide 12 : Technical Flows \& API**](#slide-12--technical-flows--api)
+    - [Séquence complète Upload → Analyse → Notification](#séquence-complète-upload--analyse--notification)
     - [API Endpoints principaux](#api-endpoints-principaux)
-- [PARTIE 4 : COSTING & SIZING](#partie-4-costing-sizing)
-  - [**Slide 13 : Resource Inventory (Infra & Hardware)**](#slide-13-resource-inventory-infra-hardware)
-    - [Inventaire exhaustif - Infrastructure cloud](#inventaire-exhaustif-infrastructure-cloud)
-    - [CAPEX - Coûts uniques lancement](#capex-coûts-uniques-lancement)
+- [PARTIE 4 : COSTING \& SIZING](#partie-4--costing--sizing)
+  - [**Slide 13 : Resource Inventory (Infra \& Hardware)**](#slide-13--resource-inventory-infra--hardware)
+  - [Inventaire exhaustif - Infrastructure cloud](#inventaire-exhaustif---infrastructure-cloud)
+  - [CAPEX - Coûts uniques lancement](#capex---coûts-uniques-lancement)
     - [Coûts cachés explicitement inclus](#coûts-cachés-explicitement-inclus)
-  - [**Slide 14 : Financial Benchmark**](#slide-14-financial-benchmark)
-    - [Comparaison providers - Infrastructure MVP équivalente](#comparaison-providers-infrastructure-mvp-équivalente)
+  - [**Slide 14 : Financial Benchmark**](#slide-14--financial-benchmark)
+    - [Comparaison providers - Infrastructure MVP équivalente](#comparaison-providers---infrastructure-mvp-équivalente)
     - [Graphique visuel](#graphique-visuel)
     - [Justification choix Hetzner](#justification-choix-hetzner)
-  - [**Slide 15 : Forecast Budget (CAPEX/OPEX)**](#slide-15-forecast-budget-capexopex)
-    - [Budget prévisionnel - 3 scénarii de croissance](#budget-prévisionnel-3-scénarii-de-croissance)
+  - [**Slide 15 : Forecast Budget (CAPEX/OPEX)**](#slide-15--forecast-budget-capexopex)
+    - [Budget prévisionnel - 3 scénarii de croissance](#budget-prévisionnel---3-scénarii-de-croissance)
     - [Détail évolution infrastructure Scale (1000 users)](#détail-évolution-infrastructure-scale-1000-users)
     - [Projection financière 3 ans](#projection-financière-3-ans)
-- [PARTIE 5 : IMPACTS & RISKS](#partie-5-impacts-risks)
-  - [**Slide 16 : Risk Analysis (Matrix)**](#slide-16-risk-analysis-matrix)
-    - [Matrice Probabilité × Impact](#matrice-probabilité-×-impact)
+- [PARTIE 5 : IMPACTS \& RISKS](#partie-5--impacts--risks)
+  - [**Slide 16 : Risk Analysis (Matrix)**](#slide-16--risk-analysis-matrix)
+    - [Matrice Probabilité × Impact](#matrice-probabilité--impact)
     - [Top 10 risques identifiés](#top-10-risques-identifiés)
-  - [**Slide 17 : Mitigation Strategy**](#slide-17-mitigation-strategy)
-  - [**Slide 18 : GreenIT & Societal Impact**](#slide-18-greenit-societal-impact)
-    - [Empreinte environnementale - Évaluation & optimisations](#empreinte-environnementale-évaluation-optimisations)
+  - [**Slide 17 : Mitigation Strategy**](#slide-17--mitigation-strategy)
+  - [**Slide 18 : GreenIT \& Societal Impact**](#slide-18--greenit--societal-impact)
+    - [Empreinte environnementale - Évaluation \& optimisations](#empreinte-environnementale---évaluation--optimisations)
     - [Actions éco-conception mises en œuvre](#actions-éco-conception-mises-en-œuvre)
-    - [Eco-score global : **B+**](#eco-score-global-b)
+    - [Eco-score global : **B+**](#eco-score-global--b)
     - [Impact sociétal positif](#impact-sociétal-positif)
-  - [**Slide 19 : Resilience & Continuity**](#slide-19-resilience-continuity)
-    - [Stratégie backup & disaster recovery](#stratégie-backup-disaster-recovery)
-    - [Haute disponibilité - Élimination SPOF](#haute-disponibilité-élimination-spof)
-    - [Plan de maintenance & updates](#plan-de-maintenance-updates)
+  - [**Slide 19 : Resilience \& Continuity**](#slide-19--resilience--continuity)
+    - [Stratégie backup \& disaster recovery](#stratégie-backup--disaster-recovery)
+    - [Haute disponibilité - Élimination SPOF](#haute-disponibilité---élimination-spof)
+    - [Plan de maintenance \& updates](#plan-de-maintenance--updates)
 - [CONCLUSION](#conclusion)
-  - [**Slide 20 : Synthèse & Next Steps**](#slide-20-synthèse-next-steps)
-    - [Synthèse - Validation des attendus workshop](#synthèse-validation-des-attendus-workshop)
+  - [**Slide 20 : Synthèse \& Next Steps**](#slide-20--synthèse--next-steps)
+    - [Synthèse - Validation des attendus workshop](#synthèse---validation-des-attendus-workshop)
     - [Indicateurs clés projet](#indicateurs-clés-projet)
-    - [Prochaines étapes - Roadmap 6 mois](#prochaines-étapes-roadmap-6-mois)
+    - [Prochaines étapes - Roadmap 6 mois](#prochaines-étapes---roadmap-6-mois)
     - [Vision long terme](#vision-long-terme)
-  - [**Slide 21 : Questions & Démo**](#slide-21-questions-démo)
+  - [**Slide 21 : Questions \& Démo**](#slide-21--questions--démo)
     - [Démo live (2 minutes)](#démo-live-2-minutes)
-    - [Contact & Ressources](#contact-ressources)
+    - [Contact \& Ressources](#contact--ressources)
   - [Notes de présentation](#notes-de-présentation)
     - [Timing recommandé (20 min total)](#timing-recommandé-20-min-total)
     - [Conseils présentation orale](#conseils-présentation-orale)
+  - [Benchmark Hébergement Cloud : Hetzner vs OVH vs AWS](#benchmark-hébergement-cloud--hetzner-vs-ovh-vs-aws)
+  - [Benchmark Backend : Rust vs Go vs Node.js](#benchmark-backend--rust-vs-go-vs-nodejs)
+  - [Benchmark Base de données : PostgreSQL vs MongoDB vs MySQL](#benchmark-base-de-données--postgresql-vs-mongodb-vs-mysql)
 
 ---
 
@@ -600,7 +604,7 @@ sequenceDiagram
 
 ## **Slide 13 : Resource Inventory (Infra & Hardware)**
 
-### Inventaire exhaustif - Infrastructure cloud
+## Inventaire exhaustif - Infrastructure cloud
 
 | Ressource | Rôle | Specs | Provider | Coût mensuel |
 | --- | --- | --- | --- | --- |
@@ -608,19 +612,17 @@ sequenceDiagram
 | **Machine 2 - Database** | PostgreSQL Master + Backup | 4 vCPU, 16 GB RAM, 500 GB NVMe | Hetzner CX41 | 25€ |
 | **Machine 3 - ML Workers** | Python pika (×2 workers) | 8 vCPU, 16 GB RAM, 100 GB SSD | Hetzner CX51 | 45€ |
 | **Object Storage** | Vidéos S3-compatible | 1 TB extensible | Hetzner Storage Box | 10€ |
-| **Nom de domaine** | [escalade-app.com](http://escalade-app.com) | DNS .com | OVH / Namecheap | 1€ (prorata 12€/an) |
 | **SSL Certificate** | HTTPS wildcard | Let's Encrypt | Gratuit | 0€  |
-| **Monitoring** | Prometheus + Grafana + Loki | Self-hosted Machine 1 | Self-hosted | 0€  |
 | **CI/CD** | GitHub Actions | Hosted runners | GitHub | 0€ (< 2000 min/mois) |
 |     |     |     | **TOTAL OPEX MVP** | **96€/mois** |
 
-### CAPEX - Coûts uniques lancement
+## CAPEX - Coûts uniques lancement
 
 | Item | Description | Fréquence | Coût |
 | --- | --- | --- | --- |
 | Apple Developer Account | Publication App Store iOS | Annuel | 99€ |
 | Google Play Developer | Publication Play Store Android | One-time | 22€ |
-| Nom de domaine (année 1) | [escalade-app.com](http://escalade-app.com) | Annuel | 12€ |
+| Nom de domaine (année 1) | [ascension.com](http://escalade-app.com) | Annuel | 12€ |
 |     |     | **TOTAL CAPEX** | **133€** |
 
 ### Coûts cachés explicitement inclus
@@ -1083,3 +1085,47 @@ Justification note :
 -   Ayez backup slides détaillées (benchmarks complets, schemas DB détaillés) en annexe
 -   Testez démo 3× avant présentation (Murphy's law)
 -   Préparez version "Plan B" si démo plante (screenshots/vidéo pré-enregistrée)
+-   
+
+
+
+
+## Benchmark Hébergement Cloud : Hetzner vs OVH vs AWS
+
+| Critère | Hetzner (DE) | OVH (FR) | AWS (US/EU) | Gagnant | Importance |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Prix VM 4vCPU/8GB RAM/mois | 15€ | 22€ | 60€ | Hetzner | Très important |
+| Prix VM 8vCPU/16GB RAM/mois | 45€ | 65€ | 180€ | Hetzner | Très important |
+| Object Storage 1 TB/mois | 10€ | 12€ | 23€ | Hetzner | Important |
+| Localisation datacenter | Allemagne/Finlande (EU) | France (EU) | Ireland/Frankfurt (EU) | Tous RGPD | Important |
+| Conformité RGPD | Oui - GDPR compliant | Oui - GDPR compliant | Oui - GDPR compliant | Egalité | Critique |
+| Bandwidth incluse/mois | 1 TB/mois | 100 MB/s unlimited | 100 GB only | Hetzner/OVH | Moyen |
+| Facilité scaling | Dashboard simple | Manager simple | Auto-scaling complet | AWS | Moyen |
+| Support | Communauté + tickets | Support téléphonique | 24/7 Enterprise | AWS | Faible |
+| API / CLI | Hetzner Cloud API | OVH API | AWS CLI complet | AWS | Faible |
+| Coût total 3 machines/mois | - | - | - | Hetzner | Critique |
+
+## Benchmark Backend : Rust vs Go vs Node.js
+
+| Critère | Rust (Axum) | Go (Gin/Fiber) | Node.js (Fastify) | Gagnant | Importance |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Upload vidéos 200 MB | Zero-copy streaming | io.Reader (copie) | Multer (overhead) | Rust | Critique |
+| RAM serveur idle | 50-100 MB | 150-300 MB | 300-500 MB | Rust | Très important |
+| Req/s (benchmark) | 100k+ | 50k+ | 20-40k | Rust | Important |
+| Memory safety | Garantie compile-time | Nil pointers possibles | Runtime errors | Rust | Très important |
+| GC Pauses (latence) | Aucune (no GC) | 10-50ms | 10-50ms | Rust | Important |
+| Dev speed initial | Lent (learning curve) | Rapide | Très rapide | Node | Moyen |
+| Coût serveur 1k users | 24€/mois | 45€/mois | 70€/mois | Rust | Très important |
+| Argument RNCP/CV | Expert (rare) | Intermédiaire | Standard | Rust | Important |
+
+## Benchmark Base de données : PostgreSQL vs MongoDB vs MySQL
+
+| Critère | PostgreSQL | MongoDB | MySQL | Gagnant | Importance |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Requêtes complexes (JOIN) | Excellent (SQL natif) | Difficile (aggregate) | Bon | PostgreSQL | Critique |
+| Intégrité données (ACID) | Excellent | Partielle | Bon | PostgreSQL | Critique |
+| JSON/JSONB (landmarks ML) | JSONB indexé natif | JSON natif | JSON limité | PostgreSQL | Important |
+| Coût managed/mois (50GB) | 6€ (Hetzner) | 57€ (Atlas) | 8€ (Hetzner) | PostgreSQL | Très important |
+| Intégration Rust (SQLx) | SQLx compile-time | mongod-rs OK | sqlx OK | PostgreSQL | Important |
+| Full-text search | Intégré (tsvector) | Index basique | Intégré | PostgreSQL | Moyen |
+| Extensions futures | pgvector, TimescaleDB | Limité | Limité | PostgreSQL | Moyen |

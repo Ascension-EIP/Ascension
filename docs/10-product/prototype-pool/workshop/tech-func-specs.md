@@ -12,46 +12,48 @@
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [1. Architecture Diagram](#1-architecture-diagram)
-  - [1.1 C4 Level 1 — Context Diagram](#11-c4-level-1-context-diagram)
-  - [1.2 C4 Level 2 — Container Diagram](#12-c4-level-2-container-diagram)
-  - [1.3 C4 Level 3 — Component Diagram (Rust API)](#13-c4-level-3-component-diagram-rust-api)
-  - [1.4 Data Flow — Video Analysis Pipeline](#14-data-flow-video-analysis-pipeline)
-  - [1.5 API Contract & Security](#15-api-contract-security)
-    - [Authentication — JWT Bearer](#authentication-jwt-bearer)
-    - [Standard Error Codes](#standard-error-codes)
-  - [1.6 Deployment Architecture (Hetzner VPS — MVP)](#16-deployment-architecture-hetzner-vps-mvp)
-- [2. Stack Justification (Decision Record)](#2-stack-justification-decision-record)
-  - [2.1 Context & Constraints](#21-context-constraints)
-  - [2.2 Decision Record](#22-decision-record)
-    - [Mobile: Flutter (Dart)](#mobile-flutter-dart)
-    - [Backend: Rust (Axum + Tokio)](#backend-rust-axum-tokio)
-    - [AI/ML: Python (PyTorch + MediaPipe + OpenCV)](#aiml-python-pytorch-mediapipe-opencv)
-    - [Database: PostgreSQL 16](#database-postgresql-16)
-    - [Message Broker: RabbitMQ](#message-broker-rabbitmq)
-    - [Object Storage: MinIO (dev) → Hetzner Storage Box / S3 (prod)](#object-storage-minio-dev-hetzner-storage-box-s3-prod)
-    - [Infrastructure: Hetzner Cloud](#infrastructure-hetzner-cloud)
-  - [2.3 Summary Table](#23-summary-table)
-  - [2.4 Performance Constraints (SLA)](#24-performance-constraints-sla)
-- [3. Data Model](#3-data-model)
-  - [3.1 Entity-Relationship Diagram (ERD)](#31-entity-relationship-diagram-erd)
-  - [3.2 Key Design Decisions](#32-key-design-decisions)
-  - [3.3 Subscription Tiers](#33-subscription-tiers)
-- [4. UI/UX Specification](#4-uiux-specification)
-  - [4.1 Design System](#41-design-system)
-  - [4.2 Navigation Structure](#42-navigation-structure)
-  - [4.3 Screen Specifications](#43-screen-specifications)
-    - [Screen 1 — Home (Dashboard)](#screen-1-home-dashboard)
-    - [Screen 2 — Upload (Video Analysis)](#screen-2-upload-video-analysis)
-    - [Screen 3 — Stats (Progress & History)](#screen-3-stats-progress-history)
-    - [Screen 4 — Profile (Settings & Subscription)](#screen-4-profile-settings-subscription)
-  - [4.4 Key User Flows (Wireflow)](#44-key-user-flows-wireflow)
-    - [Flow A — First-time Video Analysis](#flow-a-first-time-video-analysis)
-    - [Flow B — Ghost Mode Comparison (Premium)](#flow-b-ghost-mode-comparison-premium)
-    - [Flow C — Degraded Mode (Network Loss During Upload)](#flow-c-degraded-mode-network-loss-during-upload)
-  - [4.5 Accessibility (WCAG 2.1 AA)](#45-accessibility-wcag-21-aa)
-- [Appendix — Cross-Reference with Functional Scope](#appendix-cross-reference-with-functional-scope)
+- [Technical \& Functional Specifications](#technical--functional-specifications)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [1. Architecture Diagram](#1-architecture-diagram)
+    - [1.1 C4 Level 1 — Context Diagram](#11-c4-level-1--context-diagram)
+    - [1.2 C4 Level 2 — Container Diagram](#12-c4-level-2--container-diagram)
+    - [1.3 C4 Level 3 — Component Diagram (Rust API)](#13-c4-level-3--component-diagram-rust-api)
+    - [1.4 Data Flow — Video Analysis Pipeline](#14-data-flow--video-analysis-pipeline)
+    - [1.5 API Contract \& Security](#15-api-contract--security)
+      - [Authentication — JWT Bearer](#authentication--jwt-bearer)
+      - [Standard Error Codes](#standard-error-codes)
+    - [1.6 Deployment Architecture (Hetzner VPS — MVP)](#16-deployment-architecture-hetzner-vps--mvp)
+  - [2. Stack Justification (Decision Record)](#2-stack-justification-decision-record)
+    - [2.1 Context \& Constraints](#21-context--constraints)
+    - [2.2 Decision Record](#22-decision-record)
+      - [Mobile: Flutter (Dart)](#mobile-flutter-dart)
+      - [Backend: Rust (Axum + Tokio)](#backend-rust-axum--tokio)
+      - [AI/ML: Python (PyTorch + MediaPipe + OpenCV)](#aiml-python-pytorch--mediapipe--opencv)
+      - [Database: PostgreSQL 16](#database-postgresql-16)
+      - [Message Broker: RabbitMQ](#message-broker-rabbitmq)
+      - [Object Storage: MinIO (dev) → Hetzner Storage Box / S3 (prod)](#object-storage-minio-dev--hetzner-storage-box--s3-prod)
+      - [Infrastructure: Hetzner Cloud](#infrastructure-hetzner-cloud)
+    - [2.3 Summary Table](#23-summary-table)
+    - [2.4 Performance Constraints (SLA)](#24-performance-constraints-sla)
+  - [3. Data Model](#3-data-model)
+    - [3.1 Entity-Relationship Diagram (ERD)](#31-entity-relationship-diagram-erd)
+    - [3.2 Key Design Decisions](#32-key-design-decisions)
+    - [3.3 Subscription Tiers](#33-subscription-tiers)
+  - [4. UI/UX Specification](#4-uiux-specification)
+    - [4.1 Design System](#41-design-system)
+    - [4.2 Navigation Structure](#42-navigation-structure)
+    - [4.3 Screen Specifications](#43-screen-specifications)
+      - [Screen 1 — Home (Dashboard)](#screen-1--home-dashboard)
+      - [Screen 2 — Upload (Video Analysis)](#screen-2--upload-video-analysis)
+      - [Screen 3 — Stats (Progress \& History)](#screen-3--stats-progress--history)
+      - [Screen 4 — Profile (Settings \& Subscription)](#screen-4--profile-settings--subscription)
+    - [4.4 Key User Flows (Wireflow)](#44-key-user-flows-wireflow)
+      - [Flow A — First-time Video Analysis](#flow-a--first-time-video-analysis)
+      - [Flow B — Ghost Mode Comparison (Premium)](#flow-b--ghost-mode-comparison-premium)
+      - [Flow C — Degraded Mode (Network Loss During Upload)](#flow-c--degraded-mode-network-loss-during-upload)
+    - [4.5 Accessibility (WCAG 2.1 AA)](#45-accessibility-wcag-21-aa)
+  - [Appendix — Cross-Reference with Functional Scope](#appendix--cross-reference-with-functional-scope)
 
 
 ---
@@ -402,16 +404,16 @@ graph TB
 
 ### 2.3 Summary Table
 
-|    Component     |            Technology            | Main Reason                                                  |
-| :--------------: | :------------------------------: | :----------------------------------------------------------- |
-|    Mobile App    |        **Flutter (Dart)**        | Single codebase iOS + Android, CustomPainter for overlays    |
-|   API Backend    |         **Rust (Axum)**          | High throughput, memory-safe, low cost per request           |
-|    AI Workers    | **Python (PyTorch / MediaPipe)** | AI/ML standard, pre-trained pose models, team expertise      |
-|     Database     |        **PostgreSQL 16**         | Relational structure + JSONB for AI results, RGPD cascades   |
-|  Message Broker  |           **RabbitMQ**           | Persistent async jobs, decoupling, horizontal worker scaling |
-|  Object Storage  |     **MinIO → Hetzner S3**      | S3-compatible, direct client upload, 4× cheaper than AWS     |
-|  Infrastructure  |      **Hetzner Cloud (DE)**      | Cost-effective, 100% green energy, EU data residency         |
-| Monorepo tooling |           **moonrepo**           | Unified task runner across Rust / Flutter / Python codebases |
+| Composant | Technologie | Raison principale |
+| :--- | :--- | :--- |
+| Application Mobile | **Flutter (Dart)** | Base de code unique iOS + Android, CustomPainter pour les superpositions |
+| Backend API | **Rust (Axum)** | Débit élevé, sécurité mémoire, faible coût par requête |
+| Workers IA | **Python (PyTorch / MediaPipe)** | Standard du secteur IA/ML, modèles de pose pré-entraînés, expertise équipe |
+| Base de données | **PostgreSQL 16** | Structure relationnelle + JSONB pour les résultats IA, cascades RGPD |
+| Message Broker | **RabbitMQ** | Tâches asynchrones persistantes, découplage, mise à l'échelle horizontale |
+| Stockage Objet | **MinIO → Hetzner S3** | Compatible S3, upload direct client, 4× moins cher qu'AWS |
+| Infrastructure | **Hetzner Cloud (DE)** | Rentable, énergie 100% verte, résidence des données en UE |
+| Outils Monorepo | **moonrepo** | Gestionnaire de tâches unifié pour les dépôts Rust / Flutter / Python |
 
 ---
 
