@@ -41,5 +41,5 @@ tabulate==0.10.0
 pillow==12.1.1
 numpy==2.4.3
 matplotlib==3.10.8
-trimesh==4.11.3
+trimesh==4.11.5
 safetensors==0.7.0
