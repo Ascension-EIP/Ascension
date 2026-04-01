@@ -1,5 +1,7 @@
-> **Last updated:** 10th February 2026  
-> **Version:** 1.0  
+<!-- markdownlint-disable MD041 -->
+
+> **Last updated:** 2nd April 2026  
+> **Version:** 1.1  
 > **Authors:** Nicolas  
 > **Status:** Done  
 > {.is-success}
@@ -23,6 +25,7 @@ This document defines the formatting standards for all Markdown files in this pr
     - [4.1 Headings and Separation](#41-headings-and-separation)
     - [4.2 Lists and Spacing](#42-lists-and-spacing)
     - [4.3 Table of Contents](#43-table-of-contents)
+    - [4.4 Accessibility Rules](#44-accessibility-rules)
   - [5. Tooling \& Automation](#5-tooling--automation)
 
 ---
@@ -76,13 +79,26 @@ Every single Markdown file must start with the following header block using bloc
 
 Every Markdown file that contains headings must include a Table of Contents (TOC) at the beginning of the file, after the header. The TOC should list all major sections and subsections to facilitate navigation.
 
+### 4.4 Accessibility Rules
+
+All documentation must remain accessible on both **GitHub Wiki** and **Wiki.js** renderers.
+
+- Keep a strict heading hierarchy (`#` → `##` → `###`) so screen readers expose a logical outline.
+- Use descriptive link labels (avoid "click here"), so link purpose is understandable out of context.
+- Provide meaningful alt text for informative images: `![Description of the visual](./path/image.png)`.
+- Do not rely on color alone to convey meaning; add text labels such as **Success**, **Warning**, **Error**.
+- Use readable table structures with explicit header rows and avoid complex merged-cell layouts.
+- Add language identifiers to fenced code blocks (e.g., ` ```ts `, ` ```bash `) for better assistive parsing.
+- Keep sentence structure simple and concise, and expand uncommon acronyms on first occurrence.
+- For Mermaid diagrams, include a short text summary immediately before or after the diagram.
+
 ---
 
 ## 5. Tooling & Automation
 
 To maintain these standards, it is highly recommended to use the following setup:
 
-1.  **Prettier:** Install the Prettier extension in your IDE or run `npx prettier --write .`
-2.  **Format on Save:** Enable "Format on Save" in your editor settings to ensure the style guide is applied automatically.
+1. **Prettier:** Install the Prettier extension in your IDE or run `npx prettier --write .`
+2. **Format on Save:** Enable "Format on Save" in your editor settings to ensure the style guide is applied automatically.
 
 ---
