@@ -4,7 +4,7 @@ opencv-python==4.13.0.92
 yacs==0.1.8
 scikit-image==0.26.0
 einops==0.8.2
-timm==1.0.25
+timm==1.0.26
 dill==0.4.1
 pandas==3.0.1
 rich==14.3.3
