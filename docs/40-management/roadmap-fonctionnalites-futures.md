@@ -96,13 +96,18 @@ Publier un Action Plan validé, actionnable et partagé sur l’intranet EIP, qu
 #### Mode fantôme en version fonctionnelle (MVP)
 
 - Objectif non optimisé au départ: le mode peut être simple, mais le parcours doit être complet.
+- Implémenter un **mode custom**: l’utilisateur entoure manuellement chaque prise à utiliser avant de lancer le fantôme.
 - Permettre une visualisation comparative utilisable de bout en bout.
 
 #### Parcours utilisateur complet (mobile + backend)
 
 - Authentification fiable (inscription, connexion, session, récupération).
 - Profil utilisateur éditable et stable.
+- À la création de compte, permettre un paramétrage corporel complet: taille, poids, longueur/taille des bras, et état des membres via un squelette interactif (clic sur les zones absentes).
+- Autoriser un parcours flexible: l’utilisateur peut passer une étape de paramétrage s’il manque de temps, puis reprendre et finaliser plus tard depuis la page profil.
 - Pages et flux principaux finalisés (upload, analyse, résultats, historique minimal).
+- Ajouter un onboarding guidé au premier lancement: fonctionnement global de l’app, bénéfices du premium, et explications page par page.
+- Permettre la relecture des tutoriels depuis les paramètres (centre d’aide/tutoriels rejouables).
 
 #### Accessibilité poussée dès cette phase
 
@@ -131,6 +136,11 @@ Publier un Action Plan validé, actionnable et partagé sur l’intranet EIP, qu
 #### 1. Mode fantôme complet
 
 - Meilleure fidélité de comparaison entre trajectoires utilisateur et trajectoire de référence.
+- Avant exécution du mode fantôme, imposer une étape de sélection des prises à utiliser après la prise/photo de la voie.
+- Faire évoluer le workflow de sélection des prises:
+  - Détection automatique des prises avec sélection par clic des prises souhaitées.
+  - Fallback manuel: si une prise n’est pas détectée, l’utilisateur peut l’entourer.
+  - Combo box de mode: **Custom** (manuel) ou **Couleur détectée** (ex: Rouge, Bleu), avec sélection automatique de toutes les prises de la couleur choisie.
 - Amélioration de la lisibilité pédagogique (écarts clés, moments critiques, recommandations associées).
 
 #### 2. IA avancée de lecture des prises
@@ -147,6 +157,7 @@ Publier un Action Plan validé, actionnable et partagé sur l’intranet EIP, qu
 #### 4. Dimension coach
 
 - Espace de suivi et d’accompagnement (retours ciblés, objectifs, recommandations).
+- Ajouter un mode de grimpe assistée (accessibilité avancée): l’utilisateur pose le téléphone au sol, lance l’assistance, l’IA analyse en temps réel (AR) et fournit des conseils vocaux pendant la montée (usage écouteurs).
 - Positionnement progressif vers une expérience de coaching assisté par IA.
 
 #### 5. Fondations business
