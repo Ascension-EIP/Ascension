@@ -36,7 +36,7 @@
       - [Capitalize on the Exchange](#capitalize-on-the-exchange)
       - [Expected Deliverables (Non-exhaustive)](#expected-deliverables-non-exhaustive)
       - [What Is Not Sufficient](#what-is-not-sufficient)
-    - [4. Measure, Test, and Optimize Technical Performance](#4-measure-test-and-optimize-technical-performance)
+    - [2. Measure, Test, and Optimize Technical Performance](#2-measure-test-and-optimize-technical-performance)
       - [Define Key Technical Metrics](#define-key-technical-metrics)
       - [Set Up Automated or Manual Tests](#set-up-automated-or-manual-tests)
       - [Implement Optimizations](#implement-optimizations)
@@ -190,7 +190,7 @@ While pursuing these technical objectives, remember that you will continue devel
 - Taking no notes and making no change after the exchange.
 - Contacting only close network (classmates, former teammates, etc.).
 
-### 4. Measure, Test, and Optimize Technical Performance
+### 2. Measure, Test, and Optimize Technical Performance
 
 #### Define Key Technical Metrics
 

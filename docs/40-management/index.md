@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD041 -->
+
 > **Last updated:** 16th March 2026  
 > **Version:** 1.1  
 > **Authors:** Nicolas  
@@ -20,6 +22,7 @@
 ## Roadmaps
 
 - [Roadmap fonctionnelle future (Action Plan → BTP → Post-EIP)](./roadmap-fonctionnalites-futures.md)
+- [Action Plan — Ascension (Technical Track)](./action-plan-ascension-technical-track.md)
 
 ---
 

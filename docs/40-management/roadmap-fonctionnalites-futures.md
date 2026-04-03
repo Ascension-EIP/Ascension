@@ -1,7 +1,7 @@
 # Roadmap fonctionnelle future (Action Plan → BTP → Post-EIP)
 
-> **Last updated:** 17th March 2026  
-> **Version:** 1.0  
+> **Last updated:** 2nd April 2026  
+> **Version:** 1.2  
 > **Authors:** Nicolas following a team meeting  
 > **Status:** Done  
 > {.is-success}
@@ -25,6 +25,7 @@
       - [Mode fantôme en version fonctionnelle (MVP)](#mode-fantôme-en-version-fonctionnelle-mvp)
       - [Parcours utilisateur complet (mobile + backend)](#parcours-utilisateur-complet-mobile--backend)
       - [Accessibilité poussée dès cette phase](#accessibilité-poussée-dès-cette-phase)
+      - [Pilotage technique EIP (preuves et capitalisation)](#pilotage-technique-eip-preuves-et-capitalisation)
     - [Sortie attendue en juillet 2027](#sortie-attendue-en-juillet-2027)
   - [3. Exécution BTP (cible: mars 2028)](#3-exécution-btp-cible-mars-2028)
     - [Cadence et capacité de travail](#cadence-et-capacité-de-travail)
@@ -114,12 +115,23 @@ Publier un Action Plan validé, actionnable et partagé sur l’intranet EIP, qu
 - Respect des fondamentaux d’accessibilité mobile (contrastes, tailles, focus, labels).
 - Navigation claire pour lecteurs d’écran et interactions cohérentes.
 - Vérification régulière via checklist accessibilité intégrée aux revues.
+- Outiller les tests accessibilité (tests manuels guidés + checks automatisables) et suivre un score de conformité WCAG 2.2 AA.
+
+#### Pilotage technique EIP (preuves et capitalisation)
+
+- Maintenir une veille active mensuelle sur les technologies clés du projet
+- Produire au moins 1 benchmark comparatif formalisé par grand chantier (IA, backend, mobile) pendant la phase.
+- Implémenter au moins 1 expérimentation/PoC concrète menant à une décision technique argumentée.
+- Documenter les échanges avec experts externes et intégrer les décisions dans le backlog et la roadmap.
+- Mettre en place une boucle d'optimisation continue: mesurer -> tester -> optimiser -> re-mesurer.
 
 ### Sortie attendue en juillet 2027
 
 - Démonstration GreenLight complète: un parcours utilisateur continu et compréhensible.
 - Architecture stabilisée pour absorber la phase BTP.
 - KPI minimums définis (temps d’analyse, stabilité, taux de réussite parcours, score accessibilité).
+- Critères de validation explicites: fiabilité des pipelines IA livrés, conformité API, checklist sécurité/conformité validée, et couverture de tests sur parcours critiques.
+- Preuves EIP techniques disponibles: dossier de veille, benchmark(s), PoC(s), traces d'échanges experts, et rapport d'optimisation performance avant/après.
 
 ---
 
@@ -130,6 +142,7 @@ Publier un Action Plan validé, actionnable et partagé sur l’intranet EIP, qu
 - Hypothèse de travail: **2 jours/semaine à partir de juillet 2027**.
 - Capacité visée jusqu’à mars 2028: **~70 jours de travail**.
 - Objectif: transformer un MVP crédible en produit beta cohérent et monétisable.
+- Inclure des revues techniques périodiques (performance, architecture, sécurité) avec ajustements documentés.
 
 ### Fonctionnalités majeures à atteindre
 
@@ -153,23 +166,29 @@ Publier un Action Plan validé, actionnable et partagé sur l’intranet EIP, qu
 - Comparaison des performances entre amis.
 - Partage en ligne des montées et des analyses.
 - Mécaniques de progression sociale (activité, feedback, motivation).
+- Paramètres de confidentialité et de visibilité (privé/amis/public) avec contrôle fin sur ce qui est partagé.
 
 #### 4. Dimension coach
 
 - Espace de suivi et d’accompagnement (retours ciblés, objectifs, recommandations).
-- Ajouter un mode de grimpe assistée (accessibilité avancée): l’utilisateur pose le téléphone au sol, lance l’assistance, l’IA analyse en temps réel (AR) et fournit des conseils vocaux pendant la montée (usage écouteurs).
 - Positionnement progressif vers une expérience de coaching assisté par IA.
+- Ajouter un mode de grimpe assistée (accessibilité avancée): l’utilisateur pose le téléphone au sol, lance l’assistance, l’IA analyse en temps réel (AR) et fournit des conseils vocaux pendant la montée (usage écouteurs).
+- Définir des contraintes d’usage et sécurité du mode assisté (latence max, fréquence conseils vocaux, fallback si perte de tracking).
+
 
 #### 5. Fondations business
 
 - Intégration d’un modèle économique: abonnements, offres premium, et stratégie publicitaire mesurée.
 - Définition des règles d’éligibilité des fonctionnalités premium.
+- Intégration du cycle complet d’abonnement (souscription, renouvellement, upgrade/downgrade, annulation, gestion des échecs de paiement).
+- Instrumentation produit/business (activation, rétention, conversion premium, churn, usage par fonctionnalité) pour piloter la version beta.
 
 ### Sortie attendue en mars 2028
 
 - Version beta solide, testable à plus grande échelle.
 - Expérience produit cohérente: analyse, progression, social, coaching, monétisation.
 - Dossier de passage post-EIP alimenté par des métriques d’usage et de qualité.
+- Dossier technique EIP consolidé: choix technos justifiés, preuves de collaboration externe, et résultats de performance reproductibles.
 
 ---
 
