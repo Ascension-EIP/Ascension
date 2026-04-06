@@ -21,8 +21,12 @@
 
 ## Roadmaps
 
+- [Roadmap fonctionnelle](./roadmap-fonctionnelle.md)
 - [Roadmap fonctionnelle future (Action Plan → BTP → Post-EIP)](./roadmap-fonctionnalites-futures.md)
 - [Action Plan — Ascension (Technical Track)](./action-plan-ascension-technical-track.md)
+- [Ascension Action Plan](./ascension-action-plan.md)
+- [Ascension Beta Test Plan (BTP)](./ascension-beta-test-plan.md)
+- [Ascension Alpha Test Plan (ATP)](./ascension-alpha-test-plan.md)
 
 ---
 
