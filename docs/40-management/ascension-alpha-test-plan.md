@@ -2,8 +2,8 @@
 
 > **Last updated:** 6th April 2026  
 > **Version:** 1.0  
-> **Authors:** Nicolas TORO, Ascension Team  
-> **Status:** Final  
+> **Authors:** Nicolas TORO    
+> **Status:** Done  
 > {.is-success}
 
 ---

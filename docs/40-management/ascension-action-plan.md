@@ -2,8 +2,8 @@
 
 > **Last updated:** 6th April 2026  
 > **Version:** 1.0  
-> **Authors:** Nicolas TORO, Ascension Team  
-> **Status:** Final  
+> **Authors:** Nicolas TORO  
+> **Status:** Done  
 > {.is-success}
 
 ---
@@ -34,8 +34,7 @@
     - [3.1 Mentorat et gouvernance](#31-mentorat-et-gouvernance)
     - [3.2 Topic mandatory - Evaluate and integrate new technologies](#32-topic-mandatory---evaluate-and-integrate-new-technologies)
     - [3.3 Topic optional - Collaborate with technical experts](#33-topic-optional---collaborate-with-technical-experts)
-    - [3.4 Topic optional - Protect and enhance your technology](#34-topic-optional---protect-and-enhance-your-technology)
-    - [3.5 Topic optional - Develop community contributions](#35-topic-optional---develop-community-contributions)
+    - [3.4 Topic optional - Measure, test, and optimize technical performance](#34-topic-optional---measure-test-and-optimize-technical-performance)
 
 ---
 
@@ -153,13 +152,13 @@ Ce plan couvre le pilotage des blocs suivants :
 
 Le plan contient 5 milestones, comme recommandé dans les consignes G-EIP-600.
 
-| Milestone                     | Période cible                  | Objectifs                                                                                                   |
-|:------------------------------|:-------------------------------|:------------------------------------------------------------------------------------------------------------|
-| M1 - Cadrage opérationnel     | Avril -> Juin 2026             | Finaliser gouvernance, backlog, risques, CI/CD de base, architecture de référence.                          |
-| M2 - Stabilisation fondations | Juillet -> Septembre 2026      | Finaliser livrables administratifs, sécuriser migration backend, fiabiliser pipeline d’analyse.             |
-| M3 - BTP core features        | Septembre 2026 -> Janvier 2027 | Parcours utilisateur complet, analyse stable, résultats exploitables, onboarding et accessibilité critique. |
-| M4 - GreenLight readiness     | Février -> Juillet 2027        | Mode fantôme MVP, expérience 3D stable, preuves performance, revues experts, dossier GreenLight complet.    |
-| M5 - ATP launch readiness     | Juillet -> Août 2027           | Passage GreenLight, livraison ATP, plan détaillé phase alpha prêt à exécuter.                               |
+| Milestone                          | Période cible                        | Objectifs                                                                                                    |
+|:-----------------------------------|:-------------------------------------|:-------------------------------------------------------------------------------------------------------------|
+| M1 - Lancement opérationnel        | Septembre 2026 -> Mi-octobre 2026    | Lancer l’exécution: backlog final, registre des risques actif, CI/CD stabilisé, suivi d’équipe opérationnel. |
+| M2 - Stabilisation technique       | Mi-octobre 2026 -> Fin novembre 2026 | Sécuriser le socle API/IA, fiabiliser upload et analyse asynchrone, réduire les incidents bloquants.         |
+| M3 - Parcours produit complet v1   | Décembre 2026 -> Mi-janvier 2027     | Valider le parcours principal de bout en bout (compte, profil, upload, analyse, restitution).                |
+| M4 - Valeur démontrable GreenLight | Mi-janvier 2027 -> Fin mars 2027     | Stabiliser la reconstruction 3D et le mode fantôme MVP, améliorer accessibilité et lisibilité des résultats. |
+| M5 - Finalisation GreenLight       | Avril 2027 -> Juillet 2027           | Campagne de tests finale, optimisation performance, preuves techniques consolidées, dossier GreenLight prêt. |
 
 ### 2.6 Definition of Done transversale
 
@@ -175,6 +174,11 @@ Une fonctionnalité est considérée "done" quand :
 ---
 
 ## 3. Non-Technical Specifications
+
+Dans cette section, nous gardons uniquement les deux topics optionnels choisis pour Ascension:
+
+- Collaborate with technical experts.
+- Measure, test, and optimize technical performance.
 
 ### 3.1 Mentorat et gouvernance
 
@@ -222,38 +226,20 @@ Améliorer la qualité des choix techniques en sollicitant des retours externes 
 - au moins 2 revues externes significatives,
 - traçabilité des actions issues des retours.
 
-### 3.4 Topic optional - Protect and enhance your technology
+### 3.4 Topic optional - Measure, test, and optimize technical performance
 
 **Intention**
 
-Sécuriser la valeur du projet sur le plan technique, juridique et opérationnel.
+Piloter les optimisations techniques sur des mesures concrètes et vérifiables.
 
 **Plan d’action**
 
-- clarifier stratégie licence et conformité dépendances,
-- structurer la documentation d’architecture et de sécurité,
-- cadrer la protection des actifs techniques clés.
+- définir 2 à 3 KPI techniques clés (latence API, temps d’analyse, stabilité mobile),
+- lancer des tests de charge, résilience et comparaison avant/après,
+- implémenter des optimisations ciblées,
+- mesurer à nouveau et documenter l’impact réel.
 
 **Objectif mesurable**
 
-- audit licences validé,
-- checklist sécurité/conformité utilisée en revue,
-- documentation des composants stratégiques finalisée.
-
-### 3.5 Topic optional - Develop community contributions
-
-**Intention**
-
-Créer un cadre qui facilite les contributions techniques externes à terme.
-
-**Plan d’action**
-
-- améliorer guides de contribution,
-- normaliser templates d’issues et de PR,
-- publier des sujets de contribution accessibles.
-
-**Objectif mesurable**
-
-- guide de contribution complet,
-- workflow PR standardisé,
-- premier lot de tickets "good first issue" publié.
+- chaque campagne d’optimisation doit produire un avant/après chiffré,
+- les résultats doivent être visibles dans un tableau de suivi partagé.

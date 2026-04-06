@@ -1,9 +1,9 @@
 <!-- markdownlint-disable MD041 -->
 
 > **Last updated:** 6th April 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas TORO, Ascension Team  
-> **Status:** Final  
+> **Version:** 1.1  
+> **Authors:** Nicolas TORO  
+> **Status:** Done  
 > {.is-success}
 
 ---
@@ -45,6 +45,7 @@ Flux utilisateur de référence dans la beta :
 5. Lire les résultats.
 6. Explorer la reconstruction 3D.
 7. Utiliser le mode fantôme MVP.
+8. Générer un mode fantôme via photo de voie.
 
 ---
 
@@ -68,7 +69,7 @@ Toutes les fonctionnalités listées ci-dessous sont démontrées pendant la sou
 | BTP-F02    | Grimpeur beta             | Modifier son profil morphologique       | Enregistrer et mettre à jour taille, poids, segments et contraintes corporelles. |
 | BTP-F03    | Grimpeur beta             | Reprendre un paramétrage plus tard      | Passer une étape de profil puis la terminer ensuite depuis la page profil.       |
 | BTP-F04    | Grimpeur beta             | Voir ou rejouer les tutoriels           | Voir ou relancer les tutoriels depuis les paramètres à tout moment.              |
-| BTP-F05    | Grimpeur beta             | Importer ou film une vidéo de grimpe    | Envoyer une vidéo dans un flux stable pour analyse.                              |
+| BTP-F05    | Grimpeur beta             | Importer ou filmer une vidéo de grimpe  | Envoyer une vidéo dans un flux stable pour analyse.                              |
 | BTP-F06    | Grimpeur beta             | Lancer une analyse IA                   | Créer une demande d’analyse asynchrone côté backend.                             |
 | BTP-F07    | Grimpeur beta             | Suivre l’avancement d’analyse           | Afficher statut et progression jusqu’au résultat final.                          |
 | BTP-F08    | Grimpeur beta             | Consulter le résultat biomécanique      | Voir une restitution lisible avec points clés et recommandations.                |
@@ -76,8 +77,9 @@ Toutes les fonctionnalités listées ci-dessous sont démontrées pendant la sou
 | BTP-F10    | Grimpeur beta             | Sélectionner les prises en mode custom  | Définir manuellement les prises à utiliser avant génération du fantôme.          |
 | BTP-F11    | Grimpeur beta             | Générer un mode fantôme MVP             | Calculer une trajectoire de référence exploitable.                               |
 | BTP-F12    | Grimpeur beta             | Comparer son mouvement au fantôme       | Visualiser les écarts majeurs entre montée réelle et trajectoire cible.          |
-| BTP-F13    | Admin technique Ascension | Suivre les KPI techniques               | Mesurer temps d’analyse, latence API, stabilité et taux de réussite.             |
-| BTP-F14    | Admin technique Ascension | Tracer un benchmark ou une revue expert | Enregistrer une preuve technique exploitable liée à une décision.                |
+| BTP-F13    | Grimpeur beta             | Générer un mode fantôme via photo       | Produire une bêta de référence à partir d’une photo de la voie et du profil.     |
+| BTP-F14    | Admin technique Ascension | Suivre les KPI techniques               | Mesurer temps d’analyse, latence API, stabilité et taux de réussite.             |
+| BTP-F15    | Admin technique Ascension | Tracer un benchmark ou une revue expert | Enregistrer une preuve technique exploitable liée à une décision.                |
 
 ---
 
@@ -99,8 +101,9 @@ Période de référence de validation beta : septembre 2026 -> juillet 2027.
 | BTP-F10    | La sélection custom des prises est exploitable sans confusion.  | 0 essais, 0 parcours complets sans reprise.                      | Not achieved (0/0).              |
 | BTP-F11    | Le fantôme MVP se génère dans un temps acceptable.              | 0 générations, <= 30 s.                                          | Not achieved.                    |
 | BTP-F12    | La comparaison fantôme met en évidence des écarts actionnables. | 0 comparaisons, 0 jugées lisibles par testeurs.                  | Not achieved (0/0).              |
-| BTP-F13    | Les KPI critiques sont suivis de manière continue.              | 100% des runs tracés, API p95 < 250 ms, analyse p95 < 60 s.      | Not achieved.                    |
-| BTP-F14    | Les preuves techniques sont reliées à des actions concrètes.    | >= 2 benchmarks/revues, >= 1 action corrective par preuve.       | Achieved (0 preuves, 0 actions). |
+| BTP-F16    | Le mode fantôme via photo se génère avec une bêta lisible.      | 0 générations photo, 0 bêta validée en relecture testeur.        | Not achieved (0/0).              |
+| BTP-F14    | Les KPI critiques sont suivis de manière continue.              | 100% des runs tracés, API p95 < 250 ms, analyse p95 < 60 s.      | Not achieved.                    |
+| BTP-F15    | Les preuves techniques sont reliées à des actions concrètes.    | >= 2 benchmarks/revues, >= 1 action corrective par preuve.       | Achieved (0 preuves, 0 actions). |
 
 ---
 
