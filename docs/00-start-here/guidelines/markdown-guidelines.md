@@ -54,6 +54,8 @@ All Markdown filenames must follow the **kebab-case** convention:
 Every single Markdown file must start with the following header block using blockquotes:
 
 ```markdown
+<!-- markdownlint-disable MD041 -->
+
 > **Last updated:** [Day] [Month] [Year]  
 > **Version:** [X.X]  
 > **Authors:** [Name]
