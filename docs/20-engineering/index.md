@@ -11,6 +11,7 @@
 ## Table of Contents
 
 - [20 — Engineering](#20--engineering)
+  - [Table of Contents](#table-of-contents)
   - [Developer Guides](#developer-guides)
   - [Engineering Standards](#engineering-standards)
 
@@ -33,5 +34,6 @@
 - [Git Commit Standards](./git/git-commit-standards-guide.md)
 - [Git Branch Standards](./git/git-branch-standards-guide.md)
 - [GitHub Actions and Hooks](./git/github-actions-and-hooks-guide.md)
+- [GitHub Issue Standards](./git/github-issue-standards-guide.md)
 - [AI Pre-prompt (EN)](./ai/pre-prompt-en.md)
 - [AI Pre-prompt (FR)](./ai/pre-prompt-fr.md)
