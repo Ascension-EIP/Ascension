@@ -1,8 +1,9 @@
 <!-- markdownlint-disable MD041 -->
 
-> **Last updated:** 2nd April 2026  
-> **Version:** 1.1  
-> **Authors:** Nicolas  
+> **Last updated:** 20th April 2026  
+> **Version:** 1.2  
+> **Authors:** Nicolas TORO  
+> **Original language:** English  
 > **Status:** Done  
 > {.is-success}
 
@@ -32,7 +33,7 @@ This document defines the formatting standards for all Markdown files in this pr
 
 ## 1. General Principles
 
-- **Language:** All content must be written in **English**. Rare exceptions may be granted for specific technical terms or local names that lack a direct translation.
+- **Language:** All content must be written **in English or in French**. Rare exceptions may be granted for specific technical terms or local names that lack a direct translation.
 - **Standardization:** All files must follow the **CommonMark** or **GitHub Flavored Markdown (GFM)** specifications.
 - **Formatting Tool:** To avoid manual formatting errors, **Prettier** must be used to clean and format every file before any commit.
 
@@ -56,6 +57,7 @@ Every single Markdown file must start with the following header block using bloc
 > **Last updated:** [Day] [Month] [Year]  
 > **Version:** [X.X]  
 > **Authors:** [Name]
+> **Original language:** [Language]
 > **Status:** [Status]
 {.is-[status-color]}  
 ```
@@ -73,6 +75,7 @@ Every single Markdown file must start with the following header block using bloc
 ### 4.2 Lists and Spacing
 
 - Use the hyphen `-` for unordered lists.
+- Use `1.` for ordered lists. Do not use `1)` style markers.
 - Leave one empty line between paragraphs and before/after code blocks.
 
 ### 4.3 Table of Contents
