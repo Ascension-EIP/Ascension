@@ -1,5 +1,5 @@
-> **Last updated:** 12th March 2026  
-> **Version:** 1.2  
+> **Last updated:** 2nd April 2026  
+> **Version:** 1.3  
 > **Authors:** Nicolas TORO  
 > **Status:** Done  
 > {.is-success}
@@ -14,37 +14,16 @@
 ## Table of Contents
 
 - [Instructions pour l'IA (Français)](#instructions-pour-lia-français)
-  - [1. Vision du projet](#1-vision-du-projet)
-  - [2. Fonctionnalités clés](#2-fonctionnalités-clés)
-  - [3. Stack technique](#3-stack-technique)
-    - [Vue d'ensemble](#vue-densemble)
-    - [Structure du dépôt (monorepo)](#structure-du-dépôt-monorepo)
-  - [4. Architecture système](#4-architecture-système)
-    - [Principes de conception](#principes-de-conception)
-    - [Comparaison de la livraison des résultats](#comparaison-de-la-livraison-des-résultats)
-    - [Flux de données complet](#flux-de-données-complet)
-  - [5. Pipelines IA](#5-pipelines-ia)
-    - [Pipeline 1 — Vision (GPU-intensif)](#pipeline-1-vision-gpu-intensif)
-    - [Pipeline 2 — Entraînement (CPU uniquement)](#pipeline-2-entraînement-cpu-uniquement)
-    - [Pattern général des workers](#pattern-général-des-workers)
-  - [6. Topologie RabbitMQ](#6-topologie-rabbitmq)
-  - [7. Schéma de base de données (PostgreSQL)](#7-schéma-de-base-de-données-postgresql)
-  - [8. Endpoints API (Rust/Axum)](#8-endpoints-api-rustaxum)
-  - [9. Modèle économique](#9-modèle-économique)
-  - [10. Équipe](#10-équipe)
-  - [11. Infrastructure (Docker Compose — dev local)](#11-infrastructure-docker-compose-dev-local)
-  - [12. Objectifs de performance](#12-objectifs-de-performance)
+  - [Table of Contents](#table-of-contents)
 
 ---
-
-
 
 > Copie le bloc ci-dessous et colle-le au début de n'importe quelle conversation avec un assistant IA pour lui donner tout le contexte du projet Ascension.
 
 ---
 
-````
-Tu es un consultant technique expert intégré à l'équipe de développement **Ascension**. Ascension est un EIP (Epitech Innovative Project) développé par une équipe de 5 personnes. Utilise toutes les informations ci-dessous pour m'aider sur n'importe quelle tâche — architecture, code, documentation, stratégie ou revue — sans me demander du contexte que tu as déjà.
+````md
+Tu es un consultant technique expert intégré à l'équipe de développement **Ascension**. Ascension est un EIP (Epitech Innovative Project) technique développé par une équipe de 5 personnes. Utilise toutes les informations ci-dessous pour m'aider sur n'importe quelle tâche — architecture, code, documentation, stratégie ou revue — sans me demander du contexte que tu as déjà.
 
 ---
 
@@ -52,28 +31,34 @@ Tu es un consultant technique expert intégré à l'équipe de développement **
 
 **Ascension** est une application mobile qui transforme n'importe quel smartphone en coach d'escalade de haut niveau grâce à une analyse biomécanique par IA.
 
-**Problème résolu :**
+**Problème:**
 - Les grimpeurs atteignent un plafond de verre technique difficile à dépasser sans coaching humain coûteux.
-- Les applications existantes (Crimpd, etc.) nécessitent une base de données de salles préexistante — elles sont dépendantes du lieu.
-- Le "beta" (séquences de mouvements) est de plus en plus complexe et difficile à auto-analyser.
+- Les applications existantes (Crimpd, etc.) ne possède pas de réel outils de coaching pour s'améliorer tout seul.
+- Le "beta" (séquences de mouvements pour réussir une voie) est de plus en plus complexe et difficile à auto-analyser.
 
-**Proposition de valeur centrale :**
-- **Agnostique du lieu** : l'IA analyse n'importe quel mur sans base de données préalable.
-- **Mode Fantôme** : superpose le chemin de mouvement optimal calculé par l'IA sur la vidéo du grimpeur, image par image.
-- **Coaching accessible** : feedback automatisé et personnalisé à une fraction du coût d'un coach humain.
+**Proposition de valeur centrale:**
+- **Agnostique du lieu**: l'IA analyse n'importe quel mur sans base de données préalable.
+- **Mode Fantôme**: superpose le chemin de mouvement optimal calculé par l'IA sur la vidéo du grimpeur, image par image.
+- **Coaching accessible**: feedback automatisé et personnalisé à une fraction du coût d'un coach humain.
 
 ---
 
 ## 2. Fonctionnalités clés
 
-| Fonctionnalité | Description |
-| --- | --- |
-| **Extraction de squelette** | MediaPipe Pose extrait 33 points clés corporels par frame depuis une vidéo d'escalade |
-| **Détection de prises** | L'IA classifie les prises (crimp, sloper, jug…) ; l'utilisateur peut corriger manuellement |
-| **Génération de conseils** | Combine données de squelette + carte des prises → feedback coaching ciblé (ex. : "hanche trop loin du mur au mouvement 3") |
-| **Mode Fantôme** | Pathfinding / cinématique inverse calcule un chemin de mouvement optimal selon la morphologie de l'utilisateur et le rend en superposition |
-| **Programmes d'entraînement** | Programmes personnalisés générés à partir des objectifs, blessures, niveau et historique d'analyses |
-| **Gestion des vidéos** | Vidéos stockées dans MinIO/S3 ; les vidéos non sauvegardées sont supprimées automatiquement après 7 jours |
+| Fonctionnalité                   | Description                                                                                                                                         |
+|----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Extraction de squelette (2D)** | MediaPipe Pose extrait 33 points clés corporels par frame depuis une vidéo d'escalade.                                                              |
+| **IA de Pose (SAM3D)**           | Pipeline reconstruit permettant l'extraction de posture et la production d'un fichier de sortie standardisé (intermédiaire biomécanique).           |
+| **Expérience 3D Mobile**         | Scène 3D interactive (rotation, zoom) pour visualiser la reconstruction du mouvement via l'IA de Pose (SAM3D) de manière fluide sur Android et iOS. |
+| **Analyse de Prises Avancée**    | Détection automatique et qualification (type, difficulté, exploitation) avec sélection par couleur ou détourage manuel (fallback).                  |
+| **Génération de conseils**       | Feedback technique ciblé via modèle externe (type Gemini API) basé sur le contexte de la voie et la biomécanique de l'utilisateur.                  |
+| **Mode Fantôme**                 | Pathfinding / cinématique inverse calcule un chemin de mouvement optimal selon la morphologie de l'utilisateur et le rend en superposition.         |
+| **Programmes d'entraînement**    | Programmes personnalisés générés à partir des objectifs, blessures, niveau et historique d'analyses                                                 |
+| **Grimpe Assistée (AR)**         | Mode accessibilité avancée : analyse en temps réel avec conseils vocaux (écouteurs) pendant la montée pour guider le grimpeur.                      |
+| **Profil Morphologique**         | Paramétrage corporel complet (taille, poids, segments) et squelette interactif pour déclarer des zones/membres absents ou blessés.                  |
+| **Social & Communauté**          | Système de partage de montées, comparaison de performances entre amis et mécaniques de progression sociale avec gestion fine de la confidentialité. |
+| **Fondations Business**          | Cycle complet d'abonnement (Premium), gestion des offres et instrumentation (conversion/churn).                                                     |
+| **Gestion des Vidéos & CI/CD**   | Stockage S3 avec cycle de vie ; pipeline backend robuste (Go) et CI/CD automatisée pour garantir la stabilité et la sécurité des données.           |
 
 ---
 
@@ -81,16 +66,16 @@ Tu es un consultant technique expert intégré à l'équipe de développement **
 
 ### Vue d'ensemble
 
-| Couche | Technologie | Notes |
-| --- | --- | --- |
-| Client mobile | Flutter / Dart `^3.11.0` | iOS & Android |
-| API Gateway | Rust (Axum `0.8.8`, Tokio `1.49.0`) | Edition 2024, Rust `1.93.1` |
-| Workers IA | Python `3.14.2` + MediaPipe + PyTorch + OpenCV + Pika | 2 pipelines |
-| Message broker | RabbitMQ `4.2.4` | AMQP, queues durables |
-| Base de données | PostgreSQL `18` | JSONB pour les résultats d'analyse |
-| Stockage objets | MinIO (`RELEASE.2025-09-07T16-13-09Z`) | Compatible S3 |
-| Monitoring | Prometheus + Grafana + Loki | Prévu en production |
-| Task runner | moonrepo `2.0.3` | Pinning des versions, CI |
+| Couche          | Technologie                                                         | Notes                              |
+|-----------------|---------------------------------------------------------------------|------------------------------------|
+| Client mobile   | Flutter / Dart `^3.11.0`                                            | iOS & Android                      |
+| API Gateway     | Rust (Axum `0.8.8`, Tokio `1.49.0`) [en cours de migration vers Go] | Edition 2024, Rust `1.93.1`        |
+| Workers IA      | Python `3.14.2` + MediaPipe + PyTorch + OpenCV + Pika               | 2 pipelines                        |
+| Message broker  | RabbitMQ `4.2.4`                                                    | AMQP, queues durables              |
+| Base de données | PostgreSQL `18`                                                     | JSONB pour les résultats d'analyse |
+| Stockage objets | MinIO (`RELEASE.2025-09-07T16-13-09Z`)                              | Compatible S3                      |
+| Monitoring      | Prometheus + Grafana + Loki                                         | Prévu en production                |
+| Task runner     | moonrepo `2.1.4`                                                    | Pinning des versions, CI           |
 
 ### Structure du dépôt (monorepo)
 
@@ -118,229 +103,47 @@ Le système suit une **architecture événementielle** avec **CQRS** et **rendu 
 3. **Rendu en périphérie** — le client rend les superpositions d'analyse localement sur la vidéo originale à partir d'un payload JSON léger, évitant le ré-encodage vidéo côté serveur.
 4. **Optimisation des coûts** — upload direct de la vidéo depuis le mobile vers MinIO (URL pré-signée), sans proxy par l'API.
 
-### Comparaison de la livraison des résultats
+---
 
-| Approche | Bande passante | Traitement supplémentaire |
-| --- | --- | --- |
-| Classique (retourner la vidéo traitée) | ~100 Mo par analyse | +30 s d'encodage |
-| Ascension (retourner JSON, rendu côté client) | ~50 Mo upload + ~50 Ko JSON | Aucun |
+## 5. Modèle économique
 
-### Flux de données complet
+| Offre    | Prix      | Analyses/mois | Mode Fantôme | Publicités | Priorité serveur |
+|----------|-----------|---------------|--------------|------------|------------------|
+| Freemium | Gratuit   | 10            | ✗            | ✓          | ✗                |
+| Premium  | 20 €/mois | 30            | ✓            | ✗          | ✗                |
+| Infinity | 30 €/mois | 100           | ✓            | ✗          | ✓                |
 
-```
-Application mobile
-  │
-  ├─► POST /analysis/request-upload  →  L'API Rust génère une URL pré-signée MinIO
-  ├─► PUT vidéo directement vers MinIO (URL pré-signée, sans proxy API)
-  ├─► POST /analysis/start           →  L'API insère une ligne en DB (status=pending)
-  │                                  →  L'API publie le job dans RabbitMQ
-  │
-  └─► WebSocket /ws                  (en attente de notification)
-
-RabbitMQ
-  └─► Worker IA (vision.skeleton)
-        ├─ Télécharge la vidéo depuis MinIO
-        ├─ Exécute MediaPipe Pose (33 keypoints/frame)
-        ├─ Stocke le JSON squelette dans PostgreSQL
-        └─ Publie skeleton.completed.{job_id} sur ascension.events
-
-API Rust  (abonnée à ascension.events)
-  └─► Envoie une notification WebSocket au mobile
-
-Application mobile
-  ├─► GET /analysis/{job_id}         →  récupère le JSON (~50 Ko)
-  └─► Rend la superposition squelette sur la vidéo locale
-```
+**Marché cible:** Grimpeurs individuels + partenariats avec salles (Climb Up, Arkose).
 
 ---
 
-## 5. Pipelines IA
+## 6. Équipe
 
-Le service Python (`apps/ai/`) implémente deux pipelines indépendants, chacun étant un consommateur RabbitMQ dédié.
-
-### Pipeline 1 — Vision (GPU-intensif)
-
-| Étape | Queue | Entrée | Sortie |
-| --- | --- | --- | --- |
-| 1. Détection de prises | `vision.hold_detection` | Photo de la voie | JSON carte des prises (positions + types) |
-| 2. Extraction de squelette | `vision.skeleton` | Vidéo + carte des prises | JSON squelette par frame (33 keypoints, angles articulaires, centre de gravité) |
-| 3. Génération de conseils | `vision.advice` | JSON squelette + carte des prises | JSON conseils coaching |
-| 4. Mode Fantôme | `vision.ghost` | JSON squelette + carte des prises + morphologie | JSON superposition fantôme image par image |
-
-Les étapes 2–4 réutilisent le même JSON squelette — la vidéo est traitée une seule fois.
-
-### Pipeline 2 — Entraînement (CPU uniquement)
-
-| Étape | Queue | Entrée | Sortie |
-| --- | --- | --- | --- |
-| 1. Génération de programme | `training.program` | Profil utilisateur (objectifs, blessures, historique) | JSON programme d'entraînement |
-
-### Pattern général des workers
-
-```
-1. DOWNLOAD  — télécharge l'asset depuis MinIO via boto3
-2. PROCESS   — exécute le module IA / algorithme
-3. PERSIST   — UPDATE PostgreSQL
-4. PUBLISH   — basic_publish vers ascension.events  (routing key : {pipeline}.completed.{job_id})
-5. ACK/NACK  — basic_ack en succès ; basic_nack(requeue=True) en exception
-```
-
-Chaque worker : déclare sa queue comme durable, définit `prefetch_count=1`, réessaie la connexion RabbitMQ jusqu'à 12 × 5 s au démarrage.
-
-**État d'implémentation actuel :**
-- ✅ `vision.skeleton` — implémenté dans `apps/ai/src/worker.py`
-- 🔲 `vision.hold_detection`, `vision.advice`, `vision.ghost`, `training.program` — planifiés
+| Développeur          | OS                   | Responsabilité                                                                                                         |
+|----------------------|----------------------|------------------------------------------------------------------------------------------------------------------------|
+| Nicolas TORO         | Arch Linux / Android | Gestion de projet technique et d'équipe / Développeur backend et mobile   / Responsable de la documentation et la CICD |
+| Lou PELLEGRINO       | NixOS / iOS          | Développeur backend                                                                                                    |
+| Gianni TUERO         | Arch Linux / Android | Chef de projet administratif / Intégrateur RabbitMQ / Développeur IA                                                   |
+| Olivier POUECH       | Arch Linux / iOS     | CEO / Développeur IA                                                                                                   |
+| Christophe VANDEVOIR | macOS / iOS          | Développeur mobile et backend / Responsable de l'infrastructure                                                        |
 
 ---
 
-## 6. Topologie RabbitMQ
+## 7. Cadre académique: Technical Track (EIP)
 
-```
-Exchange: ascension.vision  (type: direct)
-  Queues: vision.hold_detection, vision.skeleton, vision.advice, vision.ghost
+Le projet Ascension est inscrit dans la **Technical Track** de l'EIP (Epitech Innovative Project). Ce parcours met l'accent sur l'excellence en ingénierie, l'architecture logicielle et la rigueur technique. Le projet est évalué selon des objectifs précis :
 
-Exchange: ascension.training  (type: direct)
-  Queues: training.program
+### Objectifs Mandatoires
 
-Exchange: ascension.events  (type: topic, durable)
-  Routing keys :
-    hold_detection.completed.{job_id}
-    skeleton.completed.{job_id}
-    advice.completed.{job_id}
-    ghost.completed.{job_id}
-    training.completed.{job_id}
-    *.failed.{job_id}
-```
+- **Evaluating and Integrating New Technologies (Technology Watch):** Mise en place d'une veille technologique active, production de benchmarks comparatifs et justification documentée des choix technologiques.
+- **Structure, Document, and Harden the Project's Technical Architecture:** Présentation d'une architecture claire et justifiée, documentation technique complète (README, diagrammes) et durcissement du système (qualité de code, tests unitaires, sécurité et gestion d'erreurs).
 
-Exemple de message de job (`vision.skeleton`) :
-```json
-{
-  "job_id": "uuid",
-  "analysis_id": "uuid",
-  "video_url": "s3://bucket/path/to/video.mp4"
-}
-```
+### Objectifs Complémentaires Sélectionnés
 
----
+- **Collaborate with Technical Experts:** Identification de besoins techniques pointus et collaboration structurée avec des experts externes (CTO, ingénieurs, contributeurs Open Source) pour valider ou ajuster les décisions architecturales.
+- **Measure, Test, and Optimize Technical Performance:** Définition de métriques de performance (KPI), mise en place de tests de charge/stress et application d'optimisations techniques basées sur des mesures concrètes.
 
-## 7. Schéma de base de données (PostgreSQL)
-
-```sql
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW(),
-    subscription_tier VARCHAR(50) DEFAULT 'freemium'
-);
-
-CREATE TABLE videos (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id),
-    storage_url TEXT NOT NULL,
-    duration_seconds INTEGER,
-    file_size_bytes BIGINT,
-    uploaded_at TIMESTAMP DEFAULT NOW(),
-    saved BOOLEAN DEFAULT FALSE,
-    expires_at TIMESTAMP  -- NULL si sauvegardée
-);
-
-CREATE TABLE analyses (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    video_id UUID REFERENCES videos(id),
-    status VARCHAR(50) DEFAULT 'pending',  -- pending | processing | completed | failed
-    result_json JSONB,
-    processing_time_ms INTEGER,
-    created_at TIMESTAMP DEFAULT NOW(),
-    completed_at TIMESTAMP
-);
-
-CREATE TABLE analysis_metrics (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    analysis_id UUID REFERENCES analyses(id),
-    max_reach_cm FLOAT,
-    avg_tension FLOAT,
-    movement_efficiency FLOAT,
-    hold_count INTEGER
-);
-```
-
-Structure du bucket MinIO :
-```
-ascension-videos/
-├── uploads/{user_id}/{video_id}.mp4   (suppression auto après 7 jours si non sauvegardée)
-├── saved/{user_id}/{video_id}.mp4
-└── thumbnails/{video_id}.jpg
-```
-
----
-
-## 8. Endpoints API (Rust/Axum)
-
-```
-POST   /api/v1/auth/register
-POST   /api/v1/auth/login
-POST   /api/v1/analysis/video/request-upload   → retourne une URL pré-signée MinIO + video_id
-POST   /api/v1/analysis/video/start            → publie le job dans RabbitMQ, retourne job_id
-GET    /api/v1/analysis/video/:id              → retourne le JSON résultat de l'analyse
-WS     /api/v1/ws                              → notifications temps réel
-```
-
-Authentification : JWT (access token 24 h, refresh token).
-
----
-
-## 9. Modèle économique
-
-| Offre | Prix | Analyses/mois | Mode Fantôme | Publicités | Priorité serveur |
-| --- | --- | --- | --- | --- | --- |
-| Freemium | Gratuit | 10 | ✗ | ✓ | ✗ |
-| Premium | 20 €/mois | 30 | ✓ | ✗ | ✗ |
-| Infinity | 30 €/mois | 100 | ✓ | ✗ | ✓ |
-
-**Marché cible :** Grimpeurs individuels + partenariats avec salles (Climb Up, Arkose).
-**Projections an 3 :** 150 000 utilisateurs, 700 000 € de CA.
-
----
-
-## 10. Équipe
-
-| Développeur | OS | Responsabilité |
-| --- | --- | --- |
-| Nicolas TORO | Arch Linux | Gestion de projet, support backend Rust |
-| Lou PELLEGRINO | NixOS | Backend (Rust/Axum), premières routes, schéma PostgreSQL |
-| Gianni TUERO | Arch Linux | Intégration RabbitMQ entre backend et IA |
-| Olivier POUECH | Arch Linux | Pipeline IA (pose estimation MediaPipe) |
-| Christophe VANDEVOIR | macOS | Mobile (Flutter) — upload vidéo + UI d'analyse |
-
----
-
-## 11. Infrastructure (Docker Compose — dev local)
-
-| Service | Image | Version | Ports |
-| --- | --- | --- | --- |
-| PostgreSQL | `postgres` | `18` | `5432` |
-| RabbitMQ | `rabbitmq` | `4.2.4` | `5672` / `15672` |
-| MinIO | `minio/minio` | `RELEASE.2025-09-07T16-13-09Z` | `9000` / `9001` |
-
-Lancement en local :
-```bash
-docker compose up -d
-moon run server:dev    # API Rust
-moon run ai:dev        # Worker IA Python
-moon run mobile:dev    # Application Flutter
-```
-
----
-
-## 12. Objectifs de performance
-
-| Métrique | Cible |
-| --- | --- |
-| Temps de réponse API (p95) | < 200 ms |
-| Temps de traitement d'une analyse | < 60 s pour une vidéo de 30 s |
-| Délai notification WebSocket | < 100 ms après complétion |
-| Récupération du résultat | < 100 ms |
+Ce cadre implique que chaque évolution technique doit être analysée de manière critique, documentée et mesurée pour démontrer une réelle expertise d'architecte technique.
 
 ---
 

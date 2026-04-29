@@ -24,6 +24,7 @@
   - [Leviers d’optimisation](#leviers-doptimisation)
   - [Point accessibilité (PSH) dans le budget](#point-accessibilité-psh-dans-le-budget)
   - [Traçabilité RNCP M1 (O8, O9)](#traçabilité-rncp-m1-o8-o9)
+  - [Calendrier de développement (Horizon 3 ans)](#calendrier-de-développement-horizon-3-ans)
 
 ---
 
@@ -120,3 +121,8 @@ Sans ligne budgétaire dédiée, le risque est de traiter la conformité trop ta
 |:-------------------------------------|:-------------------------------------------------------------|:--------------------------------------|
 | **O8** — analyse financière          | `costs.md`, `costs.xlsx`, cohérence avec architecture réelle | **Forte**                             |
 | **O9** — scénarios appuyés benchmark | comparaison provider + 3 scénarios de charge                 | **Forte** (à revalider régulièrement) |
+
+## Calendrier de développement (Horizon 3 ans)
+- **0–12 mois: Consolidation.** On stabilise l'analyse vidéo et on s'assure que l'application est parfaitement utilisable par les personnes en situation de handicap (PSH).
+- **12–24 mois : Montée en puissance.** On augmente la capacité de nos serveurs pour accueillir plus de grimpeurs et on renforce la protection des données personnelles.
+- **24–36 mois : Maturité.** On passe à une gestion automatisée des serveurs et on met en place un système de versions pour que les anciennes applications continuent de fonctionner même après une mise à jour.

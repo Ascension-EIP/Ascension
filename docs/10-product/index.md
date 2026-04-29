@@ -11,6 +11,7 @@
 ## Table of Contents
 
 - [10 — Product](#10--product)
+  - [Table of Contents](#table-of-contents)
   - [Prototype Pool](#prototype-pool)
   - [Workshop Documents](#workshop-documents)
 
@@ -24,6 +25,7 @@
 
 ## Workshop Documents
 
+- [Catalogue complet des fonctionnalites Ascension](./catalogue-fonctionnalites.md)
 - [Client Needs and Functional Scope](./prototype-pool/workshop/client-needs-and-functional-scope.md)
 - [Context Audit Compliance](./prototype-pool/workshop/context-audit-compliance.md)
 - [Costs](./prototype-pool/workshop/costs.md)

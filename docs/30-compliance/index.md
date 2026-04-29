@@ -1,5 +1,7 @@
-> **Last updated:** 16th March 2026  
-> **Version:** 1.1  
+<!-- markdownlint-disable MD041 -->
+
+> **Last updated:** 2nd April 2026  
+> **Version:** 1.2  
 > **Authors:** Nicolas  
 > **Status:** Done  
 > {.is-success}
@@ -11,7 +13,14 @@
 ## Table of Contents
 
 - [30 — Compliance](#30--compliance)
+  - [Documentation Accessibility](#documentation-accessibility)
   - [RNCP Block 1](#rncp-block-1)
+
+---
+
+## Documentation Accessibility
+
+- [Documentation Accessibility Compliance Statement](./documentation-accessibility-compliance.md)
 
 ---
 

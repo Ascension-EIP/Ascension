@@ -2,12 +2,13 @@
 
 SUBMODULE_PATH="docs"
 
-if ! git diff --quiet HEAD -- "$SUBMODULE_PATH"; then
-    git add "$SUBMODULE_PATH"
-    echo "✔ Update docs submodule."
-fi
+# Submodules was removed
+#if ! git diff --quiet HEAD -- "$SUBMODULE_PATH"; then
+#    git add "$SUBMODULE_PATH"
+#    echo "✔ Update docs submodule."
+#fi
 
-FILES=$(git diff --cached --name-only --diff-filter=ACM)
+FILES=$(git diff --cached --name-only --diff-filter=ACM -z)
 if [ -z "$FILES" ]; then
     exit 0
 fi

@@ -1,437 +1,556 @@
-> **Last updated:** 16th March 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas  
-> **Status:** Done  
-> {.is-success}
+
+
+> **Last updated:** 20th April 2026  
+> **Version:** 2.0  
+> **Author:** GitHub Copilot audit  
+> **Status:** Draft for validation  
+> {.is-warning}
 
 ---
 
-# Issues to Create — Ascension Repo Complete Analysis
+# Audit complet du backlog GitHub Issues (Ascension)
 
+Ce document remplace l'ancien brouillon et sert de plan d'action concret.
 
----
+Objectifs:
+- analyser les issues existantes via `gh`;
+- comparer avec l'etat actuel du code;
+- proposer les modifications/fermetures des issues existantes;
+- proposer les nouvelles issues manquantes;
+- fournir **tout le backlog de migration backend Rust -> Go**.
 
-## Table of Contents
-
-- [Issues to Create — Ascension Repo Complete Analysis](#issues-to-create-ascension-repo-complete-analysis)
-  - [Analysis: What has been done vs. what is tracked](#analysis-what-has-been-done-vs-what-is-tracked)
-  - [CI/CD Issues to Create](#cicd-issues-to-create)
-    - [CI-01 — CI/CD: Main CI pipeline (GitHub Actions)](#ci-01-cicd-main-ci-pipeline-github-actions)
-    - [CI-02 — CI/CD: Commit and branch validation scripts](#ci-02-cicd-commit-and-branch-validation-scripts)
-    - [CI-03 — CI/CD: Deploy workflow (Docker + APK + GitHub Release)](#ci-03-cicd-deploy-workflow-docker-apk-github-release)
-    - [CI-04 — CI/CD: dev-to-production workflow (promotion + semver tag + mirror)](#ci-04-cicd-dev-to-production-workflow-promotion-semver-tag-mirror)
-    - [CI-05 — CI/CD: docs-to-wiki workflow](#ci-05-cicd-docs-to-wiki-workflow)
-    - [CI-06 — CI/CD: Squad system (triage, assign, label cleaner, sync labels)](#ci-06-cicd-squad-system-triage-assign-label-cleaner-sync-labels)
-    - [CI-07 — CI/CD: Squad AI PR Review (automatic GPT-4o code review)](#ci-07-cicd-squad-ai-pr-review-automatic-gpt-4o-code-review)
-    - [CI-08 — CI/CD: Squad PR routing (automatic PR labeling by domain)](#ci-08-cicd-squad-pr-routing-automatic-pr-labeling-by-domain)
-    - [CI-09 — CI/CD: Dependabot (automatic dependency updates)](#ci-09-cicd-dependabot-automatic-dependency-updates)
-    - [CI-10 — CI/CD: Git hooks (commit-msg, pre-commit, pre-push)](#ci-10-cicd-git-hooks-commit-msg-pre-commit-pre-push)
-    - [CI-11 — CI/CD: Moon monorepo task runner (format, lint, build, test)](#ci-11-cicd-moon-monorepo-task-runner-format-lint-build-test)
-  - [Other already-done but untracked issues](#other-already-done-but-untracked-issues)
-    - [BACK-01 — SERVER: Full User CRUD](#back-01-server-full-user-crud)
-    - [BACK-02 — SERVER: JWT authentication middleware](#back-02-server-jwt-authentication-middleware)
-    - [MOBILE-01 — MOBILE: Settings page (backend URL configuration)](#mobile-01-mobile-settings-page-backend-url-configuration)
-    - [MOBILE-02 — MOBILE: Auth login and register pages (scaffold)](#mobile-02-mobile-auth-login-and-register-pages-scaffold)
-  - [Summary](#summary)
+Important:
+- le texte d'analyse est en francais;
+- les **titres et descriptions d'issues** sont en anglais pour rester alignes au repo;
+- aucune issue n'est creee/modifiee automatiquement ici, c'est un guide d'execution.
 
 ---
 
+## 1) Methode et constats
 
+Sources utilisees:
+- `gh api` et `gh issue list --state all` (72 issues total, 39 ouvertes);
+- revue des issues ouvertes avec leur corps et checklist DoD;
+- revue rapide du code sur `apps/server`, `apps/mobile`, `apps/ai`, et de la doc de management (migration Go mentionnee explicitement).
 
-> Document generated on 03/09/2026. Do not create any issue without prior approval.
-
----
-
-## Analysis: What has been done vs. what is tracked
-
-Before listing the new issues, here are the **already implemented features not tracked** in the backlog:
-
-| What is done | Issue tracked? |
-|---|---|
-| Main CI pipeline (check commit, branch, format, lint, build, test) | ❌ Not tracked |
-| `check_commit` and `check_branch` scripts (Python) | ❌ Not tracked |
-| `docs-to-wiki` workflow | ❌ Not tracked |
-| `deploy` workflow (Docker build + APK + GitHub Release) | ❌ Not tracked |
-| `dev-to-production` workflow (merge dev→main + semver tag + mirror) | ❌ Not tracked |
-| Squad system (triage, assign, label cleaner, PR review, sync labels) | ❌ Not tracked |
-| Squad AI PR review (GPT-4o via GitHub Models) | ❌ Not tracked |
-| Dependabot (github-actions, cargo, pub, pip) | ❌ Not tracked |
-| Git hooks (commit-msg, pre-commit, pre-push) | ❌ Not tracked |
-| Full User CRUD in the server | ❌ Not tracked |
-| JWT auth middleware in the server | ❌ Not tracked |
-| Settings page in the mobile app (backend URL configuration) | ❌ Not tracked |
-| Auth login/register pages (scaffold) | ❌ Not tracked |
-| Moon monorepo task runner (format, lint, build, test for all 3 apps) | ❌ Not tracked |
+Constats majeurs:
+- plusieurs issues ouvertes ont **100% des cases cochees** et devraient etre fermees;
+- plusieurs issues ouvertes ont un contenu **obsolete** (`/api/...` vs `/v1/...`, anciennes queues RabbitMQ, Rust-only wording);
+- duplication d'intention sur certaines issues historiques (ex: init backend Rust);
+- des sujets importants ne sont pas couverts par des issues explicites (tests d'integration backend, securite stockage token mobile, observabilite, contrat API versionne);
+- la migration Rust -> Go est indiquee comme direction projet, mais pas structuree en backlog exploitable.
 
 ---
 
-## CI/CD Issues to Create
+## 2) Actions sur les issues existantes
+
+## 2.1 A fermer rapidement
+
+1. `#31` - `SETUP: local development infrastructure with Docker Compose`  
+Action: close (DoD completement coche)
+
+2. `#142` - `MOBILE: Settings page`  
+Action: close (DoD completement coche)
+
+## 2.2 A corriger avant fermeture
+
+1. `#62` - `AUTH: basic JWT authentication`  
+Problemes:
+- corps obsolete (`/api/auth/...` au lieu de `/v1/auth/...`);
+- DoD coche "secure storage" alors que le mobile utilise `SharedPreferences` (pas equivalent a `flutter_secure_storage`);
+- DoD coche "protected routes use middleware" alors que le middleware n'est pas branche globalement sur des routes protegees.
+
+Action:
+- editer l'issue, remettre 2 cases en non-fait;
+- ajouter une note "partially done";
+- lier avec les nouvelles issues `SECURITY: mobile token secure storage` et `SERVER: enforce auth middleware on protected routes`.
+
+2. `#33` - `SETUP: PostgreSQL with initial database schema`  
+Action: garder ouverte mais clarifier le critere "idempotent migration script" en "migrations are replay-safe via migration table".
+
+3. `#60` - `MOBILE: analysis result display screen`  
+Action: garder ouverte pour finaliser les items UI encore non coches (angles lisibles, feedback, empty states, navigation "Analyze again").
+
+## 2.3 A re-scoper (contenu obsolete)
+
+1. `#34` - `SETUP: configure RabbitMQ`  
+A changer:
+- remplacer references `analysis_jobs` / `analysis_results` par les objets effectivement utilises (`vision.skeleton`, `ascension.events`) ou clarifier la strategy cible.
+
+2. `#40` - `SETUP: RabbitMQ message flow between server and AI worker`  
+A changer:
+- mettre a jour le schema de message reel (`job_id`, `analysis_id`, `video_url`);
+- documenter explicitement le mode actuel: AI ecrit en DB + event de completion.
+
+3. `#44` - `SERVER: presigned upload URL route`  
+Probleme critique:
+- corps manifestement tronque (fence JSON non fermee);
+- endpoint obsolete (`/api/analysis/video/request-upload`).
+
+Action:
+- reecrire completement avec endpoint actuel `POST /v1/videos/upload-url` et payload reel.
+
+4. `#45` - `SERVER: analysis trigger route`  
+A changer:
+- endpoint `POST /v1/analyses`;
+- queue/schema reels;
+- statuts reels (`pending`, `processing`, `generating_hints`, `completed`, `failed`).
+
+5. `#46` - `SERVER: analysis result fetch route`  
+A changer:
+- endpoint `GET /v1/analyses/{id}`;
+- structure reelle de reponse (`result_json`, `hints`, `progress`, `processing_time_ms`).
+
+6. `#58`, `#59` - mobile upload + polling  
+A changer:
+- references endpoints legacy `/api/...` -> `/v1/...`;
+- aligner les methodes avec `ApiService` actuel (`getUploadUrl`, `triggerAnalysis`, `getAnalysis`).
+
+## 2.4 A fusionner / fermer comme obsolete
+
+1. `#35` et `#42` (double intention "initialize Rust/Axum backend")  
+Action recommandee:
+- fermer `#35` (obsolete);
+- fermer `#42` (obsolete);
+- ouvrir un epic de migration Go (ci-dessous) qui remplace ces sujets.
+
+2. `#47` - `SERVER: RabbitMQ result consumer to store AI results`  
+Action recommandee:
+- fermer en l'etat (obsolete par l'implementation actuelle ou a convertir en "event consumer/projection").
 
 ---
 
-### CI-01 — CI/CD: Main CI pipeline (GitHub Actions)
+## 3) Nouvelles issues manquantes (hors migration Go)
 
-**Suggested labels:** `CI/CD`, `Setup`
+Format: titre + labels + corps en anglais, directement reutilisable.
 
-**Description:**
+### NEW-01
 
-Set up the main CI workflow (`ascension-ci`) that runs on every `push` and `pull_request`. The pipeline orchestrates format, lint, build and test validation for all three monorepo applications (Rust, Flutter, Python).
+**Title:** `SECURITY: use secure storage for mobile auth tokens`  
+**Suggested labels:** `Mobile`, `type:feature`, `priority:p1`
 
-**Features implemented:**
-- Detection of the `[no-ci]` prefix to skip all checks
-- Commit message format validation (via `check_commit`)
-- Branch name format validation (via `check_branch`)
-- `check_server` job: rustfmt, clippy, release build, tests (with Cargo + moon cache)
-- `check_mobile` job: flutter format, flutter analyze, flutter test (with pub + moon cache)
-- `check_ai` job: black lint, pytest (with conda + moon cache)
-- Concurrency: duplicate run cancellation on the same branch
+**Description (EN):**
 
-**Definition of Done:**
-- [x] The `ascension-ci` workflow triggers on `push` and `pull_request`
-- [x] `check_server`, `check_mobile`, `check_ai` jobs run in parallel
-- [x] Cargo, pub and conda caches are functional
-- [x] The `[no-ci]` prefix skips all checks
-- [x] Jobs depend on `detect_no_ci` and `check_commit_and_branch`
-- [x] CI is documented in the developer guide
+Replace token persistence in mobile authentication from SharedPreferences to a secure storage mechanism (`flutter_secure_storage`) to prevent sensitive token leakage on rooted or compromised devices.
 
----
+## Scope
+- Store `access_token` and `refresh_token` in secure storage.
+- Keep non-sensitive profile values in SharedPreferences if needed.
+- Provide migration path for already logged-in users.
 
-### CI-02 — CI/CD: Commit and branch validation scripts
-
-**Suggested labels:** `CI/CD`, `Setup`
-
-**Description:**
-
-Implementation of two Python scripts (`.github/scripts/check_commit` and `.github/scripts/check_branch`) that validate commit message format and branch name format respectively, according to the project conventions.
-
-**Enforced conventions:**
-- Commits: `<type>(<scope>): <description>` with types listed in `.github/keywords.txt`
-- Branches: `main`, `dev` or `<type>/<kebab-case-description>`
-- Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `tests`, `build`, `perf`, `ci`, `chore`, `revert`, `add`, `remove`, `rename`, `move`, `merge`, `init`, `details`, `dependabot`, `agents`, `temp`
-
-**Definition of Done:**
-- [x] `check_commit` validates the `<type>(<scope>): <description>` format
-- [x] `check_commit` allows `Merge ...` commits without validation
-- [x] `check_branch` accepts `main` and `dev` as-is
-- [x] `check_branch` validates `<type>/<kebab-case>`
-- [x] Errors are formatted as GitHub Actions annotations (`::error::`)
-- [x] Scripts are executable and used by the CI
-- [x] `.github/keywords.txt` contains all allowed commit types
+## Definition of Done
+- [ ] `access_token` and `refresh_token` are no longer stored in SharedPreferences.
+- [ ] Existing sessions are migrated safely or invalidated with a clear UX flow.
+- [ ] Login/register/logout flows still work end-to-end.
+- [ ] Unit tests cover storage read/write/remove behavior.
+- [ ] Security note is added to mobile developer documentation.
 
 ---
 
-### CI-03 — CI/CD: Deploy workflow (Docker + APK + GitHub Release)
+### NEW-02
 
-**Suggested labels:** `CI/CD`, `Build`
+**Title:** `SERVER: enforce auth middleware on protected routes`  
+**Suggested labels:** `Server`, `type:feature`, `priority:p1`
 
-**Description:**
+**Description (EN):**
 
-Set up the `ascension-deploy` workflow that triggers on `v*` tags. It builds and pushes the server Docker image to GHCR, builds the Android APK in release mode, and automatically creates a GitHub Release with the artifacts.
+Wire JWT authentication middleware to all protected API routes and ensure role-based guards are effectively applied where required.
 
-**Jobs:**
-- `build_and_push_server`: Multi-stage Docker build of the Rust server → push to GHCR with `:vX.Y.Z` and `:latest` tags
-- `build_and_push_mobile`: Flutter release APK build → upload GitHub Actions artifact
-- `create_release`: Creates the GitHub Release with auto-generated release notes and the APK as a release asset
+## Scope
+- Define public routes (`/v1/auth/*`, health) vs protected routes.
+- Apply middleware at router level for protected groups.
+- Validate `Authorization: Bearer` and session cookie strategies.
 
-**Definition of Done:**
-- [x] The workflow triggers on `v*` tags
-- [x] The server Docker image is pushed to GHCR with the correct tag
-- [x] The Android release APK is built and attached to the GitHub Release
-- [x] GitHub Release notes are auto-generated (`generate_release_notes: true`)
-- [x] Docker BuildX cache (GHA) is configured to speed up builds
-- [ ] The `build_and_push_ai` job is uncommented and functional (currently disabled)
-
----
-
-### CI-04 — CI/CD: dev-to-production workflow (promotion + semver tag + mirror)
-
-**Suggested labels:** `CI/CD`, `Setup`
-
-**Description:**
-
-Set up the manual `ascension-dev-to-production` workflow that automates the promotion from `dev` to `main`, the creation of an auto-incremented SemVer tag, and the mirroring of the repo to an external repository.
-
-**Jobs:**
-- `merge_branch`: Merges `dev` → `main` via GitHub App token (to bypass branch protections)
-- `create_tag`: Computes the next `vX.Y.(Z+1)` tag and pushes it on `main`
-- `mirror_repository`: Mirrors the repo to an external SSH repository (Epitech intranet)
-
-**Definition of Done:**
-- [x] The `dev → main` merge works with the GitHub App token
-- [x] The SemVer tag is auto-computed from the last existing `v*` tag
-- [x] SSH mirror to the external repository is functional
-- [x] `APP_ID`, `APP_PRIVATE_KEY`, and `MIRROR_SSH_KEY` secrets are configured
-- [x] The `MIRROR_REPOSITORY_URL` variable is configured in the repo settings
+## Definition of Done
+- [ ] Protected routes reject unauthenticated requests with `401`.
+- [ ] Role-guarded routes return `403` when role is insufficient.
+- [ ] Integration tests cover positive and negative auth scenarios.
+- [ ] API spec explicitly marks auth requirements per endpoint.
 
 ---
 
-### CI-05 — CI/CD: docs-to-wiki workflow
+### NEW-03
 
-**Suggested labels:** `CI/CD`, `Documentation`
+**Title:** `SERVER: add integration tests for upload-to-analysis API flow`  
+**Suggested labels:** `Server`, `Tests`, `type:feature`, `priority:p1`
 
-**Description:**
+**Description (EN):**
 
-Set up the `ascension-docs-to-wiki` workflow that automatically synchronizes the content of the `docs/` folder to the GitHub Wiki on every push to `main`.
+Add backend integration tests validating the critical API workflow: request upload URL -> trigger analysis -> poll analysis status/result.
 
-**How it works:**
-- The `generate_wiki` script converts Markdown files from `docs/` into wiki pages with flat naming (`folder-subfolder-file.md`)
-- Special files (`README.md`, `CONTRIBUTING.md`, etc.) are mapped to standard wiki pages (`Home`, `HOW-TO-CONTRIBUTE`, etc.)
-- Internal links are rewritten to point to wiki pages
-
-**Definition of Done:**
-- [x] The workflow triggers on `push` to `main` in `docs/**`
-- [x] The `generate_wiki` script correctly generates the wiki from `docs/`
-- [x] Special pages (`Home`, `HOW-TO-CONTRIBUTE`) are correctly created
-- [x] Internal links are rewritten in generated wiki pages
-- [x] The wiki is up to date after each push to main
+## Definition of Done
+- [ ] Integration tests run in CI.
+- [ ] Test covers happy path and common failures.
+- [ ] Tests validate response schema compatibility with mobile expectations.
+- [ ] Regression baseline is documented.
 
 ---
 
-### CI-06 — CI/CD: Squad system (triage, assign, label cleaner, sync labels)
+### NEW-04
 
-**Suggested labels:** `CI/CD`, `Setup`
+**Title:** `AI: add unit tests for result serialization and angle computation`  
+**Suggested labels:** `AI`, `Tests`, `type:feature`, `priority:p2`
 
-**Description:**
+**Description (EN):**
 
-Set up the Squad system composed of several GitHub Actions workflows to automate issue triage, member assignment, label cleanup, and label synchronization from the team roster.
+Introduce unit tests for AI analysis output serialization and angle computation helpers to prevent silent schema regressions.
 
-**Implemented workflows:**
-- `squad-triage`: When the `squad` label is applied, analyzes the issue and automatically assigns it to the right member via keyword matching. Supports `@copilot` (Coding Agent) with a capability profile.
-- `squad-issue-assign`: When a `squad:<member>` label is applied, adds the GitHub assignment and posts an acknowledgment comment.
-- `squad-label-cleaner`: Enforces mutual exclusivity for the `go:`, `release:`, `type:`, `priority:` namespaces. Auto-applies `release:backlog` on `go:yes`.
-- `sync-squad-labels`: Synchronizes GitHub labels from `.squad/team.md` (squad, go, release, type, priority, and signal labels).
-
-**Definition of Done:**
-- [x] `squad-triage` correctly assigns issues by domain
-- [x] `squad-issue-assign` posts a comment and assigns the right member
-- [x] `squad-label-cleaner` removes conflicting labels in managed namespaces
-- [x] `sync-squad-labels` creates/updates all labels from the roster
-- [x] The `go:needs-research` label is auto-applied at triage
-- [x] The `release:backlog` label is auto-applied on `go:yes`
-- [x] `@copilot` can be automatically assigned (`COPILOT_ASSIGN_TOKEN` secret configured)
+## Definition of Done
+- [ ] Angle helper behavior is covered with deterministic fixtures.
+- [ ] Output JSON structure is validated against a canonical schema.
+- [ ] Corrupt/missing input video paths are tested.
+- [ ] Tests run in CI and fail on schema-breaking changes.
 
 ---
 
-### CI-07 — CI/CD: Squad AI PR Review (automatic GPT-4o code review)
+### NEW-05
 
-**Suggested labels:** `CI/CD`, `AI`
+**Title:** `CONTRACT: publish and version API schema for mobile-backend compatibility`  
+**Suggested labels:** `Server`, `Documentation`, `type:feature`, `priority:p1`
 
-**Description:**
+**Description (EN):**
 
-Set up the `squad-ai-pr-review` workflow that triggers an automatic GPT-4o code review (via GitHub Models API) on every PR open or update. Each squad agent reviews the files belonging to their domain.
+Version the backend API contract and publish a canonical schema artifact used by mobile and QA to detect breaking changes early.
 
-**How it works:**
-- On PR open/update, the workflow analyzes the changed files
-- For each impacted domain (AI, Server, Mobile, DevOps, Docs, Tests, DB/Infra), the corresponding agent generates a review via GPT-4o
-- The review is posted (or updated) as a dedicated per-agent comment
-- Uses only `GITHUB_TOKEN` (Copilot Pro unlocks premium models)
-
-**Domain routing:**
-- `apps/ai/**` → Quentin (AI / Python)
-- `apps/server/**` → Renaud (Rust / API)
-- `apps/mobile/**` → Romaric (Flutter / Mobile)
-- `.github/**`, `docker*` → Arthur (DevOps / CI)
-- `docs/**` → Darius (Documentation)
-- `**/test*/**` → Ridjan (Testing)
-- `**/migrations/**` → Alexandra (Database / Infra)
-
-**Definition of Done:**
-- [x] The workflow triggers on `opened`, `synchronize`, `reopened`
-- [x] Each impacted domain receives a dedicated AI review
-- [x] Review comments are updated (not duplicated on re-runs)
-- [x] File-to-agent routing is documented
-- [x] Works without additional secrets (GITHUB_TOKEN only)
+## Definition of Done
+- [ ] A versioned API contract (OpenAPI or equivalent) is generated in CI.
+- [ ] Mobile-facing endpoints and payloads are documented from source of truth.
+- [ ] Contract check is added to pull request validation.
+- [ ] Breaking changes require explicit version bump and changelog entry.
 
 ---
 
-### CI-08 — CI/CD: Squad PR routing (automatic PR labeling by domain)
+### NEW-06
 
-**Suggested labels:** `CI/CD`
+**Title:** `OBSERVABILITY: add correlation IDs across mobile, server and AI pipeline`  
+**Suggested labels:** `Server`, `AI`, `CI/CD`, `type:feature`, `priority:p2`
 
-**Description:**
+**Description (EN):**
 
-Set up the `squad-pull-request-review` workflow that analyzes the files changed in a PR and automatically applies `squad:<agent>` labels to route the review to the right domain experts.
+Propagate a correlation ID through API requests, RabbitMQ jobs, AI processing logs, and database records to simplify production debugging.
 
-**Definition of Done:**
-- [x] The workflow labels PRs with the corresponding `squad:<agent>` labels
-- [x] Stale labels from previous runs are removed
-- [x] A routing comment is posted/updated on the PR with the domain summary table
-- [x] If more than 2 domains are touched, `squad:eric` (Architecture) is added
-- [x] Missing `squad:*` labels are auto-created
-
----
-
-### CI-09 — CI/CD: Dependabot (automatic dependency updates)
-
-**Suggested labels:** `CI/CD`, `Setup`
-
-**Description:**
-
-Configuration of Dependabot to automatically update dependencies across the four ecosystems of the monorepo, targeting the `dev` branch.
-
-**Configured ecosystems:**
-- `github-actions` (root `/`)
-- `cargo` (`/apps/server`)
-- `pub` (`/apps/mobile`)
-- `pip` (`/apps/ai`)
-
-**Schedule:** Every Monday at 09:00 (Europe/Paris)
-
-**Definition of Done:**
-- [x] `.github/dependabot.yml` is configured for all 4 ecosystems
-- [x] Dependabot PRs target the `dev` branch
-- [x] Weekly schedule is configured
-- [x] Dependabot PRs go through the CI before merge
+## Definition of Done
+- [ ] Correlation ID is generated at request ingress or accepted from client.
+- [ ] RabbitMQ messages include correlation metadata.
+- [ ] Server and worker logs include correlation ID consistently.
+- [ ] A troubleshooting guide documents how to trace one analysis end-to-end.
 
 ---
 
-### CI-10 — CI/CD: Git hooks (commit-msg, pre-commit, pre-push)
+## 4) Backlog complet de migration backend Rust -> Go
 
-**Suggested labels:** `CI/CD`, `Setup`
+Principe:
+- 1 epic de pilotage;
+- un lot d'issues techniques decoupees et ordonnees;
+- descriptions en anglais et DoD mesurable.
 
-**Description:**
+### GO-EPIC-00
 
-Set up local git hooks (in `.github/hooks/`) allowing developers to validate their commits and branches before pushing, reusing the same scripts as the CI.
+**Title:** `EPIC: backend migration from Rust to Go with zero feature regression`  
+**Suggested labels:** `Server`, `Setup`, `type:epic`, `priority:p0`
 
-**Hooks:**
-- `commit-msg`: Validates the commit message format via `check_commit`
-- `pre-commit`: Can run local checks before committing
-- `pre-push`: Can run local checks before pushing
+**Description (EN):**
 
-**Definition of Done:**
-- [x] `commit-msg`, `pre-commit`, `pre-push` hooks are present in `.github/hooks/`
-- [ ] A hook installation script is provided (e.g. `just install-hooks` or a shell script)
-- [ ] `pre-commit` and `pre-push` hooks are implemented (currently empty)
-- [ ] The README explains how to install and use the hooks
-- [ ] Hooks reuse the same scripts as the CI (`check_commit`, `check_branch`)
+Plan and execute the migration of Ascension backend from Rust/Axum to Go while keeping API compatibility, production stability, and CI quality gates.
 
----
-
-### CI-11 — CI/CD: Moon monorepo task runner (format, lint, build, test)
-
-**Suggested labels:** `CI/CD`, `Setup`, `Build`
-
-**Description:**
-
-Configuration of the Moon task runner to orchestrate development tasks (`format`, `lint`, `build`, `test`, `dev`) across all three monorepo applications, with environment variable management and input/output configuration for caching.
-
-**Tasks configured per app:**
-- `server`: `format`, `format-check`, `lint`, `build`, `build-release`, `test`, `dev`
-- `mobile`: `format`, `format-check`, `lint`, `test`, `dev`
-- `ai`: `install`, `format`, `lint`, `test`, `dev`
-
-**Definition of Done:**
-- [x] `moon run server:format` / `mobile:format` / `ai:format` work correctly
-- [x] `moon run server:lint` / `mobile:lint` / `ai:lint` work correctly
-- [x] `moon run server:build-release` works correctly
-- [x] `moon run server:test` / `mobile:test` / `ai:test` work correctly
-- [x] Environment variables are correctly passed to tasks
-- [x] Moon cache is used in the CI
+## Success Criteria
+- [ ] Feature parity achieved for all mobile-consumed endpoints.
+- [ ] No critical regression on auth, upload, analysis orchestration.
+- [ ] CI quality gates are green for Go backend.
+- [ ] Rust backend decommission plan is executed safely.
 
 ---
 
-## Other already-done but untracked issues
+### GO-01
+
+**Title:** `SERVER-GO: define target architecture and technical decisions`  
+**Suggested labels:** `Server`, `Documentation`, `type:spike`, `priority:p0`
+
+**Description (EN):**
+
+Produce an ADR package for Go backend choices (router/framework, DB access strategy, migrations, configuration, logging, testing strategy).
+
+## Definition of Done
+- [ ] ADR document approved by team.
+- [ ] Framework and dependency stack selected.
+- [ ] Compatibility constraints with existing mobile app documented.
+- [ ] Migration risks and rollback strategy documented.
 
 ---
 
-### BACK-01 — SERVER: Full User CRUD
+### GO-02
 
-**Suggested labels:** `Server`
+**Title:** `SERVER-GO: bootstrap new Go service with project skeleton`  
+**Suggested labels:** `Server`, `Setup`, `type:feature`, `priority:p0`
 
-**Description:**
+**Description (EN):**
 
-Implementation of a complete CRUD for the `User` resource in the Rust/Axum backend, following a hexagonal architecture (domain / inbound / outbound / usecase).
+Create the initial Go backend workspace (`apps/server-go` or replacement strategy), including module setup, folder architecture, config loading, health endpoint, and local run command.
 
-**Implemented endpoints:**
-- `POST /api/v1/users` — Create a user
-- `GET /api/v1/users/:id` — Get a user by ID
-- `GET /api/v1/users` — List users (with pagination)
-- `PUT /api/v1/users/:id` — Update a user
-- `DELETE /api/v1/users/:id` — Delete a user
-
-**Definition of Done:**
-- [x] All 5 CRUD endpoints are implemented and functional
-- [x] The `User` model is defined with `Username`, `EmailAddress`, `Password`, `Role` value objects
-- [x] Domain errors (`DuplicateEmail`, `UserNotFound`, etc.) are typed
-- [x] PostgreSQL adapter is implemented via SQLx (`postgresql.rs`)
-- [x] SQL queries are defined (insert, select, update, delete, list with pagination)
-- [x] Unit tests cover the user model and service
-- [x] Pagination is functional (`page`, `per_page`)
+## Definition of Done
+- [ ] Go service starts locally with one command.
+- [ ] `/health` endpoint returns `200`.
+- [ ] Environment variables are loaded and validated.
+- [ ] Moon/CI tasks are wired for format, lint, build, test.
 
 ---
 
-### BACK-02 — SERVER: JWT authentication middleware
+### GO-03
 
-**Suggested labels:** `Server`
+**Title:** `SERVER-GO: implement database connectivity and migration compatibility`  
+**Suggested labels:** `Server`, `Setup`, `Build`, `type:feature`, `priority:p0`
 
-**Description:**
+**Description (EN):**
 
-Implementation of a JWT authentication middleware in the Axum backend. The middleware extracts and validates the Bearer token from the `Authorization` header, then injects the user identity into the request context.
+Connect Go backend to PostgreSQL and ensure compatibility with existing schema and migration history.
 
-**Definition of Done:**
-- [x] The middleware verifies the `Authorization: Bearer <token>` header
-- [x] An invalid or expired token returns `401 Unauthorized`
-- [x] The user identity is injected via Axum extensions
-- [x] Protected routes use the middleware
-- [x] An `AuthService` is implemented for token validation
-- [x] Error handling is typed (`AuthError`)
-
----
-
-### MOBILE-01 — MOBILE: Settings page (backend URL configuration)
-
-**Suggested labels:** `Mobile`
-
-**Description:**
-
-Implementation of the Settings page in the Flutter application, allowing the user to configure the backend URL. The URL is persisted locally via `SharedPreferences` and used by `ApiService` for all requests.
-
-**Definition of Done:**
-- [x] The Settings page is accessible from the app header
-- [x] A text field allows entering the backend URL (e.g. `http://192.168.1.x:8080`)
-- [x] The URL is persisted via `SharedPreferences`
-- [x] `ApiService` loads the persisted URL on startup
-- [x] A visual indicator (✓ icon) confirms the save
-- [x] The URL can also be set at compile time via `--dart-define=BACKEND_URL=...`
+## Definition of Done
+- [ ] Connection pooling is implemented and configurable.
+- [ ] Existing schema is readable without data migration.
+- [ ] Migration tool strategy is defined and documented.
+- [ ] CI validates migration state on clean database.
 
 ---
 
-### MOBILE-02 — MOBILE: Auth login and register pages (scaffold)
+### GO-04
 
-**Suggested labels:** `Mobile`
+**Title:** `SERVER-GO: implement auth endpoints parity (register/login/logout)`  
+**Suggested labels:** `Server`, `type:feature`, `priority:p0`
 
-**Description:**
+**Description (EN):**
 
-Creation of the authentication page scaffolds (`LoginPage` and `RegisterPage`) in the Flutter application. These pages are placeholders pending the full implementation of the JWT authentication flow.
+Implement `/v1/auth/register`, `/v1/auth/login`, `/v1/auth/logout` with parity to current behavior and token semantics.
 
-**Definition of Done:**
-- [x] `LoginPage` and `RegisterPage` are created and accessible via navigation
-- [ ] The login form is functional (email + password)
-- [ ] The register form is functional (username + email + password)
-- [ ] Pages call `ApiService` for `POST /auth/login` and `POST /auth/register`
-- [ ] API errors are displayed to the user
-- [ ] Post-login navigation to the main page is implemented
-
-> **Note:** Pages exist but are stubs (`Login coming soon!`). Issue AUTH #62 covers the full implementation.
+## Definition of Done
+- [ ] Endpoint request/response contracts are backward-compatible.
+- [ ] Password hashing and token signing match security requirements.
+- [ ] Error codes match current mobile expectations.
+- [ ] Integration tests cover success and failure cases.
 
 ---
 
-## Summary
+### GO-05
 
-| ID | Title | Category | Actual status |
-|---|---|---|---|
-| CI-01 | Main CI pipeline | CI/CD | ✅ Done, untracked |
-| CI-02 | check_commit / check_branch scripts | CI/CD | ✅ Done, untracked |
-| CI-03 | Deploy workflow | CI/CD | ✅ Done, untracked |
-| CI-04 | dev-to-production workflow | CI/CD | ✅ Done, untracked |
-| CI-05 | docs-to-wiki workflow | CI/CD | ✅ Done, untracked |
-| CI-06 | Squad system (triage + assign + labels) | CI/CD | ✅ Done, untracked |
-| CI-07 | Squad AI PR Review (GPT-4o) | CI/CD | ✅ Done, untracked |
-| CI-08 | Squad PR routing | CI/CD | ✅ Done, untracked |
-| CI-09 | Dependabot | CI/CD | ✅ Done, untracked |
-| CI-10 | Git hooks | CI/CD | ⚠️ Partial (empty hooks) |
-| CI-11 | Moon monorepo tasks | CI/CD | ✅ Done, untracked |
-| BACK-01 | Full User CRUD backend | Server | ✅ Done, untracked |
-| BACK-02 | JWT middleware backend | Server | ✅ Done, untracked |
-| MOBILE-01 | Settings page | Mobile | ✅ Done, untracked |
-| MOBILE-02 | Auth pages scaffold | Mobile | ⚠️ Partial (stubs) |
+**Title:** `SERVER-GO: implement users CRUD parity`  
+**Suggested labels:** `Server`, `type:feature`, `priority:p0`
+
+**Description (EN):**
+
+Implement users CRUD endpoints with pagination and role constraints equivalent to existing backend behavior.
+
+## Definition of Done
+- [ ] Create/read/update/delete/list endpoints are implemented.
+- [ ] Pagination behavior matches current API contract.
+- [ ] Domain/business validation is covered by tests.
+- [ ] API documentation is updated.
+
+---
+
+### GO-06
+
+**Title:** `SERVER-GO: implement video upload URL endpoint parity`  
+**Suggested labels:** `Server`, `type:feature`, `priority:p0`
+
+**Description (EN):**
+
+Implement `POST /v1/videos/upload-url` with MinIO/S3 presign behavior compatible with mobile upload flow.
+
+## Definition of Done
+- [ ] Endpoint returns `video_id` + presigned URL.
+- [ ] Stored video metadata remains compatible with analysis pipeline.
+- [ ] Error handling covers MinIO/S3 failures.
+- [ ] Integration tests validate upload URL generation.
+
+---
+
+### GO-07
+
+**Title:** `SERVER-GO: implement analysis trigger endpoint parity`  
+**Suggested labels:** `Server`, `AI`, `type:feature`, `priority:p0`
+
+**Description (EN):**
+
+Implement `POST /v1/analyses` to create analysis records and publish analysis jobs to RabbitMQ using the agreed schema.
+
+## Definition of Done
+- [ ] Analysis records are persisted before publish.
+- [ ] RabbitMQ publish is reliable and observable.
+- [ ] Message payload schema is documented and versioned.
+- [ ] Failure paths are tested (DB error, MQ error).
+
+---
+
+### GO-08
+
+**Title:** `SERVER-GO: implement analysis fetch endpoint parity`  
+**Suggested labels:** `Server`, `type:feature`, `priority:p0`
+
+**Description (EN):**
+
+Implement `GET /v1/analyses/{id}` with status/progress/result payload parity and null-safe behavior while analysis is in progress.
+
+## Definition of Done
+- [ ] Response fields match existing mobile usage.
+- [ ] In-progress and completed statuses are handled consistently.
+- [ ] Not-found behavior returns expected status code.
+- [ ] Contract tests validate payload compatibility.
+
+---
+
+### GO-09
+
+**Title:** `SERVER-GO: define and implement completion event strategy`  
+**Suggested labels:** `Server`, `AI`, `Documentation`, `type:feature`, `priority:p1`
+
+**Description (EN):**
+
+Formalize whether the AI worker writes directly to DB, publishes completion events, or both; then implement the final strategy in Go backend integration.
+
+## Definition of Done
+- [ ] Final event/data ownership model is documented.
+- [ ] Go backend behavior matches chosen model.
+- [ ] Duplicate processing and race conditions are addressed.
+- [ ] End-to-end tests validate status transitions.
+
+---
+
+### GO-10
+
+**Title:** `SERVER-GO: add structured logging, metrics, and trace hooks`  
+**Suggested labels:** `Server`, `CI/CD`, `type:feature`, `priority:p1`
+
+**Description (EN):**
+
+Introduce observability primitives (structured logs, metrics export, trace context propagation) in the Go backend.
+
+## Definition of Done
+- [ ] Logs include request ID / correlation ID.
+- [ ] Metrics endpoint is exposed and documented.
+- [ ] Key latency/error metrics are tracked.
+- [ ] Dashboard/alert baseline is defined.
+
+---
+
+### GO-11
+
+**Title:** `SERVER-GO: implement test pyramid (unit, integration, contract)`  
+**Suggested labels:** `Server`, `Tests`, `type:feature`, `priority:p0`
+
+**Description (EN):**
+
+Set up a complete automated test strategy for Go backend including unit tests, integration tests against local infra, and contract tests against mobile expectations.
+
+## Definition of Done
+- [ ] Unit tests cover core business services.
+- [ ] Integration tests run against PostgreSQL and RabbitMQ.
+- [ ] Contract tests validate public endpoint schemas.
+- [ ] CI enforces minimum quality threshold.
+
+---
+
+### GO-12
+
+**Title:** `SERVER-GO: CI/CD integration and release pipeline for Go backend`  
+**Suggested labels:** `CI/CD`, `Server`, `Build`, `type:feature`, `priority:p0`
+
+**Description (EN):**
+
+Integrate Go backend into monorepo CI/CD workflows (lint, build, test, Docker image build, deployment hooks).
+
+## Definition of Done
+- [ ] Go backend jobs are added to CI.
+- [ ] Docker image build/publish is working.
+- [ ] Deployment workflow can target Go backend artifact.
+- [ ] Failure logs are actionable.
+
+---
+
+### GO-13
+
+**Title:** `SERVER-GO: perform shadow traffic and parity validation`  
+**Suggested labels:** `Server`, `Tests`, `type:feature`, `priority:p1`
+
+**Description (EN):**
+
+Run Rust and Go backends in parallel for parity checks on real/synthetic traffic before cutover.
+
+## Definition of Done
+- [ ] A replay/shadow strategy is documented.
+- [ ] Response parity report is generated.
+- [ ] Critical mismatches are resolved.
+- [ ] Go readiness gate is approved.
+
+---
+
+### GO-14
+
+**Title:** `SERVER-GO: execute production cutover and rollback plan`  
+**Suggested labels:** `Server`, `Setup`, `type:feature`, `priority:p0`
+
+**Description (EN):**
+
+Execute controlled switch from Rust backend to Go backend with rollback safety and incident runbook.
+
+## Definition of Done
+- [ ] Cutover checklist is validated.
+- [ ] Rollback procedure is tested and documented.
+- [ ] Post-cutover monitoring confirms stability.
+- [ ] Stakeholders sign off the migration milestone.
+
+---
+
+### GO-15
+
+**Title:** `SERVER: decommission Rust backend and update technical documentation`  
+**Suggested labels:** `Server`, `Documentation`, `type:chore`, `priority:p1`
+
+**Description (EN):**
+
+After successful cutover, archive/remove obsolete Rust backend paths and update all documentation, diagrams, and onboarding guides to the Go stack.
+
+## Definition of Done
+- [ ] Obsolete Rust runtime paths are removed or archived.
+- [ ] Docs no longer present Rust as active backend stack.
+- [ ] Developer setup instructions are updated and validated.
+- [ ] Final migration report is published.
+
+---
+
+## 5) Ordre d'execution recommande
+
+1. Nettoyage backlog existant: fermer/editer les issues obsoletes (`#31`, `#35`, `#42`, `#47`, `#142`, mise a jour de `#34`, `#40`, `#44`, `#45`, `#46`, `#58`, `#59`, `#62`).
+2. Ouvrir les nouvelles issues transverses de qualite (`NEW-01` a `NEW-06`).
+3. Ouvrir l'epic de migration Go + sous-issues (`GO-EPIC-00` a `GO-15`).
+4. Lier chaque sous-issue Go a l'epic, puis prioriser `GO-01..GO-08` avant le reste.
+
+---
+
+## 6) Commandes `gh` utiles (a executer manuellement)
+
+Exemples:
+
+```bash
+# Close a fully done issue
+gh issue close 31 --repo Ascension-EIP/Ascension --comment "Closing as DoD is fully complete and verified in codebase."
+
+# Edit title/body of an outdated issue
+gh issue edit 44 --repo Ascension-EIP/Ascension --title "SERVER: presigned upload URL route (/v1/videos/upload-url)"
+
+# Create a new issue from prepared content
+gh issue create --repo Ascension-EIP/Ascension \
+  --title "SECURITY: use secure storage for mobile auth tokens" \
+  --label "Mobile" \
+  --label "type:feature" \
+  --label "priority:p1" \
+  --body-file /path/to/prepared-issue-body.md
+```
+
+---
+
+## 7) Validation finale attendue
+
+Definition de "backlog sain" apres application de ce document:
+- aucune issue ouverte avec DoD 100% coche;
+- aucune issue ouverte avec endpoints/contrats obsoletes;
+- roadmap Go complete, priorisee et liee a un epic;
+- templates et politique d'issues formalises (voir second fichier).
