@@ -38,7 +38,7 @@ pyyaml==6.0.3
 tqdm==4.67.3
 termcolor==3.3.0
 tabulate==0.10.0
-pillow==12.1.1
+pillow==12.2.0
 numpy==2.4.4
 matplotlib==3.10.8
 trimesh==4.11.5
