@@ -207,7 +207,7 @@ jobs:
           fetch-depth: 0
           submodules: recursive
       - name: Set up Conda
-        uses: conda-incubator/setup-miniconda@v3
+        uses: conda-incubator/setup-miniconda@v4
         with:
           python-version: 3.11
 
