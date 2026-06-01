@@ -22,7 +22,7 @@ wandb==0.26.1
 appdirs==1.4.4
 appnope==0.1.4 ; platform_system == "Darwin"
 ffmpeg==1.4
-cython==3.2.4
+cython==3.2.5
 jsonlines==4.0.0
 xtcocotools==1.14.3
 loguru==0.7.3
