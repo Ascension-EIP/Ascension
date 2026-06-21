@@ -1,6 +1,9 @@
-FROM continuumio/miniconda3
+FROM python:3.11-slim
 
 WORKDIR /app
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends \
@@ -13,13 +16,10 @@ RUN apt-get update \
 RUN wget -q -O /app/pose_landmarker.task \
     https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task
 
-# Create the environment:
+# Install dependencies via uv
+COPY pyproject.toml uv.lock* ./
+RUN uv sync --frozen
+
 COPY . .
 
-RUN conda env create -n ascension-ai -f environment.yml
-
-RUN conda run --name ascension-ai pip install -e .
-
-RUN wget -O pose_landmarker.task https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task
-
-ENTRYPOINT ["conda", "run", "--no-capture-output", "--name", "ascension-ai", "python", "-u", "src/worker.py"]
+ENTRYPOINT ["uv", "run", "python", "-u", "src/worker.py"]
