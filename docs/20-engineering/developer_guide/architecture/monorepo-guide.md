@@ -1,7 +1,7 @@
-> **Last updated:** 12th March 2026  
-> **Version:** 2.3  
-> **Authors:** Gianni TUERO  
-> **Status:** Done  
+> **Last updated:** 12th March 2026
+> **Version:** 2.3
+> **Authors:** Gianni TUERO
+> **Status:** Done
 > {.is-success}
 
 ---
@@ -204,25 +204,24 @@ project:
 
 tasks:
   setup:
-    command: 'conda'
-    args: ['env', 'create', '--name', 'ascension-ai', '--file', 'environment.yml', '--force']
+    command: 'uv'
+    args: ['sync']
     inputs:
-      - 'environment.yml'
       - 'pyproject.toml'
+      - 'uv.lock'
 
-  install:
-    command: 'conda'
-    args: ['run', '--name', 'ascension-ai', 'python', '-m', 'pip', 'install', '-e', '.[dev]']
-    inputs:
-      - 'pyproject.toml'
-    deps:
-      - 'setup'
+  download-model:
+    command: 'bash'
+    args: ['scripts/download-model.sh']
+    outputs:
+      - 'pose_landmarker.task'
 
   dev:
-    command: 'conda'
-    args: ['run', '--name', 'ascension-ai', 'python', 'src/worker.py']
+    command: 'uv'
+    args: ['run', 'python', '-u', 'src/worker.py']
     deps:
-      - 'install'
+      - 'setup'
+      - 'download-model'
     env:
       LOG_LEVEL: 'debug'
       PYTHONUNBUFFERED: '1'
@@ -230,24 +229,30 @@ tasks:
       envFile: true
 
   build:
-    command: 'conda'
-    args: ['run', '--name', 'ascension-ai', 'python', '-m', 'build']
+    command: 'uv'
+    args: ['run', 'python', '-m', 'build']
     deps:
-      - 'install'
+      - 'setup'
 
   test:
-    command: 'conda'
-    args: ['run', '--name', 'ascension-ai', 'pytest', '-p', 'no:cacheprovider']
+    command: 'uv'
+    args: ['run', 'pytest', '-p', 'no:cacheprovider']
     deps:
-      - 'install'
+      - 'setup'
     options:
       allowFailure: true
 
   lint:
-    command: 'conda'
-    args: ['run', '--name', 'ascension-ai', 'ruff', 'check', '.']
+    command: 'uv'
+    args: ['run', 'ruff', 'check', 'src']
     deps:
-      - 'install'
+      - 'setup'
+
+  format:
+    command: 'uv'
+    args: ['run', 'black', 'src']
+    deps:
+      - 'setup'
 ```
 
 **`apps/mobile/moon.yml`** (Flutter):

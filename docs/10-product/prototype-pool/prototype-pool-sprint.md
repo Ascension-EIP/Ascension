@@ -1,7 +1,7 @@
-> **Last updated:** 16th March 2026  
-> **Version:** 1.1  
-> **Authors:** Nicolas TORO  
-> **Status:** Done  
+> **Last updated:** 16th March 2026
+> **Version:** 1.1
+> **Authors:** Nicolas TORO
+> **Status:** Done
 > {.is-success}
 
 ---
@@ -156,7 +156,7 @@ All toolchain versions are pinned in `.moon/toolchain.yml` and must be used cons
 | opencv-python  | TBD       | Computer vision / video decoding  |
 | pika           | TBD       | RabbitMQ client (AMQP)            |
 
-> **Note:** `mediapipe`, `opencv-python`, and `pika` are managed in the conda-based AI environment (`apps/ai/environment.yml`) with editable install from `pyproject.toml` via `apps/ai/moon.yml`.
+> **Note:** `mediapipe`, `opencv-python`, and `pika` are managed in the uv-based AI environment (`apps/ai/pyproject.toml`) via `apps/ai/moon.yml`.
 
 #### Mobile — Flutter / Dart
 
