@@ -107,7 +107,7 @@ jobs:
         with:
           auto-install: true
       - name: Cache Cargo registry
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/registry
@@ -118,7 +118,7 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Cache moon store
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .moon/cache
           key: ${{ runner.os }}-moon-server-${{ hashFiles('apps/server/Cargo.lock') }}
@@ -161,7 +161,7 @@ jobs:
           cache: true
 
       - name: Cache pub dependencies
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.pub-cache
@@ -175,7 +175,7 @@ jobs:
         with:
           auto-install: true
       - name: Cache moon store
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .moon/cache
           key: ${{ runner.os }}-moon-mobile-${{ hashFiles('apps/mobile/pubspec.lock') }}
@@ -218,7 +218,7 @@ jobs:
           auto-install: true
           cache: false
       - name: Cache moon store
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .moon/cache
           key: ${{ runner.os }}-moon-ai-${{ hashFiles('apps/ai/pyproject.toml', 'apps/ai/uv.lock') }}
@@ -226,7 +226,7 @@ jobs:
             ${{ runner.os }}-moon-ai-
 
       - name: Cache uv environment
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: apps/ai/.venv
           key: ${{ runner.os }}-venv-ai-${{ hashFiles('apps/ai/pyproject.toml', 'apps/ai/uv.lock') }}
