@@ -25,7 +25,7 @@ jobs:
 
     ######################## STEPS ############################################
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Triage issue via Lead agent
         uses: actions/github-script@v9
