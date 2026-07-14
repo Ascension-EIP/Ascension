@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use http::Method;
-use minio::s3::client::ClientBuilder;
+use minio::s3::MinioClient as S3MinioClient;
 use minio::s3::creds::StaticProvider;
 use minio::s3::http::BaseUrl;
 use minio::s3::types::S3Api;
@@ -25,15 +25,13 @@ impl MinioClient {
         }
     }
 
-    fn build_client(&self) -> Result<minio::s3::Client> {
+    fn build_client(&self) -> Result<S3MinioClient> {
         let base_url: BaseUrl = self
             .endpoint
             .parse()
             .context("invalid MinIO endpoint URL")?;
         let provider = StaticProvider::new(&self.access_key, &self.secret_key, None);
-        ClientBuilder::new(base_url)
-            .provider(Some(Box::new(provider)))
-            .build()
+        S3MinioClient::new(base_url, Some(provider), None, None)
             .context("failed to build MinIO client")
     }
 
@@ -41,13 +39,15 @@ impl MinioClient {
     pub async fn ensure_bucket(&self) -> Result<()> {
         let client = self.build_client()?;
         let exists = client
-            .bucket_exists(&self.bucket)
+            .bucket_exists(&self.bucket)?
+            .build()
             .send()
             .await
             .context("failed to check bucket existence")?;
-        if !exists.exists {
+        if !exists.exists() {
             client
-                .create_bucket(&self.bucket)
+                .create_bucket(&self.bucket)?
+                .build()
                 .send()
                 .await
                 .context("failed to create bucket")?;
@@ -62,8 +62,9 @@ impl MinioClient {
         let expiry_secs = expires_in.as_secs() as u32;
 
         let resp = client
-            .get_presigned_object_url(&self.bucket, object_key, Method::PUT)
+            .get_presigned_object_url(&self.bucket, object_key, Method::PUT)?
             .expiry_seconds(expiry_secs)
+            .build()
             .send()
             .await
             .context("failed to generate presigned PUT URL")?;
