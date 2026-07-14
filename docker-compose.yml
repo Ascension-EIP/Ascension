@@ -1,7 +1,7 @@
 services:
   minio:
     image: minio/minio:RELEASE.2025-09-07T16-13-09Z
-    container_name: minIO
+    container_name: ascension-minIO
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -12,7 +12,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:4.2.4-management
-    container_name: rabbitMQ
+    container_name: ascension-rabbitMQ
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -27,7 +27,7 @@ services:
 
   postgresql:
     image: postgres:18
-    container_name: postgreSQL
+    container_name: ascension-postgreSQL
     ports:
       - "5432:5432"
     env_file: .env
@@ -41,7 +41,7 @@ services:
 
   server:
     build: ./apps/server
-    container_name: ascensionServer
+    container_name: ascension-server
     profiles:
       - prod
     ports:
