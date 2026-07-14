@@ -1,7 +1,7 @@
-> **Last updated:** 26th February 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas  
-> **Status:** In Progress  
+> **Last updated:** 26th February 2026
+> **Version:** 1.0
+> **Authors:** Nicolas
+> **Status:** In Progress
 > {.is-warning}
 
 ---
@@ -19,7 +19,7 @@ Ce document donne une vue d'ensemble concise de la stack technique utilisée dan
 **Langages & frameworks principaux**
 - **Backend (server)**: Rust — `apps/server/` (avec `Cargo.toml`). Langage choisi pour performance et sécurité mémoire.
 - **Mobile**: Flutter — `apps/mobile/` (avec `pubspec.yaml`). Application mobile multiplateforme.
-- **AI / ML**: Python — `apps/ai/` (avec `environment.yml`, `pyproject.toml` et tâches moon conda). Workers organisés en 2 pipelines : Pipeline Vision (détection de prises, squelettisation MediaPipe, conseils, mode fantôme) et Pipeline Entraînement (programmes personnalisés).
+- **AI / ML**: Python — `apps/ai/` (avec `pyproject.toml` et tâches moon uv). Workers organisés en 2 pipelines : Pipeline Vision (détection de prises, squelettisation MediaPipe, conseils, mode fantôme) et Pipeline Entraînement (programmes personnalisés).
 
 **Infrastructure & Conteneurisation**
 - **Docker & Compose**: `docker-compose.yml` à la racine de `Ascension/` pour orchestrer les services locaux (PostgreSQL, RabbitMQ, MinIO, API, Worker).

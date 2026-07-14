@@ -387,8 +387,8 @@ Validates the Python AI application.
 | Set up Python           | Installs Python 3.12 with pip cache                |
 | Install moon            | Sets up the moon task runner (no cache)            |
 | Cache moon store        | Caches `.moon/cache`                               |
-| Cache conda env/packages | Caches conda packages and the `ascension-ai` environment |
-| Install dependencies    | `moon run ai:install`                              |
+| Cache uv env/packages   | Caches uv packages and the virtual environment     |
+| Install dependencies    | `moon run ai:setup`                                |
 | Lint                    | `moon run ai:lint`                                 |
 | Test                    | `moon run ai:test`                                 |
 

@@ -1,7 +1,7 @@
-> **Last updated:** 9th March 2026  
-> **Version:** 1.2  
-> **Authors:** Nicolas  
-> **Status:** Done  
+> **Last updated:** 9th March 2026
+> **Version:** 1.2
+> **Authors:** Nicolas
+> **Status:** Done
 > {.is-success}
 
 ---
@@ -36,17 +36,14 @@ curl -fsSL https://moonrepo.dev/install/proto.sh | bash
 proto install moon
 ```
 
-### 2. Conda (Miniconda)
-The AI services require a Python environment managed by Conda. We recommend **Miniconda** for a lightweight CLI-only installation.
+### 2. uv (Python package & environment manager)
+The AI services use [uv](https://docs.astral.sh/uv/) to manage Python dependencies and the virtual environment.
 
 **Installation (Linux):**
 ```bash
-mkdir -p ~/miniconda3
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
-bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
-rm -rf ~/miniconda3/miniconda.sh
-# Initialize conda for your shell
-~/miniconda3/bin/conda init zsh # or bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+# Or via your package manager, e.g.:
+# brew install uv
 ```
 
 ### 3. Flutter
@@ -81,10 +78,11 @@ The mobile application is built with Flutter.
 
 4. **Initialize AI Environment and download the MediaPipe model:**
    ```bash
-   moon run ai:install
+   moon run ai:setup
+   moon run ai:download-model
    ```
 
-   This runs `ai:setup` → `ai:download-model` → `ai:install` automatically.
+   `ai:setup` runs `uv sync` to create the virtual environment and install all dependencies.
 
 5. **Install sqlx-cli and run database migrations (server):**
    ```bash

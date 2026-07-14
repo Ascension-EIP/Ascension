@@ -99,14 +99,14 @@ graph TB
    # Or download from https://docs.flutter.dev/get-started/install
    ```
 
-5. **Conda** (Miniconda or Anaconda)
+5. **uv** (Python package & environment manager)
 
    ```bash
-  # Install Miniconda/Anaconda (official instructions)
-  # https://docs.conda.io/projects/conda/en/latest/user-guide/install/
+  # Install uv
+  curl -LsSf https://astral.sh/uv/install.sh | sh
 
   # Verify installation
-  conda --version
+  uv --version
    ```
 
 ### Optional Tools
@@ -349,26 +349,19 @@ Or manually:
 
 ```bash
 cd apps/ai
-# Create environment from environment.yml
-conda env create --name ascension-ai --file environment.yml --force
-
-# Or update an existing environment
-conda env update --name ascension-ai --file environment.yml --prune
-
-# Install local project in editable mode
-conda run --name ascension-ai python -m pip install -e .[dev]
+# Sync dependencies with uv (creates venv + installs all packages)
+uv sync
 ```
 
 #### Download ML Models
 
 ```bash
-conda run --name ascension-ai python scripts/download_models.py
+bash scripts/download-model.sh
 ```
 
 This downloads:
 
 - MediaPipe Pose model (~25MB)
-- Hold detection CNN weights (~150MB)
 
 #### Run Worker
 
@@ -377,7 +370,7 @@ This downloads:
 moon run ai:dev
 
 # Or directly
-cd apps/ai && conda run --name ascension-ai python src/worker.py
+cd apps/ai && uv run python src/worker.py
 ```
 
 Or using Docker:
@@ -915,8 +908,8 @@ For faster iteration during development:
 
    ```bash
    cd apps/ai
-  conda run --name ascension-ai python -m pip install watchdog
-  conda run --name ascension-ai watchmedo auto-restart --patterns="*.py" --recursive -- python src/worker.py
+   uv run python -m pip install watchdog
+   uv run watchmedo auto-restart --patterns="*.py" --recursive -- python src/worker.py
    ```
 
    Or via moon:
