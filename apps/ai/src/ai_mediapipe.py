@@ -170,7 +170,10 @@ def get_climbing_advice(result_dict):
         return "Clé API absente. Vérifie ton .env"
 
     ai_data = _summarize_for_ai(result_dict)
-    model = genai.GenerativeModel("models/gemini-2.5-flash")
+    model = genai.GenerativeModel(
+        "models/gemini-3.1-flash-lite-preview"
+        #"models/gemma-4-31b-it"
+    )  # "models/gemini-2.5-flash")
 
     prompt = (
         "Tu es un coach expert en escalade. Voici les données de mouvement (timestamps en ms) d'un grimpeur.\n"
