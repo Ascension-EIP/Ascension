@@ -2,7 +2,21 @@
 
 VALID=true
 
-# TODO
+while read local_ref local_sha remote_ref remote_sha
+do
+    branch_name=$(git rev-parse --abbrev-ref HEAD)
+
+    echo "🔍 Check branch name : $branch_name"
+
+    ./.github/scripts/check_branch "$branch_name"
+    
+    status=$?
+
+    if [ $status -ne 0 ]; then
+        echo "❌ Error: The branch name '$branch_name' is not compliant."
+        exit 1
+    fi
+done
 
 if [ "$VALID" = true ]; then
     echo "✔ All checks passed. Ready to push."

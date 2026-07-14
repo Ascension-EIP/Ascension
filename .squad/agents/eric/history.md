@@ -5,6 +5,18 @@
 
 ## Learnings
 
+### 2026-03-16: RNCP Block 1 M1 evidence posture — strongest assets are audit/specs, weakest are accessibility-proof formalization and oral packaging
+- Completed a repository-wide evidence sweep for Block 1 M1 observables (O1→O11).
+- Strength identified: audit and architecture/specification material is already substantial (`context-audit-compliance.md`, `tech-func-specs.md`, API/DB specs, code-level anchors in `apps/server/` and `apps/ai/`).
+- Main gaps are documentary proof quality rather than implementation volume: raw user-research artifacts (O1), explicit accessibility traceability from needs/specs to tests (O2/O6/O7), and oral-ready per-observable narration assets (O11).
+- Operational recommendation for docs coordination: prioritize O2/O7/O11 first, then add a single reusable traceability matrix to de-risk O1/O5/O6 simultaneously.
+
+### 2026-03-16: RNCP Block 1 M1 evidence posture — strongest assets are audit/specs, weakest are accessibility-proof formalization and oral packaging
+- Completed a repository-wide evidence sweep for Block 1 M1 observables (O1→O11).
+- Strength identified: audit and architecture/specification material is already substantial (`context-audit-compliance.md`, `tech-func-specs.md`, API/DB specs, code-level anchors in `apps/server/` and `apps/ai/`).
+- Main gaps are documentary proof quality rather than implementation volume: raw user-research artifacts (O1), explicit accessibility traceability from needs/specs to tests (O2/O6/O7), and oral-ready per-observable narration assets (O11).
+- Operational recommendation for docs coordination: prioritize O2/O7/O11 first, then add a single reusable traceability matrix to de-risk O1/O5/O6 simultaneously.
+
 ### 2026-03-03: PR #70 architecture review — Conda migration coherence risk
 - Reviewed PR #70 (`feat/ai-conda-setup` -> `dev`) with focus on runtime setup architecture.
 - Strength: AI setup converges on Conda across Docker and moon tasks, improving reproducibility.

@@ -8,25 +8,26 @@ project:
 
 tasks:
   setup:
-    command: '$CONDA_EXE'
-    args: ['env', 'create', '--file', 'environment.yml', "-p", "./ai-env"]
-    inputs:
-      - 'environment.yml'
-      - 'pyproject.toml'
-
-  install:
-    command: '$CONDA_EXE'
-    args: ['run', '--prefix', './ai-env', 'python', '-m', 'pip', 'install', '-e', '.[dev]']
+    command: 'uv'
+    args: ['sync']
     inputs:
       - 'pyproject.toml'
+      - 'uv.lock'
     deps:
-      - 'setup'
+      - 'root:setup-git-config'
+
+  download-model:
+    command: 'bash'
+    args: ['scripts/download-model.sh']
+    outputs:
+      - 'pose_landmarker.task'
 
   dev:
-    command: '$CONDA_EXE'
-    args: ['run', '--no-capture-output', '--prefix', './ai-env', 'python', '-u', 'consumer.py']
+    command: 'uv'
+    args: ['run', 'python', '-u', 'src/worker.py']
     deps:
-      - 'install'
+      - 'setup'
+      - 'download-model'
     env:
       LOG_LEVEL: 'debug'
       PYTHONUNBUFFERED: '1'
@@ -34,28 +35,29 @@ tasks:
       envFile: true
 
   build:
-    command: '$CONDA_EXE'
-    args: ['run', '--prefix', './ai-env', 'python', '-m', 'build']
+    command: 'uv'
+    args: ['build']
     deps:
-      - 'install'
+      - 'setup'
 
   lint:
-    command: '$CONDA_EXE'
-    args: ['run', '--prefix', './ai-env', 'ruff', 'check', '.']
+    command: 'uv'
+    args: ['run', 'ruff', 'check', 'src']
     deps:
-      - 'install'
+      - 'setup'
 
   test:
-    command: '$CONDA_EXE'
-    args: ['run', '--prefix', './ai-env', 'pytest', '-p', 'no:cacheprovider']
+    command: 'uv'
+    args: ['run', 'pytest', '-p', 'no:cacheprovider']
     deps:
-      - 'install'
+      - 'setup'
     options:
       allowFailure: true
 
   format:
-    command: '$CONDA_EXE'
-    args: ['run', '--prefix', './ai-env', 'black', '.']
+    command: 'uv'
+    args: ['run', 'ruff', 'check', '--fix', 'src']
     deps:
-      - 'install'
+      - 'setup'
+
 

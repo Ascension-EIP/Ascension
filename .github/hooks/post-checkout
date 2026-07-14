@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [ "$3" -eq 1 ]; then
+    branch_name=$(git rev-parse --abbrev-ref HEAD)
+
+    ./.github/scripts/check_branch "$branch_name"
+
+    if [ $? -ne 0 ]; then
+        echo "⚠️  Warning: The branch '$branch_name' is not compliant with naming rules."
+        echo "Consider renaming it with: git branch -m <new-name>"
+    fi
+fi
+
+exit 0

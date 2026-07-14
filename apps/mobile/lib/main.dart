@@ -1,7 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/layout/mobile_layout.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:mobile/core/accessibility/accessibility_settings_service.dart';
+import 'package:mobile/core/audio/audio_service.dart';
+import 'package:mobile/core/auth/auth_service.dart';
+import 'package:mobile/core/network/api_service.dart';
+import 'package:mobile/core/router/app_router.dart';
+import 'package:mobile/shared/localization/app_localizations.dart';
+import 'package:mobile/shared/theme/app_theme.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await ApiService().loadBaseUrl();
+  await AuthService().init();
+  await AccessibilitySettingsService().init();
+  AudioService().init(); // lancé en arrière-plan, ne bloque pas le démarrage
   runApp(const AscensionApp());
 }
 
@@ -10,31 +22,52 @@ class AscensionApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Ascension',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.grey,
-          brightness: Brightness.light,
-          surface: Colors.white,
-          onSurface: Colors.black,
-          secondary: const Color(0xFF00B5D3),
+    final settings = AccessibilitySettingsService();
+
+    return AnimatedBuilder(
+      animation: settings,
+      builder: (context, _) => MaterialApp.router(
+        title: 'Ascension',
+        debugShowCheckedModeBanner: false,
+        locale: settings.locale,
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        theme: AppTheme.dark(
+          highContrast: settings.highContrast,
+          dyslexiaProfile: settings.dyslexiaProfile,
+          simplifiedInterface: settings.simplifiedInterface,
+          reducedMotion: settings.reducedMotion,
         ),
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.black,
-          brightness: Brightness.dark,
-          surface: Color(0xFF0E1626),
-          onSurface: Colors.white,
-          secondary: const Color(0xFF00B5D3),
+        darkTheme: AppTheme.dark(
+          highContrast: settings.highContrast,
+          dyslexiaProfile: settings.dyslexiaProfile,
+          simplifiedInterface: settings.simplifiedInterface,
+          reducedMotion: settings.reducedMotion,
         ),
+        themeMode: ThemeMode.dark,
+        routerConfig: appRouter,
+        builder: (context, child) {
+          final media = MediaQuery.of(context);
+          final withScale = media.copyWith(
+            textScaler: TextScaler.linear(settings.textScale),
+            disableAnimations:
+                settings.reducedMotion || media.disableAnimations,
+          );
+          return MediaQuery(
+            data: withScale,
+            child: FocusTraversalGroup(
+              policy: ReadingOrderTraversalPolicy(),
+              descendantsAreFocusable: true,
+              child: child ?? const SizedBox.shrink(),
+            ),
+          );
+        },
       ),
-      themeMode: ThemeMode.dark,
-      home: MobileLayout(),
     );
   }
 }

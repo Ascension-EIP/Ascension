@@ -41,7 +41,7 @@ jobs:
         run: |
           COMMIT_NAME=$(git log --format="%s" -1)
           echo "Commit message: $COMMIT_NAME"
-          if echo "$COMMIT_NAME" | grep -qiE '^\[(no-ci|ci-no|ci no|no ci|ci-off|off-ci)\]'; then
+          if echo "$COMMIT_NAME" | grep -qiE '^\[(no-ci|ci-no|ci no|no ci|ci-off|off-ci|ci off|off ci|ci-skip|skip-ci|ci skip|skip ci)\]'; then
             echo "::notice title=CI skip::No-CI prefix detected — skipping all checks"
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else
@@ -206,13 +206,11 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
-      - name: Set up Conda
-        uses: conda-incubator/setup-miniconda@v3
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: 3.11
-
-      - name: Export CONDA_EXE for moon tasks
-        run: echo "CONDA_EXE=$(command -v conda)" >> "$GITHUB_ENV"
+          python-version: '3.11'
+          enable-cache: true
 
       - name: Install moon
         uses: moonrepo/setup-toolchain@v0
@@ -223,20 +221,20 @@ jobs:
         uses: actions/cache@v5
         with:
           path: .moon/cache
-          key: ${{ runner.os }}-moon-ai-${{ hashFiles('apps/ai/environment.yml', 'apps/ai/pyproject.toml') }}
+          key: ${{ runner.os }}-moon-ai-${{ hashFiles('apps/ai/pyproject.toml', 'apps/ai/uv.lock') }}
           restore-keys: |
             ${{ runner.os }}-moon-ai-
 
-      - name: Cache conda environment
+      - name: Cache uv environment
         uses: actions/cache@v5
         with:
-          path: apps/ai/ai-env
-          key: ${{ runner.os }}-venv-ai-${{ hashFiles('apps/ai/environment.yml', 'apps/ai/pyproject.toml') }}
+          path: apps/ai/.venv
+          key: ${{ runner.os }}-venv-ai-${{ hashFiles('apps/ai/pyproject.toml', 'apps/ai/uv.lock') }}
           restore-keys: |
             ${{ runner.os }}-venv-ai-
 
       - name: Install dependencies
-        run: moon run ai:install
+        run: moon run ai:setup
 
       - name: Lint
         run: moon run ai:lint
