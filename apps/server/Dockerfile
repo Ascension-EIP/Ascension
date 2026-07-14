@@ -1,38 +1,29 @@
-# ── Build stage ───────────────────────────────────────────────────────────────
-FROM rust:1.91.1-slim AS builder
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-	perl \
-	make \
-	&& rm -rf /var/lib/apt/lists/*
-
+FROM golang:1.25-alpine AS go-builder
 WORKDIR /app
 
-# Cache dependencies layer
-COPY Cargo.toml Cargo.lock ./
-RUN mkdir src && echo 'fn main() {}' > src/main.rs \
-	&& cargo build --release \
-	&& rm -rf src
+COPY go.mod go.sum ./
+RUN go mod download
 
-# Copy sqlx offline query cache, migrations and sources
-COPY .sqlx ./.sqlx
-COPY migrations ./migrations
-COPY src ./src
-ENV SQLX_OFFLINE=true
-RUN touch src/main.rs && cargo build --release
+COPY cmd/ cmd/
+COPY internal/ internal/
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+	go build \
+	-ldflags="-s -w" \
+	-o a.out \
+	cmd/app/main.go
 
-# ── Runtime stage ─────────────────────────────────────────────────────────────
-FROM debian:trixie-slim AS runtime
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-	ca-certificates \
-	&& rm -rf /var/lib/apt/lists/*
-
+FROM alpine:3.20
 WORKDIR /app
 
-COPY --from=builder /app/target/release/server ./server
-COPY migrations ./migrations
+RUN addgroup -g 1000 bob && adduser -D -u 1000 -G bob bob
+
+COPY migrations migrations
+COPY --from=go-builder --chown=bob:bob /app/a.out ./a.out
+
+USER bob
 
 EXPOSE 8080
 
-CMD ["./server"]
+ENV GIN_MODE=release
+ENTRYPOINT ["./a.out"]

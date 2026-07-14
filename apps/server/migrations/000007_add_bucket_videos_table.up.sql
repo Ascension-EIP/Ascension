@@ -1,0 +1,2 @@
+ALTER TABLE videos
+ADD COLUMN bucket TEXT NOT NULL;
