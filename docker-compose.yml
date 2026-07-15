@@ -48,7 +48,7 @@ services:
       - "8080:8080"
     env_file: .env
     environment:
-      - RUST_LOG=info
+      - LOG_LEVEL=info
     depends_on:
       postgresql:
         condition: service_healthy
