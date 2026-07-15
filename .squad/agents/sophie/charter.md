@@ -1,0 +1,1 @@
+../../../docs/20-engineering/ai/squad/sophie.md

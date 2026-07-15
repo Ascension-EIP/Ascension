@@ -1,4 +1,4 @@
-# Scribe — History
+# Sophie — History
 
 ## Project Context
 

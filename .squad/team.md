@@ -19,7 +19,7 @@
 | Alexandra | Infra | RabbitMQ, PostgreSQL, MinIO/S3, data persistence | 🗄️ |
 | Darius | Docs | Documentation, keeps docs/ in sync with all changes | 📝 |
 | Ridjan | Tester | Tests unitaires, tests d'intégration, qualité, couverture, edge cases | 🧪 |
-| Scribe | Session Logger | Memory, decisions, session logs | 📋 |
+| Sophie | Session Logger | Memory, decisions, session logs | 📋 |
 | Ralph | Work Monitor | Work queue, backlog, keep-alive | 🔄 |
 
 ## Architecture Overview
