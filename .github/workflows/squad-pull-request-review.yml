@@ -5,7 +5,7 @@
 #
 # Routing table:
 #   apps/ai/**           → squad:quentin    (AI / Python)
-#   apps/server/**       → squad:renaud     (Rust / API)
+#   apps/server/**       → squad:renaud     (Go / API)
 #   apps/mobile/**       → squad:romaric    (Flutter / Mobile)
 #   .github/** | docker* → squad:arthur     (DevOps / CI)
 #   docs/**              → squad:darius     (Documentation)
@@ -52,7 +52,7 @@ jobs:
             // Order matters: first match wins per file.
             const ROUTING_RULES = [
               { pattern: /^apps\/ai\//,                    agent: 'quentin',   domain: 'AI / Python' },
-              { pattern: /^apps\/server\//,                agent: 'renaud',    domain: 'Rust / API' },
+              { pattern: /^apps\/server\//,                agent: 'renaud',    domain: 'Go / API' },
               { pattern: /^apps\/mobile\//,                agent: 'romaric',   domain: 'Flutter / Mobile' },
               { pattern: /^\.github\//,                    agent: 'arthur',    domain: 'DevOps / CI' },
               { pattern: /^docker-compose\.yml$/,          agent: 'arthur',    domain: 'DevOps / CI' },
