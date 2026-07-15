@@ -3,3 +3,33 @@ tasks:
     script: |
       git config core.hooksPath .github/hooks
       git config commit.template .gitmessage
+
+  db-up:
+    command: "docker"
+    args: ["compose", "up", "-d", "postgresql", "minio", "rabbitmq"]
+    options:
+      cache: false
+
+  db-down:
+    command: "docker"
+    args: ["compose", "down"]
+    options:
+      cache: false
+
+  db-clean:
+    command: "docker"
+    args: ["compose", "down", "-v"]
+    options:
+      cache: false
+
+  prod-up:
+    command: "docker"
+    args: ["compose", "--profile", "prod", "up", "-d"]
+    options:
+      cache: false
+
+  prod-down:
+    command: "docker"
+    args: ["compose", "--profile", "prod", "down"]
+    options:
+      cache: false
