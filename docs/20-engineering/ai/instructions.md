@@ -14,19 +14,19 @@ This file contains the unified, global instructions and context for all AI model
   - [4. Guideline Awareness](#4-guideline-awareness)
   - [5. Execution History / Traceability](#5-execution-history--traceability)
   - [6. Quality Bar](#6-quality-bar)
-  - [8. Project Vision](#8-project-vision)
-  - [9. Key Features](#9-key-features)
-  - [10. Technical Stack](#10-technical-stack)
+  - [7. Project Vision](#7-project-vision)
+  - [8. Key Features](#8-key-features)
+  - [9. Technical Stack](#9-technical-stack)
     - [Overview](#overview)
     - [Repository structure (monorepo)](#repository-structure-monorepo)
-  - [11. System Architecture](#11-system-architecture)
+  - [10. System Architecture](#10-system-architecture)
     - [Design principles](#design-principles)
-  - [12. Business Model](#12-business-model)
-  - [13. Team](#13-team)
-  - [14. Academic Framework: Technical Track (EIP)](#14-academic-framework-technical-track-eip)
+  - [11. Business Model](#11-business-model)
+  - [12. Team](#12-team)
+  - [13. Academic Framework: Technical Track (EIP)](#13-academic-framework-technical-track-eip)
     - [Mandatory Objectives](#mandatory-objectives)
     - [Selected Complementary Objectives](#selected-complementary-objectives)
-  - [15. Graphify Knowledge Graph](#15-graphify-knowledge-graph)
+  - [14. Graphify Knowledge Graph](#14-graphify-knowledge-graph)
     - [Rules for using Graphify](#rules-for-using-graphify)
 
 ---
@@ -93,7 +93,7 @@ Examples of what to avoid by default:
 
 ---
 
-## 8. Project Vision
+## 7. Project Vision
 
 **Ascension** is a mobile app that turns any smartphone into a high-level climbing coach through AI biomechanical analysis.
 
@@ -109,7 +109,7 @@ Examples of what to avoid by default:
 
 ---
 
-## 9. Key Features
+## 8. Key Features
 
 | Feature                      | Description                                                                                                                      |
 |------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
@@ -128,7 +128,7 @@ Examples of what to avoid by default:
 
 ---
 
-## 10. Technical Stack
+## 9. Technical Stack
 
 ### Overview
 
@@ -158,7 +158,7 @@ Ascension/
 
 ---
 
-## 11. System Architecture
+## 10. System Architecture
 
 The system follows an **event-driven architecture** with **CQRS** and **client-side rendering**.
 
@@ -171,7 +171,7 @@ The system follows an **event-driven architecture** with **CQRS** and **client-s
 
 ---
 
-## 12. Business Model
+## 11. Business Model
 
 | Tier     | Price     | Analyses/month | Ghost Mode | Ads | Server Priority |
 |----------|-----------|----------------|------------|-----|-----------------|
@@ -183,7 +183,7 @@ The system follows an **event-driven architecture** with **CQRS** and **client-s
 
 ---
 
-## 13. Team
+## 12. Team
 
 | Developer            | OS                   | Responsibility                                                                                      |
 |----------------------|----------------------|-----------------------------------------------------------------------------------------------------|
@@ -195,7 +195,7 @@ The system follows an **event-driven architecture** with **CQRS** and **client-s
 
 ---
 
-## 14. Academic Framework: Technical Track (EIP)
+## 13. Academic Framework: Technical Track (EIP)
 
 The Ascension project is part of the **Technical Track** of EIP (Epitech Innovative Project). This track focuses on engineering excellence, software architecture, and technical rigor. The project is evaluated with clear objectives:
 
@@ -209,7 +209,7 @@ The Ascension project is part of the **Technical Track** of EIP (Epitech Innovat
 - **Collaborate with Technical Experts:** Identification of specific technical needs and structured collaboration with external experts (CTOs, engineers, open-source contributors) to validate or refine architecture decisions.
 - **Measure, Test, and Optimize Technical Performance:** Definition of performance KPIs, setup of load/stress tests, and implementation of technical optimizations based on concrete measurements.
 
-## 15. Graphify Knowledge Graph
+## 14. Graphify Knowledge Graph
 
 This project has a knowledge graph at `graphify-out/` with god nodes, community structure, and cross-file relationships.
 
