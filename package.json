@@ -1,8 +1,0 @@
-{
-  "name": "ascension",
-  "private": true,
-  "description": "Dependency tracking for toolchain versions",
-  "devDependencies": {
-    "@moonrepo/cli": "2.2.3"
-  }
-}

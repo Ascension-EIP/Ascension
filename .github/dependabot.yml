@@ -15,21 +15,6 @@ updates:
         patterns:
           - "*"
 
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "monthly"
-      day: "monday"
-      time: "09:00"
-      timezone: "Europe/Paris"
-    target-branch: "dev"
-    cooldown:
-      default-days: 1
-    groups:
-      npm-dependencies:
-        patterns:
-          - "*"
-
   - package-ecosystem: "pub"
     directory: "/apps/mobile"
     schedule:
