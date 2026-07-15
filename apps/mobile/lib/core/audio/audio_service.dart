@@ -1,3 +1,10 @@
+// @date 2026-03-12
+// @file audio_service.dart
+// @brief File description.
+// @project Ascension
+// @author Nicolas TORO <nicolas.toro@epitech.eu>
+// @copyright (c) 2026 Ascension
+// @status done
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';

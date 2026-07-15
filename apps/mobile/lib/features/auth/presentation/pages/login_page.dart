@@ -1,3 +1,10 @@
+// @date 2026-03-18
+// @file login_page.dart
+// @brief File description.
+// @project Ascension
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @copyright (c) 2026 Ascension
+// @status done
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/accessibility/accessibility_announcer.dart';

@@ -1,3 +1,10 @@
+// @date 2026-03-18
+// @file settings_page_accessibility_test.dart
+// @brief File description.
+// @project Ascension
+// @author Nicolas TORO <nicolas.toro@epitech.eu>
+// @copyright (c) 2026 Ascension
+// @status done
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
