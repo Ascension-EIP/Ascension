@@ -5,7 +5,7 @@
 | Domain / Keywords | Primary Agent | Secondary |
 |-------------------|---------------|-----------|
 | AI, vision, pipeline, MediaPipe, PyTorch, OpenCV, skeleton, ghost, hold detection, training program | Quentin | Eric (review) |
-| API, Rust, Axum, endpoints, JWT, auth, SQLx, WebSocket, presigned URL | Renaud | Eric (review) |
+| API, Go, Gin, endpoints, JWT, auth, pgx, WebSocket, presigned URL | Renaud | Eric (review) |
 | Flutter, mobile, UI, overlay, rendering, client, app, widget | Romaric | Eric (review) |
 | Docker, CI/CD, GitHub Actions, deployment, Hetzner, Kubernetes, scaling | Arthur | Eric (review) |
 | RabbitMQ, PostgreSQL, MinIO, S3, database, schema, queues, exchanges, buckets, storage | Alexandra | Eric (review) |

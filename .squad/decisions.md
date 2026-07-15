@@ -81,7 +81,7 @@
 ## 2026-03-02: Team Formation
 **By:** Gianni TUERO
 **What:** Team created with 8 agents: Eric (Lead), Quentin (AI), Renaud (Backend), Romaric (Mobile), Arthur (DevOps), Alexandra (Infra), Darius (Docs), Ridjan (Tester). Named from EPITECH universe.
-**Why:** Matches project domains — AI pipelines, Rust API, Flutter mobile, Docker/deployment, RabbitMQ/PostgreSQL/MinIO infra, and documentation sync.
+**Why:** Matches project domains — AI pipelines, Go API, Flutter mobile, Docker/deployment, RabbitMQ/PostgreSQL/MinIO infra, and documentation sync.
 
 ## 2026-03-02: No Auto-Commit
 **By:** Gianni TUERO
