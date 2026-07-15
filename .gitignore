@@ -67,7 +67,7 @@ venv/
 env/
 ai-env/
 sam_3d_body/
-apps/ai/tools
+apps/ai/src/tools/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
