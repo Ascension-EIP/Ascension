@@ -1,3 +1,10 @@
+# @date 2026-07-14
+# @file ai_mediapipe.py
+# @brief File description.
+# @project Ascension
+# @author Gianni TUERO <gianni.tuero@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+# @copyright (c) 2026 Ascension
+# @status done
 """
 MediaPipe pose analysis module.
 

@@ -1,3 +1,10 @@
+# @date 2026-03-12
+# @file ai_sam3d.py
+# @brief File description.
+# @project Ascension
+# @author Gianni TUERO <gianni.tuero@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+# @copyright (c) 2026 Ascension
+# @status done
 """SAM 3D Body pose analysis module.
 
 Expose ``create_estimator`` (one-time model load) and ``analyze`` (per-video
