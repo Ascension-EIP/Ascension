@@ -1,6 +1,5 @@
-
 tasks:
-  setup-git-config:
+  setup:
     script: |
       git config core.hooksPath .github/hooks
       git config commit.template .gitmessage

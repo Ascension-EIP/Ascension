@@ -7,57 +7,75 @@ project:
   description: 'AI service for Ascension'
 
 tasks:
-  setup:
+  install:
     command: 'uv'
     args: ['sync']
     inputs:
       - 'pyproject.toml'
       - 'uv.lock'
     deps:
-      - 'root:setup-git-config'
+      - 'root:setup'
 
   download-model:
     command: 'bash'
     args: ['scripts/download-model.sh']
+    inputs:
+      - 'scripts/download-model.sh'
     outputs:
       - 'pose_landmarker.task'
+
+  format:
+    command: 'uv'
+    args: ['run', 'ruff', 'check', '--fix', 'src']
+    inputs:
+      - 'src/**/*'
+      - 'pyproject.toml'
+      - 'uv.lock'
+    deps:
+      - 'install'
+
+  lint:
+    command: 'uv'
+    args: ['run', 'ruff', 'check', 'src']
+    inputs:
+      - 'src/**/*'
+      - 'pyproject.toml'
+      - 'uv.lock'
+    deps:
+      - 'format'
+
+  build:
+    command: 'uv'
+    args: ['build']
+    inputs:
+      - 'src/**/*'
+      - 'pyproject.toml'
+      - 'uv.lock'
+    outputs:
+      - 'dist'
+    deps:
+      - 'lint'
+
+  test:
+    command: 'uv'
+    args: ['run', 'pytest', '-p', 'no:cacheprovider']
+    inputs:
+      - 'src/**/*'
+      - 'pyproject.toml'
+      - 'uv.lock'
+    deps:
+      - 'install'
+    options:
+      allowFailure: true
 
   dev:
     command: 'uv'
     args: ['run', 'python', '-u', 'src/worker.py']
     deps:
-      - 'setup'
-      - 'download-model'
+      - 'install'
     env:
       LOG_LEVEL: 'debug'
       PYTHONUNBUFFERED: '1'
     options:
+      local: true
       envFile: true
-
-  build:
-    command: 'uv'
-    args: ['build']
-    deps:
-      - 'setup'
-
-  lint:
-    command: 'uv'
-    args: ['run', 'ruff', 'check', 'src']
-    deps:
-      - 'setup'
-
-  test:
-    command: 'uv'
-    args: ['run', 'pytest', '-p', 'no:cacheprovider']
-    deps:
-      - 'setup'
-    options:
-      allowFailure: true
-
-  format:
-    command: 'uv'
-    args: ['run', 'ruff', 'check', '--fix', 'src']
-    deps:
-      - 'setup'
-
-

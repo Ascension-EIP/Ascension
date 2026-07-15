@@ -12,7 +12,7 @@ tasks:
       - "go.mod"
       - "go.sum"
     deps:
-      - "root:setup-git-config"
+      - "root:setup"
 
   
   format:
@@ -45,17 +45,8 @@ tasks:
       - "internal/**/*"
       - "go.mod"
       - "go.sum"
-    deps:
-      - "lint"
-
-  build-release:
-    command: "go"
-    args: ["build", "-ldflags", "-s -w", "-o", "bin/server", "./cmd/server"]
-    inputs:
-      - "cmd/**/*"
-      - "internal/**/*"
-      - "go.mod"
-      - "go.sum"
+    outputs:
+      - "bin/server"
     deps:
       - "lint"
 
@@ -76,6 +67,7 @@ tasks:
     env:
       LOG_LEVEL: "debug"
     options:
+      local: true
       envFile: true
     deps:
       - "install"

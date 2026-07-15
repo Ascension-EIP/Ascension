@@ -14,31 +14,89 @@ tasks:
       - 'pubspec.yaml'
       - 'pubspec.lock'
     deps:
-      - 'root:setup-git-config'
+      - 'root:setup'
+
+  format:
+    command: 'dart'
+    args: ['format', '.']
+    inputs:
+      - 'lib/**/*'
+      - 'test/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'analysis_options.yaml'
+    deps:
+      - 'install'
+
+  lint:
+    command: 'flutter'
+    args: ['analyze']
+    inputs:
+      - 'lib/**/*'
+      - 'test/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'analysis_options.yaml'
+    deps:
+      - 'install'
 
   build-android:
     command: 'flutter'
     args: ['build', 'apk', '--dart-define=BACKEND_URL=${BACKEND_URL}']
+    inputs:
+      - 'lib/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'android/**/*'
+    outputs:
+      - 'build/app/outputs/flutter-apk'
     deps:
-      - 'install'
+      - 'lint'
     options:
       envFile: true
 
   build-ios:
     command: 'flutter'
     args: ['build', 'ios', '--no-codesign', '--dart-define=BACKEND_URL=${BACKEND_URL}']
+    inputs:
+      - 'lib/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'ios/**/*'
+    outputs:
+      - 'build/ios/iphoneos'
     deps:
-      - 'install'
+      - 'lint'
     options:
       envFile: true
 
   build:
     command: 'bash'
     args: ['scripts/build.sh']
+    inputs:
+      - 'lib/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'android/**/*'
+      - 'ios/**/*'
+      - 'scripts/build.sh'
+    outputs:
+      - 'build'
     deps:
-      - 'install'
+      - 'lint'
     options:
       envFile: true
+
+  test:
+    command: 'flutter'
+    args: ['test']
+    inputs:
+      - 'lib/**/*'
+      - 'test/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+    deps:
+      - 'install'
 
   dev:
     command: 'flutter'
@@ -46,22 +104,5 @@ tasks:
     deps:
       - 'install'
     options:
+      local: true
       envFile: true
-
-  test:
-    command: 'flutter'
-    args: ['test']
-    deps:
-      - 'install'
-
-  lint:
-    command: 'flutter'
-    args: ['analyze']
-    deps:
-      - 'install'
-
-  format:
-    command: 'dart'
-    args: ['format', '.']
-    deps:
-      - 'install'
