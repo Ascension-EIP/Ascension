@@ -4,6 +4,11 @@
 .idea
 .vscode
 *.swp
+*.swo
+*~
+*.iml
+*.ipr
+*.iws
 
 # =============================================================================
 # Dependencies
@@ -24,10 +29,9 @@ pnpm-lock.yaml
 dist/
 build/
 out/
-.next/
-.turbo/
 target/
 graphify-out/
+coverage/
 
 # =============================================================================
 # Logs / Debug
@@ -73,10 +77,58 @@ __pycache__/
 *.pyd
 *.pyi
 *.egg-info
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
 apps/ai/pose_landmarker.task
 apps/ai/ai-env
 worker.pid
 biomechanics.json
+
+# =============================================================================
+# Go
+# =============================================================================
+go.work
+go.work.sum
+*.test
+*.out
+*.prof
+
+# =============================================================================
+# Flutter / Mobile
+# =============================================================================
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.svn/
+.swiftpm/
+migrate_working_dir/
+.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+app.*.symbols
+app.*.map.json
+android/app/debug
+android/app/profile
+android/app/release
+
 
 # =============================================================================
 # Ascension-specific

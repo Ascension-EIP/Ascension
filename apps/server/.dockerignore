@@ -1,0 +1,28 @@
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Go binaries and builds
+bin/
+target/
+server
+main
+a.out
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+
+# Database data
+postgres/data/
+
+# Environment files
+.env
+.env.*
