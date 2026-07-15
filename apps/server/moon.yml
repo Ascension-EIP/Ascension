@@ -25,6 +25,7 @@ tasks:
       - "go.sum"
     deps:
       - "install"
+      - "root:format"
 
   lint:
     command: "go"

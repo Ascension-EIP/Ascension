@@ -27,6 +27,7 @@ tasks:
       - 'analysis_options.yaml'
     deps:
       - 'install'
+      - 'root:format'
 
   lint:
     command: 'flutter'

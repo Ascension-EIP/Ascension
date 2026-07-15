@@ -33,6 +33,7 @@ tasks:
       - 'uv.lock'
     deps:
       - 'install'
+      - 'root:format'
 
   lint:
     command: 'uv'
