@@ -67,7 +67,8 @@ tasks:
     env:
       LOG_LEVEL: "debug"
     options:
-      local: true
+      persistent: true
+      cache: false
       envFile: true
     deps:
       - "install"

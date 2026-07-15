@@ -63,19 +63,20 @@ tasks:
       - 'src/**/*'
       - 'pyproject.toml'
       - 'uv.lock'
-    deps:
-      - 'install'
     options:
       allowFailure: true
+    deps:
+      - 'install'
 
   dev:
     command: 'uv'
     args: ['run', 'python', '-u', 'src/worker.py']
-    deps:
-      - 'install'
     env:
       LOG_LEVEL: 'debug'
       PYTHONUNBUFFERED: '1'
     options:
-      local: true
+      persistent: true
+      cache: false
       envFile: true
+    deps:
+      - 'install'

@@ -50,10 +50,10 @@ tasks:
       - 'android/**/*'
     outputs:
       - 'build/app/outputs/flutter-apk'
-    deps:
-      - 'lint'
     options:
       envFile: true
+    deps:
+      - 'lint'
 
   build-ios:
     command: 'flutter'
@@ -65,10 +65,10 @@ tasks:
       - 'ios/**/*'
     outputs:
       - 'build/ios/iphoneos'
-    deps:
-      - 'lint'
     options:
       envFile: true
+    deps:
+      - 'lint'
 
   build:
     command: 'bash'
@@ -82,10 +82,10 @@ tasks:
       - 'scripts/build.sh'
     outputs:
       - 'build'
-    deps:
-      - 'lint'
     options:
       envFile: true
+    deps:
+      - 'lint'
 
   test:
     command: 'flutter'
@@ -101,8 +101,9 @@ tasks:
   dev:
     command: 'flutter'
     args: ['run', '--dart-define=BACKEND_URL=${BACKEND_URL}']
+    options:
+      persistent: true
+      cache: false
+      envFile: true
     deps:
       - 'install'
-    options:
-      local: true
-      envFile: true
