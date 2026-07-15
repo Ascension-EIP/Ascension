@@ -18,7 +18,7 @@
     - [What We Need](#what-we-need)
   - [Technology Decisions](#technology-decisions)
     - [1. Mobile Framework: Flutter](#1-mobile-framework-flutter)
-    - [2. API Backend: Rust](#2-api-backend-rust)
+    - [2. API Backend: Go](#2-api-backend-go)
     - [3. AI/ML Stack: Python + MediaPipe](#3-aiml-stack-python-mediapipe)
     - [4. Database: PostgreSQL](#4-database-postgresql)
     - [5. Message Queue: RabbitMQ](#5-message-queue-rabbitmq)
@@ -64,22 +64,22 @@ This document explains the main technology choices for the Ascension platform an
 
 **Trade-offs**: App will be slightly larger, but the time saved is worth it.
 
-### 2. API Backend: Rust
+### 2. API Backend: Go
 
-**Why Rust?**
+**Why Go?**
 
-- **Very fast**: Comparable to C++ in performance
-- **Memory safe**: Prevents common bugs like null pointers
-- **Good for WebSockets**: Handle many concurrent connections efficiently
-- **Low resource usage**: Means cheaper servers
-- **Type safety**: Catches errors before code runs
+- **Very fast**: Low latency, native compilation.
+- **Easy to learn**: Simple syntax enables faster developer velocity.
+- **Excellent concurrency**: Goroutines and channels make concurrent connections (WebSockets) simple and efficient.
+- **Low resource usage**: Low memory footprint (idle < 100 MB).
+- **Type safety**: Statically typed, compile-time checks.
 
 **Alternatives we considered**:
-- Node.js: Easier to learn but slower and uses more memory
-- Go: Good performance, simpler than Rust, but our team already knows Rust
-- Python: Too slow for high-traffic API
+- Rust: Exceptional performance and memory safety, but steeper learning curve (the initial prototype was built in Rust/Axum, then migrated to Go to increase onboarding speed and velocity).
+- Node.js: Easier to learn but slower and uses more memory.
+- Python: Too slow for high-traffic API.
 
-**Trade-offs**: Rust has a steeper learning curve, but we have one developer who knows it and can help the team.
+**Trade-offs**: Go's garbage collector introduces a tiny runtime overhead compared to Rust, but Go provides much faster development velocity and easier onboarding for the team.
 
 ### 3. AI/ML Stack: Python + MediaPipe
 
@@ -156,7 +156,7 @@ This document explains the main technology choices for the Ascension platform an
 | Component      | Technology         | Main Reason                              |
 | -------------- | ------------------ | ---------------------------------------- |
 | Mobile App     | Flutter            | One codebase for iOS & Android           |
-| API Backend    | Rust (Axum)        | Fast & memory-safe                       |
+| API Backend    | Go (Gin)           | Fast & simple                            |
 | AI Workers     | Python (MediaPipe) | Pose estimation + vision pipelines       |
 | Database       | PostgreSQL         | Structured data + JSON support           |
 | Message Queue  | RabbitMQ           | Reliable message broker with persistence |

@@ -11,7 +11,7 @@
 **AI-powered climbing coach — objective technique analysis, personalized feedback.**
 
 [![Flutter](https://img.shields.io/badge/Mobile-Flutter%20%2F%20Dart-02569B?logo=flutter)](https://flutter.dev)
-[![Rust](https://img.shields.io/badge/API-Rust%20%2F%20Axum-DEA584?logo=rust)](https://www.rust-lang.org)
+[![Go](https://img.shields.io/badge/API-Go%20%2F%20Gin-00ADD8?logo=go)](https://go.dev)
 [![Python](https://img.shields.io/badge/AI-Python%20%2F%20MediaPipe-3776AB?logo=python)](https://python.org)
 [![PostgreSQL](https://img.shields.io/badge/DB-PostgreSQL%2016-336791?logo=postgresql)](https://postgresql.org)
 
@@ -62,7 +62,7 @@ Ascension/
 ├── .moon/                  # moonrepo workspace & toolchain config
 ├── docker-compose.yml      # Local development orchestration
 ├── apps/
-│   ├── server/             # Rust / Axum REST API + WebSocket
+│   ├── server/             # Go / Gin REST API + WebSocket
 │   ├── mobile/             # Flutter mobile app (iOS & Android)
 │   └── ai/                 # Python AI workers (MediaPipe, OpenCV)
 └── docs/                   # All project documentation
@@ -77,7 +77,7 @@ Each app under `apps/` is independently buildable and deployable. See the [Monor
 | Layer          | Technology                                                   |
 | :------------- | :----------------------------------------------------------- |
 | Mobile         | Flutter (Dart) — `CustomPainter` for local overlay rendering |
-| API            | Rust, Axum, Tokio, SQLx — JWT auth, REST + WebSocket         |
+| API            | Go, Gin, pgx — JWT auth, REST + WebSocket         |
 | AI Workers     | Python 3.10+, MediaPipe, PyTorch, OpenCV                     |
 | Message Queue  | RabbitMQ 3.x — async job dispatch between API and workers    |
 | Database       | PostgreSQL 16 — JSONB for analysis results                   |
@@ -110,7 +110,7 @@ cp .env.example .env
 docker compose up -d
 
 # 5. Run a service
-moon run server:dev     # Rust API
+moon run server:dev     # Go API
 moon run ai:dev         # Python AI worker
 ```
 

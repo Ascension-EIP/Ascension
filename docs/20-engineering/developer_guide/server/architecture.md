@@ -34,14 +34,13 @@ No prior Rust or architecture knowledge is required to read this.
 
 | Technology | Role |
 |---|---|
-| **Rust** | Programming language |
-| **Axum** | HTTP web framework (like Express.js for Node) |
-| **SQLx** | Database driver to talk to PostgreSQL |
-| **Tokio** | Async runtime (lets the server handle many requests at once) |
+| **Go** | Programming language |
+| **Gin** | HTTP web framework |
+| **pgx/v5** | Database driver/pool to talk to PostgreSQL |
+| **Goroutines** | Concurrency handling |
 | **PostgreSQL** | The database |
-| **Serde** | Serialize/deserialize JSON |
-| **Anyhow / Thiserror** | Error handling helpers |
-| **UUID** | Generate unique IDs |
+| **JSON** | Native json tag support in structs |
+| **UUID** | Google UUID package for Go |
 
 ---
 
@@ -74,9 +73,9 @@ The Inbound and Outbound layers implement those traits ("adapters").
 
 **Why?**
 
-- You can swap PostgreSQL for a different database without touching a single line of business logic.
-- You can test business logic without a real database or a real HTTP server.
-- The code is easier to navigate: each layer has a clear responsibility.
+- The core business logic is completely isolated from HTTP routers, database queries, and message brokers.
+- The domain layer defines **interfaces** (ports) for repositories and services.
+- The inbound and outbound layers implement these interfaces (adapters).
 
 ---
 
@@ -84,63 +83,52 @@ The Inbound and Outbound layers implement those traits ("adapters").
 
 ### Domain (the core)
 
-**Location:** `src/domain/`
+**Location:** `internal/model/` and `internal/service/`
 
 This is the heart of the application. It contains:
 
-- **Models** – The data structures that represent your business entities (e.g., `User`, `Username`, `EmailAddress`). They include validation logic (e.g., a username must match `^[a-zA-Z0-9_]{8,24}$`).
-- **Ports** – Rust `trait`s (interfaces) that describe what operations are available. There are two kinds:
-  - `UserService` — what the HTTP layer can call (e.g., `create_user`).
-  - `UserRepository` — what the database layer must implement (e.g., `create_user` at the SQL level).
-- **Service** – The concrete implementation of `UserService`. It receives a repository, calls it, and maps the result to an output type.
-
-The Domain answers the question: **"What does the application do?"**
+- **Models** – The data structures that represent your business entities (e.g., `User`, `Video`, `Analysis`).
+- **Interfaces** – Go interfaces (ports) defined directly in services (e.g., `userRepository` in `internal/service/user.go`) describing what database operations are required.
+- **Service** – The concrete implementation of business services. It orchestrates the business workflows (e.g. hashing passwords, calling repositories, publishing RabbitMQ events).
 
 ---
 
 ### Inbound (HTTP layer)
 
-**Location:** `src/inbound/http/`
+**Location:** `internal/inbound/http/`
 
 This layer is responsible for:
 
 1. **Listening** for incoming HTTP requests on a TCP port.
-2. **Routing** requests to the right handler function.
-3. **Parsing** the JSON request body into Rust types.
-4. **Validating** those types (e.g., is the email address well-formed?).
+2. **Routing** requests to the right handler function using the Gin router.
+3. **Parsing** the JSON request body into DTO structs.
+4. **Validating** those structs.
 5. **Calling** the Domain service.
 6. **Formatting** the result as a JSON HTTP response.
 
-Key files:
+Key folders/files:
 
-| File | Role |
+| Path | Role |
 |---|---|
-| `src/inbound/http.rs` | Builds the Axum router, binds to the port, starts the server |
-| `src/inbound/http/handlers/api.rs` | Generic `ApiSuccess<T>` and `ApiError` response wrappers |
-| `src/inbound/http/handlers/user/create_user.rs` | Handler for `POST /v1/users` |
-| `src/inbound/http/middleware/auth.rs` | Auth and admin middleware (JWT validation, role check) |
-
-The Inbound layer answers the question: **"How does the outside world talk to the application?"**
+| `internal/inbound/http/router/router.go` | Wires up the Gin router, middleware, and routes |
+| `internal/inbound/http/handler/` | Controllers/handlers for each resource (e.g. `user.go`, `auth.go`) |
+| `internal/inbound/http/middleware/` | Rate limiters, JWT authorization, recovery, and logging middleware |
 
 ---
 
-### Outbound (database layer)
+### Outbound (adapters)
 
-**Location:** `src/outbound/`
+**Location:** `internal/outbound/`
 
-This layer is responsible for persisting data. Currently there is one adapter:
+This layer is responsible for persisting data and communicating with external systems. It contains:
 
-| File | Role |
+| Path | Role |
 |---|---|
-| `src/outbound/postgresql.rs` | Implements `UserRepository` using SQLx + PostgreSQL |
-
-The `Postgres` struct holds a connection pool and executes SQL queries. It maps database results back to Domain models (`User`, etc.).
-
-The Outbound layer answers the question: **"How does the application store and retrieve data?"**
+| `internal/outbound/postgres/` | Implements database repositories using pgx |
+| `internal/outbound/rabbitmq/` | Client for publishing and consuming queue events |
+| `internal/outbound/minio/` | Client for generating presigned upload/download URLs |
 
 ---
-
-## How a request flows through the server
 
 Here is what happens step-by-step when a client sends `POST /v1/users`:
 
@@ -149,41 +137,34 @@ Client
   │
   │  POST /v1/users  { "username": "...", "email": "...", ... }
   ▼
-Axum Router  (src/inbound/http.rs)
+Gin Router  (internal/inbound/http/router/router.go)
   │
-  │  routes to create_user handler
+  │  routes to Create handler
   ▼
-Handler: create_user()  (src/inbound/http/handlers/user/create_user.rs)
+Handler: UserHandler.Create()  (internal/inbound/http/handler/user.go)
   │
-  │  1. Deserializes JSON body → CreateUserHttpRequestBody
-  │  2. Validates & converts → CreateUserInput  (domain type)
-  │  3. Returns ApiError 422 if validation fails
+  │  1. Binds JSON body → SignupLoginForm DTO
+  │  2. Validates fields (checks email pattern, password length)
+  │  3. Converts to domain model
   ▼
-Service: Service::create_user()  (src/domain/user/service.rs)
+Service: UserService.CreateUser()  (internal/service/user.go)
   │
-  │  1. Converts CreateUserInput → CreateUserData  (repo type)
-  │  2. Calls self.repo.create_user(...)
+  │  1. Hashes user password using bcrypt
+  │  2. Calls s.r.CreateUser(...)  (interface call)
   ▼
-Repository: Postgres::create_user()  (src/outbound/postgresql.rs)
+Repository: UserRepository.CreateUser()  (internal/outbound/postgres/user.go)
   │
-  │  1. Opens a database transaction
-  │  2. Executes INSERT INTO users ...
-  │  3. Commits transaction
-  │  4. Returns User struct on success
-  │     or UserRepositoryError on failure
+  │  1. Executes INSERT INTO users ... using pgxpool
+  │  2. Returns User struct on success or error on failure
   ▼
-Service  (back in service.rs)
+Service  (back in user.go)
   │
-  │  Maps User → CreateUserOutput { id }
-  │  Maps UserRepositoryError → CreateUserError
+  │  Returns created User and nil error
   ▼
-Handler  (back in create_user.rs)
+Handler  (back in user.go)
   │
-  │  Maps CreateUserOutput → CreateUserResponse { id: String }
-  │  Maps CreateUserError → ApiError
-  ▼
-Axum  →  HTTP 201 { "status_code": 201, "data": { "id": "..." } }
-  │
+  │  1. Maps User → response.User DTO
+  │  2. Serializes DTO to JSON and returns HTTP 201
   ▼
 Client
 ```
@@ -233,73 +214,53 @@ apps/server/
     │       │       ├── get_user.rs     # GET  /v1/users/{id}
     │       │       ├── update_user.rs  # PUT  /v1/users/{id}
     │       │       └── delete_user.rs  # DELETE /v1/users/{id}
-    │       ├── middleware.rs           # Re-exports middleware
+    │       ├── router/
+    │       │   └── router.go           # Gin routes and middleware mounting
+    │       ├── handler/
+    │       │   ├── user.go             # Gin handlers for user CRUD
+    │       │   ├── auth.go
+    │       │   └── video.go
     │       └── middleware/
-    │           └── auth.rs             # JWT auth + admin role middleware
+    │           ├── auth.go             # JWT middlewares
+    │           └── rate_limiter.go     # Token bucket rate limiting
     │
-    ├── outbound.rs                     # Re-exports outbound module
-    ├── outbound/
-    │   └── postgresql.rs               # Postgres struct — implements UserRepository
+    ├── outbound/                       # Adapters
+    │   ├── postgres/
+    │   │   ├── postgres.go             # Database connection pool setup
+    │   │   ├── user.go                 # PostgreSQL user operations
+    │   │   └── video.go
+    │   ├── rabbitmq/
+    │   └── minio/
     │
-    ├── usecase/
-    │   └── auth.rs                     # auth::Service — implements AuthService (JWT logic)
-    │
-    └── tests/                          # Unit tests (compiled only in test mode)
-        ├── mod.rs
-        └── domain/
-            ├── mod.rs
-            └── user/
-                ├── mod.rs
-                ├── model_tests.rs      # Tests for Username, EmailAddress, Password, Role
-                └── service_tests.rs    # Tests for the user CRUD service layer
+    └── setup/
+        ├── config/
+        │   └── config.go               # Configuration structs
+        └── logger/
+            └── logger.go               # Logger setups
 ```
 
 ---
 
-## The entry point: `main.rs`
+## The entry point: `main.go`
 
-`main.rs` is the only place where everything is assembled together. It:
+`main.go` is the place where everything is wired together:
 
-1. Loads environment variables via `dotenv`.
-2. Reads the configuration (`Config::load()`).
-3. Creates the database connection pool (`Postgres::new(...)`).
-4. Creates the domain service (`Service::new(db)`) — passing the database as the repository.
-5. Creates and runs the HTTP server (`HttpServer::new(user_service, config)`).
-
-```rust
-// main.rs (simplified)
-let repo = Arc::new(Postgres::new(pool));                       // outbound adapter (shared)
-let auth_service = Arc::new(auth::Service::new(repo.clone(), config.hmac_key.clone()));
-let user_service = Arc::new(Service::new(repo.clone()));        // domain service
-let http_server = HttpServer::new(user_service, auth_service, config).await?;
-http_server.run().await
-```
-
-Note that the repository (`Postgres`) is wrapped in `Arc` and **shared** between both services.
-`AppState` is not generic — it holds `Arc<dyn UserService>` and `Arc<dyn AuthService>`,
-so services are swappable at runtime without compile-time generics.
-
-Notice that `main.rs` is the **only** file that knows about all three layers at the same time.
-Every other file only knows about its own layer and the traits of adjacent ones.
+1. Loads configuration (`config.Load()`).
+2. Creates the postgres repository connection (`postgres.New()`).
+3. Creates the domain services, injecting the repository.
+4. Initializes the Gin HTTP server router and runs it.
 
 ---
 
-## Configuration: `config.rs`
+## Configuration: `config.go`
 
-The server reads its configuration from **environment variables** (or a `.env` file).
+The server reads its configuration from environment variables.
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `DATABASE_URL` | ✅ Yes | — | PostgreSQL connection string |
-| `JWT_KEY` | ✅ Yes | — | Secret key for signing JWTs (HMAC) |
-| `SERVER_PORT` | ❌ No | `8080` | Port the server listens on |
-| `RUN_MIGRATION` | ❌ No | `false` | Run DB migrations on startup |
-
-Example `.env` file:
-
-```env
-DATABASE_URL=postgres://user:password@localhost:5432/ascension
-JWT_KEY=a-very-long-and-secret-random-string
-SERVER_PORT=8080
-RUN_MIGRATION=false
-```
+| `DB_NAME` | ✅ Yes | — | Database name |
+| `DB_USER` | ✅ Yes | — | Database user |
+| `DB_PASS` | ✅ Yes | — | Database password |
+| `DB_HOST` | ❌ No | `localhost` | Database host |
+| `DB_PORT` | ❌ No | `5432` | Database port |
+| `DB_MIGRATION` | ❌ No | — | Migrations directory |

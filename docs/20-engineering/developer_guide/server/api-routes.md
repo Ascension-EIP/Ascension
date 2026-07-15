@@ -10,7 +10,7 @@
 
 This document lists every HTTP route exposed by the Ascension backend server,
 with request/response examples and notes on authentication requirements.
-No prior Rust knowledge is needed to use this reference.
+No prior Go knowledge is needed to use this reference.
 
 ---
 
@@ -23,9 +23,10 @@ No prior Rust knowledge is needed to use this reference.
   - [Authentication](#authentication)
   - [Rate Limiting](#rate-limiting)
   - [Auth](#auth)
-    - [POST /v1/auth/register — Register a new account](#post-v1authregister--register-a-new-account)
+    - [POST /v1/auth/signup — Register a new account](#post-v1authsignup--register-a-new-account)
     - [POST /v1/auth/login — Log in](#post-v1authlogin--log-in)
-    - [POST /v1/auth/logout — Log out](#post-v1authlogout--log-out)
+    - [DELETE /v1/auth/logout — Log out](#delete-v1authlogout--log-out)
+    - [PUT /v1/auth/refresh — Refresh token](#put-v1authrefresh--refresh-token)
   - [Users](#users)
     - [POST /v1/users — Create a user](#post-v1users--create-a-user)
     - [GET /v1/users — List all users](#get-v1users--list-all-users)
@@ -33,10 +34,12 @@ No prior Rust knowledge is needed to use this reference.
     - [PUT /v1/users/{id} — Update a user](#put-v1usersid--update-a-user)
     - [DELETE /v1/users/{id} — Delete a user](#delete-v1usersid--delete-a-user)
   - [Videos](#videos)
-    - [POST /v1/videos/upload-url — Get a presigned upload URL](#post-v1videosupload-url--get-a-presigned-upload-url)
+    - [GET /v1/videos/upload-url — Get a presigned upload URL](#get-v1videosupload-url--get-a-presigned-upload-url)
+    - [PUT /v1/videos/upload-done/{id} — Complete upload](#put-v1videosupload-doneid--complete-upload)
+    - [GET /v1/videos/download-url/{id} — Get download URL](#get-v1videosdownload-urlid--get-download-url)
   - [Analyses](#analyses)
-    - [POST /v1/analyses — Trigger an analysis](#post-v1analyses--trigger-an-analysis)
-    - [GET /v1/analyses/{id} — Get an analysis](#get-v1analysesid--get-an-analysis)
+    - [POST /v1/analysis — Trigger an analysis](#post-v1analysis--trigger-an-analysis)
+    - [GET /v1/analysis/{id} — Get an analysis](#get-v1analysisid--get-an-analysis)
   - [Health](#health)
     - [GET /healthz — Health check](#get-healthz--health-check)
   - [Error Codes Reference](#error-codes-reference)
@@ -107,18 +110,13 @@ A global rate limiter is applied to **all routes**:
 
 ## Auth
 
-All auth endpoints live under `/v1/auth`. They do **not** require an `Authorization` header —
-they are the entry points that produce tokens.
+All auth endpoints live under `/v1/auth`. They do **not** require an `Authorization` header.
 
-On successful login or registration, the server:
+On successful login or registration, the server returns the user info, an access token, and a refresh token.
 
-1. Returns a JSON body with `access_token` and `user_id`.
-2. Sets an **`HttpOnly; SameSite=Strict`** session cookie named `session_token` so browsers carry the token automatically.
+### POST /v1/auth/signup — Register a new account
 
-### POST /v1/auth/register — Register a new account
-
-Creates a new user account with the `user` role, hashes the password with bcrypt,
-and returns a JWT token.
+Creates a new user account with the `user` role, hashes the password with bcrypt, and logs the user in.
 
 **Request body:**
 
@@ -132,24 +130,32 @@ and returns a JWT token.
 
 | Field      | Type   | Rules                                |
 |------------|--------|--------------------------------------|
-| `username` | string | 8–24 characters, `[a-zA-Z0-9_]` only |
-| `email`    | string | Must be a valid email address        |
-| `password` | string | Minimum 8 characters                 |
+| `username` | string | Required                             |
+| `email`    | string | Required, valid email format         |
+| `password` | string | Required, minimum 8 characters       |
 
 **Responses:**
 
 | Status                     | Meaning                       | Body                                              |
 |----------------------------|-------------------------------|---------------------------------------------------|
-| `201 Created`              | Account created, token issued | `{ "access_token": "<jwt>", "user_id": "<uuid>" }` |
-| `409 Conflict`             | Email already registered      | Plain text error                                  |
-| `422 Unprocessable Entity` | Validation failed             | Plain text error                                  |
+| `200 OK`                   | Account created, token issued | Login Response JSON                               |
+| `400 Bad Request`          | Validation failed             | Plain text error                                  |
+| `409 Conflict`             | Email/Username already exists | Plain text error                                  |
 
-**Example response (201):**
+**Example response (200):**
 
 ```json
 {
+  "refresh_token": "a1b2c3d4...",
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user_id": "550e8400-e29b-41d4-a716-446655440000"
+  "token_type": "Bearer",
+  "expires_in": 900,
+  "user": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "username": "climber42",
+    "email": "climber@example.com",
+    "role": "user"
+  }
 }
 ```
 
@@ -157,8 +163,7 @@ and returns a JWT token.
 
 ### POST /v1/auth/login — Log in
 
-Authenticates a user with email and password. Returns a JWT token in both the body
-and as an `HttpOnly` cookie.
+Authenticates a user with email and password.
 
 **Request body:**
 
@@ -169,15 +174,45 @@ and as an `HttpOnly` cookie.
 }
 ```
 
-| Field      | Type   | Rules                         |
-|------------|--------|-------------------------------|
-| `email`    | string | Must be a valid email address |
-| `password` | string | Minimum 8 characters          |
-
 **Responses:**
 
 | Status                     | Meaning                          | Body                                              |
 |----------------------------|----------------------------------|---------------------------------------------------|
+| `200 OK`                   | Authenticated                    | Login Response JSON                               |
+| `400 Bad Request`          | Validation failed             | Plain text error                                  |
+| `401 Unauthorized`          | Incorrect credentials            | Plain text error                                  |
+
+---
+
+### DELETE /v1/auth/logout — Log out
+
+Logs out the user and invalidates the session token.
+
+**Responses:**
+
+| Status          | Meaning          |
+|-----------------|------------------|
+| `200 OK`        | Logged out       |
+
+---
+
+### PUT /v1/auth/refresh — Refresh token
+
+Refreshes the access token using the refresh token.
+
+**Request body:**
+
+```json
+{
+  "token": "refresh_token_string"
+}
+```
+
+**Responses:**
+
+| Status          | Meaning          | Body                |
+|-----------------|------------------|---------------------|
+| `200 OK`        | Token refreshed  | Access Token Response|
 | `200 OK`                   | Valid credentials, token returned | `{ "access_token": "<jwt>", "user_id": "<uuid>" }` |
 | `401 Unauthorized`         | Wrong email or password          | Plain text error                                  |
 | `422 Unprocessable Entity` | Malformed request fields         | Plain text error                                  |
@@ -356,58 +391,65 @@ Permanently deletes a user.
 
 ## Videos
 
-### POST /v1/videos/upload-url — Get a presigned upload URL
+### GET /v1/videos/upload-url — Get a presigned upload URL
 
-Registers a new video record in the database and returns a presigned PUT URL
-that the client uses to upload the video file **directly to MinIO** (no proxying
-through the server).
+Generates a presigned URL that the client uses to upload the video file **directly to MinIO** (no proxying through the server).
 
-**Request body:**
+**Query Parameters:**
 
-```json
-{
-  "filename": "my-climb.mp4",
-  "user_id": "550e8400-e29b-41d4-a716-446655440000"
-}
-```
-
-| Field      | Type        | Description                                             |
-|------------|-------------|---------------------------------------------------------|
-| `filename` | string      | Original filename; used to infer the `Content-Type`     |
-| `user_id`  | UUID string | Temporary field — will come from JWT once auth is wired |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `content_type`| string| Allowed: `video/mp4`, `video/webm`, `video/quicktime`, `video/x-msvideo` |
+| `size` | int | Size in bytes (max 1GB) |
 
 **Responses:**
 
-| Status                      | Meaning              | Body                                                        |
-|-----------------------------|----------------------|-------------------------------------------------------------|
-| `201 Created`               | URL generated        | `{ "video_id": "<uuid>", "upload_url": "<presigned-url>" }` |
-| `500 Internal Server Error` | MinIO presign failed | Plain text error                                            |
+| Status                      | Meaning              | Body                                                                        |
+|-----------------------------|----------------------|-----------------------------------------------------------------------------|
+| `200 OK`                    | URL generated        | `{ "video_id": "<uuid>", "upload_url": "<presigned-url>", "expires_at": "<time>" }` |
+| `400 Bad Request`           | Missing or invalid params | Plain text error                                                       |
+| `500 Internal Server Error` | MinIO presign failed | Plain text error                                                            |
 
-**Example response (201):**
+---
 
-```json
-{
-  "video_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "upload_url": "http://minio:9000/videos/a1b2c3d4-...?X-Amz-Signature=..."
-}
-```
+### PUT /v1/videos/upload-done/{id} — Complete upload
+
+Signals that the video upload has been completed by the client.
+
+**Responses:**
+
+| Status                      | Meaning              |
+|-----------------------------|----------------------|
+| `204 No Content`            | Upload completed     |
+
+---
+
+### GET /v1/videos/download-url/{id} — Get download URL
+
+Generates a presigned GET URL to watch or download the video.
+
+**Responses:**
+
+| Status                      | Meaning              | Body |
+|-----------------------------|----------------------|------|
+| `200 OK`                    | Download URL ready   | `{ "download_url": "<url>", "expires_at": "<time>" }` |
 
 **Upload flow:**
 
 ```
-1. Client → POST /v1/videos/upload-url  → gets { video_id, upload_url }
+1. Client → GET /v1/videos/upload-url?content_type=...&size=... → gets { video_id, upload_url }
 2. Client → PUT <upload_url>            → uploads bytes directly to MinIO
-3. Client → POST /v1/analyses           → triggers AI processing
+3. Client → PUT /v1/videos/upload-done/{video_id} → completes upload
+4. Client → POST /v1/analysis           → triggers AI processing
 ```
 
 ---
 
 ## Analyses
 
-### POST /v1/analyses — Trigger an analysis
+### POST /v1/analysis — Trigger an analysis
 
-Creates an analysis record and publishes a job message to the `vision.skeleton`
-RabbitMQ queue. The AI worker picks up the job asynchronously.
+Creates an analysis record and publishes a job message to the `vision.skeleton` RabbitMQ queue.
 
 **Request body:**
 
@@ -415,75 +457,24 @@ RabbitMQ queue. The AI worker picks up the job asynchronously.
 { "video_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }
 ```
 
-| Field      | Type        | Description                                       |
-|------------|-------------|---------------------------------------------------|
-| `video_id` | UUID string | The video to analyse (must exist in the database) |
-
 **Responses:**
 
 | Status                      | Meaning                   | Body                                                                   |
 |-----------------------------|---------------------------|------------------------------------------------------------------------|
-| `202 Accepted`              | Job queued                | `{ "analysis_id": "<uuid>", "job_id": "<uuid>", "status": "pending" }` |
+| `202 Accepted`              | Job queued                | `{ "id": "<uuid>", "status": "pending" }` |
 | `404 Not Found`             | `video_id` does not exist | Plain text error                                                       |
-| `500 Internal Server Error` | RabbitMQ publish failed   | Plain text error                                                       |
-
-**Example response (202):**
-
-```json
-{
-  "analysis_id": "bbbb0000-0000-0000-0000-000000000001",
-  "job_id":      "cccc0000-0000-0000-0000-000000000001",
-  "status":      "pending"
-}
-```
-
-> `202 Accepted` means the job was queued — it does **not** mean the analysis is
-> finished. Poll `GET /v1/analyses/{id}` to check completion.
 
 ---
 
-### GET /v1/analyses/{id} — Get an analysis
+### GET /v1/analysis/{id} — Get an analysis
 
-Returns the current state of an analysis, including the result once completed.
-
-**Path parameter:**
-
-| Parameter | Type        | Description                                     |
-|-----------|-------------|-------------------------------------------------|
-| `id`      | UUID string | The analysis ID returned by `POST /v1/analyses` |
+Returns the current state of an analysis.
 
 **Responses:**
 
 | Status          | Meaning                  | Body             |
 |-----------------|--------------------------|------------------|
-| `200 OK`        | Analysis found           | Analysis object  |
-| `404 Not Found` | No analysis with this ID | Plain text error |
-
-**Example response (200) — still processing:**
-
-```json
-{
-  "id":                  "bbbb0000-0000-0000-0000-000000000001",
-  "video_id":            "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "job_id":              "cccc0000-0000-0000-0000-000000000001",
-  "status":              "processing",
-  "result_json":         null,
-  "processing_time_ms":  null
-}
-```
-
-**Example response (200) — completed:**
-
-```json
-{
-  "id":                  "bbbb0000-0000-0000-0000-000000000001",
-  "video_id":            "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "job_id":              "cccc0000-0000-0000-0000-000000000001",
-  "status":              "completed",
-  "result_json":         "{\"frames\": [...]}",
-  "processing_time_ms":  4230
-}
-```
+| `200 OK`        | Analysis found           | `{ "id": "<uuid>", "status": "<status>" }` |
 
 **Analysis status lifecycle:**
 
@@ -492,34 +483,19 @@ pending → processing → completed
                     ↘ failed
 ```
 
-| Status       | Meaning                                                          |
-|--------------|------------------------------------------------------------------|
-| `pending`    | Job published to RabbitMQ, worker has not started yet            |
-| `processing` | Worker has picked up the job and is running                      |
-| `completed`  | `result_json` is populated with pose data                        |
-| `failed`     | Worker encountered an error; job will be re-queued automatically |
-
 ---
 
 ## Health
 
 ### GET /healthz — Health check
 
-A simple liveness probe. **Requires a valid JWT token + admin role.**
-
-**Headers required:**
-
-```
-Authorization: Bearer <admin_jwt_token>
-```
+A simple public liveness probe.
 
 **Responses:**
 
 | Status             | Meaning                             |
 |--------------------|-------------------------------------|
 | `204 No Content`   | Server is healthy                   |
-| `401 Unauthorized` | Missing or invalid token            |
-| `403 Forbidden`    | Token valid but role is not `admin` |
 
 ---
 
