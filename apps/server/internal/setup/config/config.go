@@ -1,3 +1,10 @@
+// @date 2026-03-18
+// @file config.go
+// @brief File description.
+// @project Ascension
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @copyright (c) 2026 Ascension
+// @status done
 package config
 
 import (
