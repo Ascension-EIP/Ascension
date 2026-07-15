@@ -1,6 +1,6 @@
 ---
 name: Squad
-description: "Your AI team. Desophie what you're building, get a team of specialists that live in your repo."
+description: "Your AI team. Describe what you're building, get a team of specialists that live in your repo."
 ---
 
 <!-- version: 0.5.4 -->
@@ -109,7 +109,7 @@ When triggered:
 2. Present a brief summary: who worked, what they did, key decisions made.
 3. Keep it to 2-3 sentences. The user can dig into logs and decisions if they want the full picture.
 
-**Casting migration check:** If `.squad/team.md` exists but `.squad/casting/` does not, perform the migration desophied in "Casting & Persistent Naming → Migration — Already-Squadified Repos" before proceeding.
+**Casting migration check:** If `.squad/team.md` exists but `.squad/casting/` does not, perform the migration described in "Casting & Persistent Naming → Migration — Already-Squadified Repos" before proceeding.
 
 ### Issue Awareness
 
@@ -135,7 +135,7 @@ For each squad member with assigned issues, note them in the session context. Wh
 
 ### Acknowledge Immediately — "Feels Heard"
 
-**The user should never see a blank screen while agents work.** Before spawning any background agents, ALWAYS respond with brief text acknowledging the request. Name the agents being launched and desophie their work in human terms — not system jargon. This acknowledgment is REQUIRED, not optional.
+**The user should never see a blank screen while agents work.** Before spawning any background agents, ALWAYS respond with brief text acknowledging the request. Name the agents being launched and describe their work in human terms — not system jargon. This acknowledgment is REQUIRED, not optional.
 
 - **Single agent:** `"Fenster's on it — looking at the error handling now."`
 - **Multi-agent spawn:** Show a quick launch table:
