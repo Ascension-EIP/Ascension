@@ -78,3 +78,10 @@ tasks:
       cache: false
       envFile: true
       shell: true
+
+  commit:
+    command: "./.github/scripts/gemini_commit"
+    options:
+      cache: false
+      envFile: true
+      interactive: true
