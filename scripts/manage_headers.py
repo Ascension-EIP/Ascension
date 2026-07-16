@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-# @date 2026-07-15
+# @date 2026-07-16
 # @file manage_headers.py
 # @brief Script to parse, check, and update file headers in the Ascension repository.
 # @project Ascension
 # @author Nicolas TORO <nicolas.toro@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
-
 import os
 import sys
 import re
@@ -57,6 +56,17 @@ def run_cmd(args):
         return res.stdout.strip()
     except subprocess.CalledProcessError:
         return None
+
+def get_local_git_user():
+    name = run_cmd(['git', 'config', 'user.name'])
+    email = run_cmd(['git', 'config', 'user.email'])
+    if name and email:
+        return f"{name} <{email}>"
+    elif name:
+        return name
+    elif email:
+        return email
+    return None
 
 def strip_header_c(content):
     # Try new line header style first
@@ -141,22 +151,24 @@ def generate_header(fields, style):
         return '\n'.join(f"# {line}" for line in lines) + '\n'
 
 def get_file_metadata(path, ext, style):
+    local_user = get_local_git_user()
+
     try:
         with open(path, 'r', encoding='utf-8', newline='') as f:
             local_content = f.read()
     except Exception:
         today = datetime.date.today().strftime('%Y-%m-%d')
-        return today, 'local'
+        return today, local_user or 'local'
 
     is_tracked = run_cmd(['git', 'ls-files', '--error-unmatch', path]) is not None
     if not is_tracked:
         today = datetime.date.today().strftime('%Y-%m-%d')
-        return today, 'local'
+        return today, local_user or 'local'
 
     head_content = run_cmd(['git', 'show', f'HEAD:{path}'])
     if head_content is None:
         today = datetime.date.today().strftime('%Y-%m-%d')
-        return today, 'modified'
+        return today, local_user or 'modified'
 
     local_stripped = strip_header(local_content, style).strip()
     head_stripped = strip_header(head_content, style).strip()
@@ -166,7 +178,7 @@ def get_file_metadata(path, ext, style):
     log_output = run_cmd(['git', 'log', '--follow', '--format=%H %as %an <%ae>', '--', path])
     if not log_output:
         today = datetime.date.today().strftime('%Y-%m-%d')
-        return today, 'unknown'
+        return today, local_user or 'unknown'
 
     commits = []
     for line in log_output.splitlines():
@@ -213,13 +225,23 @@ def get_file_metadata(path, ext, style):
 
     authors.reverse()
 
+    if has_local_code_mod and local_user:
+        local_name = local_user.split('<')[0].strip().lower() if '<' in local_user else local_user.strip().lower()
+        local_email = None
+        m = re.search(r'<(.*?)>', local_user)
+        if m:
+            local_email = m.group(1).strip().lower()
+
+        if local_name not in seen_names and (not local_email or local_email not in seen_emails):
+            authors.append(local_user)
+
     if resolved_date is None:
         if has_local_code_mod:
             resolved_date = datetime.date.today().strftime('%Y-%m-%d')
         else:
             resolved_date = commits[-1][1] if commits else datetime.date.today().strftime('%Y-%m-%d')
 
-    authors_str = ", ".join(authors) if authors else ("unknown" if is_tracked else "local")
+    authors_str = ", ".join(authors) if authors else (local_user or ("unknown" if is_tracked else "local"))
 
     return resolved_date, authors_str
 
@@ -307,9 +329,11 @@ def main():
 
         date_str, author = get_file_metadata(path, ext, style)
         
-        # If the file is local (has no git history) but already has a valid author, preserve it
-        if author in ["local", "unknown"] and existing_fields.get('author'):
-            author = existing_fields.get('author')
+        # If the file has no git history but already has a valid non-placeholder author, preserve it
+        local_user = get_local_git_user()
+        existing_author = existing_fields.get('author')
+        if existing_author and existing_author not in ["local", "unknown", "modified"] and (author in ["local", "unknown", "modified", local_user]):
+            author = existing_author
 
         new_fields = {
             'date': date_str,

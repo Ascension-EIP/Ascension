@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # @date 2026-07-16
-# @file setup-sonarqube.py
+# @file setup_sonarqube.py
 # @brief File description.
 # @project Ascension
-# @author modified
+# @author Nicolas TORO <nicolas.toro@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
 import urllib.request
