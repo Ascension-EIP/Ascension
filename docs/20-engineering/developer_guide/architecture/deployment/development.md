@@ -218,7 +218,7 @@ We follow a dual-strategy for environment variables to balance local developer e
 | **Ports** | Forwarded to host machine | Internal container ports |
 
 **Why this dual-approach?**
-- **Native Context:** Allows you to run `moon run ai:dev` or `cargo run` directly on your host machine while connecting to Dockerized infra services.
+- **Native Context:** Allows you to run `moon run ai:dev` or `go run ./cmd/server` directly on your host machine while connecting to Dockerized infra services.
 - **Docker Context:** Ensures that when the AI worker runs *inside* a container (production), it uses internal network hostnames and avoids `.env` host mismatches.
 
 Edit `.env`:
@@ -566,7 +566,6 @@ volumes:
   postgres_data:
   rabbitmq_data:
   minio_data:
-  cargo_cache:
   model_cache:
 ```
 
@@ -576,12 +575,13 @@ volumes:
 
 ### Create New Migration
 
+Create `.up.sql` and `.down.sql` migration files under `apps/server/migrations/` manually, or use `golang-migrate` CLI:
+
 ```bash
-cd server
-sqlx migrate add <migration_name>
+migrate create -ext sql -dir apps/server/migrations -seq <migration_name>
 ```
 
-This creates `server/migrations/<timestamp>_<migration_name>.sql`
+This creates `apps/server/migrations/<seq>_<migration_name>.up.sql` and `apps/server/migrations/<seq>_<migration_name>.down.sql`.
 
 Example migration:
 
@@ -630,7 +630,7 @@ CREATE INDEX idx_analyses_status ON analyses(status);
 Migrations run automatically on server startup. You can also view logs to see if migrations applied successfully:
 
 ```bash
-docker-compose logs api
+docker-compose logs server
 ```
 
 ---

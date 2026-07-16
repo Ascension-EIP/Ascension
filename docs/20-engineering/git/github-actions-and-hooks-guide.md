@@ -348,17 +348,16 @@ For pull requests, the source branch name is read from `GITHUB_HEAD_REF`.
 
 #### Job: `check_server` (needs: `check_commit_and_branch`)
 
-Validates the Rust server application.
+Validates the Go server application.
 
 | Step             | Description                                               |
 | ---------------- | --------------------------------------------------------- |
 | Checkout         | Full history + recursive submodules                       |
-| Rust toolchain   | Sets up stable Rust with `rustfmt` and `clippy`           |
+| Set up Go        | Installs Go 1.25.5 and caches dependencies based on `apps/server/go.sum` |
 | Install moon     | Sets up the moon task runner                              |
-| Cache Cargo      | Caches `~/.cargo` and `apps/server/target`                |
 | Cache moon store | Caches `.moon/cache`                                      |
 | Format check     | `moon run server:format` — fails if code is not formatted |
-| Lint             | `moon run server:lint` — runs Clippy                      |
+| Lint             | `moon run server:lint` — runs `go vet`                    |
 | Build            | `moon run server:build-release` — builds in release mode  |
 | Test             | `moon run server:test` — runs unit tests                  |
 

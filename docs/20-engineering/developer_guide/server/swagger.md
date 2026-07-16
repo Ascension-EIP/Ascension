@@ -37,7 +37,7 @@ This document explains how to access the interactive API documentation (Swagger 
 | Local dev   | <http://localhost:3000/swagger-ui>  |
 | Staging     | `https://<staging-host>/swagger-ui` |
 
-Start the server normally (`cargo run` or `docker compose up server`) and open the URL above in your browser.
+Start the server normally (`go run ./cmd/server` or `docker compose up server`) and open the URL above in your browser.
 
 ---
 

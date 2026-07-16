@@ -346,7 +346,7 @@ moon task-graph
 cd apps/server
 
 # Make changes…
-# use moon or cargo/flutter/python directly
+# use moon or go/flutter/python directly
 
 # Run its tasks via moon from anywhere in the repo
 moon run server:test
@@ -452,11 +452,11 @@ jobs:
 
 ### 1. Always Define Tasks in `moon.yml`
 
-Prefer running commands through moon rather than calling `cargo`, `flutter`, or `python` directly — this ensures caching, env loading, and dependency resolution.
+Prefer running commands through moon rather than calling `go`, `flutter`, or `python` directly — this ensures caching, env loading, and dependency resolution.
 
 ### 2. Pin Toolchain Versions
 
-Keep `.moon/toolchain.yml` up to date so all developers and CI use the same Rust/Python versions.
+Keep `.moon/toolchain.yml` up to date so all developers and CI use the same Go/Python versions.
 
 ### 3. Use `--affected` in CI
 
@@ -477,7 +477,7 @@ BREAKING CHANGE: Requires new ENV_VAR variable in .env"
 
 ### 5. Keep `moon.yml` Minimal
 
-Only define the tasks your project actually needs. Avoid duplicating configuration already handled by the toolchain (e.g., Rust version).
+Only define the tasks your project actually needs. Avoid duplicating configuration already handled by the toolchain (e.g., Go version).
 
 ---
 

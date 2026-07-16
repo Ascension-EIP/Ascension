@@ -9,7 +9,7 @@
 # Server Architecture
 
 This document explains how the Ascension backend server is structured and why it is built that way.
-No prior Rust or architecture knowledge is required to read this.
+No prior Go or architecture knowledge is required to read this.
 
 ---
 
@@ -25,8 +25,8 @@ No prior Rust or architecture knowledge is required to read this.
     - [Outbound (database layer)](#outbound-database-layer)
   - [How a request flows through the server](#how-a-request-flows-through-the-server)
   - [File structure map](#file-structure-map)
-  - [The entry point: `main.rs`](#the-entry-point-mainrs)
-  - [Configuration: `config.rs`](#configuration-configrs)
+  - [The entry point: `main.go`](#the-entry-point-maingo)
+  - [Configuration: `config.go`](#configuration-configgo)
 
 ---
 
@@ -179,64 +179,35 @@ Client
 
 ```
 apps/server/
-├── Cargo.toml                          # Rust project & dependencies
-├── .sqlx/                              # Cached sqlx query metadata (offline mode)
-├── migrations/                         # SQL migration files (run once to create tables)
-└── src/
-    ├── main.rs                         # Entry point: wires everything together
-    ├── config.rs                       # Reads environment variables
-    │
-    ├── domain.rs                       # Re-exports domain module
-    ├── domain/
-    │   ├── auth/
-    │   │   ├── entity.rs               # Auth entity types
-    │   │   ├── error.rs                # AuthError enum
-    │   │   ├── inbound.rs              # AuthService trait
-    │   │   └── outbound.rs             # Auth outbound trait
-    │   └── user/
-    │       ├── user.rs                 # Re-exports models, ports, service
-    │       ├── models/
-    │       │   └── user.rs             # User struct + value types + Input/Output/Error types
-    │       ├── ports.rs                # UserService trait + UserRepository trait + data structs
-    │       └── service.rs              # Service<R> — implements UserService, calls the repo
-    │
-    ├── inbound.rs                      # Re-exports inbound module
-    ├── inbound/
-    │   └── http.rs                     # HttpServer, AppState, Axum router + v1 routes
+├── cmd/
+│   └── server/
+│       └── main.go                     # Entry point: wires everything together
+├── go.mod                              # Go module definition
+├── go.sum                              # Go dependency checksums
+├── migrations/                         # SQL migration files (run on startup)
+└── internal/
+    ├── app/
+    │   └── app.go                      # Application orchestrator / runner
+    ├── model/                          # Domain models (entities & value objects)
+    │   ├── analysis.go
+    │   ├── auth.go
+    │   ├── user.go
+    │   └── video.go
+    ├── service/                        # Domain services (business logic & port definitions)
+    │   ├── analysis.go
+    │   ├── auth.go
+    │   ├── user.go
+    │   └── video.go
+    ├── inbound/                        # HTTP controllers / adapters
     │   └── http/
-    │       ├── handlers.rs             # Re-exports handlers
-    │       ├── handlers/
-    │       │   ├── api.rs              # ApiSuccess<T> and ApiError generic wrappers
-    │       │   ├── user.rs             # Re-exports user handlers
-    │       │   └── user/
-    │       │       ├── create_user.rs  # POST /v1/users
-    │       │       ├── list_users.rs   # GET  /v1/users
-    │       │       ├── get_user.rs     # GET  /v1/users/{id}
-    │       │       ├── update_user.rs  # PUT  /v1/users/{id}
-    │       │       └── delete_user.rs  # DELETE /v1/users/{id}
-    │       ├── router/
-    │       │   └── router.go           # Gin routes and middleware mounting
-    │       ├── handler/
-    │       │   ├── user.go             # Gin handlers for user CRUD
-    │       │   ├── auth.go
-    │       │   └── video.go
-    │       └── middleware/
-    │           ├── auth.go             # JWT middlewares
-    │           └── rate_limiter.go     # Token bucket rate limiting
-    │
-    ├── outbound/                       # Adapters
-    │   ├── postgres/
-    │   │   ├── postgres.go             # Database connection pool setup
-    │   │   ├── user.go                 # PostgreSQL user operations
-    │   │   └── video.go
-    │   ├── rabbitmq/
-    │   └── minio/
-    │
-    └── setup/
-        ├── config/
-        │   └── config.go               # Configuration structs
-        └── logger/
-            └── logger.go               # Logger setups
+    │       ├── dto/                    # Data Transfer Objects for request/response binding
+    │       ├── handler/                # Gin router handlers (controllers)
+    │       ├── middleware/             # Gin middleware (auth, recovery, logger)
+    │       └── router/                 # Router configuration
+    └── outbound/                       # Adapters for database, message queue, and object storage
+        ├── postgres/                   # PostgreSQL storage repository (pgx implementation)
+        ├── rabbitmq/                   # RabbitMQ message broker client
+        └── minio/                      # MinIO (S3) file storage client
 ```
 
 ---

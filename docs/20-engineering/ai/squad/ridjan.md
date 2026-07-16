@@ -17,7 +17,7 @@
 
 ## Stack de test par domaine
 
-- **Rust / API Gateway (Renaud):** `cargo test`, `tokio::test`, `axum::test`, `sqlx` with test DB
+- **Go / API Gateway (Renaud):** `go test`, `testify`, mock/integration tests, test DB
 - **Python / AI Workers (Quentin):** `pytest`, `pytest-asyncio`, `unittest.mock`, `hypothesis`
 - **Flutter / Mobile (Romaric):** `flutter test`, `mockito`, widget tests, golden tests
 - **Infrastructure (Alexandra):** tests de migration DB, validation des schémas RabbitMQ
@@ -36,5 +36,5 @@
 ## Project Context
 
 **Project:** Ascension — Climbing video analysis platform
-**Stack:** Flutter, Rust/Axum, Python/PyTorch/MediaPipe, RabbitMQ, PostgreSQL, MinIO/S3, Docker
+**Stack:** Flutter, Go/Gin, Python/PyTorch/MediaPipe, RabbitMQ, PostgreSQL, MinIO/S3, Docker
 **User:** Gianni TUERO
