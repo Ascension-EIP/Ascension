@@ -147,7 +147,7 @@ go:
   version: '1.25.5'
 
 python:
-  version: '3.14.2'
+  version: '3.11'
 ```
 
 ### Project config (`apps/<project>/moon.yml`)

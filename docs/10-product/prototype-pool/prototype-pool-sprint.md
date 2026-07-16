@@ -148,7 +148,7 @@ All toolchain versions are pinned in `.moon/toolchain.yml` and must be used cons
 
 | Tool / Package | Version   | Notes                             |
 | -------------- | --------- | --------------------------------- |
-| Python         | `3.14.2`  | Pinned via `.moon/toolchain.yml`  |
+| Python         | `3.11`    | Pinned via `.moon/toolchain.yml`  |
 | ruff           | `0.15.4`  | Linter & formatter                |
 | pytest         | `9.0.2`   | Test runner                       |
 | build          | `1.4.0`   | Package builder                   |

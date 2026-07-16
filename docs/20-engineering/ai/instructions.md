@@ -136,7 +136,7 @@ Examples of what to avoid by default:
 |----------------|-------------------------------------------------------------------|-----------------------------|
 | Mobile client  | Flutter / Dart `^3.11.0` | iOS & Android               |
 | API Gateway    | Go (`1.25.5`) + Gin                                               | Edition 2024, Go `1.25.5`   |
-| AI Workers     | Python `3.14.2` + MediaPipe + PyTorch + OpenCV + Pika             | 2 pipelines                 |
+| AI Workers     | Python `3.11` + MediaPipe + PyTorch + OpenCV + Pika               | 2 pipelines                 |
 | Message broker | RabbitMQ `4.2.4`                                                  | AMQP, durable queues        |
 | Database       | PostgreSQL `18`                                                   | JSONB for analysis outputs  |
 | Object storage | MinIO (`RELEASE.2025-09-07T16-13-09Z`)                            | S3-compatible               |
