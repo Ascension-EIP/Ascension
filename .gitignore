@@ -21,6 +21,8 @@ target/
 graphify-out/
 coverage/
 bin/
+.scannerwork/
+.sonar/
 
 # =============================================================================
 # Logs / Debug
@@ -115,3 +117,4 @@ app.*.map.json
 android/app/debug
 android/app/profile
 android/app/release
+/pubspec.yaml

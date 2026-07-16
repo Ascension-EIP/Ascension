@@ -33,3 +33,48 @@ tasks:
     args: ["compose", "--profile", "prod", "down"]
     options:
       cache: false
+
+  format:
+    command: "python3"
+    args: ["scripts/manage_headers.py"]
+    inputs:
+      - "apps/**/*.go"
+      - "apps/**/*.dart"
+      - "apps/**/*.py"
+      - "scripts/manage_headers.py"
+
+  sonar-up:
+    command: "docker"
+    args: ["compose", "--profile", "sonar", "up", "-d", "sonar-db", "sonarqube"]
+    options:
+      cache: false
+
+  sonar-down:
+    command: "docker"
+    args: ["compose", "--profile", "sonar", "rm", "-s", "-f", "sonar-db", "sonarqube"]
+    options:
+      cache: false
+
+  sonar-clean:
+    command: "docker"
+    args: ["compose", "--profile", "sonar", "down", "-v"]
+    options:
+      cache: false
+
+  sonar-setup:
+    command: "python3"
+    args: ["scripts/setup-sonarqube.py"]
+    options:
+      cache: false
+
+  sonar-scan:
+    command: "npx"
+    args:
+      - "-y"
+      - "sonar-scanner"
+      - "-Dsonar.host.url=$SONAR_HOST_URL"
+      - "-Dsonar.login=$SONAR_TOKEN"
+    options:
+      cache: false
+      envFile: true
+      shell: true
