@@ -24,6 +24,12 @@ tasks:
     outputs:
       - 'pose_landmarker.task'
 
+  update:
+    command: 'uv'
+    args: ['sync', '--upgrade']
+    options:
+      cache: false
+
   format:
     command: 'uv'
     args: ['run', 'ruff', 'check', '--fix', 'src']
@@ -81,3 +87,10 @@ tasks:
       envFile: true
     deps:
       - 'install'
+
+  clean:
+    script: |
+      rm -rf .venv .ruff_cache .pytest_cache
+      find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+    options:
+      cache: false

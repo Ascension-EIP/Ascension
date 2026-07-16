@@ -1,5 +1,5 @@
-> **Last updated:** 12th March 2026
-> **Version:** 2.3
+> **Last updated:** 16th July 2026
+> **Version:** 2.4
 > **Authors:** Gianni TUERO
 > **Status:** Done
 > {.is-success}
@@ -130,6 +130,7 @@ Ascension/ (Monorepo)
 
 ```yaml
 # https://moonrepo.dev/docs/config/workspace
+
 $schema: './cache/schemas/workspace.json'
 
 projects:
@@ -167,6 +168,9 @@ tasks:
   install:
     ...
 
+  update:
+    ...
+
   format:
     ...
 
@@ -183,6 +187,9 @@ tasks:
     ...
 
   dev:
+    ...
+
+  clean:
     ...
 ```
 
@@ -202,6 +209,9 @@ tasks:
   download-model:
     ...
 
+  update:
+    ...
+
   format:
     ...
 
@@ -216,6 +226,9 @@ tasks:
 
   dev:
     ...
+
+  clean:
+    ...
 ```
 
 **`apps/mobile/moon.yml`** (Flutter):
@@ -229,6 +242,9 @@ project:
 
 tasks:
   install:
+    ...
+
+  update:
     ...
 
   format:
@@ -247,6 +263,9 @@ tasks:
     ...
 
   dev:
+    ...
+
+  clean:
     ...
 ```
 
@@ -297,15 +316,18 @@ moon run mobile:test
 # Run lint across all projects
 moon run :lint
 
-# Run a task and all its dependents
-moon run server:build-release
+# Clean build/cache directories across all projects
+moon run :clean
+
+# Update and lock dependencies across all projects
+moon run :update
 ```
 
 ### Common Commands
 
 ```bash
 # List all projects
-moon project --list
+moon project
 
 # Show tasks available for a project
 moon project server
@@ -313,8 +335,8 @@ moon project server
 # Run affected tasks only (useful in CI)
 moon run :test --affected
 
-# Check the dependency graph
-moon dep-graph
+# Check the task dependency graph
+moon task-graph
 ```
 
 ### Working on a Specific Service
@@ -507,5 +529,5 @@ moon toolchain --list
 
 ---
 
-**Last Updated**: 2026-03-03
+**Last Updated**: 2026-07-16
 **Maintainer**: Ascension DevOps Team

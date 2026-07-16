@@ -16,6 +16,12 @@ tasks:
     deps:
       - 'root:setup'
 
+  update:
+    command: 'flutter'
+    args: ['pub', 'upgrade']
+    options:
+      cache: false
+
   format:
     command: 'dart'
     args: ['format', '.']
@@ -108,3 +114,9 @@ tasks:
       envFile: true
     deps:
       - 'install'
+
+  clean:
+    command: 'flutter'
+    args: ['clean']
+    options:
+      cache: false
