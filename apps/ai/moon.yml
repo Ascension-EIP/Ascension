@@ -34,7 +34,7 @@ tasks:
     command: 'uv'
     args: ['run', 'ruff', 'check', '--fix', 'src']
     inputs:
-      - 'src/**/*'
+      - '**/*.py'
       - 'pyproject.toml'
       - 'uv.lock'
     deps:
@@ -45,7 +45,7 @@ tasks:
     command: 'uv'
     args: ['run', 'ruff', 'check', 'src']
     inputs:
-      - 'src/**/*'
+      - '**/*.py'
       - 'pyproject.toml'
       - 'uv.lock'
     deps:
@@ -55,7 +55,7 @@ tasks:
     command: 'uv'
     args: ['build']
     inputs:
-      - 'src/**/*'
+      - '**/*.py'
       - 'pyproject.toml'
       - 'uv.lock'
     outputs:
@@ -67,7 +67,7 @@ tasks:
     command: 'uv'
     args: ['run', 'pytest', '-p', 'no:cacheprovider']
     inputs:
-      - 'src/**/*'
+      - '**/*.py'
       - 'pyproject.toml'
       - 'uv.lock'
     options:

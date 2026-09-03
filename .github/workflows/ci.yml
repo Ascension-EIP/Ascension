@@ -77,9 +77,9 @@ jobs:
           submodules: recursive
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
-          go-version: '1.25.5'
+          go-version: '1.26.0'
           cache: true
           cache-dependency-path: apps/server/go.sum
 
@@ -127,7 +127,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.41.2'
+          flutter-version: '3.47.2'
           channel: stable
           cache: true
 
@@ -178,7 +178,7 @@ jobs:
           fetch-depth: 0
           submodules: recursive
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: '3.11'
           enable-cache: true

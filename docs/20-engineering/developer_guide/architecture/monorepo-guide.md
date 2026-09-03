@@ -145,7 +145,7 @@ projects:
 # https://moonrepo.dev/docs/config/toolchain
 
 go:
-  version: '1.25.5'
+  version: '1.26.0'
 
 python:
   version: '3.11'

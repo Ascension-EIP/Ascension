@@ -11,7 +11,7 @@ services:
       - minio_data:/data
 
   rabbitmq:
-    image: rabbitmq:4.2.4-management
+    image: rabbitmq:4.3.5-management
     container_name: ascension-rabbitMQ
     ports:
       - "5672:5672"
@@ -87,7 +87,7 @@ services:
         condition: service_healthy
 
   sonar-db:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     container_name: ascension-sonar-db
     profiles:
       - sonar

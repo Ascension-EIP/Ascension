@@ -317,7 +317,7 @@ Validates the Go server application.
 | Step             | Description                                               |
 | ---------------- | --------------------------------------------------------- |
 | Checkout         | Full history + recursive submodules                       |
-| Set up Go        | Installs Go 1.25.5 and caches dependencies                |
+| Set up Go        | Installs Go 1.26.0 and caches dependencies                |
 | Install moon     | Sets up the moon task runner                              |
 | Cache moon store | Caches `.moon/cache`                                      |
 | Format check     | `moon run server:format` — fails if code is not formatted |
@@ -332,7 +332,7 @@ Validates the Flutter mobile application.
 | Step                   | Description                                               |
 | ---------------------- | --------------------------------------------------------- |
 | Checkout               | Full history + recursive submodules                       |
-| Set up Flutter         | Installs Flutter 3.41.2 (stable channel) with cache       |
+| Set up Flutter         | Installs Flutter 3.47.2 (stable channel) with cache       |
 | Cache pub dependencies | Caches `~/.pub-cache` and `.dart_tool`                    |
 | Install moon           | Sets up the moon task runner                              |
 | Cache moon store       | Caches `.moon/cache`                                      |
@@ -374,7 +374,7 @@ Detects if the commit message starts with `[no-ci]`, `[skip-ci]`, etc. Outputs `
 Builds and publishes production artifacts:
 - **`build_and_push_server`**: Builds `apps/server/Dockerfile` (Go server) and pushes to GHCR.
 - **`build_and_push_ai`**: Builds `apps/ai/Dockerfile` (Python AI worker) and pushes to GHCR.
-- **`build_and_push_mobile`**: Builds Android APK using Flutter 3.41.2 and uploads build artifact.
+- **`build_and_push_mobile`**: Builds Android APK using Flutter 3.47.2 and uploads build artifact.
 - **`create_release`**: Downloads the APK artifact and creates a GitHub Release for tag `v*`.
 
 ---
