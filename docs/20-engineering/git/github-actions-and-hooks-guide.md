@@ -642,10 +642,10 @@ The following secrets and variables must be configured in the GitHub repository 
 | Name                    | Type     | Used in                    | Description                                          |
 | ----------------------- | -------- | -------------------------- | ---------------------------------------------------- |
 | `GITHUB_TOKEN`          | Secret   | `deploy.yml`               | Built-in GitHub token for GHCR authentication        |
-| `APP_ID`                | Secret   | `dev-to-production.yml`    | GitHub App ID used to generate a scoped token        |
-| `APP_PRIVATE_KEY`       | Secret   | `dev-to-production.yml`    | GitHub App private key for token generation          |
-| `MIRROR_SSH_KEY`        | Secret   | `dev-to-production.yml`    | SSH private key for the external mirror repository   |
-| `MIRROR_REPOSITORY_URL` | Variable | `dev-to-production.yml`    | URL of the external repository to mirror to          |
+| `APP_ID`                | Secret   | `staging-to-main.yml`      | GitHub App ID used to generate a scoped token        |
+| `APP_PRIVATE_KEY`       | Secret   | `staging-to-main.yml`      | GitHub App private key for token generation          |
+| `MIRROR_SSH_KEY`        | Secret   | `staging-to-main.yml`      | SSH private key for external mirror repository/repositories |
+| `MIRROR_REPOSITORY_URL` | Variable | `staging-to-main.yml`      | Comma-separated list of target repositories to mirror to (e.g. `repo1,repo2,repo3`) |
 
 > ℹ️ `GITHUB_TOKEN` is automatically provided by GitHub Actions and does not need to be configured manually.
 
