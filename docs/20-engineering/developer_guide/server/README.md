@@ -38,7 +38,7 @@ the [API routes reference](./api-routes.md) and the [Swagger UI guide](./swagger
 
 ## Prerequisites
 
-- **Go** (toolchain version `1.25.5` — download from go.dev or use proto)
+- **Go** (toolchain version `1.26.0` — download from go.dev or use proto)
 - **Docker** + **Docker Compose** — for PostgreSQL, RabbitMQ, MinIO locally
 - **moon** — monorepo task runner (see [Developer Quickstart](../README.md))
 
@@ -48,7 +48,7 @@ the [API routes reference](./api-routes.md) and the [Swagger UI guide](./swagger
 
 | Technology         | Version            | Role                                                  |
 |--------------------|--------------------|-------------------------------------------------------|
-| **Go**             | 1.25.5             | Language                                              |
+| **Go**             | 1.26.0             | Language                                              |
 | **Gin**            | 1.12.0             | HTTP web framework                                    |
 | **pgx/v5**         | 5.8.0              | Async PostgreSQL driver & connection pool             |
 | **PostgreSQL**     | 18                 | Relational database                                   |

@@ -83,13 +83,13 @@ graph TB
    - Included with Docker Desktop on macOS/Windows
    - Linux: `sudo apt-get install docker-compose-plugin`
 
-3. **Go Toolchain** (1.25.5+)
+3. **Go Toolchain** (1.26.0+)
 
    ```bash
    # Download and install Go from https://go.dev/dl/
    # E.g. Linux installation:
-   wget https://go.dev/dl/go1.25.5.linux-amd64.tar.gz
-   sudo tar -C /usr/local -xzf go1.25.5.linux-amd64.tar.gz
+   wget https://go.dev/dl/go1.26.0.linux-amd64.tar.gz
+   sudo tar -C /usr/local -xzf go1.26.0.linux-amd64.tar.gz
    export PATH=$PATH:/usr/local/go/bin
    ```
 
