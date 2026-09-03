@@ -1,4 +1,4 @@
-# @date 2026-03-12
+# @date 2026-09-04
 # @file worker.py
 # @brief File description.
 # @project Ascension
@@ -31,7 +31,7 @@ from dotenv import load_dotenv
 from ai_mediapipe import analyze, get_climbing_advice
 
 # Load .env from project root (two levels up from apps/ai/) so that
-# RABBITMQ_HOST, MINIO_ENDPOINT, DB_URI etc. are available when the
+# RABBITMQ_HOST, MINIO_ENDPOINT, POSTGRES_DB_URL etc. are available when the
 # worker is launched locally with `moon run ai:dev`.
 _HERE = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(_HERE, "..", "..", ".env"), override=False)
@@ -96,8 +96,8 @@ def _s3_client():
 
 
 def _pg_conn():
-    """Return a psycopg2 connection using DB_URI or individual vars."""
-    uri = os.getenv("DB_URI")
+    """Return a psycopg2 connection using POSTGRES_DB_URL or individual vars."""
+    uri = os.getenv("POSTGRES_DB_URL")
     if uri:
         return psycopg2.connect(uri)
     return psycopg2.connect(

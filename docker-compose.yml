@@ -71,7 +71,7 @@ services:
       - POSTGRES_USER=ascension
       - POSTGRES_PASSWORD=ascension
       - POSTGRES_DB=ascension
-      - DB_URI=postgres://ascension:ascension@postgresql:5432/ascension
+      - POSTGRES_DB_URL=postgres://ascension:ascension@postgresql:5432/ascension
 
       - MINIO_ROOT_USER=ascension
       - MINIO_ROOT_PASSWORD=ascension
