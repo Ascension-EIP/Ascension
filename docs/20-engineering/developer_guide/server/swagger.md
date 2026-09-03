@@ -7,6 +7,9 @@
 
 # Swagger / OpenAPI
 
+> [!NOTE]
+> **Migration Status:** The Ascension backend was migrated from Rust to Go. The automatic OpenAPI documentation via `utoipa` is a feature of the legacy Rust backend and is currently **planned but not yet active** on the Go/Gin backend server. This document serves as a reference of the previous Rust implementation and the planned Go swagger documentation.
+
 This document explains how to access the interactive API documentation (Swagger UI) for the Ascension backend, and how to keep the spec up-to-date when adding new routes.
 
 ---
@@ -34,7 +37,7 @@ This document explains how to access the interactive API documentation (Swagger 
 | Local dev   | <http://localhost:3000/swagger-ui>  |
 | Staging     | `https://<staging-host>/swagger-ui` |
 
-Start the server normally (`cargo run` or `docker compose up server`) and open the URL above in your browser.
+Start the server normally (`go run ./cmd/server` or `docker compose up server`) and open the URL above in your browser.
 
 ---
 
@@ -61,18 +64,9 @@ You can import this URL directly into Postman, Insomnia, or any other tool that 
 
 ---
 
-## How it works
+## How it worked (Rust Legacy)
 
-The project uses [`utoipa`](https://docs.rs/utoipa) to generate the OpenAPI spec directly from the Rust source code — no separate YAML/JSON file to maintain.
-
-Two crates are involved:
-
-| Crate               | Role                                                                                       |
-|---------------------|--------------------------------------------------------------------------------------------|
-| `utoipa`            | Derives OpenAPI schemas (`ToSchema`) and path metadata (`#[utoipa::path]`) from Rust types |
-| `utoipa-swagger-ui` | Serves the Swagger UI React app at `/swagger-ui`                                           |
-
-The central API struct lives in `apps/server/src/inbound/http.rs`:
+In the Rust codebase, we used [`utoipa`](https://docs.rs/utoipa) to generate the OpenAPI spec directly from Rust source annotations, mounting it in Axum:
 
 ```rust
 #[derive(OpenApi)]
@@ -80,12 +74,19 @@ The central API struct lives in `apps/server/src/inbound/http.rs`:
 pub struct ApiDoc;
 ```
 
-It is mounted into the Axum router alongside the rest of the app:
+## Planned Go Implementation
 
-```rust
-Router::new()
-    .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
-    // … the rest of the routes
+For the Go/Gin backend, Swagger UI will be integrated using **swaggo/swag**. Once implemented, routes will be documented using Go comments above handler functions:
+
+```go
+// @Summary Create a user
+// @Description Creates a new user record
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param request body request.SignupLoginForm true "User signup details"
+// @Success 201 {object} response.LoginResponse
+// @Router /v1/auth/signup [post]
 ```
 
 ---

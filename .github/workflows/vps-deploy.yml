@@ -28,7 +28,7 @@ jobs:
     ######################## STEPS ############################################
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set image prefix
         id: image

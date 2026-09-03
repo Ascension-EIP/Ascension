@@ -1,0 +1,191 @@
+############################ CONFIGURATION ####################################
+name: ascension-staging-to-main
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Type de montée de version'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+env:
+  GITHUB_ACTIONS: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+###############################################################################
+
+############################ JOBS #############################################
+jobs:
+  ########################## MERGE STAGING → MAIN ############################
+  merge_branch:
+    runs-on: ubuntu-latest
+
+    ######################## STEPS ############################################
+    steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          token: ${{ steps.generate_token.outputs.token }}
+          fetch-depth: 0
+          ref: staging
+
+      - name: Merge staging into main
+        uses: everlytic/branch-merge@1.1.5
+        with:
+          github_token: ${{ steps.generate_token.outputs.token }}
+          source_ref: staging
+          target_branch: main
+          commit_message_template: "merge: `{source_ref}` into `{target_branch}`"
+  #############################################################################
+
+  ########################## CREATE RELEASE TAG ################################
+  create_tag:
+    runs-on: ubuntu-latest
+    needs: merge_branch
+    outputs:
+      tag: ${{ steps.semver.outputs.tag }}
+
+    ######################## STEPS ############################################
+    steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          token: ${{ steps.generate_token.outputs.token }}
+          fetch-depth: 0
+          ref: main
+
+      - name: Compute next semantic version
+        id: semver
+        run: |
+          LATEST=$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1)
+          if [ -z "$LATEST" ]; then
+            NEXT="v0.1.0"
+          else
+            IFS='.' read -r MAJOR MINOR PATCH <<< "${LATEST#v}"
+            BUMP_TYPE="${{ github.event.inputs.version_bump }}"
+            if [ "$BUMP_TYPE" = "major" ]; then
+              NEXT="v$((MAJOR + 1)).0.0"
+            elif [ "$BUMP_TYPE" = "minor" ]; then
+              NEXT="v${MAJOR}.$((MINOR + 1)).0"
+            else
+              NEXT="v${MAJOR}.${MINOR}.$((PATCH + 1))"
+            fi
+          fi          
+          echo "tag=$NEXT" >> "$GITHUB_OUTPUT"
+          echo "Next tag: $NEXT"
+
+      - name: Install git-cliff
+        uses: taiki-e/install-action@v2
+        with:
+          tool: git-cliff
+
+      - name: Generate changelog
+        run: |
+          git cliff --config cliff.toml --tag ${{ steps.semver.outputs.tag }} --output CHANGELOG.md
+
+      - name: Commit changelog
+        run: |
+          if [ -z "$(git status --porcelain CHANGELOG.md)" ]; then
+            echo "No changelog changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "chore(release): update changelog for ${{ steps.semver.outputs.tag }}"
+          git push origin main
+
+      - name: Push new tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ steps.semver.outputs.tag }}
+          git push origin ${{ steps.semver.outputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          git cliff --latest --strip all --output RELEASE_NOTES.md
+          gh release create ${{ steps.semver.outputs.tag }} \
+            --title "${{ steps.semver.outputs.tag }}" \
+            --notes-file RELEASE_NOTES.md
+  #############################################################################
+
+  ########################## MIRROR REPOSITORY ################################
+  mirror_repository:
+    runs-on: ubuntu-latest
+    needs: create_tag
+    if: github.repository == 'Ascension-EIP/Ascension'
+
+    ######################## STEPS ############################################
+    steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          token: ${{ steps.generate_token.outputs.token }}
+          fetch-depth: 0
+          ref: main
+
+      - name: Mirror to external repositories
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.MIRROR_SSH_KEY }}
+          MIRROR_REPOS: ${{ vars.MIRROR_REPOSITORY_URL }}
+        run: |
+          if [ -z "$MIRROR_REPOS" ]; then
+            echo "No mirror repository specified in VARS. Skipping."
+            exit 0
+          fi
+
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null || true
+
+          IFS=',' read -ra REPOS <<< "$MIRROR_REPOS"
+          for repo in "${REPOS[@]}"; do
+            repo=$(echo "$repo" | xargs)
+            if [ -n "$repo" ]; then
+              if [[ "$repo" != git@* && "$repo" != ssh://* && "$repo" != https://* && "$repo" != http://* ]]; then
+                target_url="git@github.com:${repo}.git"
+              else
+                target_url="$repo"
+              fi
+              echo "Mirroring to $target_url..."
+              git push --prune "$target_url" "+refs/heads/*:refs/heads/*" "+refs/tags/*:refs/tags/*"
+            fi
+          done
+  #############################################################################
+
+###############################################################################

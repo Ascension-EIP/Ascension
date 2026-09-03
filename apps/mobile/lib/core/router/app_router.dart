@@ -1,3 +1,10 @@
+// @date 2026-03-10
+// @file app_router.dart
+// @brief File description.
+// @project Ascension
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>
+// @copyright (c) 2026 Ascension
+// @status done
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/auth/auth_service.dart';
 import 'package:mobile/features/auth/presentation/pages/login_page.dart';

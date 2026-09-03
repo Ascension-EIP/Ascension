@@ -1,5 +1,0 @@
-boto3
-mediapipe
-pika
-psycopg2-binary
-python-dotenv==1.2.2

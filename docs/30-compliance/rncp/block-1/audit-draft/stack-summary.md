@@ -1,7 +1,7 @@
-> **Last updated:** 26th February 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas  
-> **Status:** In Progress  
+> **Last updated:** 26th February 2026
+> **Version:** 1.0
+> **Authors:** Nicolas
+> **Status:** In Progress
 > {.is-warning}
 
 ---
@@ -17,9 +17,9 @@ Ce document donne une vue d'ensemble concise de la stack technique utilisée dan
 - **Environnements**: Support pour `development`, `staging` et `production` (déploiements et composantes décrits dans `deployment/`).
 
 **Langages & frameworks principaux**
-- **Backend (server)**: Rust — `apps/server/` (avec `Cargo.toml`). Langage choisi pour performance et sécurité mémoire.
+- **Backend (server)**: Go — `apps/server/` (avec `go.mod`).
 - **Mobile**: Flutter — `apps/mobile/` (avec `pubspec.yaml`). Application mobile multiplateforme.
-- **AI / ML**: Python — `apps/ai/` (avec `environment.yml`, `pyproject.toml` et tâches moon conda). Workers organisés en 2 pipelines : Pipeline Vision (détection de prises, squelettisation MediaPipe, conseils, mode fantôme) et Pipeline Entraînement (programmes personnalisés).
+- **AI / ML**: Python — `apps/ai/` (avec `pyproject.toml` et tâches moon uv). Workers organisés en 2 pipelines : Pipeline Vision (détection de prises, squelettisation MediaPipe, conseils, mode fantôme) et Pipeline Entraînement (programmes personnalisés).
 
 **Infrastructure & Conteneurisation**
 - **Docker & Compose**: `docker-compose.yml` à la racine de `Ascension/` pour orchestrer les services locaux (PostgreSQL, RabbitMQ, MinIO, API, Worker).
@@ -30,15 +30,15 @@ Ce document donne une vue d'ensemble concise de la stack technique utilisée dan
   - Lancer un service : `moon run server:dev`
   - Tester tous les projets : `moon run :test`
   - Tester les projets affectés uniquement : `moon run :test --affected`
-- **Toolchain**: Les versions de Rust et Python sont fixées dans `.moon/toolchain.yml`.
-- **Package managers**: `Cargo.toml` pour Rust ; `pubspec.yaml` pour Flutter ; `environment.yml` + `pip` (`pyproject.toml`) pour Python.
+- **Toolchain**: Les versions de Go et Python sont fixées dans `.moon/toolchain.yml`.
+- **Package managers**: `go.mod` pour Go ; `pubspec.yaml` pour Flutter ; `environment.yml` + `pip` (`pyproject.toml`) pour Python.
 
 **Observabilité & workflows**
 - **Workflows**: Flows métiers et pipelines (ex. `workflows/video-analysis-flow.md`) décrivant la chaîne d'analyse vidéo.
 
 **Structure de dépôt (points clés)**
 - **`.moon/`** : Configuration du workspace moonrepo (`workspace.yml`, `toolchain.yml`).
-- **`apps/server/`** (Rust) — service API principal.
+- **`apps/server/`** (Go) — service API principal.
 - **`apps/mobile/`** (Flutter) — application mobile multiplateforme.
 - **`apps/ai/`** (Python) — workers AI et modèles ML.
 - **`docs/`** — guides, architecture et pré-prompts AI.

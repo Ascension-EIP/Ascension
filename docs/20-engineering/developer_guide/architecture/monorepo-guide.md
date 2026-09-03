@@ -1,7 +1,7 @@
-> **Last updated:** 12th March 2026  
-> **Version:** 2.3  
-> **Authors:** Gianni TUERO  
-> **Status:** Done  
+> **Last updated:** 16th July 2026
+> **Version:** 2.4
+> **Authors:** Gianni TUERO
+> **Status:** Done
 > {.is-success}
 
 ---
@@ -12,39 +12,41 @@
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Repository Structure](#repository-structure)
-- [Why moonrepo?](#why-moonrepo)
-  - [Advantages](#advantages)
-  - [Trade-offs](#trade-offs)
-- [moonrepo Configuration](#moonrepo-configuration)
-  - [Workspace (`/.moon/workspace.yml`)](#workspace-moonworkspaceyml)
-  - [Toolchain (`/.moon/toolchain.yml`)](#toolchain-moontoolchainyml)
-  - [Project config (`apps/<project>/moon.yml`)](#project-config-appsprojectmoonyml)
-- [Installing moon](#installing-moon)
-- [Daily Workflow](#daily-workflow)
-  - [Initial Clone](#initial-clone)
-  - [Running Tasks](#running-tasks)
-  - [Common Commands](#common-commands)
-  - [Working on a Specific Service](#working-on-a-specific-service)
-- [Development Environment](#development-environment)
-  - [Docker Compose Setup](#docker-compose-setup)
-  - [Starting Development Environment](#starting-development-environment)
-- [CI/CD Architecture](#cicd-architecture)
-  - [Affected-only Pipelines with moon](#affected-only-pipelines-with-moon)
-  - [Full Build for Deploy](#full-build-for-deploy)
-- [Best Practices](#best-practices)
-  - [1. Always Define Tasks in `moon.yml`](#1-always-define-tasks-in-moonyml)
-  - [2. Pin Toolchain Versions](#2-pin-toolchain-versions)
-  - [3. Use `--affected` in CI](#3-use-affected-in-ci)
-  - [4. Document Breaking Changes in Commits](#4-document-breaking-changes-in-commits)
-  - [5. Keep `moon.yml` Minimal](#5-keep-moonyml-minimal)
-- [Troubleshooting](#troubleshooting)
-  - [Problem: `moon` Command Not Found](#problem-moon-command-not-found)
-  - [Problem: Task Fails with Missing Binary](#problem-task-fails-with-missing-binary)
-  - [Problem: Cache Is Stale](#problem-cache-is-stale)
-  - [Problem: Wrong Toolchain Version](#problem-wrong-toolchain-version)
-- [Additional Resources](#additional-resources)
+- [Ascension Monorepo Architecture Guide](#ascension-monorepo-architecture-guide)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Repository Structure](#repository-structure)
+  - [Why moonrepo?](#why-moonrepo)
+    - [Advantages](#advantages)
+    - [Trade-offs](#trade-offs)
+  - [moonrepo Configuration](#moonrepo-configuration)
+    - [Workspace (`/.moon/workspace.yml`)](#workspace-moonworkspaceyml)
+    - [Toolchain (`/.moon/toolchain.yml`)](#toolchain-moontoolchainyml)
+    - [Project config (`apps/<project>/moon.yml`)](#project-config-appsprojectmoonyml)
+  - [Installing moon](#installing-moon)
+  - [Daily Workflow](#daily-workflow)
+    - [Initial Clone](#initial-clone)
+    - [Running Tasks](#running-tasks)
+    - [Common Commands](#common-commands)
+    - [Working on a Specific Service](#working-on-a-specific-service)
+  - [Development Environment](#development-environment)
+    - [Docker Compose Setup](#docker-compose-setup)
+    - [Starting Development Environment](#starting-development-environment)
+  - [CI/CD Architecture](#cicd-architecture)
+    - [Affected-only Pipelines with moon](#affected-only-pipelines-with-moon)
+    - [Full Build for Deploy](#full-build-for-deploy)
+  - [Best Practices](#best-practices)
+    - [1. Always Define Tasks in `moon.yml`](#1-always-define-tasks-in-moonyml)
+    - [2. Pin Toolchain Versions](#2-pin-toolchain-versions)
+    - [3. Use `--affected` in CI](#3-use---affected-in-ci)
+    - [4. Document Breaking Changes in Commits](#4-document-breaking-changes-in-commits)
+    - [5. Keep `moon.yml` Minimal](#5-keep-moonyml-minimal)
+  - [Troubleshooting](#troubleshooting)
+    - [Problem: `moon` Command Not Found](#problem-moon-command-not-found)
+    - [Problem: Task Fails with Missing Binary](#problem-task-fails-with-missing-binary)
+    - [Problem: Cache Is Stale](#problem-cache-is-stale)
+    - [Problem: Wrong Toolchain Version](#problem-wrong-toolchain-version)
+  - [Additional Resources](#additional-resources)
 
 
 ---
@@ -69,11 +71,11 @@ Ascension/ (Monorepo)
 ├── README.md
 │
 └── apps/
-    ├── server/              # Rust/Axum API server
+    ├── server/              # Go/Gin API server
     │   ├── moon.yml         # moon project config
-    │   ├── Cargo.toml
+    │   ├── go.mod
     │   ├── Dockerfile
-    │   └── src/
+    │   └── internal/
     │
     ├── ai/                  # Python AI workers
     │   ├── moon.yml         # moon project config
@@ -128,6 +130,7 @@ Ascension/ (Monorepo)
 
 ```yaml
 # https://moonrepo.dev/docs/config/workspace
+
 $schema: './cache/schemas/workspace.json'
 
 projects:
@@ -141,56 +144,53 @@ projects:
 ```yaml
 # https://moonrepo.dev/docs/config/toolchain
 
-rust:
-  version: '1.93.1'
+go:
+  version: '1.25.5'
 
 python:
-  version: '3.14.2'
+  version: '3.11'
 ```
 
 ### Project config (`apps/<project>/moon.yml`)
 
 Each project defines its own tasks. Examples:
 
-**`apps/server/moon.yml`** (Rust):
+**`apps/server/moon.yml`** (Go):
 
 ```yaml
-language: 'rust'
+language: 'go'
 
 project:
   name: 'server'
-  description: 'Rust/Axum backend server for Ascension'
+  description: 'Go/Gin backend server for Ascension'
 
 tasks:
-  dev:
-    command: 'cargo'
-    args: ['run']
-    env:
-      RUST_LOG: 'debug'
-    options:
-      envFile: true
+  install:
+    ...
 
-  build:
-    command: 'cargo'
-    args: ['build']
-
-  build-release:
-    command: 'cargo'
-    args: ['build', '--release']
-    deps:
-      - 'lint'
-
-  test:
-    command: 'cargo'
-    args: ['test']
-
-  lint:
-    command: 'cargo'
-    args: ['clippy', '--', '-D', 'warnings']
+  update:
+    ...
 
   format:
-    command: 'cargo'
-    args: ['fmt', '--check']
+    ...
+
+  lint:
+    ...
+
+  build:
+    ...
+
+  build-release:
+    ...
+
+  test:
+    ...
+
+  dev:
+    ...
+
+  clean:
+    ...
 ```
 
 **`apps/ai/moon.yml`** (Python):
@@ -203,51 +203,32 @@ project:
   description: 'AI service for Ascension'
 
 tasks:
-  setup:
-    command: 'conda'
-    args: ['env', 'create', '--name', 'ascension-ai', '--file', 'environment.yml', '--force']
-    inputs:
-      - 'environment.yml'
-      - 'pyproject.toml'
-
   install:
-    command: 'conda'
-    args: ['run', '--name', 'ascension-ai', 'python', '-m', 'pip', 'install', '-e', '.[dev]']
-    inputs:
-      - 'pyproject.toml'
-    deps:
-      - 'setup'
+    ...
 
-  dev:
-    command: 'conda'
-    args: ['run', '--name', 'ascension-ai', 'python', 'src/worker.py']
-    deps:
-      - 'install'
-    env:
-      LOG_LEVEL: 'debug'
-      PYTHONUNBUFFERED: '1'
-    options:
-      envFile: true
+  download-model:
+    ...
 
-  build:
-    command: 'conda'
-    args: ['run', '--name', 'ascension-ai', 'python', '-m', 'build']
-    deps:
-      - 'install'
+  update:
+    ...
 
-  test:
-    command: 'conda'
-    args: ['run', '--name', 'ascension-ai', 'pytest', '-p', 'no:cacheprovider']
-    deps:
-      - 'install'
-    options:
-      allowFailure: true
+  format:
+    ...
 
   lint:
-    command: 'conda'
-    args: ['run', '--name', 'ascension-ai', 'ruff', 'check', '.']
-    deps:
-      - 'install'
+    ...
+
+  build:
+    ...
+
+  test:
+    ...
+
+  dev:
+    ...
+
+  clean:
+    ...
 ```
 
 **`apps/mobile/moon.yml`** (Flutter):
@@ -261,42 +242,31 @@ project:
 
 tasks:
   install:
-    command: 'flutter'
-    args: ['pub', 'get']
+    ...
 
-  dev:
-    command: 'flutter'
-    args: ['run']
-    deps:
-      - 'install'
-
-  build-android:
-    command: 'flutter'
-    args: ['build', 'apk']
-    deps:
-      - 'install'
-
-  build-ios:
-    command: 'flutter'
-    args: ['build', 'ios', '--no-codesign']
-    deps:
-      - 'install'
-
-  test:
-    command: 'flutter'
-    args: ['test']
-    deps:
-      - 'install'
-
-  lint:
-    command: 'flutter'
-    args: ['analyze']
-    deps:
-      - 'install'
+  update:
+    ...
 
   format:
-    command: 'dart'
-    args: ['format', '.']
+    ...
+
+  lint:
+    ...
+
+  build-android:
+    ...
+
+  build-ios:
+    ...
+
+  test:
+    ...
+
+  dev:
+    ...
+
+  clean:
+    ...
 ```
 
 ---
@@ -346,15 +316,18 @@ moon run mobile:test
 # Run lint across all projects
 moon run :lint
 
-# Run a task and all its dependents
-moon run server:build-release
+# Clean build/cache directories across all projects
+moon run :clean
+
+# Update and lock dependencies across all projects
+moon run :update
 ```
 
 ### Common Commands
 
 ```bash
 # List all projects
-moon project --list
+moon project
 
 # Show tasks available for a project
 moon project server
@@ -362,8 +335,8 @@ moon project server
 # Run affected tasks only (useful in CI)
 moon run :test --affected
 
-# Check the dependency graph
-moon dep-graph
+# Check the task dependency graph
+moon task-graph
 ```
 
 ### Working on a Specific Service
@@ -373,7 +346,7 @@ moon dep-graph
 cd apps/server
 
 # Make changes…
-# use moon or cargo/flutter/python directly
+# use moon or go/flutter/python directly
 
 # Run its tasks via moon from anywhere in the repo
 moon run server:test
@@ -434,7 +407,7 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0   # required for affected detection
 
@@ -459,7 +432,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install moon
         run: curl -fsSL https://moonrepo.dev/install/moon.sh | bash
@@ -479,11 +452,11 @@ jobs:
 
 ### 1. Always Define Tasks in `moon.yml`
 
-Prefer running commands through moon rather than calling `cargo`, `flutter`, or `python` directly — this ensures caching, env loading, and dependency resolution.
+Prefer running commands through moon rather than calling `go`, `flutter`, or `python` directly — this ensures caching, env loading, and dependency resolution.
 
 ### 2. Pin Toolchain Versions
 
-Keep `.moon/toolchain.yml` up to date so all developers and CI use the same Rust/Python versions.
+Keep `.moon/toolchain.yml` up to date so all developers and CI use the same Go/Python versions.
 
 ### 3. Use `--affected` in CI
 
@@ -504,7 +477,7 @@ BREAKING CHANGE: Requires new ENV_VAR variable in .env"
 
 ### 5. Keep `moon.yml` Minimal
 
-Only define the tasks your project actually needs. Avoid duplicating configuration already handled by the toolchain (e.g., Rust version).
+Only define the tasks your project actually needs. Avoid duplicating configuration already handled by the toolchain (e.g., Go version).
 
 ---
 
@@ -556,5 +529,5 @@ moon toolchain --list
 
 ---
 
-**Last Updated**: 2026-03-03
+**Last Updated**: 2026-07-16
 **Maintainer**: Ascension DevOps Team

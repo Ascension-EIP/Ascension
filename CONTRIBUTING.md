@@ -14,11 +14,13 @@ Thank you for taking the time to contribute. Please read this guide before openi
 
 ## Table of Contents
 
-- [Branching](#branching)
-- [Commits](#commits)
-- [Pull Requests](#pull-requests)
-- [Local Setup](#local-setup)
-- [Code Style](#code-style)
+- [Contributing to Ascension](#contributing-to-ascension)
+  - [Table of Contents](#table-of-contents)
+  - [Branching](#branching)
+  - [Commits](#commits)
+  - [Pull Requests](#pull-requests)
+  - [Local Setup](#local-setup)
+  - [Code Style](#code-style)
 
 ---
 
@@ -57,7 +59,7 @@ Follow the [Development Environment Setup](docs/developer_guide/architecture/dep
 
 ## Code Style
 
-- **Rust:** `cargo fmt` + `cargo clippy` (enforced by CI).
+- **Go:** `go fmt` + `go vet` (enforced by CI).
 - **Python:** `ruff` for linting and formatting (enforced by CI).
 - **Dart/Flutter:** `dart format` (enforced by CI).
-- **Markdown:** Prettier — see the [Markdown Guidelines](docs/guidelines/markdown-guidelines.md).
+- **Markdown:** see the [Markdown Guidelines](docs/guidelines/markdown-guidelines.md).

@@ -1,0 +1,323 @@
+#!/usr/bin/env python3
+# @date 2026-07-16
+# @file gemini_commit
+# @brief Generates a Git commit message using the Gemini API based on the staged changes in the git repository. It adheres to the Git Commit Standards Guide and provides options for printing, editing, or committing the generated message.
+# @project Ascension
+# @author Nicolas TORO <nicolas.toro@epitech.eu>
+# @copyright (c) 2026 Ascension
+# @status done
+
+import sys
+import os
+import subprocess
+import urllib.request
+import urllib.error
+import json
+import tempfile
+import shlex
+
+def run_cmd(args):
+    try:
+        return subprocess.check_output(args, stderr=subprocess.DEVNULL).decode("utf-8").strip()
+    except subprocess.CalledProcessError:
+        return ""
+
+def get_api_key():
+    key = os.environ.get("GEMINI_API_KEY")
+    if key:
+        return key
+    
+    key = run_cmd(["git", "config", "--get", "gemini.api-key"])
+    if key:
+        return key
+        
+    return None
+
+def get_diff():
+    if not os.path.exists(".git") and not run_cmd(["git", "rev-parse", "--is-inside-work-tree"]) == "true":
+        print("Error: Not in a git repository.", file=sys.stderr)
+        sys.exit(1)
+        
+    files_summary = run_cmd(["git", "diff", "--cached", "--name-status"])
+    
+    diff_content = run_cmd(["git", "diff", "--cached"])
+    
+    if not files_summary:
+        unstaged_files = run_cmd(["git", "status", "--porcelain"])
+        if not unstaged_files:
+            print("No changes detected in the repository.")
+            sys.exit(0)
+            
+        print("No staged changes found, but there are unstaged changes:")
+        print(unstaged_files)
+        try:
+            choice = input("Would you like to stage all changes (git add -A)? [y/N]: ").strip().lower()
+        except (KeyboardInterrupt, EOFError):
+            print("\nAborted.")
+            sys.exit(0)
+            
+        if choice in ('y', 'yes'):
+            subprocess.run(["git", "add", "-A"])
+            files_summary = run_cmd(["git", "diff", "--cached", "--name-status"])
+            diff_content = run_cmd(["git", "diff", "--cached"])
+        else:
+            print("Please stage some files first using `git add`.")
+            sys.exit(0)
+            
+    max_len = 40000
+    if len(diff_content) > max_len:
+        diff_content = diff_content[:max_len] + f"\n\n... [Diff truncated to {max_len} characters because it was too large] ..."
+        
+    return files_summary, diff_content
+
+def get_standards_guide():
+    repo_root = run_cmd(["git", "rev-parse", "--show-toplevel"])
+    if not repo_root:
+        return None
+    guide_path = os.path.join(repo_root, "docs/20-engineering/git/git-commit-standards-guide.md")
+    if not os.path.exists(guide_path):
+        return None
+    try:
+        with open(guide_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        if "---" in content:
+            parts = content.split("---", 1)
+            return parts[1].strip()
+        return content.strip()
+    except Exception as e:
+        print(f"Warning: Could not read Git Commit Standards Guide: {e}", file=sys.stderr)
+        return None
+
+def generate_commit_message(api_key, files_summary, diff_content):
+    model = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+    
+    standards_guide = get_standards_guide()
+    if not standards_guide:
+        standards_guide = """# Git Commit Standards Guide
+
+## 1. Commit message format
+Commit messages must follow this structure:
+```
+<type>(<scope>): <short description>
+
+[optional body]
+
+[optional footer]
+```
+
+### 1.1 Basic rules
+- **Language**: English
+- **Case**:
+  - `type` → **lowercase**
+  - `description` → **lowercase sentence**, imperative (e.g. "add", "fix", not "adds", "fixed", "adding", not capitalized)
+- **No period** at the end of the description
+- Keep commits **atomic**: one intent per commit
+- Body and footer are optional, but recommended when useful
+
+### 1.2 Format details
+#### Scopes
+Scopes specify what part of the project is affected (optional but recommended).
+Examples: `core`, `engine`, `network`, `ui`, `audio`, `database`, `renderer`, `physics`, `utils`, `docs`.
+Example: `fix(network): fix packet loss issue`
+
+#### Description rules
+- Must be **short, clear, imperative** (e.g., `fix(auth): handle missing token` not `fixed missing token handling`)
+- No final period
+- Should reflect **what changed**, not **why** (the body is for that)
+
+#### Body
+The body provides **additional context** (motivation behind the change, how the implementation works, potential impacts).
+Separate paragraphs with a blank line.
+
+#### Footer
+Used for:
+- Issue references: `Closes #42`
+- Breaking changes: Must start with `BREAKING CHANGE:` followed by a description of the breaking change.
+
+## 2. Commit types
+Only use the following types:
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation
+- `style`: Formatting, code style, no logic change
+- `refactor`: Code refactoring
+- `test`: Adding or modifying tests
+- `build`: Build or dependency changes
+- `perf`: Performance improvements
+- `ci`: Continuous Integration changes
+- `chore`: Maintenance tasks not affecting code logic
+- `revert`: Reverting a previous commit
+- `add`: Adding new files
+- `remove`: Removing files or dead code
+- `rename`: Renaming files/classes
+- `move`: Moving files
+- `merge`: Merging branches
+- `init`: Initialization of components or project structure
+- `details`: Detailed multi-line commits (e.g. `details:\\nfix: correct memory leak in allocator`)
+- `dependabot`: Automated dependency update by Dependabot
+- `agents`: Changes related to AI agents or automation agents"""
+
+    prompt = f"""You are an expert developer. Generate a clean, professional, and concise Git commit message based on the git diff of staged changes.
+Your commit message MUST strictly adhere to the Git Commit Standards Guide below.
+
+{standards_guide}
+
+## 3. Output Requirements
+- Output ONLY the raw commit message. Do NOT wrap the message in markdown code blocks (do not use ```), and do not include any other conversational text or explanations.
+
+Staged files:
+{files_summary}
+
+Staged changes (git diff --cached):
+{diff_content}
+"""
+
+    payload = {
+        "contents": [
+            {
+                "parts": [
+                    {
+                        "text": prompt
+                    }
+                ]
+            }
+        ]
+    }
+    
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST"
+    )
+    
+    try:
+        with urllib.request.urlopen(req) as response:
+            res_data = json.loads(response.read().decode("utf-8"))
+            
+            try:
+                candidates = res_data.get("candidates", [])
+                if not candidates:
+                    print("Error: Gemini returned an empty response. No candidates found.", file=sys.stderr)
+                    sys.exit(1)
+                
+                content = candidates[0].get("content", {})
+                parts = content.get("parts", [])
+                if not parts:
+                    print("Error: Gemini returned an empty response. No parts found in candidates.", file=sys.stderr)
+                    sys.exit(1)
+                    
+                text = parts[0].get("text", "").strip()
+
+                if text.startswith("```"):
+                    lines = text.split("\n")
+                    if lines[0].startswith("```"):
+                        lines = lines[1:]
+                    if lines and lines[-1].strip() == "```":
+                        lines = lines[:-1]
+                    text = "\n".join(lines).strip()
+                return text
+            except (KeyError, IndexError) as e:
+                print(f"Error parsing Gemini response: {e}", file=sys.stderr)
+                print(f"Raw response: {res_data}", file=sys.stderr)
+                sys.exit(1)
+    except urllib.error.HTTPError as e:
+        print(f"HTTP Error calling Gemini API: {e.code} - {e.reason}", file=sys.stderr)
+        try:
+            err_data = json.loads(e.read().decode("utf-8"))
+            print(f"Details: {json.dumps(err_data, indent=2)}", file=sys.stderr)
+        except Exception:
+            pass
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error calling Gemini API: {e}", file=sys.stderr)
+        sys.exit(1)
+
+def main():
+    print_only = False
+    force_commit = False
+
+    for arg in sys.argv[1:]:
+        if arg in ("-h", "--help"):
+            print("Usage: gemini-commit [options]")
+            print("Options:")
+            print("  -p, --print    Print the generated commit message and exit (no commit)")
+            print("  -f, --force    Commit immediately using the generated message without prompting")
+            print("  -h, --help     Show this help message")
+            sys.exit(0)
+        elif arg in ("-p", "--print"):
+            print_only = True
+        elif arg in ("-f", "--force"):
+            force_commit = True
+
+    api_key = get_api_key()
+    if not api_key:
+        print("Error: Gemini API key not found.", file=sys.stderr)
+        print("Please configure your API key using one of the following options:", file=sys.stderr)
+        print("  1. Environment variable:  export GEMINI_API_KEY='your-api-key'", file=sys.stderr)
+        print("  2. Git configuration:      git config --global gemini.api-key 'your-api-key'", file=sys.stderr)
+        sys.exit(1)
+
+    files_summary, diff_content = get_diff()
+    
+    print("Generating commit message...")
+    commit_message = generate_commit_message(api_key, files_summary, diff_content)
+    
+    if not commit_message:
+        print("Error: Empty commit message generated by Gemini.", file=sys.stderr)
+        sys.exit(1)
+
+    if print_only:
+        print(commit_message)
+        sys.exit(0)
+
+    print("\nGenerated Commit Message:")
+    print("-" * 50)
+    print(commit_message)
+    print("-" * 50)
+
+    if force_commit:
+        choice = "y"
+    else:
+        try:
+            choice = input("Commit with this message? [Y/n/e] (Yes/No/Edit): ").strip().lower()
+        except (KeyboardInterrupt, EOFError):
+            print("\nAborted.")
+            sys.exit(0)
+
+    if choice in ("", "y", "yes"):
+        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
+            temp_file.write(commit_message)
+            temp_path = temp_file.name
+        try:
+            subprocess.run(["git", "commit", "-F", temp_path], check=True)
+            print("Committed successfully!")
+        except subprocess.CalledProcessError:
+            print("Commit failed.", file=sys.stderr)
+        finally:
+            os.remove(temp_path)
+    elif choice == "e":
+        editor = os.environ.get("EDITOR", "nano")
+        with tempfile.NamedTemporaryFile(mode='w+', suffix='.txt', delete=False) as temp_file:
+            temp_file.write(commit_message)
+            temp_path = temp_file.name
+        try:
+            cmd = shlex.split(editor) + [temp_path]
+            subprocess.run(cmd, check=True)
+            with open(temp_path, 'r') as temp_file:
+                edited_message = temp_file.read().strip()
+            if not edited_message:
+                print("Commit message is empty. Commit aborted.", file=sys.stderr)
+                sys.exit(0)
+            subprocess.run(["git", "commit", "-F", temp_path], check=True)
+            print("Committed successfully with edited message!")
+        except Exception as e:
+            print(f"Error editing or committing: {e}", file=sys.stderr)
+        finally:
+            os.remove(temp_path)
+    else:
+        print("Commit aborted.")
+
+if __name__ == "__main__":
+    main()

@@ -70,7 +70,7 @@ Tu es un consultant technique expert intégré à l'équipe de développement **
 |-----------------|---------------------------------------------------------------------|------------------------------------|
 | Client mobile   | Flutter / Dart `^3.11.0`                                            | iOS & Android                      |
 | API Gateway     | Rust (Axum `0.8.8`, Tokio `1.49.0`) [en cours de migration vers Go] | Edition 2024, Rust `1.93.1`        |
-| Workers IA      | Python `3.14.2` + MediaPipe + PyTorch + OpenCV + Pika               | 2 pipelines                        |
+| Workers IA      | Python `3.11` + MediaPipe + PyTorch + OpenCV + Pika                 | 2 pipelines                        |
 | Message broker  | RabbitMQ `4.2.4`                                                    | AMQP, queues durables              |
 | Base de données | PostgreSQL `18`                                                     | JSONB pour les résultats d'analyse |
 | Stockage objets | MinIO (`RELEASE.2025-09-07T16-13-09Z`)                              | Compatible S3                      |

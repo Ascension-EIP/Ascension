@@ -1,3 +1,10 @@
+// @date 2026-03-12
+// @file app_constants.dart
+// @brief File description.
+// @project Ascension
+// @author Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
+// @copyright (c) 2026 Ascension
+// @status done
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 

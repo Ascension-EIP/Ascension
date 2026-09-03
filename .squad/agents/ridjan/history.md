@@ -7,7 +7,7 @@
 
 **Stack:**
 - Flutter (mobile) — video capture, overlay rendering, WebSocket
-- Rust/Axum (API Gateway) — auth, JWT, SQLx, presigned URLs, job orchestration
+- Go/Gin (API Gateway) — auth, JWT, pgx, presigned URLs, job orchestration
 - Python/PyTorch/MediaPipe/OpenCV (AI Workers) — hold detection, skeleton, advice, ghost mode
 - RabbitMQ — job queues (vision.*, training.*), event routing
 - PostgreSQL — structured data
@@ -19,7 +19,7 @@
 **Team:**
 - Eric — Lead (architecture & review)
 - Quentin — AI Dev (Python/PyTorch/MediaPipe)
-- Renaud — Backend Dev (Rust/Axum)
+- Renaud — Backend Dev (Go/Gin)
 - Romaric — Mobile Dev (Flutter)
 - Arthur — DevOps (Docker/CI)
 - Alexandra — Infra (RabbitMQ/PostgreSQL/MinIO)

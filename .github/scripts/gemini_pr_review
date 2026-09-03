@@ -1,0 +1,895 @@
+#!/usr/bin/env python3
+# @date 2026-07-16
+# @file gemini_pr_review
+# @brief Creates a GitHub Pull Request review using Gemini API. It analyzes the diff of the PR and generates constructive comments for the modified lines.
+# @project Ascension
+# @author Nicolas TORO <nicolas.toro@epitech.eu>
+# @copyright (c) 2026 Ascension
+# @status done
+
+import os
+import sys
+import re
+import json
+import ssl
+import subprocess
+import argparse
+import urllib.request
+import urllib.error
+import time
+from typing import Dict, List, Tuple, Any, Optional
+
+class Config:
+    def __init__(self):
+        self.github_token: Optional[str] = None
+        self.gemini_api_key: Optional[str] = None
+        self.repo: Optional[str] = None
+        self.pr_number: Optional[int] = None
+        self.local_mode: bool = False
+        self.compare_ref: Optional[str] = None
+        self.model: str = "gemini-3.1-flash-lite"
+        self.max_comments: int = 30
+        
+        # Rate Limiting configuration
+        self.max_rpm: int = 10
+        self.max_tpm: int = 200000
+        self.max_rpd: int = 400
+        
+        # Actions Event variables
+        self.event_name: Optional[str] = os.environ.get("GITHUB_EVENT_NAME")
+        self.event_path: Optional[str] = os.environ.get("GITHUB_EVENT_PATH")
+
+    def parse_args_and_env(self):
+        parser = argparse.ArgumentParser(description="Revue de code automatique avec Gemini")
+        parser.add_argument("-l", "--local", action="store_true", help="Activer le mode local (analyse les fichiers git locaux)")
+        parser.add_argument("-c", "--compare", type=str, help="Branche/Ref de comparaison en mode local (ex: main, origin/main)")
+        parser.add_argument("-p", "--pr", type=int, help="Numéro de la PR sur GitHub")
+        parser.add_argument("-r", "--repo", type=str, help="Dépôt GitHub (format: owner/repo)")
+        parser.add_argument("-t", "--token", type=str, help="Token GitHub (ou GITHUB_TOKEN env)")
+        parser.add_argument("-k", "--key", type=str, help="Clé API Gemini (ou GEMINI_API_KEY env)")
+        parser.add_argument("-m", "--model", type=str, default="gemini-3.1-flash-lite", help="Modèle Gemini à utiliser")
+        parser.add_argument("--rpm", type=int, help="Nombre maximal de requêtes par minute (RPM) pour Gemini")
+        parser.add_argument("--tpm", type=int, help="Nombre maximal de tokens par minute (TPM) pour Gemini")
+        parser.add_argument("--rpd", type=int, help="Nombre maximal de requêtes par jour (RPD) pour Gemini")
+        parser.add_argument("--max-comments", type=int, help="Nombre maximum de commentaires en ligne à publier sur GitHub (par défaut : 30)")
+
+        args = parser.parse_args()
+
+        self.github_token = args.token or os.environ.get("GITHUB_TOKEN")
+        self.gemini_api_key = args.key or os.environ.get("GEMINI_API_KEY")
+        self.repo = args.repo or os.environ.get("GITHUB_REPOSITORY")
+        self.model = args.model
+        self.compare_ref = args.compare
+
+        def get_env_int(name: str, default: int) -> int:
+            val = os.environ.get(name)
+            if val:
+                try:
+                    return int(val)
+                except ValueError:
+                    pass
+            return default
+
+        self.max_rpm = args.rpm if args.rpm is not None else get_env_int("GEMINI_MAX_RPM", 10)
+        self.max_tpm = args.tpm if args.tpm is not None else get_env_int("GEMINI_MAX_TPM", 200000)
+        self.max_rpd = args.rpd if args.rpd is not None else get_env_int("GEMINI_MAX_RPD", 400)
+        self.max_comments = args.max_comments if args.max_comments is not None else get_env_int("GEMINI_MAX_COMMENTS", 30)
+
+        # Détecter le mode local
+        # Si on passe explicitement --local, ou si on n'a pas les variables d'environnement GitHub CI
+        self.local_mode = args.local or (not (os.environ.get("GITHUB_ACTIONS") == "true") and not self.repo and not self.pr_number)
+
+        # Extraction du numéro de PR
+        if args.pr:
+            self.pr_number = args.pr
+        elif os.environ.get("PR_NUMBER"):
+            try:
+                self.pr_number = int(os.environ.get("PR_NUMBER", ""))
+            except ValueError:
+                pass
+        
+        # Si non défini et qu'on a un fichier d'événement GitHub, essayer de le lire
+        if not self.pr_number and self.event_path and os.path.exists(self.event_path):
+            try:
+                with open(self.event_path, "r", encoding="utf-8") as f:
+                    event = json.load(f)
+                if self.event_name == "pull_request":
+                    self.pr_number = event.get("pull_request", {}).get("number")
+                elif self.event_name == "issue_comment":
+                    if event.get("issue", {}).get("pull_request"):
+                        self.pr_number = event.get("issue", {}).get("number")
+                elif self.event_name == "workflow_dispatch":
+                    inputs = event.get("inputs", {})
+                    if inputs.get("pull_number"):
+                        self.pr_number = int(inputs.get("pull_number"))
+            except Exception as e:
+                print(f"[Avertissement] Impossible de lire le fichier d'événement GitHub: {e}", file=sys.stderr)
+
+    def validate(self) -> Tuple[bool, List[str]]:
+        errors = []
+        if not self.gemini_api_key:
+            errors.append("La clé API Gemini est requise (option -k ou variable GEMINI_API_KEY)")
+        
+        if not self.local_mode:
+            if not self.github_token:
+                errors.append("Le token GitHub est requis en mode non-local (option -t ou variable GITHUB_TOKEN)")
+            if not self.repo:
+                errors.append("Le nom du dépôt est requis en mode non-local (option -r ou variable GITHUB_REPOSITORY)")
+            if not self.pr_number:
+                errors.append("Le numéro de la Pull Request est requis en mode non-local (option -p ou variable PR_NUMBER)")
+        
+        return len(errors) == 0, errors
+
+
+class RateLimiter:
+    def __init__(self, config: Config):
+        self.config = config
+        self.history: List[Tuple[float, int]] = []
+        self.total_requests = 0
+
+    def _clean_history(self, now: float):
+        self.history = [item for item in self.history if now - item[0] < 60.0]
+
+    def wait_if_needed(self, estimated_tokens: int):
+        # 1. Vérification RPD (sur l'exécution en cours)
+        if self.total_requests >= self.config.max_rpd:
+            print(f"[Rate Limit] Limite RPD de {self.config.max_rpd} requêtes par jour atteinte pour cette exécution. Arrêt préventif.", file=sys.stderr)
+            raise Exception(f"RPD Limit Exceeded ({self.config.max_rpd})")
+
+        while True:
+            now = time.time()
+            self._clean_history(now)
+
+            current_rpm = len(self.history)
+            current_tpm = sum(item[1] for item in self.history)
+
+            # Si on respecte les limites RPM et TPM
+            if current_rpm < self.config.max_rpm and (current_tpm + estimated_tokens) < self.config.max_tpm:
+                self.history.append((now, estimated_tokens))
+                self.total_requests += 1
+                break
+
+            # Si l'historique est vide mais qu'on dépasse à cause d'une seule grosse requête
+            if not self.history:
+                print(f"[Rate Limit] [Avertissement] Le lot estimé à {estimated_tokens} tokens dépasse à lui seul la limite TPM de {self.config.max_tpm}.", file=sys.stderr)
+                self.history.append((now, estimated_tokens))
+                self.total_requests += 1
+                break
+
+            # Trouver le temps nécessaire pour que la requête la plus ancienne sorte de la fenêtre des 60 secondes
+            oldest_time, oldest_tokens = self.history[0]
+            wait_time = 60.0 - (now - oldest_time)
+            if wait_time <= 0:
+                wait_time = 1.0
+
+            print(f"[Rate Limit] Seuil atteint (Requêtes/Min: {current_rpm}/{self.config.max_rpm}, Tokens/Min (estimés): {current_tpm + estimated_tokens}/{self.config.max_tpm}). Attente de {wait_time:.1f} secondes...", file=sys.stderr)
+            time.sleep(wait_time)
+
+    @staticmethod
+    def estimate_tokens(prompt: str) -> int:
+        # Estimation conservative : 1 token = 3 caractères (français + code).
+        # On ajoute 4000 tokens pour la réponse attendue (en format JSON).
+        return (len(prompt) // 3) + 4000
+
+
+class GitDiffParser:
+    @staticmethod
+    def should_review_file(filename: str) -> bool:
+        ignored_extensions = {
+            ".lock", "-lock.json", ".png", ".jpg", ".jpeg",
+            ".gif", ".svg", ".pdf", ".ico", ".woff", ".woff2",
+            ".ttf", ".eot"
+        }
+        ignored_directories = [
+            "pnpm-lock.yaml", "package-lock.json", "yarn.lock",
+            "dist/", ".next/", "node_modules/", "build/", "generated/", ".git/"
+        ]
+
+        if any(ignored in filename for ignored in ignored_directories):
+            return False
+
+        ext = os.path.splitext(filename)[1].lower()
+        if ext in ignored_extensions:
+            return False
+
+        allowed_extensions = {
+            ".ts", ".tsx", ".js", ".jsx", ".json", ".html",
+            ".css", ".py", ".sh", ".yml", ".yaml", ".md", ".prisma"
+        }
+        return ext in allowed_extensions
+
+    @staticmethod
+    def parse_patch(patch: str) -> Tuple[List[int], List[Dict[str, Any]]]:
+        valid_lines: List[int] = []
+        added_lines: List[Dict[str, Any]] = []
+        lines = patch.split("\n")
+        new_line_num = 0
+
+        for line in lines:
+            if line.startswith("@@"):
+                match = re.search(r'\+(\d+)', line)
+                if match:
+                    new_line_num = int(match.group(1))
+                continue
+
+            if line.startswith("+"):
+                valid_lines.append(new_line_num)
+                added_lines.append({
+                    "newLineNum": new_line_num,
+                    "content": line[1:],
+                    "isAdded": True
+                })
+                new_line_num += 1
+            elif line.startswith("-"):
+                # Supprimé, n'existe pas dans le nouveau fichier
+                pass
+            else:
+                # Contexte
+                added_lines.append({
+                    "newLineNum": new_line_num,
+                    "content": line[1:] if len(line) > 0 else "",
+                    "isAdded": False
+                })
+                new_line_num += 1
+
+        return valid_lines, added_lines
+
+    @staticmethod
+    def format_patch_for_llm(patch: str) -> Tuple[List[int], str]:
+        valid_lines, added_lines = GitDiffParser.parse_patch(patch)
+        formatted_lines = []
+        for line in added_lines:
+            prefix = "+" if line["isAdded"] else ":"
+            formatted_lines.append(f"{line['newLineNum']}{prefix} {line['content']}")
+        
+        return valid_lines, "\n".join(formatted_lines)
+
+
+class HttpClient:
+    @staticmethod
+    def request(url: str, method: str = "GET", payload: Optional[Dict[str, Any]] = None,
+                headers: Optional[Dict[str, str]] = None, max_retries: int = 3) -> Tuple[int, str]:
+        if headers is None:
+            headers = {}
+        
+        data = None
+        if payload is not None:
+            data = json.dumps(payload).encode("utf-8")
+            if "Content-Type" not in headers:
+                headers["Content-Type"] = "application/json"
+        
+        context = ssl.create_default_context()
+        
+        attempt = 0
+        while True:
+            attempt += 1
+            req = urllib.request.Request(url, data=data, headers=headers, method=method)
+            try:
+                with urllib.request.urlopen(req, context=context) as response:
+                    return response.status, response.read().decode("utf-8")
+            except urllib.error.HTTPError as e:
+                err_body = e.read().decode("utf-8") if e.fp else ""
+                
+                # Vérifier si on doit réessayer
+                is_rate_limit = False
+                if e.code == 403 and ("secondary rate limit" in err_body.lower() or "rate limit" in err_body.lower()):
+                    is_rate_limit = True
+
+                if attempt <= max_retries and (e.code == 429 or is_rate_limit or e.code in [500, 502, 503, 504]):
+                    wait_time = 2.0 ** attempt  # Backoff exponentiel par défaut
+                    
+                    if e.code == 429 or is_rate_limit:
+                        wait_time = 60.0 if is_rate_limit else 30.0  # Valeur par défaut
+                        # Tenter de lire l'en-tête Retry-After
+                        retry_after = e.headers.get("Retry-After") if (hasattr(e, "headers") and e.headers) else None
+                        if retry_after:
+                            try:
+                                wait_time = float(retry_after) + 1.0
+                            except ValueError:
+                                pass
+                        
+                        # Tenter d'extraire la durée recommandée par l'API Gemini ou GitHub
+                        try:
+                            err_data = json.loads(err_body)
+                            details = err_data.get("error", {}).get("details", [])
+                            for detail in details:
+                                if detail.get("@type") == "type.googleapis.com/google.rpc.RetryInfo":
+                                    delay_str = detail.get("retryDelay", "")
+                                    match = re.match(r"([\d\.]+)\s*s", delay_str)
+                                    if match:
+                                        wait_time = float(match.group(1)) + 1.0
+                                        break
+                        except Exception:
+                            pass
+                        
+                        # Si non trouvé, parser le message pour d'autres formats de retry
+                        if wait_time in [30.0, 60.0]:
+                            message = ""
+                            try:
+                                message = json.loads(err_body).get("error", {}).get("message", "")
+                            except Exception:
+                                message = err_body
+                            match = re.search(r"[Pp]lease retry in\s+([\d\.]+)\s*s", message)
+                            if match:
+                                wait_time = float(match.group(1)) + 1.0
+                    
+                    err_msg = ""
+                    try:
+                        err_json = json.loads(err_body)
+                        err_msg = err_json.get("error", {}).get("message", "")
+                    except Exception:
+                        err_msg = err_body[:200] + "..." if len(err_body) > 200 else err_body
+                    err_msg = err_msg.replace("\n", " ").strip()
+
+                    print(f"[HTTP] Tentative {attempt}/{max_retries} échouée (HTTP {e.code}). Détail : {err_msg}. Attente de {wait_time:.2f} secondes avant de réessayer...", file=sys.stderr)
+                    time.sleep(wait_time)
+                    continue
+                
+                raise Exception(f"HTTP Error {e.code}: {e.reason}\nBody: {err_body}")
+            except Exception as e:
+                if attempt <= max_retries:
+                    wait_time = 2.0 ** attempt
+                    print(f"[HTTP] Tentative {attempt}/{max_retries} échouée ({e}). Attente de {wait_time:.2f} secondes...", file=sys.stderr)
+                    time.sleep(wait_time)
+                    continue
+                raise Exception(f"Request failed: {e}")
+
+
+class GitHubClient:
+    def __init__(self, config: Config):
+        self.config = config
+        self.headers = {
+            "Authorization": f"token {self.config.github_token}",
+            "Accept": "application/vnd.github.v3+json",
+            "User-Agent": "gemini-pr-reviewer"
+        }
+
+    def fetch_latest_reviewed_commit(self) -> Optional[str]:
+        # Récupérer les revues de la PR
+        url = f"https://api.github.com/repos/{self.config.repo}/pulls/{self.config.pr_number}/reviews?per_page=100"
+        try:
+            _, body = HttpClient.request(url, headers=self.headers)
+            reviews = json.loads(body)
+            # Parcourir les revues de la plus récente à la plus ancienne
+            for review in reversed(reviews):
+                body_text = review.get("body") or ""
+                if "### 🤖 Revue de code automatique - Gemini CLI" in body_text:
+                    commit_id = review.get("commit_id")
+                    if commit_id:
+                        return commit_id
+        except Exception as e:
+            print(f"[Avertissement] Impossible de récupérer les revues précédentes : {e}", file=sys.stderr)
+        return None
+
+    def fetch_pr_head_sha(self) -> str:
+        url = f"https://api.github.com/repos/{self.config.repo}/pulls/{self.config.pr_number}"
+        _, body = HttpClient.request(url, headers=self.headers)
+        pr_data = json.loads(body)
+        return pr_data["head"]["sha"]
+
+    def fetch_pr_files(self) -> List[Dict[str, Any]]:
+        # 1. Tenter de récupérer la dernière revue par le robot pour une comparaison incrémentale
+        last_reviewed_commit = self.fetch_latest_reviewed_commit()
+        if last_reviewed_commit:
+            try:
+                pr_head_sha = self.fetch_pr_head_sha()
+                if last_reviewed_commit == pr_head_sha:
+                    print(f"Le commit de tête actuel ({pr_head_sha}) a déjà été revu lors de la précédente revue. Aucun nouveau changement à analyser.")
+                    return []
+                
+                print(f"Dernier commit revu détecté : {last_reviewed_commit}. Comparaison avec le commit de tête actuel : {pr_head_sha}...")
+                
+                # Récupérer les fichiers modifiés et leur patch/diff depuis cette dernière revue
+                url = f"https://api.github.com/repos/{self.config.repo}/compare/{last_reviewed_commit}...{pr_head_sha}"
+                _, body = HttpClient.request(url, headers=self.headers)
+                compare_data = json.loads(body)
+                
+                files = compare_data.get("files", [])
+                print(f"Nombre de fichiers modifiés depuis la dernière revue : {len(files)}")
+                return files
+            except Exception as e:
+                print(f"[Avertissement] Échec de la comparaison incrémentale, repli sur la récupération de tous les fichiers de la PR: {e}", file=sys.stderr)
+        
+        # Repli : Récupérer tous les fichiers de la PR
+        print("Aucune revue précédente détectée ou échec de comparaison. Récupération de l'ensemble des fichiers de la PR...")
+        files = []
+        page = 1
+        per_page = 100
+        while True:
+            url = f"https://api.github.com/repos/{self.config.repo}/pulls/{self.config.pr_number}/files?per_page={per_page}&page={page}"
+            try:
+                _, body = HttpClient.request(url, headers=self.headers)
+                page_files = json.loads(body)
+                if not page_files:
+                    break
+                files.extend(page_files)
+                if len(page_files) < per_page:
+                    break
+                page += 1
+            except Exception as e:
+                print(f"[Erreur] Impossible de récupérer les fichiers de la PR (page {page}): {e}", file=sys.stderr)
+                raise e
+        return files
+
+    def post_review(self, body: str, comments: List[Dict[str, Any]]):
+        url = f"https://api.github.com/repos/{self.config.repo}/pulls/{self.config.pr_number}/reviews"
+        payload = {
+            "body": body,
+            "event": "COMMENT",
+            "comments": comments
+        }
+        try:
+            HttpClient.request(url, method="POST", payload=payload, headers=self.headers)
+        except Exception as e:
+            err_msg = str(e)
+            if "HTTP Error 502" in err_msg or "HTTP Error 504" in err_msg:
+                print(f"[Avertissement] Erreur de passerelle détectée lors de la publication de la revue sur GitHub : {e.args[0] if e.args else e}", file=sys.stderr)
+                print("[Avertissement] Pour les grandes revues, GitHub traite souvent la requête en arrière-plan avec succès. Poursuite sans bloquer la CI.", file=sys.stderr)
+                return
+            print(f"[Erreur] Impossible de publier la revue sur GitHub: {e}", file=sys.stderr)
+            raise e
+
+
+class LocalGitClient:
+    def __init__(self, config: Config):
+        self.config = config
+
+    def _run_git(self, args: List[str]) -> str:
+        res = subprocess.run(["git"] + args, capture_output=True, text=True, check=True)
+        return res.stdout.strip()
+
+    def detect_compare_ref(self) -> str:
+        # Si une branche est explicitement demandée, l'utiliser
+        if self.config.compare_ref:
+            return self.config.compare_ref
+        
+        # Sinon, on vérifie si la branche locale 'main' ou 'master' existe
+        for branch in ["main", "master", "origin/main", "origin/master"]:
+            try:
+                self._run_git(["rev-parse", "--verify", branch])
+                return branch
+            except subprocess.CalledProcessError:
+                continue
+        
+        # En dernier recours, comparer au commit précédent
+        return "HEAD~1"
+
+    def get_modified_files(self, compare_ref: str) -> List[str]:
+        # Si on a des modifications non validées localement, on souhaite pouvoir les analyser
+        # On vérifie avec status
+        status = self._run_git(["status", "--porcelain"])
+        if status:
+            # On a des modifs locales (staged/unstaged), on analyse par rapport à HEAD
+            files_raw = self._run_git(["diff", "HEAD", "--name-only"])
+            self.use_head_diff = True
+        else:
+            # Sinon on compare avec la branche de référence détectée (ex: main)
+            files_raw = self._run_git(["diff", f"{compare_ref}...HEAD", "--name-only"])
+            self.use_head_diff = False
+
+        return [f.strip() for f in files_raw.split("\n") if f.strip()]
+
+    def get_patch(self, filename: str, compare_ref: str) -> str:
+        if getattr(self, "use_head_diff", False):
+            return self._run_git(["diff", "HEAD", "--", filename])
+        else:
+            return self._run_git(["diff", f"{compare_ref}...HEAD", "--", filename])
+
+
+class GeminiClient:
+    def __init__(self, config: Config):
+        self.config = config
+
+    def call_gemini(self, prompt: str) -> Dict[str, Any]:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.config.model}:generateContent?key={self.config.gemini_api_key}"
+        
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {
+                            "text": prompt
+                        }
+                    ]
+                }
+            ],
+            "generationConfig": {
+                "responseMimeType": "application/json",
+                "responseSchema": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "comments": {
+                            "type": "ARRAY",
+                            "description": "Liste des commentaires constructifs pour les fichiers modifiés.",
+                            "items": {
+                                "type": "OBJECT",
+                                "properties": {
+                                    "path": {
+                                        "type": "STRING",
+                                        "description": "Chemin relatif du fichier (ex: apps/server/src/index.ts)."
+                                    },
+                                    "line": {
+                                        "type": "INTEGER",
+                                        "description": "Numéro de ligne exact dans le NOUVEAU fichier où attacher le commentaire."
+                                    },
+                                    "body": {
+                                        "type": "STRING",
+                                        "description": "Le commentaire de revue en français. Peut inclure des suggestions de code en markdown."
+                                    }
+                                },
+                                "required": ["path", "line", "body"]
+                            }
+                        }
+                    },
+                    "required": ["comments"]
+                }
+            }
+        }
+
+        try:
+            _, res_body = HttpClient.request(url, method="POST", payload=payload)
+        except Exception as e:
+            print(f"[Erreur] Échec de la requête HTTP vers l'API Gemini : {e}", file=sys.stderr)
+            raise e
+
+        try:
+            data = json.loads(res_body)
+        except json.JSONDecodeError as e:
+            print(f"[Erreur] La réponse brute de l'API Gemini n'est pas un JSON valide : {e}\nRéponse brute reçue :\n{res_body}", file=sys.stderr)
+            raise e
+
+        candidates = data.get("candidates", [])
+        if not candidates:
+            print(f"[Erreur] Aucun candidat retourné par l'API Gemini (possible blocage de sécurité ou quota). Structure :\n{json.dumps(data, indent=2, ensure_ascii=False)}", file=sys.stderr)
+            raise Exception("Aucun candidat retourné par l'API Gemini")
+
+        parts = candidates[0].get("content", {}).get("parts", [])
+        if not parts:
+            print(f"[Erreur] Aucun 'parts' dans le contenu généré. Structure :\n{json.dumps(data, indent=2, ensure_ascii=False)}", file=sys.stderr)
+            raise Exception("Aucun élément 'parts' dans le contenu généré")
+
+        text_result = parts[0].get("text")
+        if not text_result:
+            print(f"[Erreur] Le champ 'text' est vide ou absent. Structure :\n{json.dumps(data, indent=2, ensure_ascii=False)}", file=sys.stderr)
+            raise Exception("Réponse vide reçue de l'API Gemini")
+
+        try:
+            return json.loads(text_result)
+        except json.JSONDecodeError as e:
+            cleaned_text = text_result.strip()
+            if cleaned_text.startswith("```"):
+                match = re.match(r"^```(?:json)?\s*(.*?)\s*```$", cleaned_text, re.DOTALL)
+                if match:
+                    cleaned_text = match.group(1).strip()
+                    try:
+                        return json.loads(cleaned_text)
+                    except json.JSONDecodeError:
+                        pass
+            print(f"[Erreur] Le texte généré par Gemini n'est pas un JSON valide : {e}\nTexte brut généré par Gemini :\n{text_result}", file=sys.stderr)
+            raise e
+
+
+class TerminalFormatter:
+    # ANSI escape sequences for terminal styling
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    RED = "\033[31m"
+    GREEN = "\033[32m"
+    YELLOW = "\033[33m"
+    BLUE = "\033[34m"
+    CYAN = "\033[36m"
+
+    @classmethod
+    def print_review(cls, comments: List[Dict[str, Any]]):
+        if not comments:
+            print(f"\n{cls.BOLD}{cls.GREEN}✨ Aucun problème détecté ! Excellent travail !{cls.RESET}\n")
+            return
+
+        print(f"\n{cls.BOLD}{cls.YELLOW}🔍 {len(comments)} suggestion(s) de revue de code trouvée(s) :{cls.RESET}\n")
+        
+        # Regrouper par fichier
+        comments_by_file: Dict[str, List[Dict[str, Any]]] = {}
+        for comment in comments:
+            comments_by_file.setdefault(comment["path"], []).append(comment)
+
+        for filepath, file_comments in comments_by_file.items():
+            print(f"{cls.BOLD}{cls.BLUE}📁 Fichier : {filepath}{cls.RESET}")
+            print("=" * (13 + len(filepath)))
+            
+            # Trier par numéro de ligne
+            file_comments.sort(key=lambda c: c["line"])
+            
+            for comment in file_comments:
+                line_info = f"{cls.BOLD}{cls.YELLOW}Ligne {comment['line']}{cls.RESET}"
+                print(f"  📍 {line_info}")
+                
+                # Format body output nicely (handling potential markdown)
+                body = comment["body"]
+                # Add indentation to body text for readability
+                indented_body = "\n".join("      " + line for line in body.split("\n"))
+                print(f"{indented_body}")
+                print("-" * 40)
+            print()
+
+
+class ReviewOrchestrator:
+    def __init__(self, config: Config):
+        self.config = config
+        self.github_client = GitHubClient(config) if not config.local_mode else None
+        self.git_client = LocalGitClient(config) if config.local_mode else None
+        self.gemini_client = GeminiClient(config)
+        self.rate_limiter = RateLimiter(config)
+
+    def run(self):
+        print(f"Mode de fonctionnement : {'LOCAL' if self.config.local_mode else 'GITHUB'}")
+        
+        # 1. Obtenir la liste des fichiers et patches
+        files_to_review = []
+        file_valid_lines_map = {}
+
+        if self.config.local_mode:
+            compare_ref = self.git_client.detect_compare_ref()
+            print(f"Comparaison avec la référence locale : {compare_ref}")
+            modified_files = self.git_client.get_modified_files(compare_ref)
+            
+            for filename in modified_files:
+                if not GitDiffParser.should_review_file(filename):
+                    print(f"Fichier ignoré : {filename}")
+                    continue
+                
+                try:
+                    patch = self.git_client.get_patch(filename, compare_ref)
+                    if not patch:
+                        continue
+                    
+                    valid_lines, formatted_patch = GitDiffParser.format_patch_for_llm(patch)
+                    if not valid_lines:
+                        continue
+                    
+                    file_valid_lines_map[filename] = valid_lines
+                    files_to_review.append({
+                        "path": filename,
+                        "valid_lines": valid_lines,
+                        "formatted_patch": formatted_patch
+                    })
+                except Exception as e:
+                    print(f"[Avertissement] Impossible de traiter le fichier local {filename} : {e}", file=sys.stderr)
+        else:
+            print(f"Récupération des fichiers de la PR #{self.config.pr_number} ({self.config.repo})...")
+            pr_files = self.github_client.fetch_pr_files()
+            
+            for file in pr_files:
+                filename = file.get("filename")
+                if not filename:
+                    continue
+                
+                if not GitDiffParser.should_review_file(filename):
+                    print(f"Fichier ignoré : {filename}")
+                    continue
+                
+                patch = file.get("patch")
+                if not patch:
+                    print(f"Pas de patch disponible pour {filename} (renommage ou binaire).")
+                    continue
+                
+                valid_lines, formatted_patch = GitDiffParser.format_patch_for_llm(patch)
+                if not valid_lines:
+                    continue
+                
+                file_valid_lines_map[filename] = valid_lines
+                files_to_review.append({
+                    "path": filename,
+                    "valid_lines": valid_lines,
+                    "formatted_patch": formatted_patch
+                })
+
+        if not files_to_review:
+            print("Aucun fichier éligible pour la revue de code.")
+            if not self.config.local_mode:
+                # Publier une revue vide indiquant que tout est OK
+                self.github_client.post_review(
+                    body="### 🤖 Revue de code automatique - Gemini CLI\n\n✨ Aucun fichier éligible pour la revue.",
+                    comments=[]
+                )
+            sys.exit(0)
+
+        print(f"Nombre de fichiers éligibles pour la revue : {len(files_to_review)}")
+
+        # 2. Découper en lots (batches) pour éviter de saturer le modèle
+        # Limite : max 20 000 caractères de diff cumulés ou max 15 fichiers par lot
+        batches = []
+        current_batch = []
+        current_length = 0
+
+        for file_info in files_to_review:
+            patch_len = len(file_info["formatted_patch"])
+            if current_batch and (current_length + patch_len > 20000 or len(current_batch) >= 15):
+                batches.append(current_batch)
+                current_batch = []
+                current_length = 0
+            
+            current_batch.append(file_info)
+            current_length += patch_len
+        
+        if current_batch:
+            batches.append(current_batch)
+
+        print(f"Analyse répartie sur {len(batches)} lot(s) de requêtes à Gemini...")
+
+        # 3. Analyser chaque lot
+        system_prompt = (
+            "Vous êtes un ingénieur logiciel principal (Senior Staff Software Engineer) effectuant une revue de code.\n"
+            "Votre rôle est de faire des commentaires de revue de code constructifs, précis et utiles, comme le ferait GitHub Copilot Review.\n\n"
+            "Consignes impératives pour vos commentaires :\n"
+            "1. Écrivez TOUS vos commentaires en français.\n"
+            "2. Concentrez-vous uniquement sur la qualité du code : bugs potentiels, failles de sécurité, performances, respect des conventions et de conception propre.\n"
+            "3. Ne commentez QUE sur les numéros de ligne modifiés fournis dans les données de chaque fichier (lignes marquées par un '+' dans la liste). Toute suggestion sur une ligne non modifiée sera rejetée.\n"
+            "4. Si vous suggérez une modification de code, fournissez un extrait de code clair en markdown.\n"
+            "5. Soyez professionnel et constructif. Ne formulez PAS de commentaires élogieux ou de compliments (ex: 'Cette implémentation est propre', 'Bonne idée d'avoir fait X'). Tout commentaire de ce type doit être évité.\n"
+            "6. Ne formulez pas de commentaires trop mineurs ou triviaux (comme des espaces en trop) afin de ne pas polluer la revue.\n"
+            "7. Si le code est propre et ne présente aucun problème ou amélioration concrète, retournez une liste de commentaires vide (tableau 'comments' vide).\n"
+            "8. N'écrivez pas de commentaires si le fichier ne présente aucune anomalie ou amélioration significative. Vous n'avez AUCUN quota minimum de commentaires. Il est parfaitement acceptable (et encouragé) de ne faire AUCUN commentaire (tableau 'comments' vide) pour un fichier ou pour l'ensemble de la PR si le code est correct.\n"
+            "9. Interdiction absolue de rédiger des commentaires de type spéculatif ou de suspicion (« assurez-vous que », « vérifiez si », etc.) qui sous-entendent un manque de contexte global (ex: 'Assurez-vous que la fonction X gère le cas vide'). Comme vous n'avez accès qu'au diff Git, le manque de contexte est très fréquent. Ne formulez un commentaire que si vous constatez un bug réel, une faille de sécurité évidente ou une amélioration concrète et directe basée uniquement sur le code fourni sous vos yeux. Si vous n'êtes pas absolument sûr de vous ou si vous manquez de données/contexte pour être certain d'un problème, abstenez-vous.\n"
+            "10. Interdiction absolue de commenter les en-têtes de fichier ou les métadonnées (comme la date, l'auteur, etc.) pour dire qu'elles sont obsolètes ou redondantes avec le suivi de version Git. Ignorez complètement ces en-têtes et ne faites aucune recommandation visant à les supprimer ou à les modifier."
+        )
+
+        all_comments = []
+        skipped_batches_count = 0
+        error_messages = []
+
+        for idx, batch in enumerate(batches):
+            print(f"Analyse du lot {idx + 1}/{len(batches)} ({len(batch)} fichier(s))...")
+            
+            prompt_parts = []
+            for file_info in batch:
+                prompt_parts.append(
+                    f"Fichier : {file_info['path']}\n"
+                    f"Lignes éligibles aux commentaires : {file_info['valid_lines']}\n"
+                    f"Différences :\n{file_info['formatted_patch']}\n"
+                    f"---"
+                )
+            
+            joined_parts = "\n\n".join(prompt_parts)
+            user_prompt = (
+                "Voici les fichiers modifiés par cette pull request, avec leurs lignes éligibles et le contenu de leur diff "
+                "(les lignes modifiées/ajoutées commencent par le numéro de ligne suivi d'un '+', le contexte commence par le numéro suivi d'un ':') :\n\n"
+                f"{joined_parts}\n\n"
+                "Veuillez analyser ces changements et retourner vos commentaires au format JSON spécifié."
+            )
+
+            full_prompt = f"{system_prompt}\n\n{user_prompt}"
+            
+            # Estimer les tokens pour le rate limiter
+            estimated_tokens = RateLimiter.estimate_tokens(full_prompt)
+            
+            try:
+                # Appliquer la limitation de taux (RPM, TPM, RPD)
+                self.rate_limiter.wait_if_needed(estimated_tokens)
+
+                response = self.gemini_client.call_gemini(full_prompt)
+                batch_comments = response.get("comments", [])
+                
+                # Filtrage de sécurité
+                for comment in batch_comments:
+                    path = comment.get("path")
+                    line = comment.get("line")
+                    body = comment.get("body")
+                    
+                    if not path or not line or not body:
+                        continue
+                    
+                    # Vérifier que le fichier fait partie de la PR/diff
+                    valid_lines = file_valid_lines_map.get(path)
+                    if not valid_lines:
+                        print(f"[Sécurité] Commentaire rejeté pour un fichier non modifié : {path}")
+                        continue
+                    
+                    # Vérifier que la ligne est éligible (fait partie des ajouts)
+                    if line not in valid_lines:
+                        print(f"[Sécurité] Commentaire rejeté sur {path}:{line} (ligne non présente dans le diff des ajouts)")
+                        continue
+                    
+                    all_comments.append({
+                        "path": path,
+                        "line": line,
+                        "body": body
+                    })
+            except Exception as e:
+                print(f"[Erreur] Échec de l'analyse pour le lot {idx + 1} (après toutes les tentatives): {e}", file=sys.stderr)
+                skipped_batches_count = len(batches) - idx
+                error_messages.append(str(e))
+                print(f"[Avertissement] Arrêt précoce de l'analyse. {skipped_batches_count} lot(s) restants ignorés.", file=sys.stderr)
+                break
+
+        # 4. Restitution
+        if self.config.local_mode:
+            TerminalFormatter.print_review(all_comments)
+            if skipped_batches_count > 0:
+                print(f"\n⚠️  Attention : {skipped_batches_count} lot(s) sur {len(batches)} ont été ignorés en raison d'erreurs d'API.")
+        else:
+            github_comments = []
+            for comment in all_comments:
+                github_comments.append({
+                    "path": comment["path"],
+                    "line": comment["line"],
+                    "side": "RIGHT",
+                    "body": comment["body"]
+                })
+            
+            warning_text = ""
+            if skipped_batches_count > 0:
+                warning_text = f"\n\n⚠️ **Attention :** L'analyse est partielle. {skipped_batches_count} lot(s) sur {len(batches)} n'ont pas pu être analysés en raison d'erreurs de quota ou de communication avec l'API Gemini.\n"
+                if error_messages:
+                    unique_errors = list(set(error_messages))
+                    warning_text += "Détails des erreurs rencontrées :\n"
+                    for err in unique_errors:
+                        warning_text += f"- `{err.splitlines()[0]}`\n"
+
+            # Si le nombre de commentaires dépasse le seuil, ne publier AUCUN commentaire en ligne
+            # et se contenter du message global avec le bloc "Détails"
+            max_comments = self.config.max_comments
+            remaining_comments = []
+            total_comments_count = len(github_comments)
+            
+            if max_comments > 0 and len(github_comments) > max_comments:
+                remaining_comments = github_comments[:]
+                github_comments = []
+
+            details_text = ""
+            if all_comments:
+                comments_by_file = {}
+                for comment in all_comments:
+                    comments_by_file.setdefault(comment["path"], []).append(comment)
+
+                details_text = f"\n\n<details>\n<summary>📝 <b>Détails de toutes les suggestions ({total_comments_count})</b></summary>\n\n"
+                if remaining_comments:
+                    details_text += f"⚠️ **Note :** Le nombre de suggestions ({total_comments_count}) dépasse le seuil de {max_comments}. Aucun commentaire de ligne n'a été publié afin de préserver la lisibilité de la PR. Retrouvez ci-dessous l'intégralité des remarques :\n\n"
+                else:
+                    details_text += "Retrouvez ci-dessous l'intégralité des remarques générées :\n\n"
+                
+                for filepath in sorted(comments_by_file.keys()):
+                    details_text += f"#### 📁 `{filepath}`\n\n"
+                    file_comments = comments_by_file[filepath]
+                    file_comments.sort(key=lambda c: c["line"])
+                    for comment in file_comments:
+                        comment_body = comment["body"].replace("\n", "\n> ")
+                        details_text += f"- **Ligne {comment['line']}** :\n> {comment_body}\n\n"
+                details_text += "</details>"
+
+            if all_comments:
+                body_text = (
+                    f"### 🤖 Revue de code automatique - Gemini CLI\n\n"
+                    f"J'ai analysé les modifications apportées à cette pull request et préparé **{total_comments_count} suggestion(s)**. "
+                    f"Veuillez trouver le récapitulatif complet de mes commentaires ci-dessous.{warning_text}{details_text}"
+                )
+            else:
+                body_text = (
+                    "### 🤖 Revue de code automatique - Gemini CLI\n\n"
+                    f"✨ Aucun problème détecté dans les lignes modifiées de cette pull request ! Excellent travail !{warning_text}"
+                )
+            
+            if github_comments:
+                print(f"Publication de la revue sur GitHub avec {len(github_comments)} commentaire(s) en ligne et {len(remaining_comments)} suggestion(s) groupée(s)...")
+            else:
+                print(f"Publication de la revue sur GitHub sans commentaire de ligne ({len(remaining_comments)} suggestion(s) groupée(s))...")
+            self.github_client.post_review(body_text, github_comments)
+            print("Revue publiée avec succès !")
+
+
+def main():
+    config = Config()
+    config.parse_args_and_env()
+    
+    is_valid, errors = config.validate()
+    if not is_valid:
+        print("[Erreur] Configuration invalide :", file=sys.stderr)
+        for err in errors:
+            print(f" - {err}", file=sys.stderr)
+        sys.exit(1)
+
+    orchestrator = ReviewOrchestrator(config)
+    orchestrator.run()
+
+
+if __name__ == "__main__":
+    main()

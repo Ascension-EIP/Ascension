@@ -12,54 +12,56 @@
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Architecture Diagram](#architecture-diagram)
-- [Infrastructure Requirements](#infrastructure-requirements)
-  - [Hetzner Machines](#hetzner-machines)
-  - [GPU Machine (AI Workers — Optional Upgrade)](#gpu-machine-ai-workers-optional-upgrade)
-    - [Option A: Hetzner GPU Server](#option-a-hetzner-gpu-server)
-    - [Option B: On-Premise GPU Machine](#option-b-on-premise-gpu-machine)
-- [Network Configuration](#network-configuration)
-  - [Cloudflare + Nginx](#cloudflare-nginx)
-  - [Firewall Rules](#firewall-rules)
-- [Docker Compose Configuration](#docker-compose-configuration)
-  - [Production `docker-compose.yml`](#production-docker-composeyml)
-  - [Nginx Configuration](#nginx-configuration)
-  - [MinIO Lifecycle Policy](#minio-lifecycle-policy)
-  - [Environment Variables](#environment-variables)
-- [Deployment Process](#deployment-process)
-  - [1. Build Docker Images](#1-build-docker-images)
-  - [2. Push to Container Registry](#2-push-to-container-registry)
-  - [3. Deploy to Hetzner VPS](#3-deploy-to-hetzner-vps)
-  - [4. Run Database Migrations](#4-run-database-migrations)
-- [CI/CD Pipeline (GitHub Actions)](#cicd-pipeline-github-actions)
-  - [Unified CI with moon](#unified-ci-with-moon)
-  - [Production Deployment](#production-deployment)
-- [Security Configuration](#security-configuration)
-  - [System Hardening](#system-hardening)
-  - [Secrets Management](#secrets-management)
-  - [Network Security](#network-security)
-  - [Data Protection](#data-protection)
-- [Monitoring and Observability](#monitoring-and-observability)
-  - [Prometheus Configuration](#prometheus-configuration)
-  - [Grafana Data Sources](#grafana-data-sources)
-  - [Key Metrics](#key-metrics)
-  - [Alerting Rules (Grafana → Slack)](#alerting-rules-grafana-slack)
-  - [Application Metrics (Rust API)](#application-metrics-rust-api)
-- [Backup & Disaster Recovery](#backup-disaster-recovery)
-  - [PostgreSQL Backups](#postgresql-backups)
-  - [MinIO Backups](#minio-backups)
-  - [Recovery Procedures](#recovery-procedures)
-- [Scaling Strategy](#scaling-strategy)
-  - [Phase 1: Docker Compose (Current — up to ~5,000 users)](#phase-1-docker-compose-current-up-to-5000-users)
-  - [Phase 2: Multi-VPS (5,000–20,000 users)](#phase-2-multi-vps-500020000-users)
-  - [Phase 3: K3s Kubernetes (20,000+ users)](#phase-3-k3s-kubernetes-20000-users)
-  - [Phase 4: Full Scale (100,000+ users)](#phase-4-full-scale-100000-users)
-- [Cost Analysis](#cost-analysis)
-  - [Cost by Scale](#cost-by-scale)
-  - [Comparison with Cloud Providers](#comparison-with-cloud-providers)
-- [Security Best Practices Checklist](#security-best-practices-checklist)
-- [Next Steps](#next-steps)
+- [Production Environment Setup](#production-environment-setup)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Architecture Diagram](#architecture-diagram)
+  - [Infrastructure Requirements](#infrastructure-requirements)
+    - [Hetzner Machines](#hetzner-machines)
+    - [GPU Machine (AI Workers — Optional Upgrade)](#gpu-machine-ai-workers--optional-upgrade)
+      - [Option A: Hetzner GPU Server](#option-a-hetzner-gpu-server)
+      - [Option B: On-Premise GPU Machine](#option-b-on-premise-gpu-machine)
+  - [Network Configuration](#network-configuration)
+    - [Cloudflare + Nginx](#cloudflare--nginx)
+    - [Firewall Rules](#firewall-rules)
+  - [Docker Compose Configuration](#docker-compose-configuration)
+    - [Production `docker-compose.yml`](#production-docker-composeyml)
+    - [Nginx Configuration](#nginx-configuration)
+    - [MinIO Lifecycle Policy](#minio-lifecycle-policy)
+    - [Environment Variables](#environment-variables)
+  - [Deployment Process](#deployment-process)
+    - [1. Build Docker Images](#1-build-docker-images)
+    - [2. Push to Container Registry](#2-push-to-container-registry)
+    - [3. Deploy to Hetzner VPS](#3-deploy-to-hetzner-vps)
+    - [4. Run Database Migrations](#4-run-database-migrations)
+  - [CI/CD Pipeline (GitHub Actions)](#cicd-pipeline-github-actions)
+    - [Unified CI with moon](#unified-ci-with-moon)
+    - [Production Deployment](#production-deployment)
+  - [Security Configuration](#security-configuration)
+    - [System Hardening](#system-hardening)
+    - [Secrets Management](#secrets-management)
+    - [Network Security](#network-security)
+    - [Data Protection](#data-protection)
+  - [Monitoring and Observability](#monitoring-and-observability)
+    - [Prometheus Configuration](#prometheus-configuration)
+    - [Grafana Data Sources](#grafana-data-sources)
+    - [Key Metrics](#key-metrics)
+    - [Alerting Rules (Grafana → Slack)](#alerting-rules-grafana--slack)
+    - [Application Metrics (Rust API)](#application-metrics-rust-api)
+  - [Backup \& Disaster Recovery](#backup--disaster-recovery)
+    - [PostgreSQL Backups](#postgresql-backups)
+    - [MinIO Backups](#minio-backups)
+    - [Recovery Procedures](#recovery-procedures)
+  - [Scaling Strategy](#scaling-strategy)
+    - [Phase 1: Docker Compose (Current — up to ~5,000 users)](#phase-1-docker-compose-current--up-to-5000-users)
+    - [Phase 2: Multi-VPS (5,000–20,000 users)](#phase-2-multi-vps-500020000-users)
+    - [Phase 3: K3s Kubernetes (20,000+ users)](#phase-3-k3s-kubernetes-20000-users)
+    - [Phase 4: Full Scale (100,000+ users)](#phase-4-full-scale-100000-users)
+  - [Cost Analysis](#cost-analysis)
+    - [Cost by Scale](#cost-by-scale)
+    - [Comparison with Cloud Providers](#comparison-with-cloud-providers)
+  - [Security Best Practices Checklist](#security-best-practices-checklist)
+  - [Next Steps](#next-steps)
 
 
 ---
@@ -86,8 +88,8 @@ graph TB
 
     subgraph "Srv-API — Hetzner CX31 4 vCPU / 8 GB"
         Nginx[Nginx<br/>Reverse Proxy + TLS]
-        API1[Rust API Instance 1]
-        API2[Rust API Instance 2]
+        API1[Go API Instance 1]
+        API2[Go API Instance 2]
     end
 
     subgraph "Srv-DB — Hetzner CX41 4 vCPU / 16 GB"
@@ -165,7 +167,7 @@ graph TB
 
 | Machine | Role | Specs | Cost |
 |---|---|---|---|
-| **Srv-API** | Nginx + Rust API (×2) + Monitoring | CX31: 4 vCPU, 8 GB RAM, 80 GB SSD | 15€/month |
+| **Srv-API** | Nginx + Go API (×2) + Monitoring | CX31: 4 vCPU, 8 GB RAM, 80 GB SSD | 15€/month |
 | **Srv-DB** | PostgreSQL Master + Replica + RabbitMQ | CX41: 4 vCPU, 16 GB RAM, 160 GB SSD | 25€/month |
 | **Srv-ML** | Python AI Workers (×2-4) | CX51: 8 vCPU, 16 GB RAM, 240 GB SSD | 45€/month |
 | **Storage** | MinIO S3-compatible | Hetzner Volume 1 TB | 10€/month |
@@ -206,8 +208,8 @@ graph LR
     Cloudflare -->|Origin Pull| Nginx[Nginx<br/>Reverse Proxy]
 
     subgraph "Docker Compose Network"
-        Nginx -->|:8080| API1[Rust API 1]
-        Nginx -->|:8081| API2[Rust API 2]
+        Nginx -->|:8080| API1[Go API 1]
+        Nginx -->|:8081| API2[Go API 2]
         API1 --> DB[(PostgreSQL)]
         API2 --> DB
         API1 --> RMQ[(RabbitMQ)]
@@ -258,19 +260,24 @@ services:
       - api
     restart: always
 
-  # Rust API Server (from apps/server/)
+  # Go API Server (from apps/server/)
   api:
     image: ascension/api:latest
     container_name: ascension-api
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASS: ${POSTGRES_PASSWORD}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_MIGRATION: /app/migrations
       RABBITMQ_URL: ${RABBITMQ_URL}
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_BUCKET: ${MINIO_BUCKET}
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
-      RUST_LOG: info
+      LOG_LEVEL: info
     expose:
       - "8080"
     depends_on:
@@ -282,7 +289,7 @@ services:
         condition: service_healthy
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -459,7 +466,7 @@ server {
     ssl_certificate_key /etc/nginx/ssl/privkey.pem;
 
     # API endpoints
-    location /api/ {
+    location /v1/ {
         proxy_pass http://api_backend;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -467,17 +474,8 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # WebSocket endpoint
-    location /ws {
-        proxy_pass http://api_backend;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "Upgrade";
-        proxy_set_header Host $host;
-    }
-
     # Health check
-    location /health {
+    location /healthz {
         proxy_pass http://api_backend;
     }
 
@@ -525,7 +523,6 @@ mc ilm import myminio/ascension-production < lifecycle.json
 POSTGRES_USER=ascension
 POSTGRES_PASSWORD=<STRONG_GENERATED_PASSWORD>
 POSTGRES_DB=ascension_production
-DATABASE_URL=postgresql://ascension:<password>@db:5432/ascension_production
 
 # RabbitMQ
 RABBITMQ_URL=amqp://ascension:<password>@rabbitmq:5672
@@ -538,7 +535,7 @@ MINIO_BUCKET=ascension-production
 
 # API
 JWT_SECRET=<GENERATE_SECURE_SECRET>
-RUST_LOG=info
+LOG_LEVEL=info
 
 # Workers
 WORKER_CONCURRENCY=4
@@ -597,15 +594,12 @@ docker tag your-registry/ascension-worker:v${VERSION} ascension/worker:latest
 docker-compose up -d --no-deps api worker
 ```
 
-### 4. Run Database Migrations
+### 4. Database Migrations
+
+In Go, database migrations are automatically run by the server on startup when the container boots. No manual execution steps are required in production. You can simply verify the migration logs to confirm:
 
 ```bash
-# On the server
-docker-compose exec -T api sqlx migrate run
-
-# Or via SSH from CI
-ssh deploy@production.ascension.app \
-  "cd /opt/ascension && docker-compose exec -T api sqlx migrate run"
+docker-compose logs api
 ```
 
 ---
@@ -631,7 +625,7 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -661,7 +655,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install moon
         run: curl -fsSL https://moonrepo.dev/install/moon.sh | bash
@@ -697,7 +691,6 @@ jobs:
             docker tag ${{ secrets.DOCKER_REGISTRY }}/ascension-api:${{ github.ref_name }} ascension/api:latest
             docker tag ${{ secrets.DOCKER_REGISTRY }}/ascension-worker:${{ github.ref_name }} ascension/worker:latest
             docker-compose up -d --no-deps api worker
-            docker-compose exec -T api sqlx migrate run
 
       - name: Verify deployment
         uses: appleboy/ssh-action@v1
@@ -707,7 +700,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             sleep 10
-            curl -f http://localhost:8080/health || exit 1
+            curl -f http://localhost:8080/healthz || exit 1
 ```
 
 ---
@@ -822,24 +815,22 @@ scrape_configs:
 | API latency p95 > 500ms | Warning | Investigate |
 | Worker processing > 5 min | Warning | Check worker health |
 
-### Application Metrics (Rust API)
+### Application Metrics (Go API)
 
-```toml
-# Cargo.toml
-[dependencies]
-prometheus = "0.13"
-axum-prometheus = "0.4"
-```
+We export metrics from the Gin engine to Prometheus using the standard github.com/zsais/go-gin-prometheus package.
 
-```rust
-// src/main.rs
-use axum_prometheus::PrometheusMetricLayer;
+```go
+import (
+	"github.com/zsais/go-gin-prometheus"
+	"github.com/gin-gonic/gin"
+)
 
-let (prometheus_layer, metric_handle) = PrometheusMetricLayer::pair();
-
-let app = Router::new()
-    .route("/metrics", get(|| async move { metric_handle.render() }))
-    .layer(prometheus_layer);
+func main() {
+	r := gin.New()
+	p := ginprometheus.NewPrometheus("gin")
+	p.Use(r)
+	// ...
+}
 ```
 
 ---
@@ -849,7 +840,7 @@ let app = Router::new()
 ### PostgreSQL Backups
 
 ```bash
-#!/bin/bash
+#!/usr/bin/env bash
 # backup.sh — Run daily via cron at 3:00 AM
 
 DATE=$(date +%Y%m%d_%H%M%S)

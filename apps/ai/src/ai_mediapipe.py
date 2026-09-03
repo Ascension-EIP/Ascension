@@ -1,3 +1,10 @@
+# @date 2026-07-14
+# @file ai_mediapipe.py
+# @brief File description.
+# @project Ascension
+# @author Gianni TUERO <gianni.tuero@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+# @copyright (c) 2026 Ascension
+# @status done
 """
 MediaPipe pose analysis module.
 
@@ -170,7 +177,10 @@ def get_climbing_advice(result_dict):
         return "Clé API absente. Vérifie ton .env"
 
     ai_data = _summarize_for_ai(result_dict)
-    model = genai.GenerativeModel("models/gemini-2.5-flash")
+    model = genai.GenerativeModel(
+        "models/gemini-3.1-flash-lite-preview"
+        #"models/gemma-4-31b-it"
+    )  # "models/gemini-2.5-flash")
 
     prompt = (
         "Tu es un coach expert en escalade. Voici les données de mouvement (timestamps en ms) d'un grimpeur.\n"

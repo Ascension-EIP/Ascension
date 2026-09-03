@@ -7,107 +7,90 @@ project:
   description: 'AI service for Ascension'
 
 tasks:
-  setup:
-    command: '$CONDA_EXE'
-    args: ['env', 'create', '--file', 'environment.yml', "-p", "./ai-env"]
+  install:
+    command: 'uv'
+    args: ['sync']
     inputs:
-      - 'environment.yml'
       - 'pyproject.toml'
+      - 'uv.lock'
     deps:
-      - 'root:setup-git-config'
+      - 'root:setup'
 
   download-model:
     command: 'bash'
     args: ['scripts/download-model.sh']
+    inputs:
+      - 'scripts/download-model.sh'
     outputs:
       - 'pose_landmarker.task'
 
-  install_torch:
-    command: '$CONDA_EXE'
-    args: ['run', '--prefix', './ai-env', 'python', '-m', 'pip', 'install', '-r', 'requirements/torch.txt']
-    inputs:
-      - 'requirements/torch.txt'
-    deps:
-      - 'setup'
-      - 'download-model'
+  update:
+    command: 'uv'
+    args: ['sync', '--upgrade']
+    options:
+      cache: false
 
-  install_base:
-    command: '$CONDA_EXE'
-    args: ['run', '--prefix', './ai-env', 'python', '-m', 'pip', 'install', '-r', 'requirements/base.txt', '-r', 'requirements/app.txt']
+  format:
+    command: 'uv'
+    args: ['run', 'ruff', 'check', '--fix', 'src']
     inputs:
-      - 'requirements/base.txt'
-      - 'requirements/app.txt'
-    deps:
-      - 'install_torch'
-
-  install_detectron2:
-    command: '$CONDA_EXE'
-    args: ['run', '--prefix', './ai-env', 'python', '-m', 'pip', 'install', '--no-build-isolation', '--no-deps', '-r', 'requirements/detectron2.txt']
-    inputs:
-      - 'requirements/detectron2.txt'
-    deps:
-      - 'install_base'
-
-  install_moge:
-    command: '$CONDA_EXE'
-    args: ['run', '--prefix', './ai-env', 'python', '-m', 'pip', 'install', '-r', 'requirements/moge.txt']
-    inputs:
-      - 'requirements/moge.txt'
-    deps:
-      - 'install_detectron2'
-
-  install_dev:
-    command: '$CONDA_EXE'
-    args: ['run', '--prefix', './ai-env', 'python', '-m', 'pip', 'install', '-r', 'requirements/dev.txt']
-    inputs:
-      - 'requirements/dev.txt'
-    deps:
-      - 'install_moge'
-
-  install:
-    command: '$CONDA_EXE'
-    args: ['run', '--prefix', './ai-env', 'python', '-m', 'pip', 'install', '--no-deps', '-e', '.']
-    inputs:
+      - 'src/**/*'
       - 'pyproject.toml'
-      - 'src/worker.py'
-      - 'pose_analysis.py'
-    deps:
-      - 'install_dev'
-
-  dev:
-    command: '$CONDA_EXE'
-    args: ['run', '--no-capture-output', '--prefix', './ai-env', 'python', '-u', 'src/worker.py']
+      - 'uv.lock'
     deps:
       - 'install'
+      - 'root:format'
+
+  lint:
+    command: 'uv'
+    args: ['run', 'ruff', 'check', 'src']
+    inputs:
+      - 'src/**/*'
+      - 'pyproject.toml'
+      - 'uv.lock'
+    deps:
+      - 'format'
+
+  build:
+    command: 'uv'
+    args: ['build']
+    inputs:
+      - 'src/**/*'
+      - 'pyproject.toml'
+      - 'uv.lock'
+    outputs:
+      - 'dist'
+    deps:
+      - 'lint'
+
+  test:
+    command: 'uv'
+    args: ['run', 'pytest', '-p', 'no:cacheprovider']
+    inputs:
+      - 'src/**/*'
+      - 'pyproject.toml'
+      - 'uv.lock'
+    options:
+      allowFailure: true
+    deps:
+      - 'install'
+
+  dev:
+    command: 'uv'
+    args: ['run', 'python', '-u', 'src/worker.py']
     env:
       LOG_LEVEL: 'debug'
       PYTHONUNBUFFERED: '1'
     options:
+      persistent: true
+      cache: false
       envFile: true
-
-  build:
-    command: '$CONDA_EXE'
-    args: ['run', '--prefix', './ai-env', 'python', '-m', 'build']
     deps:
       - 'install'
 
-  lint:
-    command: '$CONDA_EXE'
-    args: ['run', '--no-capture-output', '--prefix', './ai-env', 'ruff', 'check', 'src']
-    deps:
-      - 'install'
-
-  test:
-    command: '$CONDA_EXE'
-    args: ['run', '--no-capture-output', '--prefix', './ai-env', 'pytest', '-p', 'no:cacheprovider']
-    deps:
-      - 'install'
+  clean:
+    script: |
+      rm -rf .venv .ruff_cache .pytest_cache
+      find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
     options:
-      allowFailure: true
-
-  format:
-    command: '$CONDA_EXE'
-    args: ['run', '--no-capture-output', '--prefix', './ai-env', 'black', 'src']
-    deps:
-      - 'install'
-
+      cache: false

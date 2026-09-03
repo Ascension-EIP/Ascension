@@ -1,3 +1,10 @@
+// @date 2026-03-18
+// @file video_upload.dart
+// @brief File description.
+// @project Ascension
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @copyright (c) 2026 Ascension
+// @status done
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';

@@ -61,13 +61,13 @@ Méthode appliquée (O4) :
 ### 1) Architecture exécutable observée
 
 - **Monorepo** orchestré via moonrepo (`moon.yml`).
-- **Backend Rust** (`apps/server`) avec Axum + SQLx + Lapin (`apps/server/Cargo.toml`).
+- **Backend Go** (`apps/server`) avec Gin + pgx + RabbitMQ (`apps/server/go.mod`).
 - **Worker IA Python** (`apps/ai/src/worker.py`) consommant la queue `vision.skeleton`.
 - **Infra locale** Docker Compose (`docker-compose.yml`) : PostgreSQL, RabbitMQ, MinIO, server, ai-worker.
 
 ### 2) Flux technique principal vérifié
 
-- API expose `POST /v1/videos/upload-url`, `POST /v1/analyses`, `GET /v1/analyses/{id}` (`apps/server/src/inbound/http.rs`).
+- API expose `GET /v1/videos/upload-url`, `PUT /v1/videos/upload-done/:id`, `GET /v1/videos/download-url/:id`, `POST /v1/analysis`, `GET /v1/analysis/:id` (`apps/server/internal/inbound/http/router/router.go`).
 - Le worker IA :
   - télécharge depuis S3/MinIO,
   - calcule l’analyse (`analyze`),

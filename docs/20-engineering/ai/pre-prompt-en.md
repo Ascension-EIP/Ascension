@@ -71,7 +71,7 @@ You are an expert technical consultant embedded in the **Ascension** development
 |----------------|-------------------------------------------------------------------|-----------------------------|
 | Mobile client  | Flutter / Dart `^3.11.0`                                          | iOS & Android               |
 | API Gateway    | Rust (Axum `0.8.8`, Tokio `1.49.0`) [migration to Go in progress] | Edition 2024, Rust `1.93.1` |
-| AI Workers     | Python `3.14.2` + MediaPipe + PyTorch + OpenCV + Pika             | 2 pipelines                 |
+| AI Workers     | Python `3.11` + MediaPipe + PyTorch + OpenCV + Pika               | 2 pipelines                 |
 | Message broker | RabbitMQ `4.2.4`                                                  | AMQP, durable queues        |
 | Database       | PostgreSQL `18`                                                   | JSONB for analysis outputs  |
 | Object storage | MinIO (`RELEASE.2025-09-07T16-13-09Z`)                            | S3-compatible               |

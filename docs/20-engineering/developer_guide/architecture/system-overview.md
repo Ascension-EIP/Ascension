@@ -19,7 +19,7 @@
   - [3. Client-Side Rendering](#3-client-side-rendering)
 - [System Layers](#system-layers)
   - [Layer 1: Client (Flutter Mobile App)](#layer-1-client-flutter-mobile-app)
-  - [Layer 2: API Gateway (Rust)](#layer-2-api-gateway-rust)
+  - [Layer 2: API Gateway (Go)](#layer-2-api-gateway-go)
   - [Layer 3: Message Queue (RabbitMQ)](#layer-3-message-queue-rabbitmq)
   - [Layer 4: AI Workers (Python + PyTorch + MediaPipe + OpenCV)](#layer-4-ai-workers-python-pytorch-mediapipe-opencv)
     - [Pipeline 1: Vision Pipeline (GPU-intensive)](#pipeline-1-vision-pipeline-gpu-intensive)
@@ -165,23 +165,22 @@ Processing time: 45s (no encoding)
 7. Fetch JSON analysis
 8. Render skeleton/ghost overlay on local video
 
-### Layer 2: API Gateway (Rust)
+### Layer 2: API Gateway (Go)
 
 **Responsibilities**:
 
-- Authentication and authorization
+- Authentication and authorization (JWT validation)
 - Request validation
 - Presigned URL generation
 - Job orchestration
-- WebSocket connection management
 - Result delivery
 
 **Key Technologies**:
 
-- Rust (Axum framework)
+- Go (Gin framework)
 - JWT for authentication
-- SQLx for database access
-- RabbitMQ client (lapin crate)
+- pgx for database access
+- RabbitMQ client (amqp091-go)
 
 **NOT Responsible For**:
 
@@ -192,12 +191,14 @@ Processing time: 45s (no encoding)
 **API Endpoints**:
 
 ```
-POST   /api/v1/auth/register
-POST   /api/v1/auth/login
-POST   /api/v1/analysis/video/request-upload  # Returns presigned URL
-POST   /api/v1/analysis/video/start           # Triggers AI analysis
-GET    /api/v1/analysis/video/:id             # Fetch results
-WebSocket /api/v1/ws                        # Real-time notifications
+POST   /v1/auth/signup
+POST   /v1/auth/login
+DELETE /v1/auth/logout
+PUT    /v1/auth/refresh
+GET    /v1/videos/upload-url     # Returns presigned URL
+PUT    /v1/videos/upload-done/:id # Confirms upload complete
+POST   /v1/analysis              # Triggers AI analysis
+GET    /v1/analysis/:id          # Fetch results
 ```
 
 ### Layer 3: Message Queue (RabbitMQ)
@@ -420,7 +421,7 @@ sequenceDiagram
     autonumber
     participant User as 👤 User
     participant App as 📱 Flutter App
-    participant API as 🛡️ Rust API
+    participant API as 🛡️ Go API
     participant S3 as 📦 S3/MinIO
     participant RMQ as 📨 RabbitMQ
     participant Worker as 🤖 AI Worker
@@ -430,20 +431,21 @@ sequenceDiagram
     App->>App: Caches video locally
 
     Note over App,API: UPLOAD PHASE
-    App->>API: POST /analysis/request-upload
+    App->>API: GET /v1/videos/upload-url?content_type=...&size=...
     API->>S3: Generate presigned URL (15min expiry)
     S3-->>API: Returns presigned URL
     API-->>App: Returns URL + video_id
 
     App->>S3: PUT video (direct upload)
     S3-->>App: Upload success
+    App->>API: PUT /v1/videos/upload-done/{video_id}
+    API-->>App: 204 No Content
 
     Note over App,RMQ: JOB SUBMISSION
-    App->>API: POST /analysis/start {video_id}
+    App->>API: POST /v1/analysis {video_id}
     API->>DB: INSERT INTO analyses (status='pending')
-    API->>RMQ: Publish to 'analysis_jobs' queue
-    API-->>App: Returns job_id
-    App->>API: Opens WebSocket connection
+    API->>RMQ: Publish to 'vision.skeleton' queue
+    API-->>App: Returns analysis_id (202 Accepted)
 
     Note over RMQ,Worker: PROCESSING PHASE
     RMQ->>Worker: Job consumed from queue
@@ -460,11 +462,8 @@ sequenceDiagram
     Worker->>RMQ: Publish 'analysis.completed.{job_id}'
     Worker->>S3: DELETE video (if not saved)
 
-    Note over API,App: NOTIFICATION PHASE
-    RMQ->>API: Event received
-    API->>App: WebSocket: "Analysis Ready"
-
-    App->>API: GET /analysis/{job_id}
+    Note over API,App: NOTIFICATION & FETCH
+    App->>API: Polls GET /v1/analysis/{analysis_id}
     API->>DB: SELECT result_json FROM analyses
     DB-->>API: Returns JSON data
     API-->>App: Returns analysis (50KB)
@@ -674,21 +673,16 @@ Total: ~€3,000-3,500/month (~€0.035 per user)
 
 ## Technology Choices Rationale
 
-### Why Rust over Node.js/Go?
+### Why Go over Node.js/Rust? (Backend Migration)
 
-**Vs Node.js**:
+We migrated the API Gateway server from Rust (Axum) to Go (Gin) for several reasons:
 
-- No garbage collection pauses
-- Memory safety without runtime overhead
-- Better concurrency model (async/await without event loop)
+- **Development Velocity**: Go's minimal syntax and faster compile times accelerate feature delivery.
+- **Onboarding**: Easier for new team members to read and write Go code compared to Rust.
+- **Concurrency**: Goroutines provide extremely high throughput and low latency, similar to Tokio tasks, but with a much lower cognitive load.
+- **Robust standard library**: Simplified database connection pooling and HTTP handling.
 
-**Vs Go**:
-
-- More expressive type system
-- Better memory safety guarantees
-- Growing web ecosystem (Axum, Tokio, SQLx)
-
-**Trade-off**: Slower development initially, but worth it for performance-critical API
+*Note: The initial Rust prototype helped us validate benchmarks and establish performance guidelines, but Go was chosen for the long-term production gateway.*
 
 ### Why PostgreSQL over MongoDB?
 

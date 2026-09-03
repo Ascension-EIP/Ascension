@@ -1,3 +1,10 @@
+// @date 2026-03-18
+// @file accessibility_settings_service_test.dart
+// @brief File description.
+// @project Ascension
+// @author Nicolas TORO <nicolas.toro@epitech.eu>
+// @copyright (c) 2026 Ascension
+// @status done
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile/core/accessibility/accessibility_settings_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';

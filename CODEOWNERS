@@ -9,7 +9,7 @@
 #
 # Squad routing reference:
 #   Quentin   → AI / Python      → @Ascension-EIP/ai
-#   Renaud    → Rust / API       → @Ascension-EIP/backend
+#   Renaud    → Go / API         → @Ascension-EIP/backend
 #   Romaric   → Flutter / Mobile → @Ascension-EIP/mobile
 #   Arthur    → DevOps / CI      → @Ascension-EIP/devops
 #   Alexandra → DB / Infra       → @Ascension-EIP/infra
@@ -24,7 +24,7 @@
 # AI pipeline (Python, PyTorch, MediaPipe, OpenCV)
 apps/ai/                @Ascension-EIP/ai
 
-# Backend API (Rust, Axum)
+# Backend API (Go, Gin)
 apps/server/            @Ascension-EIP/backend
 
 # Mobile app (Flutter)

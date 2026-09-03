@@ -2,16 +2,11 @@
 name: ascension-docs-to-wiki
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'docs/**'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'docs/**'
+  workflow_run:
+    workflows: ["ascension-staging-to-main"]
+    types:
+      - completed
+  workflow_dispatch:
 
 env:
   GITHUB_ACTIONS: true
@@ -27,12 +22,12 @@ jobs:
   ########################## WIKI #############################################
   update_wiki:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: ${{ (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success') && github.repository == 'Ascension-EIP/Ascension' }}
 
     ######################## STEPS ############################################
     steps:
       - name: Checkout main repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: main
@@ -47,4 +42,5 @@ jobs:
       - name: Set up Wiki
         uses: Andrew-Chen-Wang/github-wiki-action@v5.0.4
   #############################################################################
+
 ###############################################################################
