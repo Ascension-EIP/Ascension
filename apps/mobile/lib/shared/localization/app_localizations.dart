@@ -1,8 +1,8 @@
-// @date 2026-03-18
+// @date 2026-09-03
 // @file app_localizations.dart
 // @brief File description.
 // @project Ascension
-// @author Nicolas TORO <nicolas.toro@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';
@@ -144,6 +144,18 @@ class AppLocalizations {
       'stats.view': 'Visualiser',
       'stats.frames': '{count} frames',
       'stats.detectedRate': '{rate} % détecté',
+      'stats.totalAnalyses': 'Analyses',
+      'stats.successRate': 'Taux de réussite',
+      'stats.avgDuration': 'Durée moyenne',
+      'stats.avgDetection': 'Détection moy.',
+      'stats.activityTitle': 'Activité',
+      'stats.activitySubtitle': '7 derniers jours',
+      'stats.recentTitle': 'Historique',
+      'stats.filterAll': 'Toutes',
+      'stats.filterCompleted': 'Terminées',
+      'stats.filterFailed': 'Échouées',
+      'stats.emptyFilterTitle': 'Aucun résultat',
+      'stats.emptyFilterSubtitle': 'Aucune analyse ne correspond à ce filtre.',
       'date.todayAt': 'Aujourd\'hui à {time}',
       'date.yesterdayAt': 'Hier à {time}',
       'date.at': '{day} à {time}',
@@ -403,6 +415,18 @@ class AppLocalizations {
       'stats.view': 'View',
       'stats.frames': '{count} frames',
       'stats.detectedRate': '{rate} % detected',
+      'stats.totalAnalyses': 'Analyses',
+      'stats.successRate': 'Success rate',
+      'stats.avgDuration': 'Avg. duration',
+      'stats.avgDetection': 'Avg. detection',
+      'stats.activityTitle': 'Activity',
+      'stats.activitySubtitle': 'Last 7 days',
+      'stats.recentTitle': 'History',
+      'stats.filterAll': 'All',
+      'stats.filterCompleted': 'Completed',
+      'stats.filterFailed': 'Failed',
+      'stats.emptyFilterTitle': 'No results',
+      'stats.emptyFilterSubtitle': 'No analysis matches this filter.',
       'date.todayAt': 'Today at {time}',
       'date.yesterdayAt': 'Yesterday at {time}',
       'date.at': '{day} at {time}',

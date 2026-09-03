@@ -1,11 +1,12 @@
-// @date 2026-07-15
+// @date 2026-09-03
 // @file header.dart
 // @brief File description.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../localization/app_localizations.dart';
 
@@ -35,6 +36,7 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ShadTheme.of(context);
     return AppBar(
       centerTitle: centerTitle,
       toolbarHeight: description != null ? 100 : kToolbarHeight,
@@ -47,11 +49,7 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
           children: [
             Text(
               title,
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: titleColor ?? Theme.of(context).colorScheme.onSurface,
-              ),
+              style: theme.textTheme.h2.copyWith(color: titleColor),
               softWrap: true,
               overflow: TextOverflow.visible,
             ),
@@ -60,12 +58,7 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
                 height: 46,
                 child: Text(
                   description!,
-                  style: TextStyle(
-                    fontSize: 18,
-                    color:
-                        descriptionColor ??
-                        Theme.of(context).colorScheme.onSurface,
-                  ),
+                  style: theme.textTheme.p.copyWith(color: descriptionColor),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),

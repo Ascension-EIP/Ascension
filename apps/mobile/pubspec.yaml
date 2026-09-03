@@ -21,6 +21,7 @@ dependencies:
   go_router: ^17.2.2
   just_audio: ^0.10.5
   flutter_markdown: ^0.7.7
+  shadcn_ui: ^0.56.2
 
 dev_dependencies:
   flutter_test:

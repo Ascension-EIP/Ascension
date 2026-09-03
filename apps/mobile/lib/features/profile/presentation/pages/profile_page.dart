@@ -1,11 +1,12 @@
-// @date 2026-03-18
+// @date 2026-09-03
 // @file profile_page.dart
 // @brief File description.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:mobile/core/auth/auth_service.dart';
 import 'package:mobile/core/services/analysis_history_service.dart';
 import 'package:mobile/features/upload/presentation/pages/analysis_page.dart';
@@ -57,10 +58,9 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _openEditSheet() async {
-    final result = await showModalBottomSheet<bool>(
+    final result = await showShadSheet<bool>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      side: ShadSheetSide.bottom,
       builder: (_) => const _EditProfileSheet(),
     );
     if (result == true) setState(() {});
@@ -68,21 +68,18 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _logout() async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showShadDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => ShadDialog.alert(
         title: Text(l10n.t('profile.logoutTitle')),
-        content: Text(l10n.t('profile.logoutPrompt')),
+        description: Text(l10n.t('profile.logoutPrompt')),
         actions: [
-          TextButton(
+          ShadButton.outline(
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(l10n.t('profile.cancel')),
           ),
-          TextButton(
+          ShadButton.destructive(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
             child: Text(l10n.t('profile.logoutTitle')),
           ),
         ],
@@ -101,12 +98,14 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: Header(
         title: l10n.t('profile.title'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            tooltip: l10n.t('common.settings'),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const SettingsPage()),
+          Tooltip(
+            message: l10n.t('common.settings'),
+            child: ShadIconButton.ghost(
+              icon: const Icon(Icons.settings_outlined),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsPage()),
+              ),
             ),
           ),
         ],
@@ -145,6 +144,7 @@ class _UserCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = AuthService();
     final l10n = AppLocalizations.of(context);
+    final theme = ShadTheme.of(context);
     final username = auth.username;
     final email = auth.email;
 
@@ -152,12 +152,9 @@ class _UserCard extends StatelessWidget {
         username ?? email?.split('@').first ?? l10n.t('profile.defaultUser');
     final initials = _initials(displayName);
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+    return ShadCard(
+      border: ShadBorder.all(
+        color: theme.colorScheme.primary.withValues(alpha: 0.2),
       ),
       child: Row(
         children: [
@@ -167,33 +164,21 @@ class _UserCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  displayName,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
+                Text(displayName, style: theme.textTheme.h4),
                 if (email != null) ...[
                   const SizedBox(height: 2),
                   Text(
                     email,
-                    style: TextStyle(fontSize: 13, color: Colors.grey[400]),
+                    style: theme.textTheme.muted,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ],
             ),
           ),
-          IconButton(
+          ShadIconButton.ghost(
             onPressed: onEdit,
             icon: const Icon(Icons.edit_outlined, size: 20),
-            tooltip: l10n.t('profile.editProfile'),
-            style: IconButton.styleFrom(
-              foregroundColor: AppColors.primary,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-            ),
           ),
         ],
       ),
@@ -221,7 +206,7 @@ class _EditProfileSheet extends StatefulWidget {
 class _EditProfileSheetState extends State<_EditProfileSheet> {
   late final TextEditingController _usernameController;
   late final TextEditingController _emailController;
-  final _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<ShadFormState>();
   bool _saving = false;
 
   @override
@@ -240,7 +225,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
   }
 
   Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.saveAndValidate()) return;
     setState(() => _saving = true);
 
     final username = _usernameController.text.trim();
@@ -257,98 +242,61 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final bottom = MediaQuery.of(context).viewInsets.bottom;
+    final theme = ShadTheme.of(context);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      padding: EdgeInsets.fromLTRB(24, 12, 24, 24 + bottom),
-      child: Form(
+    return ShadSheet(
+      title: Text(l10n.t('profile.editProfile')),
+      actions: [
+        ShadButton.outline(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(l10n.t('profile.cancel')),
+        ),
+        ShadButton(
+          onPressed: _saving ? null : _save,
+          leading: _saving
+              ? SizedBox.square(
+                  dimension: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: theme.colorScheme.primaryForeground,
+                  ),
+                )
+              : null,
+          child: Text(l10n.t('profile.save')),
+        ),
+      ],
+      child: ShadForm(
         key: _formKey,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Handle bar
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              l10n.t('profile.editProfile'),
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextFormField(
+            ShadInputFormField(
               controller: _usernameController,
               textInputAction: TextInputAction.next,
-              decoration: InputDecoration(
-                labelText: l10n.t('profile.username'),
-                prefixIcon: Icon(Icons.person_outline),
-              ),
+              label: Text(l10n.t('profile.username')),
+              leading: const Icon(Icons.person_outline),
               validator: (v) {
-                if (v != null && v.trim().isNotEmpty && v.trim().length < 3) {
+                if (v.trim().isNotEmpty && v.trim().length < 3) {
                   return l10n.t('auth.register.usernameMin3');
                 }
                 return null;
               },
             ),
             const SizedBox(height: 16),
-            TextFormField(
+            ShadInputFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.done,
-              onFieldSubmitted: (_) => _save(),
-              decoration: InputDecoration(
-                labelText: 'Email',
-                prefixIcon: Icon(Icons.email_outlined),
-              ),
+              onSubmitted: (_) => _save(),
+              label: const Text('Email'),
+              leading: const Icon(Icons.email_outlined),
               validator: (v) {
-                if (v != null && v.trim().isNotEmpty && !v.contains('@')) {
+                if (v.trim().isNotEmpty && !v.contains('@')) {
                   return l10n.t('auth.invalidEmail');
                 }
                 return null;
               },
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: Text(l10n.t('profile.cancel')),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _saving ? null : _save,
-                    child: _saving
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : Text(l10n.t('profile.save')),
-                  ),
-                ),
-              ],
             ),
           ],
         ),
@@ -363,31 +311,19 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ShadTheme.of(context);
     return Container(
       width: 64,
       height: 64,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          colors: [AppColors.primary, AppColors.primaryDark],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.35),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: theme.colorScheme.primary,
       ),
       child: Center(
         child: Text(
           initials,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
+          style: theme.textTheme.h4.copyWith(
+            color: theme.colorScheme.primaryForeground,
             letterSpacing: 1,
           ),
         ),
@@ -405,6 +341,7 @@ class _StatsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = ShadTheme.of(context);
     final entries = history ?? [];
     final total = entries.length;
     final completed = entries.where((e) => e.isCompleted).toList();
@@ -416,14 +353,7 @@ class _StatsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.t('profile.globalStats'),
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-          ),
-        ),
+        Text(l10n.t('profile.globalStats'), style: theme.textTheme.h4),
         const SizedBox(height: 12),
         Row(
           children: [
@@ -432,7 +362,7 @@ class _StatsSection extends StatelessWidget {
                 icon: Icons.analytics_outlined,
                 value: '$total',
                 label: l10n.t('profile.analyses'),
-                color: AppColors.primary,
+                color: theme.colorScheme.primary,
                 loading: history == null,
               ),
             ),
@@ -480,13 +410,10 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final theme = ShadTheme.of(context);
+    return ShadCard(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
+      border: ShadBorder.all(color: color.withValues(alpha: 0.2)),
       child: Column(
         children: [
           Icon(icon, color: color, size: 22),
@@ -500,16 +427,9 @@ class _StatCard extends StatelessWidget {
                     color: color,
                   ),
                 )
-              : Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: color,
-                  ),
-                ),
+              : Text(value, style: theme.textTheme.h4.copyWith(color: color)),
           const SizedBox(height: 4),
-          Text(label, style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+          Text(label, style: theme.textTheme.small),
         ],
       ),
     );
@@ -527,20 +447,14 @@ class _RecentAnalyses extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = ShadTheme.of(context);
     final entries = history ?? [];
     final recent = entries.take(3).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.t('profile.latestAnalyses'),
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-          ),
-        ),
+        Text(l10n.t('profile.latestAnalyses'), style: theme.textTheme.h4),
         const SizedBox(height: 12),
         if (history == null)
           const Center(
@@ -550,7 +464,7 @@ class _RecentAnalyses extends StatelessWidget {
             ),
           )
         else if (recent.isEmpty)
-          _EmptyState()
+          const _EmptyState()
         else
           Column(
             children: [
@@ -566,30 +480,26 @@ class _RecentAnalyses extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
+  const _EmptyState();
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Container(
+    final theme = ShadTheme.of(context);
+    return ShadCard(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 32),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
-      ),
       child: Column(
         children: [
-          Icon(Icons.videocam_outlined, size: 40, color: Colors.grey[600]),
+          Icon(
+            Icons.videocam_outlined,
+            size: 40,
+            color: theme.colorScheme.mutedForeground,
+          ),
           const SizedBox(height: 10),
-          Text(
-            l10n.t('profile.emptyTitle'),
-            style: TextStyle(color: Colors.grey[500], fontSize: 14),
-          ),
+          Text(l10n.t('profile.emptyTitle'), style: theme.textTheme.p),
           const SizedBox(height: 4),
-          Text(
-            l10n.t('profile.emptySubtitle'),
-            style: TextStyle(color: Colors.grey[600], fontSize: 12),
-          ),
+          Text(l10n.t('profile.emptySubtitle'), style: theme.textTheme.small),
         ],
       ),
     );
@@ -603,17 +513,15 @@ class _MiniAnalysisCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = ShadTheme.of(context);
     final isCompleted = entry.isCompleted;
-    final statusColor = isCompleted ? AppColors.success : AppColors.danger;
+    final statusColor = isCompleted
+        ? AppColors.success
+        : theme.colorScheme.destructive;
 
-    return Container(
+    return ShadCard(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: statusColor.withValues(alpha: 0.2)),
-      ),
+      border: ShadBorder.all(color: statusColor.withValues(alpha: 0.2)),
       child: Row(
         children: [
           Container(
@@ -638,10 +546,8 @@ class _MiniAnalysisCard extends StatelessWidget {
               children: [
                 Text(
                   _formatDate(context, entry.createdAt),
-                  style: const TextStyle(
-                    fontSize: 13,
+                  style: theme.textTheme.small.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -651,23 +557,22 @@ class _MiniAnalysisCard extends StatelessWidget {
                       'frames': '${entry.frameCount}',
                       'rate': entry.detectionRate.toStringAsFixed(0),
                     }),
-                    style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                    style: theme.textTheme.small,
                   )
                 else
                   Text(
                     isCompleted
                         ? l10n.t('profile.analysisCompleted')
                         : l10n.t('profile.analysisFailed'),
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: isCompleted ? Colors.grey[500] : AppColors.danger,
+                    style: theme.textTheme.small.copyWith(
+                      color: isCompleted ? null : statusColor,
                     ),
                   ),
               ],
             ),
           ),
           if (isCompleted && entry.resultJson != null)
-            IconButton(
+            ShadIconButton.ghost(
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -679,13 +584,11 @@ class _MiniAnalysisCard extends StatelessWidget {
                   ),
                 );
               },
-              icon: const Icon(
+              icon: Icon(
                 Icons.play_circle_outline_rounded,
-                color: AppColors.primary,
+                color: theme.colorScheme.primary,
                 size: 22,
               ),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
             ),
         ],
       ),
@@ -729,19 +632,13 @@ class _LogoutButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return SizedBox(
+    final destructive = ShadTheme.of(context).colorScheme.destructive;
+    return ShadButton.outline(
       width: double.infinity,
-      child: OutlinedButton.icon(
-        onPressed: onLogout,
-        icon: const Icon(Icons.logout_rounded, size: 18),
-        label: Text(l10n.t('profile.logoutAction')),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.danger,
-          side: BorderSide(color: AppColors.danger.withValues(alpha: 0.5)),
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        ),
-      ),
+      foregroundColor: destructive,
+      leading: const Icon(Icons.logout_rounded, size: 18),
+      onPressed: onLogout,
+      child: Text(l10n.t('profile.logoutAction')),
     );
   }
 }

@@ -1,18 +1,18 @@
-// @date 2026-03-18
+// @date 2026-09-03
 // @file register_page.dart
 // @brief File description.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:mobile/core/accessibility/accessibility_announcer.dart';
 import 'package:mobile/core/auth/auth_service.dart';
 import 'package:mobile/core/network/api_service.dart';
 import 'package:mobile/features/profile/presentation/pages/settings_page.dart';
 import 'package:mobile/shared/localization/app_localizations.dart';
-import 'package:mobile/shared/theme/app_colors.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -22,7 +22,7 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<ShadFormState>();
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -43,7 +43,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.saveAndValidate()) return;
 
     setState(() {
       _isLoading = true;
@@ -95,6 +95,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = ShadTheme.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -102,12 +103,14 @@ class _RegisterPageState extends State<RegisterPage> {
         elevation: 0,
         scrolledUnderElevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            tooltip: l10n.t('common.settings'),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const SettingsPage()),
+          Tooltip(
+            message: l10n.t('common.settings'),
+            child: ShadIconButton.ghost(
+              icon: const Icon(Icons.settings_outlined),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsPage()),
+              ),
             ),
           ),
         ],
@@ -125,31 +128,29 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 40),
                   Text(
                     l10n.t('auth.register.title'),
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: theme.textTheme.h3,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     l10n.t('auth.register.subtitle'),
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: theme.textTheme.muted,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
-                  Form(
+                  ShadForm(
                     key: _formKey,
                     child: Column(
                       children: [
-                        TextFormField(
+                        ShadInputFormField(
                           controller: _usernameController,
                           textInputAction: TextInputAction.next,
-                          decoration: InputDecoration(
-                            labelText: l10n.t('auth.register.username'),
-                            helperText: l10n.t('auth.register.usernameMin3'),
-                            prefixIcon: Icon(Icons.person_outline),
+                          label: Text(l10n.t('auth.register.username')),
+                          description: Text(
+                            l10n.t('auth.register.usernameMin3'),
                           ),
+                          leading: const Icon(Icons.person_outline),
                           validator: (v) {
-                            if (v == null || v.trim().isEmpty) {
+                            if (v.trim().isEmpty) {
                               return l10n.t('auth.requiredField');
                             }
                             if (v.trim().length < 3) {
@@ -159,17 +160,17 @@ class _RegisterPageState extends State<RegisterPage> {
                           },
                         ),
                         const SizedBox(height: 16),
-                        TextFormField(
+                        ShadInputFormField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
-                          decoration: InputDecoration(
-                            labelText: 'Email',
-                            helperText: l10n.t('auth.register.emailHelper'),
-                            prefixIcon: Icon(Icons.email_outlined),
+                          label: const Text('Email'),
+                          description: Text(
+                            l10n.t('auth.register.emailHelper'),
                           ),
+                          leading: const Icon(Icons.email_outlined),
                           validator: (v) {
-                            if (v == null || v.trim().isEmpty) {
+                            if (v.trim().isEmpty) {
                               return l10n.t('auth.requiredField');
                             }
                             if (!v.contains('@')) {
@@ -179,30 +180,36 @@ class _RegisterPageState extends State<RegisterPage> {
                           },
                         ),
                         const SizedBox(height: 16),
-                        TextFormField(
+                        ShadInputFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
                           textInputAction: TextInputAction.next,
-                          decoration: InputDecoration(
-                            labelText: l10n.t('auth.register.password'),
-                            helperText: l10n.t('auth.register.passwordHelper'),
-                            prefixIcon: const Icon(Icons.lock_outline),
-                            suffixIcon: IconButton(
-                              tooltip: _obscurePassword
-                                  ? l10n.t('auth.login.showPassword')
-                                  : l10n.t('auth.login.hidePassword'),
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
-                              ),
-                              onPressed: () => setState(
-                                () => _obscurePassword = !_obscurePassword,
+                          label: Text(l10n.t('auth.register.password')),
+                          description: Text(
+                            l10n.t('auth.register.passwordHelper'),
+                          ),
+                          leading: const Icon(Icons.lock_outline),
+                          trailing: SizedBox.square(
+                            dimension: 24,
+                            child: OverflowBox(
+                              maxWidth: 28,
+                              maxHeight: 28,
+                              child: ShadIconButton(
+                                iconSize: 20,
+                                padding: const EdgeInsets.all(2),
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                ),
+                                onPressed: () => setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                ),
                               ),
                             ),
                           ),
                           validator: (v) {
-                            if (v == null || v.isEmpty) {
+                            if (v.isEmpty) {
                               return l10n.t('auth.requiredField');
                             }
                             if (v.length < 8) {
@@ -212,33 +219,37 @@ class _RegisterPageState extends State<RegisterPage> {
                           },
                         ),
                         const SizedBox(height: 16),
-                        TextFormField(
+                        ShadInputFormField(
                           controller: _confirmController,
                           obscureText: _obscureConfirm,
                           textInputAction: TextInputAction.done,
-                          onFieldSubmitted: (_) => _submit(),
-                          decoration: InputDecoration(
-                            labelText: l10n.t('auth.register.confirmPassword'),
-                            helperText: l10n.t(
-                              'auth.register.confirmPasswordHelper',
-                            ),
-                            prefixIcon: const Icon(Icons.lock_outline),
-                            suffixIcon: IconButton(
-                              tooltip: _obscureConfirm
-                                  ? l10n.t('auth.register.showConfirmPassword')
-                                  : l10n.t('auth.register.hideConfirmPassword'),
-                              icon: Icon(
-                                _obscureConfirm
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
-                              ),
-                              onPressed: () => setState(
-                                () => _obscureConfirm = !_obscureConfirm,
+                          onSubmitted: (_) => _submit(),
+                          label: Text(l10n.t('auth.register.confirmPassword')),
+                          description: Text(
+                            l10n.t('auth.register.confirmPasswordHelper'),
+                          ),
+                          leading: const Icon(Icons.lock_outline),
+                          trailing: SizedBox.square(
+                            dimension: 24,
+                            child: OverflowBox(
+                              maxWidth: 28,
+                              maxHeight: 28,
+                              child: ShadIconButton(
+                                iconSize: 20,
+                                padding: const EdgeInsets.all(2),
+                                icon: Icon(
+                                  _obscureConfirm
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                ),
+                                onPressed: () => setState(
+                                  () => _obscureConfirm = !_obscureConfirm,
+                                ),
                               ),
                             ),
                           ),
                           validator: (v) {
-                            if (v == null || v.isEmpty) {
+                            if (v.isEmpty) {
                               return l10n.t('auth.requiredField');
                             }
                             if (v != _passwordController.text) {
@@ -255,18 +266,19 @@ class _RegisterPageState extends State<RegisterPage> {
                     _ErrorBanner(message: _errorMessage!),
                   ],
                   const SizedBox(height: 24),
-                  ElevatedButton(
+                  ShadButton(
+                    width: double.infinity,
                     onPressed: _isLoading ? null : _submit,
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
+                    leading: _isLoading
+                        ? SizedBox.square(
+                            dimension: 16,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: theme.colorScheme.primaryForeground,
                             ),
                           )
-                        : Text(l10n.t('auth.register.submit')),
+                        : null,
+                    child: Text(l10n.t('auth.register.submit')),
                   ),
                   const SizedBox(height: 24),
                   Row(
@@ -274,17 +286,11 @@ class _RegisterPageState extends State<RegisterPage> {
                     children: [
                       Text(
                         l10n.t('auth.register.hasAccount'),
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: theme.textTheme.muted,
                       ),
-                      TextButton(
+                      ShadButton.link(
                         onPressed: () => context.go('/login'),
-                        child: Text(
-                          l10n.t('auth.register.login'),
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        child: Text(l10n.t('auth.register.login')),
                       ),
                     ],
                   ),
@@ -305,6 +311,7 @@ class _Logo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = ShadTheme.of(context);
     return Semantics(
       container: true,
       label: l10n.t('common.logoAscension'),
@@ -312,10 +319,10 @@ class _Logo extends StatelessWidget {
         children: [
           Image.asset('assets/images/logo.png', width: 72, height: 72),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'ASCENSION',
-            style: TextStyle(
-              color: AppColors.primary,
+            style: theme.textTheme.large.copyWith(
+              color: theme.colorScheme.primary,
               fontSize: 22,
               fontWeight: FontWeight.w800,
               letterSpacing: 4,
@@ -339,25 +346,9 @@ class _ErrorBanner extends StatelessWidget {
       liveRegion: true,
       container: true,
       label: l10n.tr('common.errorLabel', {'message': message}),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.error.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.error.withValues(alpha: 0.4)),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.error_outline, color: AppColors.error, size: 18),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                message,
-                style: const TextStyle(color: AppColors.error, fontSize: 13),
-              ),
-            ),
-          ],
-        ),
+      child: ShadAlert.destructive(
+        icon: const Icon(Icons.error_outline),
+        description: Text(message),
       ),
     );
   }

@@ -1,14 +1,15 @@
-// @date 2026-03-18
+// @date 2026-09-03
 // @file video_upload.dart
 // @brief File description.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/accessibility/accessibility_announcer.dart';
 import 'package:mobile/core/accessibility/accessibility_settings_service.dart';
@@ -352,31 +353,27 @@ class _VideoUploadState extends State<VideoUpload> {
 
   Widget _buildIdle() {
     final l10n = AppLocalizations.of(context);
+    final theme = ShadTheme.of(context);
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
+          ShadCard(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 48),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey[300]!, width: 1.5),
-            ),
             child: Column(
               children: [
                 Icon(
                   Icons.video_library_outlined,
                   size: 72,
-                  color: Colors.grey[400],
+                  color: theme.colorScheme.mutedForeground,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   l10n.t('video.pickOrRecord'),
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                  style: theme.textTheme.p,
                 ),
               ],
             ),
@@ -408,6 +405,7 @@ class _VideoUploadState extends State<VideoUpload> {
 
   Widget _buildSelected() {
     final l10n = AppLocalizations.of(context);
+    final theme = ShadTheme.of(context);
     final controller = _playerController;
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -470,24 +468,18 @@ class _VideoUploadState extends State<VideoUpload> {
                         Icon(
                           Icons.video_file_rounded,
                           size: 80,
-                          color: Colors.grey[400],
+                          color: theme.colorScheme.mutedForeground,
                         ),
                         const SizedBox(height: 16),
                         Text(
                           _videoFile?.path.split('/').last ?? '',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.grey[600],
-                          ),
+                          style: theme.textTheme.p,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           l10n.t('video.previewUnavailable'),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[400],
-                          ),
+                          style: theme.textTheme.small,
                         ),
                       ],
                     ),
@@ -497,33 +489,23 @@ class _VideoUploadState extends State<VideoUpload> {
           if (_videoFile != null)
             Text(
               _videoFile!.path.split('/').last,
-              style: TextStyle(color: Colors.grey[600], fontSize: 13),
+              style: theme.textTheme.small,
               overflow: TextOverflow.ellipsis,
             ),
           const SizedBox(height: 16),
           Row(
             children: [
-              OutlinedButton.icon(
+              ShadButton.outline(
                 onPressed: _reset,
-                icon: const Icon(Icons.close_rounded),
-                label: Text(AppLocalizations.of(context).t('profile.cancel')),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 14,
-                    horizontal: 20,
-                  ),
-                ),
+                leading: const Icon(Icons.close_rounded),
+                child: Text(AppLocalizations.of(context).t('profile.cancel')),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: FilledButton.icon(
+                child: ShadButton(
                   onPressed: _upload,
-                  icon: const Icon(Icons.upload_rounded),
-                  label: Text(l10n.t('video.analyze')),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.secondary,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
+                  leading: const Icon(Icons.upload_rounded),
+                  child: Text(l10n.t('video.analyze')),
                 ),
               ),
             ],
@@ -535,6 +517,7 @@ class _VideoUploadState extends State<VideoUpload> {
 
   Widget _buildUploading() {
     final l10n = AppLocalizations.of(context);
+    final theme = ShadTheme.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -543,23 +526,19 @@ class _VideoUploadState extends State<VideoUpload> {
           children: [
             CircularProgressIndicator(
               value: _uploadProgress > 0 ? _uploadProgress : null,
-              color: Theme.of(context).colorScheme.secondary,
+              color: theme.colorScheme.primary,
             ),
             const SizedBox(height: 24),
             Text(
               l10n.tr('video.uploadingProgress', {
                 'progress': '${(_uploadProgress * 100).toInt()}',
               }),
-              style: const TextStyle(fontSize: 16),
+              style: theme.textTheme.large,
             ),
             const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: LinearProgressIndicator(
-                value: _uploadProgress > 0 ? _uploadProgress : null,
-                color: Theme.of(context).colorScheme.secondary,
-                minHeight: 8,
-              ),
+            ShadProgress(
+              value: _uploadProgress > 0 ? _uploadProgress : null,
+              minHeight: 8,
             ),
           ],
         ),
@@ -609,32 +588,28 @@ class _VideoUploadState extends State<VideoUpload> {
 
   Widget _buildError() {
     final l10n = AppLocalizations.of(context);
+    final theme = ShadTheme.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_rounded, size: 72, color: Colors.redAccent),
-            const SizedBox(height: 16),
-            Text(
-              l10n.t('video.errorTitle'),
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Icon(
+              Icons.error_rounded,
+              size: 72,
+              color: theme.colorScheme.destructive,
             ),
+            const SizedBox(height: 16),
+            Text(l10n.t('video.errorTitle'), style: theme.textTheme.h4),
             const SizedBox(height: 8),
             Text(
               _errorMessage ?? l10n.t('video.errorUnknown'),
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[500], fontSize: 13),
+              style: theme.textTheme.small,
             ),
             const SizedBox(height: 32),
-            FilledButton(
-              onPressed: _reset,
-              style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.secondary,
-              ),
-              child: Text(l10n.t('video.retry')),
-            ),
+            ShadButton(onPressed: _reset, child: Text(l10n.t('video.retry'))),
           ],
         ),
       ),
@@ -643,6 +618,7 @@ class _VideoUploadState extends State<VideoUpload> {
 
   Widget _buildDone() {
     final l10n = AppLocalizations.of(context);
+    final theme = ShadTheme.of(context);
     final result = _analysisResult;
     final status = result?['status'] as String? ?? '—';
     final processingMs = result?['processing_time_ms'] as int?;
@@ -668,15 +644,15 @@ class _VideoUploadState extends State<VideoUpload> {
             isCompleted ? Icons.check_circle_rounded : Icons.cancel_rounded,
             size: 80,
             color: isCompleted
-                ? Theme.of(context).colorScheme.secondary
-                : Colors.redAccent,
+                ? theme.colorScheme.primary
+                : theme.colorScheme.destructive,
           ),
           const SizedBox(height: 16),
           Text(
             isCompleted
                 ? l10n.t('video.doneSuccess')
                 : l10n.t('video.doneFailed'),
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: theme.textTheme.h3,
           ),
           const SizedBox(height: 8),
           if (processingMs != null)
@@ -684,13 +660,13 @@ class _VideoUploadState extends State<VideoUpload> {
               l10n.tr('video.processingTime', {
                 'seconds': (processingMs / 1000).toStringAsFixed(1),
               }),
-              style: TextStyle(color: Colors.grey[500], fontSize: 14),
+              style: theme.textTheme.muted,
             ),
           if (frameCount != null) ...[
             const SizedBox(height: 4),
             Text(
               l10n.tr('video.framesAnalyzed', {'count': '$frameCount'}),
-              style: TextStyle(color: Colors.grey[500], fontSize: 14),
+              style: theme.textTheme.muted,
             ),
           ],
           const SizedBox(height: 24),
@@ -699,40 +675,29 @@ class _VideoUploadState extends State<VideoUpload> {
           const SizedBox(height: 24),
           // ── Visualiser button (only when analysis succeeded) ──
           if (resultJson != null && isCompleted) ...[
-            SizedBox(
+            ShadButton(
               width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => AnalysisViewPage(
-                        resultJson: resultJson,
-                        processingMs: processingMs,
-                        videoFile: _videoFile,
-                        hints: hints,
-                      ),
+              leading: const Icon(Icons.play_circle_outline_rounded),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => AnalysisViewPage(
+                      resultJson: resultJson,
+                      processingMs: processingMs,
+                      videoFile: _videoFile,
+                      hints: hints,
                     ),
-                  );
-                },
-                icon: const Icon(Icons.play_circle_outline_rounded),
-                label: Text(l10n.t('video.viewAnalysis')),
-                style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.secondary,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-              ),
+                  ),
+                );
+              },
+              child: Text(l10n.t('video.viewAnalysis')),
             ),
             const SizedBox(height: 12),
           ],
-          SizedBox(
+          ShadButton.outline(
             width: double.infinity,
-            child: OutlinedButton(
-              onPressed: _reset,
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              child: Text(l10n.t('video.analyzeAnother')),
-            ),
+            onPressed: _reset,
+            child: Text(l10n.t('video.analyzeAnother')),
           ),
         ],
       ),
@@ -747,6 +712,7 @@ class _AnalysisSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = ShadTheme.of(context);
     Map<String, dynamic>? data;
     try {
       data = jsonDecode(resultJson) as Map<String, dynamic>;
@@ -762,25 +728,19 @@ class _AnalysisSummaryCard extends StatelessWidget {
         ? 0.0
         : detectedFrames / frames.length * 100;
 
-    return Container(
+    return ShadCard(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3),
-        ),
+      border: ShadBorder.all(
+        color: theme.colorScheme.primary.withValues(alpha: 0.3),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             l10n.t('video.results'),
-            style: TextStyle(
+            style: theme.textTheme.p.copyWith(
               fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: Theme.of(context).colorScheme.secondary,
+              color: theme.colorScheme.primary,
             ),
           ),
           const SizedBox(height: 12),
@@ -806,15 +766,16 @@ class _StatRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ShadTheme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: Colors.grey[500], fontSize: 13)),
+          Text(label, style: theme.textTheme.small),
           Text(
             value,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            style: theme.textTheme.small.copyWith(fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -836,37 +797,30 @@ class _PickerButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = ShadTheme.of(context);
     return Semantics(
       button: true,
       label: label,
       hint: l10n.tr('video.tapHint', {'action': label}),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: theme.radius,
         child: Container(
           constraints: const BoxConstraints(minHeight: 72),
           padding: const EdgeInsets.symmetric(vertical: 24),
           decoration: BoxDecoration(
-            border: Border.all(
-              color: Theme.of(context).colorScheme.secondary,
-              width: 1.5,
-            ),
-            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: theme.colorScheme.primary, width: 1.5),
+            borderRadius: theme.radius,
           ),
           child: Column(
             children: [
-              Icon(
-                icon,
-                size: 36,
-                color: Theme.of(context).colorScheme.secondary,
-              ),
+              Icon(icon, size: 36, color: theme.colorScheme.primary),
               const SizedBox(height: 8),
               Text(
                 label,
-                style: const TextStyle(
-                  color: Color(0xFF00B5D3),
+                style: theme.textTheme.p.copyWith(
+                  color: theme.colorScheme.primary,
                   fontWeight: FontWeight.w600,
-                  fontSize: 15,
                 ),
               ),
             ],
@@ -951,7 +905,8 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = ShadTheme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Center(
       child: Padding(
@@ -989,10 +944,7 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                           color: colorScheme.secondary,
                         ),
                       ),
-                      Text(
-                        widget.remainingLabel,
-                        style: TextStyle(fontSize: 11, color: Colors.grey[500]),
-                      ),
+                      Text(widget.remainingLabel, style: theme.textTheme.small),
                     ],
                   )
                 else
@@ -1008,7 +960,7 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
               widget.isGeneratingHints
                   ? l10n.t('video.generatingHints')
                   : l10n.t('video.analysisInProgress'),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: theme.textTheme.h4,
             ),
             const SizedBox(height: 6),
             Text(
@@ -1016,7 +968,7 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                   ? l10n.t('video.generatingHintsSubtitle')
                   : l10n.t('video.analysisSubtitle'),
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[500], fontSize: 14),
+              style: theme.textTheme.muted,
             ),
             const SizedBox(height: 28),
 
@@ -1096,7 +1048,9 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                       decoration: BoxDecoration(
                         color: i == _pageIndex
                             ? colorScheme.secondary
-                            : Colors.grey.withValues(alpha: 0.35),
+                            : colorScheme.mutedForeground.withValues(
+                                alpha: 0.35,
+                              ),
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),
@@ -1109,14 +1063,11 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
             const SizedBox(height: 10),
             AnimatedBuilder(
               animation: _autoSlideCtrl,
-              builder: (context, _) => ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: widget.reducedMotion ? 0 : _autoSlideCtrl.value,
-                  color: colorScheme.secondary.withValues(alpha: 0.5),
-                  backgroundColor: colorScheme.secondary.withValues(alpha: 0.1),
-                  minHeight: 3,
-                ),
+              builder: (context, _) => ShadProgress(
+                value: widget.reducedMotion ? 0 : _autoSlideCtrl.value,
+                color: colorScheme.secondary.withValues(alpha: 0.5),
+                backgroundColor: colorScheme.secondary.withValues(alpha: 0.1),
+                minHeight: 3,
               ),
             ),
           ],
@@ -1165,17 +1116,18 @@ class _PromoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final theme = ShadTheme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: msg.isPromo
             ? accent.withValues(alpha: 0.10)
-            : Theme.of(context).colorScheme.surface,
+            : theme.colorScheme.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: msg.isPromo
               ? accent.withValues(alpha: 0.35)
-              : Colors.grey.withValues(alpha: 0.20),
+              : theme.colorScheme.border,
         ),
       ),
       child: Row(
@@ -1184,7 +1136,7 @@ class _PromoCard extends StatelessWidget {
           Icon(
             msg.icon,
             size: 26,
-            color: msg.isPromo ? accent : Colors.grey[400],
+            color: msg.isPromo ? accent : theme.colorScheme.mutedForeground,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -1207,9 +1159,10 @@ class _PromoCard extends StatelessWidget {
                   ),
                 Text(
                   l10n.t(msg.textKey),
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: msg.isPromo ? Colors.white : Colors.grey[400],
+                  style: theme.textTheme.small.copyWith(
+                    color: msg.isPromo
+                        ? theme.colorScheme.foreground
+                        : theme.colorScheme.mutedForeground,
                     height: 1.4,
                   ),
                   maxLines: 3,

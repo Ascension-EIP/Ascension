@@ -1,4 +1,4 @@
-// @date 2026-03-18
+// @date 2026-09-03
 // @file main.dart
 // @brief File description.
 // @project Ascension
@@ -7,6 +7,7 @@
 // @status done
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:mobile/core/accessibility/accessibility_settings_service.dart';
 import 'package:mobile/core/audio/audio_service.dart';
 import 'package:mobile/core/auth/auth_service.dart';
@@ -33,7 +34,7 @@ class AscensionApp extends StatelessWidget {
 
     return AnimatedBuilder(
       animation: settings,
-      builder: (context, _) => MaterialApp.router(
+      builder: (context, _) => ShadApp.router(
         title: 'Ascension',
         debugShowCheckedModeBanner: false,
         locale: settings.locale,
@@ -44,19 +45,16 @@ class AscensionApp extends StatelessWidget {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        theme: AppTheme.dark(
+        theme: AppTheme.shadLight(highContrast: settings.highContrast),
+        darkTheme: AppTheme.shadDark(highContrast: settings.highContrast),
+        themeMode: settings.themeMode,
+        materialThemeBuilder: (context, theme) => AppTheme.applyAccessibility(
+          theme,
           highContrast: settings.highContrast,
           dyslexiaProfile: settings.dyslexiaProfile,
           simplifiedInterface: settings.simplifiedInterface,
           reducedMotion: settings.reducedMotion,
         ),
-        darkTheme: AppTheme.dark(
-          highContrast: settings.highContrast,
-          dyslexiaProfile: settings.dyslexiaProfile,
-          simplifiedInterface: settings.simplifiedInterface,
-          reducedMotion: settings.reducedMotion,
-        ),
-        themeMode: ThemeMode.dark,
         routerConfig: appRouter,
         builder: (context, child) {
           final media = MediaQuery.of(context);
@@ -65,12 +63,14 @@ class AscensionApp extends StatelessWidget {
             disableAnimations:
                 settings.reducedMotion || media.disableAnimations,
           );
-          return MediaQuery(
-            data: withScale,
-            child: FocusTraversalGroup(
-              policy: ReadingOrderTraversalPolicy(),
-              descendantsAreFocusable: true,
-              child: child ?? const SizedBox.shrink(),
+          return ScaffoldMessenger(
+            child: MediaQuery(
+              data: withScale,
+              child: FocusTraversalGroup(
+                policy: ReadingOrderTraversalPolicy(),
+                descendantsAreFocusable: true,
+                child: child ?? const SizedBox.shrink(),
+              ),
             ),
           );
         },

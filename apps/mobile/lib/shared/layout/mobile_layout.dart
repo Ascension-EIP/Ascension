@@ -1,12 +1,13 @@
-// @date 2026-03-18
+// @date 2026-09-03
 // @file mobile_layout.dart
 // @brief File description.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:mobile/core/accessibility/accessibility_settings_service.dart';
 import 'package:mobile/features/home/presentation/pages/home_page.dart';
 import 'package:mobile/features/upload/presentation/pages/upload_page.dart';
@@ -100,20 +101,27 @@ class _CustomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: SizedBox(
-        height: 60,
-        child: Row(
-          children: List.generate(items.length, (index) {
-            return Expanded(
-              child: _NavItem(
-                data: items[index],
-                isSelected: index == currentIndex,
-                reducedMotion: reducedMotion,
-                onTap: () => onTap(index),
-              ),
-            );
-          }),
+    final colorScheme = ShadTheme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.background,
+        border: Border(top: BorderSide(color: colorScheme.border)),
+      ),
+      child: SafeArea(
+        child: SizedBox(
+          height: 60,
+          child: Row(
+            children: List.generate(items.length, (index) {
+              return Expanded(
+                child: _NavItem(
+                  data: items[index],
+                  isSelected: index == currentIndex,
+                  reducedMotion: reducedMotion,
+                  onTap: () => onTap(index),
+                ),
+              );
+            }),
+          ),
         ),
       ),
     );
@@ -171,10 +179,15 @@ class _NavItemState extends State<_NavItem>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final colorScheme = ShadTheme.of(context).colorScheme;
+    final color = widget.isSelected
+        ? colorScheme.primary
+        : colorScheme.mutedForeground;
     final label = l10n.t(widget.data.labelKey);
     final icon = Icon(
       widget.isSelected ? widget.data.selectedIcon : widget.data.icon,
       size: 32,
+      color: color,
     );
 
     return Semantics(
@@ -198,9 +211,12 @@ class _NavItemState extends State<_NavItem>
               const SizedBox(height: 3),
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: widget.isSelected
+                      ? FontWeight.w700
+                      : FontWeight.w500,
+                  color: color,
                 ),
               ),
             ],
