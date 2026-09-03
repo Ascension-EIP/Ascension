@@ -33,14 +33,14 @@ def is_kebab_case(s):
 
 def validate_branch(branch, keywords):
     # Allow exact names main and dev
-    if branch in ("main", "dev"):
-        return True, "Branch allowed: main or dev"
+    if branch in ("main", "staging", "dev"):
+        return True, "Branch allowed: main, staging or dev"
     
     if branch.startswith("dependabot/"):
         return True, "Dependabot branch: skipping validation"
 
     if '/' not in branch:
-        return False, "Branch must be either 'main'/'dev' or of form <type>/<description>"
+        return False, "Branch must be either 'main'/'staging'/'dev' or of form <type>/<description>"
 
     type_part, desc_part = branch.split('/', 1)
     if not type_part:

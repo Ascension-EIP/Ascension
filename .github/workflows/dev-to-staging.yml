@@ -82,11 +82,6 @@ jobs:
               "",
               "### Links",
               `- Workflow run: ${runUrl}`,
-              "",
-              "### Reviewer",
-              "@toro-nicolas",
-              "",
-              "> Copilot review is requested automatically by this workflow.",
             ].join("\n");
 
             const openPulls = await github.paginate(github.rest.pulls.list, {
