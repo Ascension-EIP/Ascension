@@ -68,7 +68,7 @@ Ascension/
 └── docs/                   # All project documentation
 ```
 
-Each app under `apps/` is independently buildable and deployable. See the [Monorepo Guide](docs/developer_guide/architecture/monorepo-guide.md) for the full structure, moonrepo task conventions, and CI/CD workflow.
+Each app under `apps/` is independently buildable and deployable. See the [Monorepo Guide](docs/20-engineering/developer_guide/architecture/monorepo-guide.md) for the full structure, moonrepo task conventions, and CI/CD workflow.
 
 ---
 
@@ -120,18 +120,18 @@ For production deployment, see the [Production Setup Guide](docs/developer_guide
 
 ## Documentation
 
-| Topic                     | Document                                                                                   |
-| :------------------------ | :----------------------------------------------------------------------------------------- |
-| Architecture overview     | [Architecture README](docs/developer_guide/architecture/README.md)                         |
-| System design & patterns  | [System Overview](docs/developer_guide/architecture/system-overview.md)                    |
-| Monorepo & moonrepo guide | [Monorepo Guide](docs/developer_guide/architecture/monorepo-guide.md)                      |
-| Database schema & ERD     | [Database Schema](docs/developer_guide/architecture/specifications/database-schema.md)     |
-| API specification         | [API Specification](docs/developer_guide/architecture/specifications/api-specification.md) |
-| Development environment   | [Dev Setup](docs/developer_guide/architecture/deployment/development.md)                   |
-| Production deployment     | [Production Setup](docs/developer_guide/architecture/deployment/production.md)             |
-| Git branch conventions    | [Branch Standards](docs/git/git-branch-standards-guide.md)                                 |
-| Git commit conventions    | [Commit Standards](docs/git/git-commit-standards-guide.md)                                 |
-| Markdown style guide      | [Markdown Guidelines](docs/guidelines/markdown-guidelines.md)                              |
+| Topic                     | Document                                                                                                 |
+| :------------------------ | :------------------------------------------------------------------------------------------------------- |
+| Architecture overview     | [Architecture README](docs/20-engineering/developer_guide/architecture/README.md)                         |
+| System design & patterns  | [System Overview](docs/20-engineering/developer_guide/architecture/system-overview.md)                  |
+| Monorepo & moonrepo guide | [Monorepo Guide](docs/20-engineering/developer_guide/architecture/monorepo-guide.md)                    |
+| Database schema & ERD     | [Database Schema](docs/20-engineering/developer_guide/architecture/specifications/database-schema.md)   |
+| API specification         | [API Specification](docs/20-engineering/developer_guide/architecture/specifications/api-specification.md)|
+| Development environment   | [Dev Setup](docs/20-engineering/developer_guide/architecture/deployment/development.md)                 |
+| Production deployment     | [Production Setup](docs/20-engineering/developer_guide/architecture/deployment/production.md)           |
+| Git branch conventions    | [Branch Standards](docs/20-engineering/git/git-branch-standards-guide.md)                               |
+| Git commit conventions    | [Commit Standards](docs/20-engineering/git/git-commit-standards-guide.md)                               |
+| Markdown style guide      | [Markdown Guidelines](docs/00-start-here/guidelines/markdown-guidelines.md)                            |
 
 ---
 
