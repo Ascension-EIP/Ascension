@@ -400,7 +400,7 @@ Creates or updates an automated Pull Request from `dev` to `staging`, lists incl
 3. Generates and commits `CHANGELOG.md` via `git-cliff`.
 4. Pushes the new version tag to `main` (triggering `deploy.yml`).
 5. Creates a GitHub Release with release notes.
-6. Mirrors the repository to external git endpoints configured in `MIRROR_REPOSITORY_URL`.
+6. Parses `MIRROR_REPOSITORY_URL` into a dynamic matrix and mirrors all branches, tags, and history to each target repository using `pixta-dev/repository-mirroring-action@v1`.
 
 ---
 
