@@ -38,9 +38,8 @@ the [API routes reference](./api-routes.md) and the [Swagger UI guide](./swagger
 
 ## Prerequisites
 
-- **Rust** (toolchain pinned in `.prototools` — use `proto install rust` or `rustup`)
+- **Go** (toolchain version `1.26.0` — download from go.dev or use proto)
 - **Docker** + **Docker Compose** — for PostgreSQL, RabbitMQ, MinIO locally
-- **sqlx-cli** — used to run database migrations (see [below](#2-install-sqlx-cli))
 - **moon** — monorepo task runner (see [Developer Quickstart](../README.md))
 
 ---
@@ -49,16 +48,14 @@ the [API routes reference](./api-routes.md) and the [Swagger UI guide](./swagger
 
 | Technology         | Version            | Role                                                  |
 |--------------------|--------------------|-------------------------------------------------------|
-| **Rust**           | 1.93.1             | Language                                              |
-| **Axum**           | 0.8                | HTTP web framework                                    |
-| **SQLx**           | 0.8                | Async PostgreSQL driver + compile-time query checking |
-| **Tokio**          | 1.50               | Async runtime                                         |
+| **Go**             | 1.26.0             | Language                                              |
+| **Gin**            | 1.12.0             | HTTP web framework                                    |
+| **pgx/v5**         | 5.8.0              | Async PostgreSQL driver & connection pool             |
 | **PostgreSQL**     | 18                 | Relational database                                   |
 | **RabbitMQ**       | 4.x                | Message broker (dispatches AI jobs)                   |
 | **MinIO**          | RELEASE.2025-09-07 | S3-compatible object storage for videos               |
-| **Serde**          | 1.0                | JSON serialization / deserialization                  |
-| **jsonwebtoken**   | 10.3               | JWT creation and validation                           |
-| **tower-governor** | 0.8                | Rate limiting (10 req/s per IP)                       |
+| **golang-jwt**     | 5.3.1              | JWT creation and validation                           |
+| **golang.org/x/time** | -               | Rate limiting                                         |
 
 ---
 
@@ -66,19 +63,20 @@ the [API routes reference](./api-routes.md) and the [Swagger UI guide](./swagger
 
 ```
 apps/server/
-├── Cargo.toml          # Rust package + all dependencies
-├── Cargo.lock          # Exact dependency versions (committed)
-├── .sqlx/              # Compile-time SQL query cache (offline mode)
+├── go.mod              # Go module definition
+├── go.sum              # Go dependencies checksums
 ├── migrations/         # SQL migration files, applied in timestamp order
 ├── moon.yml            # moon task definitions
-└── src/
-    ├── main.rs         # Entry point — wires all layers together
-    ├── config.rs       # Reads all environment variables
-    ├── domain/         # Business logic — models, ports (traits), services
-    ├── inbound/        # HTTP layer — Axum router, handlers, middleware
-    ├── outbound/       # Database adapters — SQLx / PostgreSQL
-    ├── usecase/        # Cross-cutting use cases (auth / JWT)
-    └── tests/          # Unit tests
+├── cmd/
+│   └── server/
+│       └── main.go     # Entry point — wires all layers together
+└── internal/
+    ├── app/            # App lifecycle and main runners
+    ├── inbound/        # HTTP layer — Gin router, handlers, middleware
+    ├── outbound/       # Database & external adapters — pgx, rabbitmq, minio
+    ├── service/        # Business logic services
+    ├── model/          # Domain models (user, video, analysis)
+    └── setup/          # Configuration and logger setup
 ```
 
 For a deeper explanation of each layer, read the [architecture overview](./architecture.md).
@@ -88,19 +86,17 @@ For a deeper explanation of each layer, read the [architecture overview](./archi
 ## Environment Variables
 
 Copy `.env.example` to `.env` at the repository root and fill in the values.
-The server reads all of these at startup via `src/config.rs`.
+The server reads all of these at startup via `internal/setup/config/config.go`.
 
 | Variable              | Required | Default  | Description                                                                        |
 |-----------------------|----------|----------|------------------------------------------------------------------------------------|
-| `DATABASE_URL`        | ✅        | —        | PostgreSQL connection string, e.g. `postgres://user:pass@localhost:5432/ascension` |
-| `JWT_KEY`             | ✅        | —        | Secret key for signing JWTs (use a long random string in production)               |
-| `RABBITMQ_URL`        | ✅        | —        | AMQP URL, e.g. `amqp://ascension:ascension@localhost:5672`                         |
-| `MINIO_ENDPOINT`      | ✅        | —        | MinIO base URL, e.g. `http://localhost:9000`                                       |
-| `MINIO_ROOT_USER`     | ✅        | —        | MinIO access key                                                                   |
-| `MINIO_ROOT_PASSWORD` | ✅        | —        | MinIO secret key                                                                   |
-| `MINIO_BUCKET`        | ❌        | `videos` | Bucket name for video uploads                                                      |
-| `SERVER_PORT`         | ❌        | `8080`   | TCP port to listen on                                                              |
-| `RUN_MIGRATION`       | ❌        | `false`  | Set to `true` to auto-run migrations on startup                                    |
+| `DB_HOST`             | ❌        | `localhost` | PostgreSQL host                                                                 |
+| `DB_PORT`             | ❌        | `5432`   | PostgreSQL port                                                                    |
+| `DB_NAME`             | ✅        | —        | PostgreSQL database name                                                           |
+| `DB_USER`             | ✅        | —        | PostgreSQL user                                                                    |
+| `DB_PASS`             | ✅        | —        | PostgreSQL password                                                                |
+| `DB_MIGRATION`        | ❌        | —        | Directory to run migrations from (e.g. `file://migrations`)                        |
+| `LOG_LEVEL`           | ❌        | `info`   | Logging verbosity                                                                  |
 
 ---
 
@@ -115,45 +111,22 @@ docker compose up -d
 
 This starts PostgreSQL (port 5432), RabbitMQ (port 5672 / 15672), and MinIO (port 9000 / 9001).
 
-### 2. Install sqlx-cli
+### 2. Run database migrations
 
-`sqlx-cli` is the command-line tool used to run database migrations.
-You only need to do this **once** per machine.
+Migrations can be run automatically by the Go server on startup if you set the `DB_MIGRATION` environment variable pointing to the `migrations` directory (e.g., `file://migrations`).
 
-```bash
-moon run server:install-sqlx
-```
-
-This runs:
-
-```bash
-cargo install sqlx-cli --no-default-features --features native-tls,postgres
-```
-
-### 3. Run database migrations
-
-```bash
-moon run server:migrate
-```
-
-This applies all pending SQL files from `apps/server/migrations/` in order.
-It is safe to run multiple times (already-applied migrations are skipped).
-
-> Make sure your `.env` has a valid `DATABASE_URL` before running this.
-
-### 4. Start the server
+### 3. Start the Go server
 
 ```bash
 moon run server:dev
 ```
 
-The server will start on port `8080` by default and reload on code changes is
-**not** automatic — restart manually after changes.
+The server will start on port `8080` by default. Reloading on code changes is **not** automatic — restart manually after changes.
 
-To build and run the binary directly:
+To run Go directly:
 
 ```bash
-cargo run
+go run ./cmd/server
 ```
 
 ---
@@ -164,15 +137,13 @@ Run these from the repository root with `moon run server:<task>`.
 
 | Task            | Command                       | Description                             |
 |-----------------|-------------------------------|-----------------------------------------|
-| `install-sqlx`  | `cargo install sqlx-cli ...`  | Installs the sqlx CLI tool (run once)   |
-| `migrate`       | `sqlx migrate run`            | Applies all pending DB migrations       |
-| `dev`           | `cargo run`                   | Starts the server with `RUST_LOG=debug` |
-| `build`         | `cargo build`                 | Debug build (uses `SQLX_OFFLINE=true`)  |
-| `build-release` | `cargo build --release`       | Release build (runs lint first)         |
-| `lint`          | `cargo clippy -- -D warnings` | Static analysis — fails on any warning  |
-| `format`        | `cargo fmt --all`             | Auto-format all source files            |
-| `format-check`  | `cargo fmt --all --check`     | Check formatting without writing        |
-| `test`          | `cargo test`                  | Run all unit tests                      |
+| `install`       | `go mod download`             | Resolves and downloads Go dependencies |
+| `dev`           | `go run ./cmd/server`         | Starts the server with `LOG_LEVEL=debug` |
+| `build`         | `go build ...`                | Debug build of the server               |
+| `build-release` | `go build -ldflags ...`       | Release build (runs lint first)         |
+| `lint`          | `go vet ./...`                | Standard compiler static checks         |
+| `format`        | `go fmt ./...`                | Auto-format Go files                    |
+| `test`          | `go test ./...`               | Run Go unit and integration tests       |
 
 ---
 
@@ -186,72 +157,22 @@ Migrations live in `apps/server/migrations/` and are named with a UTC timestamp 
 20260307000002_create_analyses_table.sql
 ```
 
-**To create a new migration:**
-
-```bash
-sqlx migrate add <description>
-# e.g.
-sqlx migrate add create_sessions_table
-```
-
-This creates a new file with the current timestamp. Write your `CREATE TABLE` SQL inside it.
-
 **Rules:**
 
 - Never edit a migration file that has already been applied — create a new one instead.
-- Always test migrations locally before pushing.
 - The `set_updated_at` trigger function (created in `create_users_table.sql`) is reusable in any migration.
-
----
-
-## SQLx Offline Mode
-
-SQLx checks SQL queries **at compile time** against the real database schema.
-To allow building without a live database (e.g. in CI), the query metadata is
-cached in `.sqlx/`.
-
-If you add or change a `sqlx::query!` macro call, regenerate the cache:
-
-```bash
-# Make sure DATABASE_URL is set and the DB is running
-cargo sqlx prepare
-```
-
-The updated files in `.sqlx/` must be committed to the repository.
-
-If you see the error `sqlx::query! called with argument that doesn't implement Encode`,
-it usually means the `.sqlx/` cache is out of date — re-run `cargo sqlx prepare`.
 
 ---
 
 ## Testing
 
-Unit tests live in `src/tests/` and test the domain layer in isolation
-using mock repositories (`mockall` crate).
+Tests live under `internal/service/` or `internal/outbound/postgres/` depending on the layer being tested.
 
 ```bash
 moon run server:test
 # or
-cargo test
+go test ./...
 ```
-
-The test modules mirror the source structure:
-
-```
-src/tests/
-├── mod.rs
-└── domain/
-    ├── mod.rs
-    └── user/
-        ├── model_tests.rs    # Username, Email, Password, Role validation
-        └── service_tests.rs  # User CRUD service with mock repository
-```
-
-**Writing a new test:**
-
-1. Add a new `mod` declaration in the relevant `mod.rs`.
-2. Create a `mockall`-annotated mock for any trait your test depends on.
-3. Annotate your test function with `#[tokio::test]` (async tests) or `#[test]` (sync).
 
 ---
 
@@ -261,14 +182,14 @@ The server has a `Dockerfile` at `apps/server/Dockerfile`.
 
 **Multi-stage build:**
 
-1. `builder` — compiles the release binary with `SQLX_OFFLINE=true`.
-2. `runtime` — copies only the binary and `migrations/` into a slim Debian image.
+1. `go-builder` — compiles the Go binary using Alpine Go image.
+2. `runtime` — copies the binary and migrations into a lightweight Alpine image.
 
 ```bash
 # Build the image locally
 docker build -t ascension-server apps/server/
 
-# Run it (requires an .env or explicit -e flags)
+# Run it
 docker run --env-file .env -p 8080:8080 ascension-server
 ```
 
@@ -287,8 +208,5 @@ The server image is pulled from the GitHub Container Registry (`ghcr.io/ascensio
 
 | Error                                                        | Likely cause                          | Fix                                                   |
 |--------------------------------------------------------------|---------------------------------------|-------------------------------------------------------|
-| `error: DATABASE_URL must be set`                            | `.env` not loaded or missing variable | Copy `.env.example` to `.env` and fill `DATABASE_URL` |
-| `sqlx: migrate error: table _sqlx_migrations does not exist` | First run, table will be created      | Normal on first `sqlx migrate run`                    |
+| `required DB parameters missing`                             | `.env` not loaded or missing variables | Copy `.env.example` to `.env` and fill variables      |
 | `Connection refused (os error 111)` on port 5432             | PostgreSQL not running                | `docker compose up -d`                                |
-| `cargo build` fails with "offline mode" error                | `.sqlx/` cache out of date            | `cargo sqlx prepare` then commit `.sqlx/`             |
-| `429 Too Many Requests` in tests                             | Rate limiter hitting                  | Space out requests or use a different IP              |

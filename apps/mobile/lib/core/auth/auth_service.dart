@@ -1,3 +1,10 @@
+// @date 2026-03-12
+// @file auth_service.dart
+// @brief File description.
+// @project Ascension
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @copyright (c) 2026 Ascension
+// @status done
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/core/constants/app_constants.dart';

@@ -57,7 +57,7 @@
 
 ## Overview
 
-Ascension is built on a modern microservices architecture designed to handle computationally intensive AI workloads while maintaining responsiveness for end users. The system separates concerns between user interaction (Rust API), heavy computation (Python AI workers), and data persistence.
+Ascension is built on a modern microservices architecture designed to handle computationally intensive AI workloads while maintaining responsiveness for end users. The system separates concerns between user interaction (Go API), heavy computation (Python AI workers), and data persistence.
 
 ---
 
@@ -116,9 +116,9 @@ graph TD
         MobileApp["Flutter Mobile App"]
     end
 
-    subgraph API ["🛡️ API Gateway - Rust"]
-        APIServer["API Server (Axum)"]
-        AuthService["Authentication and WebSocket"]
+    subgraph API ["🛡️ API Gateway - Go"]
+        APIServer["API Server (Gin)"]
+        AuthService["Authentication"]
     end
 
     subgraph Storage ["🗄️ Data and Storage Layer"]
@@ -236,10 +236,10 @@ Ascension/                      # Monorepo root
 ├── README.md
 │
 └── apps/
-    ├── server/                 # Rust/Axum API Gateway
+    ├── server/                 # Go/Gin API Gateway
     │   ├── moon.yml
-    │   ├── Cargo.toml
-    │   └── src/
+    │   ├── go.mod
+    │   └── internal/
     │
     ├── ai/                     # Python AI Workers
     │   ├── moon.yml
@@ -276,11 +276,10 @@ Ascension/                      # Monorepo root
 
 ### API Gateway
 
-- **Language**: Rust
-- **Framework**: Axum
+- **Language**: Go
+- **Framework**: Gin
 - **Features**:
   - JWT Authentication
-  - WebSocket for real-time notifications
   - Presigned URL generation
   - Request validation
 
@@ -359,12 +358,12 @@ Ascension/                      # Monorepo root
 
 ## Design Decisions
 
-### Why Rust for API?
+### Why Go for API? (Migrated from Rust)
 
-- Memory safety without garbage collection
-- Exceptional performance for concurrent requests
-- Strong typing prevents runtime errors
-- Active ecosystem (Axum, SQLx, Tokio)
+Initially, Rust was chosen for its memory safety, high performance, and zero-overhead abstractions. However, as the project evolved:
+- The team migrated to Go (Gin framework) to accelerate development velocity and simplify the onboarding of new developers.
+- Go's simplicity, built-in concurrency with goroutines, and fast compile times provided a better balance for our startup context.
+- Performance remains exceptionally high and more than sufficient for acting as the system coordinator and gateway.
 
 ### Why Python for AI?
 
@@ -452,7 +451,7 @@ When modifying the architecture:
 
 ## References
 
-- [Rust Axum Framework](https://github.com/tokio-rs/axum)
+- [Go Gin Web Framework](https://github.com/gin-gonic/gin)
 - [MediaPipe Pose Estimation](https://google.github.io/mediapipe/solutions/pose.html)
 - [RabbitMQ Tutorials](https://www.rabbitmq.com/tutorials)
 - [MinIO Presigned URLs](https://min.io/docs/minio/linux/integrations/presigned-put-upload-via-browser.html)

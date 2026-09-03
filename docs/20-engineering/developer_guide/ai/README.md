@@ -1,7 +1,7 @@
-> **Last updated:** 12th March 2026  
-> **Version:** 1.5  
-> **Authors:** Darius  
-> **Status:** Done  
+> **Last updated:** 12th March 2026
+> **Version:** 1.5
+> **Authors:** Darius
+> **Status:** Done
 > {.is-success}
 
 ---
@@ -17,7 +17,7 @@
   - [Overview](#overview)
   - [Repository Location](#repository-location)
   - [Environment Variables](#environment-variables)
-  - [Local Environment Setup (Conda + moon)](#local-environment-setup-conda--moon)
+  - [Local Environment Setup (uv + moon)](#local-environment-setup-uv--moon)
   - [The vision.skeleton Pipeline](#the-visionskeleton-pipeline)
     - [Job Message Format](#job-message-format)
     - [End-to-End Flow](#end-to-end-flow)
@@ -60,9 +60,9 @@ apps/ai/
 │   ├── worker.py        # RabbitMQ worker — vision.skeleton pipeline
 │   └── ai_mediapipe.py  # MediaPipe pose landmark extraction module
 ├── pose_landmarker.task # MediaPipe model asset (bundled)
-├── environment.yml      # Conda environment definition
-├── pyproject.toml
-└── moon.yml             # moon tasks run via `conda run --prefix ./ai-env ...`
+├── pyproject.toml        # uv project definition & dependencies
+├── uv.lock               # uv lock file
+└── moon.yml              # moon tasks run via `uv run ...`
 ```
 
 ---
@@ -91,27 +91,23 @@ The `ai-worker` Docker service requires the following environment variables:
 
 ---
 
-## Local Environment Setup (Conda + moon)
+## Local Environment Setup (uv + moon)
 
-The canonical local workflow is defined in `apps/ai/moon.yml` and uses a conda
-environment at prefix `./ai-env`.
+The canonical local workflow is defined in `apps/ai/moon.yml` and uses uv
+to manage the virtual environment and dependencies.
 
-`moon run ai:setup` is intentionally idempotent for local refreshes: it runs
-`conda env create --file environment.yml -p ./ai-env --force`, so re-running it
-refreshes the same local environment path.
+`moon run ai:setup` runs `uv sync`, which creates the virtual environment
+and installs all dependencies from `pyproject.toml`. Re-running it is
+idempotent — it will only update what changed.
 
 ```bash
 cd apps/ai
 
-# Create / refresh conda env at ./ai-env from environment.yml
+# Sync dependencies with uv (creates venv + installs all packages)
 moon run ai:setup
 
 # Download the MediaPipe pose landmarker model (skipped if already present)
 moon run ai:download-model
-
-# Install editable package + dev dependencies
-# (runs setup + download-model automatically as dependencies)
-moon run ai:install
 
 # Run worker locally
 moon run ai:dev
@@ -120,19 +116,19 @@ moon run ai:dev
 moon run ai:lint
 moon run ai:test
 moon run ai:build
+moon run ai:format
 ```
 
 > The `pose_landmarker.task` model file is not committed to the repository.
-> Running `moon run ai:install` (or `moon run ai:download-model` directly) will
-> download it automatically from the MediaPipe CDN if it is not present.
+> Running `moon run ai:download-model` will download it automatically from the
+> MediaPipe CDN if it is not present.
 
 Equivalent raw commands from `apps/ai/moon.yml`:
 
 ```bash
-conda env create --file environment.yml -p ./ai-env --force
-bash -c 'if [ ! -f pose_landmarker.task ]; then curl -fsSL -o pose_landmarker.task <mediapipe-cdn>; fi'
-conda run --prefix ./ai-env python -m pip install -e .[dev]
-conda run --prefix ./ai-env python -u src/worker.py
+uv sync
+bash scripts/download-model.sh
+uv run python -u src/worker.py
 ```
 
 ---

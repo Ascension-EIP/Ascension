@@ -19,14 +19,14 @@ concurrency:
 
 ############################ JOBS #############################################
 jobs:
-  ########################## SERVER (RUST) ####################################
+  ########################## SERVER (GO) ####################################
   build_and_push_server:
     runs-on: ubuntu-latest
 
     ######################## STEPS ############################################
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -69,7 +69,7 @@ jobs:
     ######################## STEPS ############################################
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Extract tag version
         id: version
@@ -110,7 +110,7 @@ jobs:
     ######################## STEPS ############################################
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -121,6 +121,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.47.2'
           channel: stable
           cache: true
 
@@ -149,7 +150,7 @@ jobs:
     ######################## STEPS ############################################
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -163,12 +164,11 @@ jobs:
           name: ascension-android-${{ steps.version.outputs.tag }}
           path: release-assets
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - name: Create or update GitHub Release
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: "Ascension ${{ steps.version.outputs.tag }}"
-          generate_release_notes: true
           files: release-assets/app-release.apk
   #############################################################################
 

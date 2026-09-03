@@ -1,3 +1,10 @@
+// @date 2026-07-15
+// @file header.dart
+// @brief File description.
+// @project Ascension
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @copyright (c) 2026 Ascension
+// @status done
 import 'package:flutter/material.dart';
 
 import '../localization/app_localizations.dart';
@@ -67,7 +74,7 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
         ),
       ),
       actions: [
-        if (actions != null) ...actions!,
+        ...?actions,
         if (logoPath != null)
           Padding(
             padding: EdgeInsets.only(right: 16),

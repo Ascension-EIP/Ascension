@@ -1,0 +1,204 @@
+############################ CONFIGURATION ####################################
+name: ascension-dev-to-staging
+
+on:
+  schedule:
+    - cron: "0 0 * * 1"
+  workflow_dispatch:
+
+env:
+  GITHUB_ACTIONS: true
+  COPILOT_REVIEWER_CANDIDATES: "copilot,github-copilot[bot],copilot-pull-request-reviewer[bot]"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+###############################################################################
+
+############################ JOBS #############################################
+jobs:
+  ########################## CREATE OR UPDATE PR ##############################
+  upsert_dev_to_staging_pr:
+    runs-on: ubuntu-latest
+
+    ######################## STEPS ############################################
+    steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Create or update PR dev -> staging
+        id: upsert_pr
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ steps.generate_token.outputs.token }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const sourceRef = "dev";
+            const targetRef = "staging";
+            const head = `${owner}:${sourceRef}`;
+            const title = `merge: \`${sourceRef}\` into \`${targetRef}\``;
+            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+
+            let compare;
+            try {
+              compare = await github.rest.repos.compareCommits({
+                owner,
+                repo,
+                base: targetRef,
+                head: sourceRef,
+              });
+            } catch (error) {
+              core.setFailed(
+                `Unable to compare '${sourceRef}' and '${targetRef}'. Check if both branches exist and token permissions are correct. ${error.message}`,
+              );
+              return;
+            }
+
+            const commits = compare.data.commits ?? [];
+            const hasChanges = compare.data.status !== "identical" && commits.length > 0;
+            const commitPreview = commits.slice(0, 30).map((commit) => {
+              const shortSha = commit.sha.slice(0, 7);
+              const titleLine = commit.commit.message.split("\n")[0];
+              return `- ${shortSha} ${titleLine}`;
+            });
+            if (commits.length > 30) {
+              commitPreview.push(`- ...and ${commits.length - 30} more commit(s)`);
+            }
+
+            const body = [
+              "### Description",
+              "Automated synchronization PR from `dev` to `staging`.",
+              "",
+              "Included commits:",
+              ...(commitPreview.length > 0 ? commitPreview : ["- No additional commits to synchronize."]),
+              "",
+              "### Screenshots",
+              "N/A (automation workflow)",
+              "",
+              "### Links",
+              `- Workflow run: ${runUrl}`,
+              "",
+              "### Reviewer",
+              "@toro-nicolas",
+              "",
+              "> Copilot review is requested automatically by this workflow.",
+            ].join("\n");
+
+            const openPulls = await github.paginate(github.rest.pulls.list, {
+              owner,
+              repo,
+              state: "open",
+              base: targetRef,
+              head,
+              per_page: 100,
+            });
+
+            let pr;
+            let created = false;
+
+            if (openPulls.length > 0) {
+              pr = openPulls[0];
+              await github.rest.pulls.update({
+                owner,
+                repo,
+                pull_number: pr.number,
+                title,
+                body,
+              });
+              core.notice(`Open PR already exists (#${pr.number}), updated title/body.`);
+            } else {
+              if (!hasChanges) {
+                core.notice("No new commits between dev and staging. PR creation skipped.");
+                core.setOutput("created", "false");
+                core.setOutput("has_changes", "false");
+                return;
+              }
+
+              const createdPr = await github.rest.pulls.create({
+                owner,
+                repo,
+                title,
+                head: sourceRef,
+                base: targetRef,
+                body,
+                maintainer_can_modify: true,
+                draft: false,
+              });
+
+              pr = createdPr.data;
+              created = true;
+              core.notice(`Created PR #${pr.number} (${pr.html_url}).`);
+            }
+
+            core.setOutput("created", created ? "true" : "false");
+            core.setOutput("has_changes", hasChanges ? "true" : "false");
+            core.setOutput("pr_number", String(pr.number));
+            core.setOutput("pr_url", pr.html_url);
+
+      - name: Configure reviewers and assignee
+        if: steps.upsert_pr.outputs.pr_number != ''
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ steps.generate_token.outputs.token }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pullNumber = Number(`${{ steps.upsert_pr.outputs.pr_number }}`);
+            const humanAssignee = "toro-nicolas";
+
+            try {
+              await github.rest.issues.addAssignees({
+                owner,
+                repo,
+                issue_number: pullNumber,
+                assignees: [humanAssignee],
+              });
+              core.notice(`Assigned to: ${humanAssignee}`);
+            } catch (error) {
+              core.notice(`Could not assign '${humanAssignee}' (${error.message}).`);
+            }
+
+            // 2. Logique pour demander la review uniquement à Copilot (désactiver pour le moment)
+            //const candidatesRaw = process.env.COPILOT_REVIEWER_CANDIDATES || "";
+            //const candidates = [...new Set(candidatesRaw.split(",").map((s) => s.trim()).filter(Boolean))];
+
+            //let copilotRequested = false;
+            //for (const candidate of candidates) {
+            //  try {
+            //    await github.rest.pulls.requestReviewers({
+            //      owner,
+            //      repo,
+            //      pull_number: pullNumber,
+            //      reviewers: [candidate],
+            //    });
+            //    core.notice(`Copilot reviewer requested: ${candidate}`);
+            //    copilotRequested = true;
+            //    break;
+            //  } catch (error) {
+            //    continue;
+            //  }
+            //}
+
+            //if (!copilotRequested) {
+            //  core.warning("Could not request any Copilot reviewer.");
+            //}
+
+      - name: Workflow summary
+        run: |
+          if [ -n "${{ steps.upsert_pr.outputs.pr_url }}" ]; then
+            echo "## dev -> staging PR" >> "$GITHUB_STEP_SUMMARY"
+            echo "- URL: ${{ steps.upsert_pr.outputs.pr_url }}" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Created by this run: ${{ steps.upsert_pr.outputs.created }}" >> "$GITHUB_STEP_SUMMARY"
+            echo "- New commits found: ${{ steps.upsert_pr.outputs.has_changes }}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## dev -> staging PR" >> "$GITHUB_STEP_SUMMARY"
+            echo "- No PR created/updated because no new commits were found." >> "$GITHUB_STEP_SUMMARY"
+          fi
+  #############################################################################
+
+###############################################################################

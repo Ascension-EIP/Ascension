@@ -1,3 +1,10 @@
+// @date 2026-03-18
+// @file stats_page.dart
+// @brief File description.
+// @project Ascension
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @copyright (c) 2026 Ascension
+// @status done
 import 'package:flutter/material.dart';
 import 'package:mobile/core/auth/auth_service.dart';
 import 'package:mobile/core/services/analysis_history_service.dart';

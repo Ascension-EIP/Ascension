@@ -1,3 +1,10 @@
+// @date 2026-03-09
+// @file app_colors.dart
+// @brief File description.
+// @project Ascension
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>
+// @copyright (c) 2026 Ascension
+// @status done
 import 'package:flutter/material.dart';
 
 class AppColors {

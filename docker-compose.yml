@@ -1,7 +1,7 @@
 services:
   minio:
     image: minio/minio:RELEASE.2025-09-07T16-13-09Z
-    container_name: minIO
+    container_name: ascension-minIO
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -11,8 +11,8 @@ services:
       - minio_data:/data
 
   rabbitmq:
-    image: rabbitmq:4.2.4-management
-    container_name: rabbitMQ
+    image: rabbitmq:4.3.5-management
+    container_name: ascension-rabbitMQ
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -26,8 +26,8 @@ services:
       retries: 5
 
   postgresql:
-    image: postgres:18
-    container_name: postgreSQL
+    build: ./apps/server/postgres
+    container_name: ascension-postgreSQL
     ports:
       - "5432:5432"
     env_file: .env
@@ -41,14 +41,14 @@ services:
 
   server:
     build: ./apps/server
-    container_name: ascensionServer
+    container_name: ascension-server
     profiles:
       - prod
     ports:
       - "8080:8080"
     env_file: .env
     environment:
-      - RUST_LOG=info
+      - LOG_LEVEL=info
     depends_on:
       postgresql:
         condition: service_healthy
@@ -86,7 +86,61 @@ services:
       rabbitmq:
         condition: service_healthy
 
+  sonar-db:
+    image: postgres:18-alpine
+    container_name: ascension-sonar-db
+    profiles:
+      - sonar
+    environment:
+      POSTGRES_USER: ${SONAR_DB_USER:-sonar}
+      POSTGRES_PASSWORD: ${SONAR_DB_PASSWORD:-sonar_pass_123!}
+      POSTGRES_DB: ${SONAR_DB_NAME:-sonar}
+    volumes:
+      - sonar_db_data:/var/lib/postgresql/data
+    networks:
+      - ascension-sonar-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-sonar}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  sonarqube:
+    image: sonarqube:lts-community
+    container_name: ascension-sonarqube
+    profiles:
+      - sonar
+    ports:
+      - "9005:9000"
+    environment:
+      - SONAR_JDBC_URL=jdbc:postgresql://sonar-db:5432/${SONAR_DB_NAME:-sonar}
+      - SONAR_JDBC_USERNAME=${SONAR_DB_USER:-sonar}
+      - SONAR_JDBC_PASSWORD=${SONAR_DB_PASSWORD:-sonar_pass_123!}
+      - SONAR_SEARCH_JAVAADDITIONALOPTS=-Dcluster.routing.allocation.disk.threshold_enabled=false
+    volumes:
+      - sonar_data:/opt/sonarqube/data
+      - sonar_extensions:/opt/sonarqube/extensions
+      - sonar_logs:/opt/sonarqube/logs
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    networks:
+      - ascension-sonar-net
+    depends_on:
+      sonar-db:
+        condition: service_healthy
+
 volumes:
   minio_data:
   postgres_data:
   rabbitmq_data:
+  sonar_db_data:
+  sonar_data:
+  sonar_extensions:
+  sonar_logs:
+
+networks:
+  ascension-sonar-net:
+    name: ascension-sonar-net
+

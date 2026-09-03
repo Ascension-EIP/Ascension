@@ -25,28 +25,7 @@ concurrency:
 jobs:
   ########################## NO-CI DETECTION ##################################
   detect_no_ci:
-    runs-on: ubuntu-latest
-    outputs:
-      skip: ${{ steps.check.outputs.skip }}
-
-    ######################## STEPS ############################################
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Detect no-ci prefix in commit message
-        id: check
-        run: |
-          COMMIT_NAME=$(git log --format="%s" -1)
-          echo "Commit message: $COMMIT_NAME"
-          if echo "$COMMIT_NAME" | grep -qiE '^\[(no-ci|ci-no|ci no|no ci|ci-off|off-ci|ci off|off ci|ci-skip|skip-ci|ci skip|skip ci)\]'; then
-            echo "::notice title=CI skip::No-CI prefix detected — skipping all checks"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
+    uses: ./.github/workflows/detect-no-ci.yml
   #############################################################################
 
 
@@ -59,7 +38,7 @@ jobs:
     ######################## STEPS ############################################
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -83,7 +62,7 @@ jobs:
   #############################################################################
 
 
-  ########################## SERVER (RUST) ####################################
+  ########################## SERVER (GO) ####################################
   check_server:
     runs-on: ubuntu-latest
     needs: [detect_no_ci, check_commit_and_branch]
@@ -92,36 +71,28 @@ jobs:
     ######################## STEPS ############################################
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: recursive
 
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+      - name: Set up Go
+        uses: actions/setup-go@v7
         with:
-          components: rustfmt, clippy
+          go-version: '1.26.0'
+          cache: true
+          cache-dependency-path: apps/server/go.sum
 
       - name: Install moon
         uses: moonrepo/setup-toolchain@v0
         with:
           auto-install: true
-      - name: Cache Cargo registry
-        uses: actions/cache@v5
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            apps/server/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('apps/server/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
 
       - name: Cache moon store
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .moon/cache
-          key: ${{ runner.os }}-moon-server-${{ hashFiles('apps/server/Cargo.lock') }}
+          key: ${{ runner.os }}-moon-server-${{ hashFiles('apps/server/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-moon-server-
 
@@ -132,7 +103,7 @@ jobs:
         run: moon run server:lint
 
       - name: Build
-        run: moon run server:build-release
+        run: moon run server:build
 
       - name: Test
         run: moon run server:test
@@ -148,7 +119,7 @@ jobs:
     ######################## STEPS ############################################
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: recursive
@@ -156,12 +127,12 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.41.2'
+          flutter-version: '3.47.2'
           channel: stable
           cache: true
 
       - name: Cache pub dependencies
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.pub-cache
@@ -175,7 +146,7 @@ jobs:
         with:
           auto-install: true
       - name: Cache moon store
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .moon/cache
           key: ${{ runner.os }}-moon-mobile-${{ hashFiles('apps/mobile/pubspec.lock') }}
@@ -202,17 +173,15 @@ jobs:
     ######################## STEPS ############################################
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: recursive
-      - name: Set up Conda
-        uses: conda-incubator/setup-miniconda@v3
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
         with:
-          python-version: 3.11
-
-      - name: Export CONDA_EXE for moon tasks
-        run: echo "CONDA_EXE=$(command -v conda)" >> "$GITHUB_ENV"
+          python-version: '3.11'
+          enable-cache: true
 
       - name: Install moon
         uses: moonrepo/setup-toolchain@v0
@@ -220,18 +189,18 @@ jobs:
           auto-install: true
           cache: false
       - name: Cache moon store
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .moon/cache
-          key: ${{ runner.os }}-moon-ai-${{ hashFiles('apps/ai/environment.yml', 'apps/ai/pyproject.toml') }}
+          key: ${{ runner.os }}-moon-ai-${{ hashFiles('apps/ai/pyproject.toml', 'apps/ai/uv.lock') }}
           restore-keys: |
             ${{ runner.os }}-moon-ai-
 
-      - name: Cache conda environment
-        uses: actions/cache@v5
+      - name: Cache uv environment
+        uses: actions/cache@v6
         with:
-          path: apps/ai/ai-env
-          key: ${{ runner.os }}-venv-ai-${{ hashFiles('apps/ai/environment.yml', 'apps/ai/pyproject.toml') }}
+          path: apps/ai/.venv
+          key: ${{ runner.os }}-venv-ai-${{ hashFiles('apps/ai/pyproject.toml', 'apps/ai/uv.lock') }}
           restore-keys: |
             ${{ runner.os }}-venv-ai-
 

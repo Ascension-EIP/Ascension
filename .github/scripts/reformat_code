@@ -1,4 +1,4 @@
-#!/bin/bash -i
+#!/usr/bin/env bash
 
 moon run server:format
 moon run mobile:format

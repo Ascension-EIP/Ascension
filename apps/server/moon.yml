@@ -1,84 +1,84 @@
-language: "rust"
+language: "go"
 
 project:
   name: "server"
-  description: "Rust/Axum backend server for Ascension"
+  description: "Go/Gin backend server for Ascension"
 
 tasks:
   install:
-    command: "cargo"
-    args: ["install", "sqlx-cli", "--no-default-features", "--features", "native-tls,postgres"]
+    command: "go"
+    args: ["mod", "download"]
+    inputs:
+      - "go.mod"
+      - "go.sum"
+    deps:
+      - "root:setup"
+
+  update:
+    script: |
+      go get -u ./...
+      go mod tidy
     options:
       cache: false
-    deps:
-      - "root:setup-git-config"
-
-  migrate:
-    command: "sqlx"
-    args: ["migrate", "run", "--source", "migrations"]
+  
+  format:
+    command: "go"
+    args: ["fmt", "./..."]
     inputs:
-      - "migrations/**/*.sql"
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+    deps:
+      - "install"
+      - "root:format"
+
+  lint:
+    command: "go"
+    args: ["vet", "./..."]
+    inputs:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+    deps:
+      - "format"
+
+  build:
+    command: "go"
+    args: ["build", "-o", "bin/server", "./cmd/server"]
+    inputs:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+    outputs:
+      - "bin/server"
+    deps:
+      - "lint"
+
+  test:
+    command: "go"
+    args: ["test", "./..."]
+    inputs:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+      - "migrations/**/*"
+    deps:
+      - "install"
+
+  dev:
+    command: "go"
+    args: ["run", "./cmd/server"]
+    env:
+      LOG_LEVEL: "debug"
     options:
+      persistent: true
+      cache: false
       envFile: true
     deps:
       - "install"
 
-  build:
-    command: "cargo"
-    args: ["build"]
-    env:
-      SQLX_OFFLINE: "true"
-    inputs:
-      - "src/**/*"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - ".sqlx/**/*"
-    deps:
-      - "root:setup-git-config"
-
-  build-release:
-    command: "cargo"
-    args: ["build", "--release"]
-    inputs:
-      - "src/**/*"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - ".sqlx/**/*"
-    deps:
-      - "lint"
-
-  dev:
-    command: "cargo"
-    args: ["run"]
-    env:
-      RUST_LOG: "debug"
+  clean:
+    command: "rm"
+    args: ["-rf", "bin"]
     options:
-      envFile: true
-
-  test:
-    command: "cargo"
-    args: ["test"]
-    inputs:
-      - "src/**/*"
-      - "Cargo.toml"
-      - ".sqlx/**/*"
-
-  lint:
-    command: "cargo"
-    args: ["clippy", "--", "-D", "warnings"]
-    inputs:
-      - "src/**/*"
-      - "Cargo.toml"
-      - ".sqlx/**/*"
-    env:
-      SQLX_OFFLINE: "true"
-    deps:
-      - "root:setup-git-config"
-
-  format:
-    command: "cargo"
-    args: ["fmt", "--all"]
-
-  format-check:
-    command: "cargo"
-    args: ["fmt", "--all", "--check"]
+      cache: false

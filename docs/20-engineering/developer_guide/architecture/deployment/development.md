@@ -37,7 +37,7 @@ The development environment runs all services on a single machine using Docker C
 graph TB
     subgraph "Developer Machine"
         subgraph "Docker Compose Network"
-            API[Rust API :8080]
+            API[Go API :8080]
             DB[(PostgreSQL :5432)]
             RabbitMQ[(RabbitMQ :5672/:15672)]
             MinIO[MinIO :9000/:9001]
@@ -83,11 +83,14 @@ graph TB
    - Included with Docker Desktop on macOS/Windows
    - Linux: `sudo apt-get install docker-compose-plugin`
 
-3. **Rust Toolchain** (1.93+)
+3. **Go Toolchain** (1.26.0+)
 
    ```bash
-   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-   rustup default stable
+   # Download and install Go from https://go.dev/dl/
+   # E.g. Linux installation:
+   wget https://go.dev/dl/go1.26.0.linux-amd64.tar.gz
+   sudo tar -C /usr/local -xzf go1.26.0.linux-amd64.tar.gz
+   export PATH=$PATH:/usr/local/go/bin
    ```
 
 4. **Flutter SDK** (3.16+)
@@ -99,14 +102,14 @@ graph TB
    # Or download from https://docs.flutter.dev/get-started/install
    ```
 
-5. **Conda** (Miniconda or Anaconda)
+5. **uv** (Python package & environment manager)
 
    ```bash
-  # Install Miniconda/Anaconda (official instructions)
-  # https://docs.conda.io/projects/conda/en/latest/user-guide/install/
+  # Install uv
+  curl -LsSf https://astral.sh/uv/install.sh | sh
 
   # Verify installation
-  conda --version
+  uv --version
    ```
 
 ### Optional Tools
@@ -131,12 +134,15 @@ Ascension/                      # Monorepo root
 ├── README.md
 │
 └── apps/
-    ├── server/                 # Rust API server
+    ├── server/                 # Go API server
     │   ├── moon.yml
-    │   ├── Cargo.toml
+    │   ├── go.mod
+    │   ├── go.sum
     │   ├── Dockerfile
-    │   └── src/
-    │       └── main.rs
+    │   └── internal/
+    │       └── cmd/
+    │           └── server/
+    │               └── main.go
     │
     ├── ai/                     # Python AI workers
     │   ├── moon.yml
@@ -212,7 +218,7 @@ We follow a dual-strategy for environment variables to balance local developer e
 | **Ports** | Forwarded to host machine | Internal container ports |
 
 **Why this dual-approach?**
-- **Native Context:** Allows you to run `moon run ai:dev` or `cargo run` directly on your host machine while connecting to Dockerized infra services.
+- **Native Context:** Allows you to run `moon run ai:dev` or `go run ./cmd/server` directly on your host machine while connecting to Dockerized infra services.
 - **Docker Context:** Ensures that when the AI worker runs *inside* a container (production), it uses internal network hostnames and avoids `.env` host mismatches.
 
 Edit `.env`:
@@ -237,7 +243,7 @@ MINIO_BUCKET=ascension-videos
 API_HOST=0.0.0.0
 API_PORT=8080
 JWT_SECRET=your-secret-key-generate-a-secure-one
-RUST_LOG=debug
+LOG_LEVEL=debug
 
 # AI Workers
 WORKER_CONCURRENCY=2
@@ -278,20 +284,9 @@ ascension-minio-1       minio               running
 
 ### 5. Initialize Database
 
-Run migrations:
+In Go, database migrations are automatically run on startup by the server using `golang-migrate` when the `DB_MIGRATION` environment variable points to the `/app/migrations` or `./migrations` directory.
 
-```bash
-# From apps/server directory
-cd apps/server
-cargo install sqlx-cli --no-default-features --features postgres
-sqlx migrate run
-```
-
-Seed development data (optional):
-
-```bash
-cargo run --bin seed
-```
+No external CLI installation is required for basic local runs. Simply booting the API container or running `moon run server:dev` will apply pending migrations automatically.
 
 **Note**: Database migrations are located in `apps/server/migrations/`
 
@@ -311,18 +306,18 @@ docker-compose up api -d
 moon run server:dev
 ```
 
-#### Option C: Direct cargo
+#### Option C: Direct go run
 
 ```bash
 cd apps/server
-cargo run
+go run ./cmd/server
 ```
 
-Verify API is running:
+Verify API is healthy:
 
 ```bash
-curl http://localhost:8080/health
-# Expected: {"status":"ok","database":"connected","rabbitmq":"connected"}
+curl http://localhost:8080/healthz
+# Expected: 204 No Content
 ```
 
 ### 7. Set Up AI Workers
@@ -349,26 +344,19 @@ Or manually:
 
 ```bash
 cd apps/ai
-# Create environment from environment.yml
-conda env create --name ascension-ai --file environment.yml --force
-
-# Or update an existing environment
-conda env update --name ascension-ai --file environment.yml --prune
-
-# Install local project in editable mode
-conda run --name ascension-ai python -m pip install -e .[dev]
+# Sync dependencies with uv (creates venv + installs all packages)
+uv sync
 ```
 
 #### Download ML Models
 
 ```bash
-conda run --name ascension-ai python scripts/download_models.py
+bash scripts/download-model.sh
 ```
 
 This downloads:
 
 - MediaPipe Pose model (~25MB)
-- Hold detection CNN weights (~150MB)
 
 #### Run Worker
 
@@ -377,7 +365,7 @@ This downloads:
 moon run ai:dev
 
 # Or directly
-cd apps/ai && conda run --name ascension-ai python src/worker.py
+cd apps/ai && uv run python src/worker.py
 ```
 
 Or using Docker:
@@ -509,27 +497,30 @@ services:
       exit 0;
       "
 
-  # Rust API Server (from apps/server/)
+  # Go API Server (from apps/server/)
   api:
     build:
       context: ./apps/server
       dockerfile: Dockerfile
-      target: development
     container_name: ascension-api
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASS: ${POSTGRES_PASSWORD}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_MIGRATION: /app/migrations
       RABBITMQ_URL: ${RABBITMQ_URL}
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_BUCKET: ${MINIO_BUCKET}
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
-      RUST_LOG: ${RUST_LOG}
+      LOG_LEVEL: ${LOG_LEVEL}
     ports:
       - "8080:8080"
     volumes:
       - ./apps/server:/app
-      - cargo_cache:/usr/local/cargo
     depends_on:
       db:
         condition: service_healthy
@@ -575,7 +566,6 @@ volumes:
   postgres_data:
   rabbitmq_data:
   minio_data:
-  cargo_cache:
   model_cache:
 ```
 
@@ -585,12 +575,13 @@ volumes:
 
 ### Create New Migration
 
+Create `.up.sql` and `.down.sql` migration files under `apps/server/migrations/` manually, or use `golang-migrate` CLI:
+
 ```bash
-cd server
-sqlx migrate add <migration_name>
+migrate create -ext sql -dir apps/server/migrations -seq <migration_name>
 ```
 
-This creates `server/migrations/<timestamp>_<migration_name>.sql`
+This creates `apps/server/migrations/<seq>_<migration_name>.up.sql` and `apps/server/migrations/<seq>_<migration_name>.down.sql`.
 
 Example migration:
 
@@ -636,18 +627,10 @@ CREATE INDEX idx_analyses_video_id ON analyses(video_id);
 CREATE INDEX idx_analyses_status ON analyses(status);
 ```
 
-### Run Migrations
+Migrations run automatically on server startup. You can also view logs to see if migrations applied successfully:
 
 ```bash
-cd apps/server
-sqlx migrate run
-```
-
-### Rollback Migration
-
-```bash
-cd apps/server
-sqlx migrate revert
+docker-compose logs server
 ```
 
 ---
@@ -657,15 +640,17 @@ sqlx migrate revert
 ### 1. Health Check
 
 ```bash
-curl http://localhost:8080/health
+curl -I http://localhost:8080/health
+# Expected: HTTP/1.1 204 No Content
 ```
 
 ### 2. User Registration
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/auth/register \
+curl -X POST http://localhost:8080/v1/auth/signup \
   -H "Content-Type: application/json" \
   -d '{
+    "username": "testuser",
     "email": "test@example.com",
     "password": "SecurePass123!"
   }'
@@ -674,7 +659,7 @@ curl -X POST http://localhost:8080/api/v1/auth/register \
 ### 3. Login
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/auth/login \
+curl -X POST http://localhost:8080/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",
@@ -682,34 +667,36 @@ curl -X POST http://localhost:8080/api/v1/auth/login \
   }'
 ```
 
-Save the returned `access_token` for subsequent requests.
+Save the returned `access_token` and `refresh_token` for subsequent requests.
 
 ### 4. Request Upload URL
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/analysis/request-upload \
-  -H "Authorization: Bearer <your_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "file_name": "climb.mp4",
-    "content_type": "video/mp4"
-  }'
+curl -X GET "http://localhost:8080/v1/videos/upload-url?content_type=video/mp4&size=102400" \
+  -H "Authorization: Bearer <your_token>"
 ```
 
 ### 5. Upload Video (Direct to MinIO)
 
-Use the presigned URL from step 4:
+Use the presigned `upload_url` from the previous step:
 
 ```bash
-curl -X PUT "<presigned_url>" \
+curl -X PUT "<upload_url>" \
   --upload-file /path/to/your/video.mp4 \
   -H "Content-Type: video/mp4"
 ```
 
-### 6. Start Analysis
+### 6. Notify Upload Complete
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/analysis/start \
+curl -X PUT http://localhost:8080/v1/videos/upload-done/<video_id> \
+  -H "Authorization: Bearer <your_token>"
+```
+
+### 7. Start Analysis
+
+```bash
+curl -X POST http://localhost:8080/v1/analysis \
   -H "Authorization: Bearer <your_token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -717,10 +704,10 @@ curl -X POST http://localhost:8080/api/v1/analysis/start \
   }'
 ```
 
-### 7. Poll for Results
+### 8. Poll for Results
 
 ```bash
-curl http://localhost:8080/api/v1/analysis/<job_id> \
+curl http://localhost:8080/v1/analysis/<analysis_id> \
   -H "Authorization: Bearer <your_token>"
 ```
 
@@ -898,12 +885,8 @@ docker-compose exec minio mc ls myminio/
 
 For faster iteration during development:
 
-1. **Hot Reload for Rust** (using cargo-watch):
-
-   ```bash
-   cargo install cargo-watch
-   cd apps/server && cargo watch -x run
-   ```
+1. **Hot Reload for Go**:
+   You can run `moon run server:dev` which executes the Gin application natively, or use standard tools like compiledaemon or air if you choose to set them up.
 
    Or via moon:
 
@@ -915,8 +898,8 @@ For faster iteration during development:
 
    ```bash
    cd apps/ai
-  conda run --name ascension-ai python -m pip install watchdog
-  conda run --name ascension-ai watchmedo auto-restart --patterns="*.py" --recursive -- python src/worker.py
+   uv run python -m pip install watchdog
+   uv run watchmedo auto-restart --patterns="*.py" --recursive -- python src/worker.py
    ```
 
    Or via moon:

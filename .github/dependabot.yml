@@ -8,24 +8,12 @@ updates:
       time: "09:00"
       timezone: "Europe/Paris"
     target-branch: "dev"
-
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "monthly"
-      day: "monday"
-      time: "09:00"
-      timezone: "Europe/Paris"
-    target-branch: "dev"
-
-  - package-ecosystem: "cargo"
-    directory: "/apps/server"
-    schedule:
-      interval: "monthly"
-      day: "monday"
-      time: "09:00"
-      timezone: "Europe/Paris"
-    target-branch: "dev"
+    cooldown:
+      default-days: 1
+    groups:
+      github-actions-dependencies:
+        patterns:
+          - "*"
 
   - package-ecosystem: "pub"
     directory: "/apps/mobile"
@@ -35,6 +23,27 @@ updates:
       time: "09:00"
       timezone: "Europe/Paris"
     target-branch: "dev"
+    cooldown:
+      default-days: 1
+    groups:
+      pub-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "gomod"
+    directory: "/apps/server"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Paris"
+    target-branch: "dev"
+    cooldown:
+      default-days: 1
+    groups:
+      go-dependencies:
+        patterns:
+          - "*"
 
   - package-ecosystem: "pip"
     directory: "/apps/ai"
@@ -44,3 +53,42 @@ updates:
       time: "09:00"
       timezone: "Europe/Paris"
     target-branch: "dev"
+    cooldown:
+      default-days: 1
+    groups:
+      pip-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "docker"
+    directories:
+      - "/apps/server"
+      - "/apps/server/postgres"
+      - "/apps/ai"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Paris"
+    target-branch: "dev"
+    cooldown:
+      default-days: 1
+    groups:
+      docker-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "docker-compose"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Paris"
+    target-branch: "dev"
+    cooldown:
+      default-days: 1
+    groups:
+      docker-compose-dependencies:
+        patterns:
+          - "*"
