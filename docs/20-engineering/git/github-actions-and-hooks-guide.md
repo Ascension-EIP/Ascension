@@ -524,12 +524,12 @@ create_tag  mirror_repository
 
 **Name:** `ascension-docs-to-wiki`
 **Triggers:**
-- `push` to `main` touching `docs/**`.
-- `pull_request` targeting `main` touching `docs/**`.
+- `workflow_run` after successful completion of `ascension-staging-to-main`.
+- `workflow_dispatch` (manual execution).
 
 #### Job: `update_wiki`
 
-Runs only when the ref is `main` (skipped on pull request runs).
+Runs after `ascension-staging-to-main` finishes with success (or on manual trigger).
 
 | Step                | Description                                                              |
 | ------------------- | ------------------------------------------------------------------------ |
@@ -539,7 +539,7 @@ Runs only when the ref is `main` (skipped on pull request runs).
 | Set up Wiki         | Uses `Andrew-Chen-Wang/github-wiki-action@v5.0.3` to push to the wiki    |
 
 ```
-push to main (docs/** changed)
+ascension-staging-to-main (success)
         │
         ▼
    update_wiki
