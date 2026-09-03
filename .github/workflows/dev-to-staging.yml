@@ -1,5 +1,5 @@
 ############################ CONFIGURATION ####################################
-name: ascension-dev-to-staging-pr
+name: ascension-dev-to-staging
 
 on:
   schedule:
