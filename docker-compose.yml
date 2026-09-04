@@ -9,6 +9,11 @@ services:
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MINIO_PORT}/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:4.3.5-management
@@ -34,7 +39,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ascension}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -45,15 +50,18 @@ services:
     profiles:
       - prod
     ports:
-      - "8080:8080"
+      - "${PORT}:8080"
     env_file: .env
     environment:
       - POSTGRES_HOST=postgresql
-      - LOG_LEVEL=info
+      - RABBITMQ_HOST=rabbitmq
+      - MINIO_ENDPOINT=http://minio:${MINIO_PORT}
     depends_on:
       postgresql:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      minio:
         condition: service_healthy
 
   ai-worker:
@@ -61,30 +69,18 @@ services:
     container_name: aiWorker
     profiles:
       - prod
+    env_file: .env
     environment:
-      - RABBITMQ_DEFAULT_USER=ascension
-      - RABBITMQ_DEFAULT_PASS=ascension
-      - RABBITMQ_HOST=rabbitmq
-      - RABBITMQ_PORT=5672
-      - RABBITMQ_URL=amqp://ascension:ascension@localhost:5672
-
       - POSTGRES_HOST=postgresql
-      - POSTGRES_USER=ascension
-      - POSTGRES_PASSWORD=ascension
-      - POSTGRES_DB=ascension
-      - POSTGRES_DB_URL=postgres://ascension:ascension@postgresql:5432/ascension
-
-      - MINIO_ROOT_USER=ascension
-      - MINIO_ROOT_PASSWORD=ascension
-      - MINIO_ENDPOINT=http://minio:9000
-      - MINIO_HOST=minio
-      - MINIO_PORT=9000
-      - MINIO_BUCKET=videos
-
-      - PYTHONUNBUFFERED=1
-      - LOG_LEVEL=debug
+      - POSTGRES_DB_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgresql:${POSTGRES_PORT}/${POSTGRES_DB}
+      - RABBITMQ_HOST=rabbitmq
+      - MINIO_ENDPOINT=http://minio:${MINIO_PORT}
     depends_on:
+      postgresql:
+        condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      minio:
         condition: service_healthy
 
   sonar-db:
@@ -93,15 +89,15 @@ services:
     profiles:
       - sonar
     environment:
-      POSTGRES_USER: ${SONAR_DB_USER:-sonar}
-      POSTGRES_PASSWORD: ${SONAR_DB_PASSWORD:-sonar_pass_123!}
-      POSTGRES_DB: ${SONAR_DB_NAME:-sonar}
+      - POSTGRES_USER=${SONAR_DB_USER}
+      - POSTGRES_PASSWORD=${SONAR_DB_PASSWORD}
+      - POSTGRES_DB=${SONAR_DB_NAME}
     volumes:
       - sonar_db_data:/var/lib/postgresql/data
     networks:
       - ascension-sonar-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-sonar}"]
+      test: ["CMD-SHELL", "pg_isready -U ${SONAR_DB_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -114,9 +110,9 @@ services:
     ports:
       - "9005:9000"
     environment:
-      - SONAR_JDBC_URL=jdbc:postgresql://sonar-db:5432/${SONAR_DB_NAME:-sonar}
-      - SONAR_JDBC_USERNAME=${SONAR_DB_USER:-sonar}
-      - SONAR_JDBC_PASSWORD=${SONAR_DB_PASSWORD:-sonar_pass_123!}
+      - SONAR_JDBC_URL=jdbc:postgresql://sonar-db:5432/${SONAR_DB_NAME}
+      - SONAR_JDBC_USERNAME=${SONAR_DB_USER}
+      - SONAR_JDBC_PASSWORD=${SONAR_DB_PASSWORD}
       - SONAR_SEARCH_JAVAADDITIONALOPTS=-Dcluster.routing.allocation.disk.threshold_enabled=false
     volumes:
       - sonar_data:/opt/sonarqube/data
