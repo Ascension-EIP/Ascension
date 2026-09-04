@@ -22,4 +22,4 @@ RUN uv sync --frozen
 
 COPY . .
 
-ENTRYPOINT ["uv", "run", "python", "-u", "src/worker.py"]
+ENTRYPOINT ["uv", "run", "python", "-u", "src/main.py", "worker"]
