@@ -48,6 +48,7 @@ services:
       - "8080:8080"
     env_file: .env
     environment:
+      - POSTGRES_HOST=postgresql
       - LOG_LEVEL=info
     depends_on:
       postgresql:
