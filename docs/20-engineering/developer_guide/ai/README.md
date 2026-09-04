@@ -86,8 +86,10 @@ The `ai-worker` Docker service requires the following environment variables:
 | `POSTGRES_PORT`         | `5432`       | PostgreSQL port                                                     |
 | `POSTGRES_USER`         | `postgres`   | PostgreSQL username                                                 |
 | `POSTGRES_PASSWORD`     | `postgres`   | PostgreSQL password                                                 |
-| `POSTGRES_DB`           | `ascension`  | Database name                                                       |
-| `DB_URI`                | _(none)_     | Full connection URI — overrides individual `POSTGRES_*` vars if set |
+| `POSTGRES_DB`           | `ascension`                                  | Database name                                                       |
+| `DB_URI`                | _(none)_                                     | Full connection URI — overrides individual `POSTGRES_*` vars if set |
+| `GEMINI_API_KEY`        | _(none)_                                     | Google Gemini API key for climbing coaching advice generation       |
+| `GEMINI_MODEL`          | `gemini-3.1-flash-lite`                      | Google Gemini model identifier used for generating advice           |
 
 ---
 
