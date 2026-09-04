@@ -1,29 +1,39 @@
 services:
   minio:
     image: minio/minio:RELEASE.2025-09-07T16-13-09Z
-    container_name: ascension-minIO
+    container_name: ascension-minio
+    restart: unless-stopped
     ports:
-      - "9000:9000"
+      - "${MINIO_PORT:-9000}:9000"
       - "9001:9001"
-    env_file: .env
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-ascension}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-ascension}
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
+    networks:
+      - ascension-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${MINIO_PORT}/minio/health/live"]
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   rabbitmq:
     image: rabbitmq:4.3.5-management
-    container_name: ascension-rabbitMQ
+    container_name: ascension-rabbitmq
+    restart: unless-stopped
     ports:
-      - "5672:5672"
+      - "${RABBITMQ_PORT:-5672}:5672"
       - "15672:15672"
-    env_file: .env
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-ascension}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-ascension}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - ascension-network
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
@@ -32,14 +42,21 @@ services:
 
   postgresql:
     build: ./apps/server/postgres
-    container_name: ascension-postgreSQL
+    image: ${IMAGE_PREFIX:-ghcr.io/ascension-eip}/ascension-postgres:latest
+    container_name: ascension-postgres
+    restart: unless-stopped
     ports:
-      - "5432:5432"
-    env_file: .env
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ascension}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ascension}
+      POSTGRES_DB: ${POSTGRES_DB:-ascension}
     volumes:
       - postgres_data:/var/lib/postgresql
+    networks:
+      - ascension-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ascension} -d ${POSTGRES_DB:-ascension}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -47,15 +64,18 @@ services:
   server:
     build: ./apps/server
     container_name: ascension-server
+    restart: unless-stopped
     profiles:
       - prod
     ports:
-      - "${PORT}:8080"
+      - "${PORT:-8080}:8080"
     env_file: .env
     environment:
       - POSTGRES_HOST=postgresql
       - RABBITMQ_HOST=rabbitmq
-      - MINIO_ENDPOINT=http://minio:${MINIO_PORT}
+      - MINIO_ENDPOINT=http://minio:${MINIO_PORT:-9000}
+    networks:
+      - ascension-network
     depends_on:
       postgresql:
         condition: service_healthy
@@ -63,18 +83,26 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   ai-worker:
     build: ./apps/ai
-    container_name: aiWorker
+    container_name: ascension-ai-worker
+    restart: unless-stopped
     profiles:
       - prod
     env_file: .env
     environment:
       - POSTGRES_HOST=postgresql
-      - POSTGRES_DB_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgresql:${POSTGRES_PORT}/${POSTGRES_DB}
+      - POSTGRES_DB_URL=postgres://${POSTGRES_USER:-ascension}:${POSTGRES_PASSWORD:-ascension}@postgresql:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-ascension}
       - RABBITMQ_HOST=rabbitmq
-      - MINIO_ENDPOINT=http://minio:${MINIO_PORT}
+      - MINIO_ENDPOINT=http://minio:${MINIO_PORT:-9000}
+    networks:
+      - ascension-network
     depends_on:
       postgresql:
         condition: service_healthy
@@ -86,6 +114,7 @@ services:
   sonar-db:
     image: postgres:18-alpine
     container_name: ascension-sonar-db
+    restart: unless-stopped
     profiles:
       - sonar
     environment:
@@ -105,6 +134,7 @@ services:
   sonarqube:
     image: sonarqube:lts-community
     container_name: ascension-sonarqube
+    restart: unless-stopped
     profiles:
       - sonar
     ports:
@@ -138,6 +168,8 @@ volumes:
   sonar_logs:
 
 networks:
+  ascension-network:
+    name: ascension-network
   ascension-sonar-net:
     name: ascension-sonar-net
 
