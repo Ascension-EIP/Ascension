@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-09-07
 # @file conftest.py
 # @brief Pytest fixtures and environment configuration.
 # @project Ascension

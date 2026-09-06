@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-09-07
 # @file runner.py
 # @brief Worker lifecycle runner, resilient connection loop, and signal handling.
 # @project Ascension

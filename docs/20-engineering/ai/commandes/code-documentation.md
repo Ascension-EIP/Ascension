@@ -16,7 +16,7 @@ alwaysApply: false
 
 # AI Command: Code Documentation (`/code-documentation`)
 
-This document serves as an execution protocol for any AI model (Antigravity, Copilot, Claude Code, Cursor, Codex) receiving a request to document source code (`/code-documentation` or `code-documentation`).
+This document serves as an execution protocol for any AI model (Antigravity, Copilot, Claude Code) receiving a request to document source code (`/code-documentation` or `code-documentation`).
 
 ---
 

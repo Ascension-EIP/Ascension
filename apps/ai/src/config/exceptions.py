@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-09-07
 # @file exceptions.py
 # @brief Configuration and environment validation exceptions.
 # @project Ascension

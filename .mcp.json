@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "graphify": {
-      "command": "/bin/bash",
-      "args": ["./docs/20-engineering/ai/graphify-mcp.sh"]
-    }
-  }
-}

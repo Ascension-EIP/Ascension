@@ -1,1 +1,0 @@
-../../docs/20-engineering/ai/squad/eric.md

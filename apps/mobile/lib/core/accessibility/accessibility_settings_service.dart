@@ -1,8 +1,8 @@
-// @date 2026-03-18
+// @date 2026-09-03
 // @file accessibility_settings_service.dart
 // @brief File description.
 // @project Ascension
-// @author Nicolas TORO <nicolas.toro@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';
@@ -28,6 +28,7 @@ class AccessibilitySettingsService extends ChangeNotifier {
   static const String _dyslexiaProfileKey = 'a11y_dyslexia_profile';
   static const String _reducedInterruptionsKey = 'a11y_reduced_interruptions';
   static const String _appLanguageKey = 'a11y_app_language';
+  static const String _themeModeKey = 'a11y_theme_mode';
 
   static const double minTextScale = 0.9;
   static const double maxTextScale = 2.0;
@@ -45,6 +46,7 @@ class AccessibilitySettingsService extends ChangeNotifier {
   bool _dyslexiaProfile = false;
   bool _reducedInterruptions = false;
   AppLanguage _appLanguage = AppLanguage.french;
+  ThemeMode _themeMode = ThemeMode.dark;
 
   bool get isReady => _ready;
   double get textScale => _textScale;
@@ -57,6 +59,7 @@ class AccessibilitySettingsService extends ChangeNotifier {
   bool get dyslexiaProfile => _dyslexiaProfile;
   bool get reducedInterruptions => _reducedInterruptions;
   AppLanguage get appLanguage => _appLanguage;
+  ThemeMode get themeMode => _themeMode;
   Locale get locale => switch (_appLanguage) {
     AppLanguage.french => const Locale('fr'),
     AppLanguage.english => const Locale('en'),
@@ -83,6 +86,9 @@ class AccessibilitySettingsService extends ChangeNotifier {
     _reducedInterruptions = prefs.getBool(_reducedInterruptionsKey) ?? false;
     _appLanguage = AppLanguage.values.byName(
       prefs.getString(_appLanguageKey) ?? AppLanguage.french.name,
+    );
+    _themeMode = ThemeMode.values.byName(
+      prefs.getString(_themeModeKey) ?? ThemeMode.dark.name,
     );
     _ready = true;
     notifyListeners();
@@ -158,6 +164,13 @@ class AccessibilitySettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> setThemeMode(ThemeMode value) async {
+    _themeMode = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_themeModeKey, value.name);
+    notifyListeners();
+  }
+
   Future<void> resetToDefaults() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_textScaleKey);
@@ -170,6 +183,7 @@ class AccessibilitySettingsService extends ChangeNotifier {
     await prefs.remove(_dyslexiaProfileKey);
     await prefs.remove(_reducedInterruptionsKey);
     await prefs.remove(_appLanguageKey);
+    await prefs.remove(_themeModeKey);
 
     _textScale = 1.0;
     _highContrast = false;
@@ -181,6 +195,7 @@ class AccessibilitySettingsService extends ChangeNotifier {
     _dyslexiaProfile = false;
     _reducedInterruptions = false;
     _appLanguage = AppLanguage.french;
+    _themeMode = ThemeMode.dark;
 
     notifyListeners();
   }

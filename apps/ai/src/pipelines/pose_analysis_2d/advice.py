@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-09-07
 # @file advice.py
 # @brief Gemini-based climbing coaching advice generator for 2D pose analysis.
 # @project Ascension

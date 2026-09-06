@@ -1,12 +1,13 @@
-// @date 2026-03-18
+// @date 2026-09-07
 // @file main.dart
-// @brief File description.
+// @brief Point d'entrée de l'application Ascension avec intégration Forui.
 // @project Ascension
-// @author Gianni TUERO <gianni.tuero@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:forui/forui.dart';
 import 'package:mobile/core/accessibility/accessibility_settings_service.dart';
 import 'package:mobile/core/audio/audio_service.dart';
 import 'package:mobile/core/auth/auth_service.dart';
@@ -33,48 +34,75 @@ class AscensionApp extends StatelessWidget {
 
     return AnimatedBuilder(
       animation: settings,
-      builder: (context, _) => MaterialApp.router(
-        title: 'Ascension',
-        debugShowCheckedModeBanner: false,
-        locale: settings.locale,
-        supportedLocales: AppLocalizations.supportedLocales,
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        theme: AppTheme.dark(
+      builder: (context, _) {
+        final lightBase = AppTheme.applyAccessibility(
+          AppTheme.materialBase(
+            Brightness.light,
+            highContrast: settings.highContrast,
+          ),
           highContrast: settings.highContrast,
           dyslexiaProfile: settings.dyslexiaProfile,
           simplifiedInterface: settings.simplifiedInterface,
           reducedMotion: settings.reducedMotion,
-        ),
-        darkTheme: AppTheme.dark(
+        );
+        final darkBase = AppTheme.applyAccessibility(
+          AppTheme.materialBase(
+            Brightness.dark,
+            highContrast: settings.highContrast,
+          ),
           highContrast: settings.highContrast,
           dyslexiaProfile: settings.dyslexiaProfile,
           simplifiedInterface: settings.simplifiedInterface,
           reducedMotion: settings.reducedMotion,
-        ),
-        themeMode: ThemeMode.dark,
-        routerConfig: appRouter,
-        builder: (context, child) {
-          final media = MediaQuery.of(context);
-          final withScale = media.copyWith(
-            textScaler: TextScaler.linear(settings.textScale),
-            disableAnimations:
-                settings.reducedMotion || media.disableAnimations,
-          );
-          return MediaQuery(
-            data: withScale,
-            child: FocusTraversalGroup(
-              policy: ReadingOrderTraversalPolicy(),
-              descendantsAreFocusable: true,
-              child: child ?? const SizedBox.shrink(),
-            ),
-          );
-        },
-      ),
+        );
+
+        return MaterialApp.router(
+          title: 'Ascension',
+          debugShowCheckedModeBanner: false,
+          locale: settings.locale,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          theme: lightBase,
+          darkTheme: darkBase,
+          themeMode: settings.themeMode,
+          routerConfig: appRouter,
+          builder: (context, child) {
+            final media = MediaQuery.of(context);
+            final withScale = media.copyWith(
+              textScaler: TextScaler.linear(settings.textScale),
+              disableAnimations:
+                  settings.reducedMotion || media.disableAnimations,
+            );
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            final foruiTheme = isDark
+                ? AppTheme.foruiDark(highContrast: settings.highContrast)
+                : AppTheme.foruiLight(highContrast: settings.highContrast);
+
+            return FTheme(
+              data: foruiTheme,
+              child: FToaster(
+                child: FTooltipGroup(
+                  child: ScaffoldMessenger(
+                    child: MediaQuery(
+                      data: withScale,
+                      child: FocusTraversalGroup(
+                        policy: ReadingOrderTraversalPolicy(),
+                        descendantsAreFocusable: true,
+                        child: child ?? const SizedBox.shrink(),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

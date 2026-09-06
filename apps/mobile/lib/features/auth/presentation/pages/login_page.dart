@@ -1,18 +1,18 @@
-// @date 2026-03-18
+// @date 2026-09-07
 // @file login_page.dart
-// @brief File description.
+// @brief Page de connexion avec composants Forui.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/accessibility/accessibility_announcer.dart';
 import 'package:mobile/core/auth/auth_service.dart';
 import 'package:mobile/core/network/api_service.dart';
 import 'package:mobile/features/profile/presentation/pages/settings_page.dart';
 import 'package:mobile/shared/localization/app_localizations.dart';
-import 'package:mobile/shared/theme/app_colors.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -22,12 +22,12 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  bool _obscurePassword = true;
   bool _isLoading = false;
+  String? _emailError;
+  String? _passwordError;
   String? _errorMessage;
 
   @override
@@ -37,8 +37,35 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  bool _validate() {
+    final l10n = AppLocalizations.of(context);
+    bool valid = true;
+
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      _emailError = l10n.t('auth.requiredField');
+      valid = false;
+    } else if (!email.contains('@')) {
+      _emailError = l10n.t('auth.invalidEmail');
+      valid = false;
+    } else {
+      _emailError = null;
+    }
+
+    final password = _passwordController.text;
+    if (password.isEmpty) {
+      _passwordError = l10n.t('auth.requiredField');
+      valid = false;
+    } else {
+      _passwordError = null;
+    }
+
+    setState(() {});
+    return valid;
+  }
+
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_validate()) return;
 
     setState(() {
       _isLoading = true;
@@ -88,6 +115,8 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final typo = context.theme.typography;
+    final colors = context.theme.colors;
 
     return Scaffold(
       appBar: AppBar(
@@ -95,12 +124,14 @@ class _LoginPageState extends State<LoginPage> {
         elevation: 0,
         scrolledUnderElevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            tooltip: l10n.t('common.settings'),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const SettingsPage()),
+          Tooltip(
+            message: l10n.t('common.settings'),
+            child: IconButton(
+              icon: const Icon(Icons.settings_outlined),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsPage()),
+              ),
             ),
           ),
         ],
@@ -114,95 +145,67 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 children: [
                   const SizedBox(height: 32),
-                  _Logo(),
+                  const _Logo(),
                   const SizedBox(height: 40),
                   Text(
                     l10n.t('auth.login.title'),
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    style: typo.display.xl2.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     l10n.t('auth.login.subtitle'),
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: typo.body.sm.copyWith(color: colors.mutedForeground),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        TextFormField(
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.next,
-                          decoration: InputDecoration(
-                            labelText: 'Email',
-                            helperText: l10n.t('auth.login.emailHelper'),
-                            prefixIcon: Icon(Icons.email_outlined),
-                          ),
-                          validator: (v) {
-                            if (v == null || v.trim().isEmpty) {
-                              return l10n.t('auth.requiredField');
-                            }
-                            if (!v.contains('@')) {
-                              return l10n.t('auth.invalidEmail');
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: _obscurePassword,
-                          textInputAction: TextInputAction.done,
-                          onFieldSubmitted: (_) => _submit(),
-                          decoration: InputDecoration(
-                            labelText: l10n.t('auth.login.password'),
-                            helperText: l10n.t('auth.login.passwordHelper'),
-                            prefixIcon: const Icon(Icons.lock_outline),
-                            suffixIcon: IconButton(
-                              tooltip: _obscurePassword
-                                  ? l10n.t('auth.login.showPassword')
-                                  : l10n.t('auth.login.hidePassword'),
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
-                              ),
-                              onPressed: () => setState(
-                                () => _obscurePassword = !_obscurePassword,
-                              ),
-                            ),
-                          ),
-                          validator: (v) {
-                            if (v == null || v.isEmpty) {
-                              return l10n.t('auth.requiredField');
-                            }
-                            return null;
-                          },
-                        ),
-                      ],
+                  FTextField(
+                    control: FTextFieldControl.managed(
+                      controller: _emailController,
                     ),
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    label: const Text('Email'),
+                    hint: 'nom@exemple.com',
+                    description: Text(l10n.t('auth.login.emailHelper')),
+                    error: _emailError != null ? Text(_emailError!) : null,
+                  ),
+                  const SizedBox(height: 16),
+                  FTextField.password(
+                    control: FTextFieldControl.managed(
+                      controller: _passwordController,
+                    ),
+                    textInputAction: TextInputAction.done,
+                    onSubmit: (_) => _submit(),
+                    label: Text(l10n.t('auth.login.password')),
+                    hint: '••••••••',
+                    description: Text(l10n.t('auth.login.passwordHelper')),
+                    error: _passwordError != null
+                        ? Text(_passwordError!)
+                        : null,
                   ),
                   if (_errorMessage != null) ...[
                     const SizedBox(height: 16),
-                    _ErrorBanner(message: _errorMessage!),
+                    FAlert(
+                      variant: .destructive,
+                      title: Text(_errorMessage!),
+                      icon: const Icon(Icons.error_outline),
+                    ),
                   ],
                   const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _submit,
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : Text(l10n.t('auth.login.submit')),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FButton(
+                      onPress: _isLoading ? null : _submit,
+                      prefix: _isLoading
+                          ? const SizedBox.square(
+                              dimension: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : null,
+                      child: Text(l10n.t('auth.login.submit')),
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Row(
@@ -210,15 +213,19 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       Text(
                         l10n.t('auth.login.noAccount'),
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: typo.body.sm.copyWith(
+                          color: colors.mutedForeground,
+                        ),
                       ),
-                      TextButton(
-                        onPressed: () => context.go('/register'),
+                      const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: () => context.go('/register'),
                         child: Text(
                           l10n.t('auth.login.register'),
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
+                          style: typo.body.sm.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: colors.primary,
+                            decoration: TextDecoration.underline,
                           ),
                         ),
                       ),
@@ -241,6 +248,8 @@ class _Logo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final colors = context.theme.colors;
+    final typo = context.theme.typography;
     return Semantics(
       container: true,
       label: l10n.t('common.logoAscension'),
@@ -248,52 +257,15 @@ class _Logo extends StatelessWidget {
         children: [
           Image.asset('assets/images/logo.png', width: 72, height: 72),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'ASCENSION',
-            style: TextStyle(
-              color: AppColors.primary,
-              fontSize: 22,
+            style: typo.display.xl.copyWith(
+              color: colors.primary,
               fontWeight: FontWeight.w800,
               letterSpacing: 4,
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _ErrorBanner extends StatelessWidget {
-  final String message;
-
-  const _ErrorBanner({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Semantics(
-      liveRegion: true,
-      container: true,
-      label: l10n.tr('common.errorLabel', {'message': message}),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.error.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.error.withValues(alpha: 0.4)),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.error_outline, color: AppColors.error, size: 18),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                message,
-                style: const TextStyle(color: AppColors.error, fontSize: 13),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -1,6 +1,6 @@
 # AI Instructions - Ascension Project
 
-This file contains the unified, global instructions and context for all AI models and coding assistants (Claude Code, GitHub Copilot, Cursor, Antigravity) working on the Ascension project.
+This file contains the unified, global instructions and context for all AI models and coding assistants (Claude Code, GitHub Copilot, Antigravity) working on the Ascension project.
 
 ---
 
@@ -209,19 +209,12 @@ The Ascension project is part of the **Technical Track** of EIP (Epitech Innovat
 - **Collaborate with Technical Experts:** Identification of specific technical needs and structured collaboration with external experts (CTOs, engineers, open-source contributors) to validate or refine architecture decisions.
 - **Measure, Test, and Optimize Technical Performance:** Definition of performance KPIs, setup of load/stress tests, and implementation of technical optimizations based on concrete measurements.
 
-## 14. Graphify Knowledge Graph
 
-This project has a knowledge graph at `graphify-out/` with god nodes, community structure, and cross-file relationships.
 
-### Rules for using Graphify
+# graphify
+- **graphify** (`.claude/skills/graphify/SKILL.md`) - any input to knowledge graph. Trigger: `/graphify`
+When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
 
-- For codebase questions, first run `graphify query "<question>"` when `graphify-out/graph.json` exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than `GRAPH_REPORT.md` or raw grep output.
-- If `graphify-out/wiki/index.md` exists, use it for broad navigation instead of raw source browsing.
-- Read `graphify-out/GRAPH_REPORT.md` only for broad architecture review or when query/path/explain do not surface enough context.
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
-
----
-
-You now have full context for the Ascension project. Answer all questions and complete all tasks using this information. When writing code, respect the current stack choices. When giving recommendations, align with the architectural principles described above.
-
----
+# forui
+- **forui** (`.claude/skills/forui/SKILL.md`) - Flutter UI library (shadcn/ui-inspired) used across `apps/mobile`. 40+ accessible, customizable widgets (FButton, FCard, FAvatar, FBadge, FTextField, FDialog, FSheet, FTile, etc.), plus focused sub-skills for setup, theming, controls, forms/inputs, layout/navigation, overlays/feedback, and the Ascension UI polish standard (FLucideIcons only, `flutter_animate` entrance animations, `Skeletonizer` loading states).
+When building or styling any Flutter UI in `apps/mobile`, consult the installed forui skill before writing widget code.

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Forui Theming"
+  short_description: "Design and adapt Forui themes"
+  default_prompt: "Use $forui-theming to choose or customize a Forui theme."
+
+policy:
+  allow_implicit_invocation: true

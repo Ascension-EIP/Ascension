@@ -1,4 +1,4 @@
-// @date 2026-09-05
+// @date 2026-09-07
 // @file main.go
 // @brief CLI tool to execute PostgreSQL migrations.
 // @project Ascension

@@ -1,62 +1,122 @@
-// @date 2026-03-18
+// @date 2026-09-07
 // @file app_theme.dart
-// @brief File description.
+// @brief Configuration du thème Forui et des adaptations d'accessibilité.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
+import 'package:forui/forui.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static ThemeData dark({
+  /// Ascension's brand typeface: Plus Jakarta Sans — a geometric, highly
+  /// legible sans with just enough character to be recognisable, without
+  /// being a novelty display font. Used across both the Material and Forui
+  /// layers so the app reads as one coherent product rather than a
+  /// framework's default look.
+  static String get fontFamily => GoogleFonts.plusJakartaSans().fontFamily!;
+
+  static FTypography _typography({
+    required FColors colors,
+    required bool touch,
+  }) {
+    final typeface = FTypeface.inherit(
+      colors: colors,
+      touch: touch,
+      fontFamily: fontFamily,
+    );
+    return FTypography(display: typeface, body: typeface);
+  }
+
+  /// Forui dark theme data
+  static FThemeData foruiDark({required bool highContrast}) {
+    final colors = highContrast
+        ? FColors.neutralDark.copyWith(
+            background: Colors.black,
+            foreground: Colors.white,
+            card: Colors.black,
+            border: Colors.white,
+          )
+        : FColors.neutralDark;
+    return FThemeData(
+      colors: colors,
+      touch: true,
+      typography: _typography(colors: colors, touch: true),
+    );
+  }
+
+  /// Forui light theme data
+  static FThemeData foruiLight({required bool highContrast}) {
+    final colors = highContrast
+        ? FColors.neutralLight.copyWith(
+            background: Colors.white,
+            foreground: Colors.black,
+            card: Colors.white,
+            border: Colors.black,
+          )
+        : FColors.neutralLight;
+    return FThemeData(
+      colors: colors,
+      touch: true,
+      typography: _typography(colors: colors, touch: true),
+    );
+  }
+
+  /// Material ThemeData used by [MaterialApp.router]
+  static ThemeData materialBase(
+    Brightness brightness, {
+    required bool highContrast,
+  }) {
+    final isDark = brightness == Brightness.dark;
+    final colorScheme = ColorScheme(
+      brightness: brightness,
+      primary: isDark ? Colors.white : Colors.black,
+      onPrimary: isDark ? Colors.black : Colors.white,
+      secondary: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF71717A),
+      onSecondary: isDark ? Colors.black : Colors.white,
+      error: const Color(0xFFEF4444),
+      onError: Colors.white,
+      surface: isDark
+          ? (highContrast ? Colors.black : const Color(0xFF09090B))
+          : (highContrast ? Colors.white : const Color(0xFFFAFAFA)),
+      onSurface: isDark ? Colors.white : Colors.black,
+    );
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: brightness,
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: colorScheme.surface,
+      fontFamily: fontFamily,
+    );
+  }
+
+  /// Applies accessibility tweaks (dyslexia font spacing, simplified density,
+  /// reduced motion transitions) on top of the base Material ThemeData.
+  static ThemeData applyAccessibility(
+    ThemeData base, {
     required bool highContrast,
     required bool dyslexiaProfile,
     required bool simplifiedInterface,
     required bool reducedMotion,
   }) {
-    final ColorScheme colorScheme = highContrast
-        ? const ColorScheme.dark(
-            primary: Color(0xFF4DDCFF),
-            secondary: Color(0xFF7CEBFF),
-            surface: Color(0xFF050A12),
-            error: Color(0xFFFF6B6B),
-            onSurface: Color(0xFFFFFFFF),
-          )
-        : const ColorScheme.dark(
-            primary: AppColors.primary,
-            secondary: AppColors.accent,
-            surface: AppColors.surfaceDark,
-            error: AppColors.error,
-          );
-
-    final TextTheme baseTextTheme = const TextTheme(
-      headlineLarge: TextStyle(color: AppColors.textPrimary),
-      headlineMedium: TextStyle(color: AppColors.textPrimary),
-      bodyLarge: TextStyle(color: AppColors.textPrimary),
-      bodyMedium: TextStyle(color: AppColors.textSecondary),
-    );
+    final ColorScheme colorScheme = base.colorScheme;
 
     final TextTheme textTheme = dyslexiaProfile
-        ? baseTextTheme
+        ? base.textTheme
               .apply(heightFactor: 1.4)
               .copyWith(
-                bodyLarge: baseTextTheme.bodyLarge?.copyWith(
+                bodyLarge: base.textTheme.bodyLarge?.copyWith(
                   letterSpacing: 0.2,
                 ),
-                bodyMedium: baseTextTheme.bodyMedium?.copyWith(
+                bodyMedium: base.textTheme.bodyMedium?.copyWith(
                   letterSpacing: 0.2,
                 ),
               )
-        : baseTextTheme;
+        : base.textTheme;
 
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.dark,
-      colorScheme: colorScheme,
-      scaffoldBackgroundColor: highContrast
-          ? const Color(0xFF000000)
-          : AppColors.backgroundDark,
+    return base.copyWith(
       visualDensity: simplifiedInterface
           ? VisualDensity.comfortable
           : VisualDensity.standard,
@@ -71,53 +131,12 @@ class AppTheme {
                 TargetPlatform.linux: _NoTransitionsBuilder(),
               },
             )
-          : null,
-      appBarTheme: AppBarTheme(
+          : base.pageTransitionsTheme,
+      appBarTheme: base.appBarTheme.copyWith(
         backgroundColor: colorScheme.surface,
         elevation: 0,
-        titleTextStyle: const TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 18,
+        titleTextStyle: base.appBarTheme.titleTextStyle?.copyWith(
           fontWeight: FontWeight.w600,
-        ),
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: highContrast ? const Color(0xFF000000) : AppColors.cardDark,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: highContrast ? Colors.white : Colors.transparent,
-          ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: highContrast ? Colors.white : Colors.transparent,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colorScheme.primary,
-            width: highContrast ? 3 : 2,
-          ),
-        ),
-        labelStyle: const TextStyle(color: AppColors.textSecondary),
-        hintStyle: const TextStyle(color: AppColors.textSecondary),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: colorScheme.primary,
-          foregroundColor: Colors.white,
-          minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: highContrast
-                ? const BorderSide(color: Colors.white, width: 1.4)
-                : BorderSide.none,
-          ),
         ),
       ),
       textTheme: textTheme,

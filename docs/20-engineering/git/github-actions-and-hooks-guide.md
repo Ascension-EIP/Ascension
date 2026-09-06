@@ -1,7 +1,7 @@
-> **Last updated:** 3rd September 2026  
-> **Version:** 1.2  
-> **Authors:** Nicolas TORO  
-> **Status:** Done  
+> **Last updated:** 6th September 2026
+> **Version:** 1.2
+> **Authors:** Nicolas TORO, Gianni TUERO
+> **Status:** Done
 > {.is-success}
 
 ---
@@ -55,8 +55,7 @@ Both layers rely on the same shared Python validation scripts located in `.githu
 
 ```
 .github/
-├── agents/
-│   └── squad.agent.md        # GitHub Copilot coding agent instructions
+├── agents/                   # GitHub Copilot coding agent instructions
 ├── hooks/
 │   ├── pre-commit            # Runs before a commit is created
 │   ├── commit-msg            # Validates the commit message format
@@ -199,7 +198,7 @@ They can be invoked both locally (by hooks) and remotely (by GitHub Actions).
 
 ### 4.1 `check_branch`
 
-**Language:** Python 3  
+**Language:** Python 3
 **Usage:** `.github/scripts/check_branch <branch_name>`
 
 Validates that a branch name follows the project conventions:
@@ -220,7 +219,7 @@ The script is GitHub Actions-aware: when run inside a workflow (`GITHUB_ACTIONS=
 
 ### 4.2 `check_commit`
 
-**Language:** Python 3  
+**Language:** Python 3
 **Usage:** `.github/scripts/check_commit "<commit_message>"`
 
 Validates that a commit message follows the Conventional Commits format:
@@ -245,7 +244,7 @@ Like `check_branch`, the script outputs GitHub Actions annotations when run insi
 
 ### 4.3 `check_push`
 
-**Language:** Bash  
+**Language:** Bash
 **Usage:** `.github/scripts/check_push`
 
 A placeholder script intended for additional pre-push validations (e.g., running tests locally before pushing).
@@ -253,7 +252,7 @@ Currently validates branch format using `check_branch`.
 
 ### 4.4 `reformat_code`
 
-**Language:** Bash  
+**Language:** Bash
 **Usage:** `.github/scripts/reformat_code`
 
 Runs the code formatters for each application using the `moon` task runner:
@@ -268,14 +267,14 @@ This script is called automatically by the `pre-commit` hook and can also be run
 
 ### 4.5 `get_commits_list`
 
-**Language:** Bash  
+**Language:** Bash
 **Usage:** `.github/scripts/get_commits_list`
 
 A utility script that prints the list of commits between `origin/dev` and the current branch.
 
 ### 4.6 `generate_wiki`
 
-**Language:** Python 3  
+**Language:** Python 3
 **Usage:** `.github/scripts/generate_wiki`
 
 Converts the contents of the `docs/` directory into flat wiki pages in a `wiki/` directory, ready to be published to GitHub Wiki.
@@ -291,7 +290,7 @@ All workflows are in `.github/workflows/`. They share the following common confi
 
 ### 5.1 CI workflow (`ci.yml`)
 
-**Name:** `ascension-ci`  
+**Name:** `ascension-ci`
 **Triggers:** Every `push` and `pull_request` event (ignoring `docs/**` and `*.md`).
 
 This workflow enforces code quality across all services. It is composed of four jobs:
@@ -359,7 +358,7 @@ Validates the Python AI application.
 
 ### 5.2 No-CI detection workflow (`detect-no-ci.yml`)
 
-**Name:** `ascension-detect-no-ci`  
+**Name:** `ascension-detect-no-ci`
 **Triggers:** Reusable `workflow_call`.
 
 Detects if the commit message starts with `[no-ci]`, `[skip-ci]`, etc. Outputs `skip=true` to allow calling workflows to skip subsequent jobs.
@@ -368,7 +367,7 @@ Detects if the commit message starts with `[no-ci]`, `[skip-ci]`, etc. Outputs `
 
 ### 5.3 Deploy workflow (`deploy.yml`)
 
-**Name:** `ascension-deploy`  
+**Name:** `ascension-deploy`
 **Triggers:** Push of a tag matching the pattern `v*` (e.g., `v0.1.0`).
 
 Builds and publishes production artifacts:
@@ -381,7 +380,7 @@ Builds and publishes production artifacts:
 
 ### 5.4 Dev-to-staging workflow (`dev-to-staging.yml`)
 
-**Name:** `ascension-dev-to-staging`  
+**Name:** `ascension-dev-to-staging`
 **Triggers:**
 - Scheduled cron: every Monday at midnight (`0 0 * * 1`).
 - Manual dispatch (`workflow_dispatch`).
@@ -392,7 +391,7 @@ Creates or updates an automated Pull Request from `dev` to `staging`, lists incl
 
 ### 5.5 Staging-to-main workflow (`staging-to-main.yml`)
 
-**Name:** `ascension-staging-to-main`  
+**Name:** `ascension-staging-to-main`
 **Triggers:** Manual dispatch (`workflow_dispatch` with `version_bump` input: `patch`, `minor`, `major`).
 
 1. Merges `staging` into `main`.
@@ -406,7 +405,7 @@ Creates or updates an automated Pull Request from `dev` to `staging`, lists incl
 
 ### 5.6 VPS deploy workflow (`vps-deploy.yml`)
 
-**Name:** `ascension-vps-deploy`  
+**Name:** `ascension-vps-deploy`
 **Triggers:**
 - `workflow_run` after successful completion of `ascension-deploy`.
 
@@ -416,7 +415,7 @@ Connects to the production VPS via SSH/SCP, updates `docker-compose.yml` & `dock
 
 ### 5.7 Docs-to-wiki workflow (`docs-to-wiki.yml`)
 
-**Name:** `ascension-docs-to-wiki`  
+**Name:** `ascension-docs-to-wiki`
 **Triggers:**
 - `workflow_run` after successful completion of `ascension-staging-to-main`.
 - Manual dispatch (`workflow_dispatch`).
@@ -427,7 +426,7 @@ Runs `.github/scripts/generate_wiki` and pushes the flattened Markdown documenta
 
 ### 5.8 Gemini PR review workflow (`gemini-pr-review.yml`)
 
-**Name:** `ascension-gemini-pr-review`  
+**Name:** `ascension-gemini-pr-review`
 **Triggers:**
 - `pull_request` (opened, reopened).
 - `issue_comment` (created with `/gemini-review` or `/review`).

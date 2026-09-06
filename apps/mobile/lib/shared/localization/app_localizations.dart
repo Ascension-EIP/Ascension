@@ -1,8 +1,8 @@
-// @date 2026-03-18
+// @date 2026-09-07
 // @file app_localizations.dart
 // @brief File description.
 // @project Ascension
-// @author Nicolas TORO <nicolas.toro@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';
@@ -144,6 +144,27 @@ class AppLocalizations {
       'stats.view': 'Visualiser',
       'stats.frames': '{count} frames',
       'stats.detectedRate': '{rate} % détecté',
+      'stats.totalAnalyses': 'Analyses',
+      'stats.successRate': 'Taux de réussite',
+      'stats.avgDuration': 'Durée moyenne',
+      'stats.avgDetection': 'Détection moy.',
+      'stats.activityTitle': 'Activité',
+      'stats.activitySubtitle': '7 derniers jours',
+      'stats.recentTitle': 'Historique',
+      'stats.filterAll': 'Toutes',
+      'stats.filterCompleted': 'Terminées',
+      'stats.filterFailed': 'Échouées',
+      'stats.emptyFilterTitle': 'Aucun résultat',
+      'stats.emptyFilterSubtitle': 'Aucune analyse ne correspond à ce filtre.',
+      'stats.breakdownTitle': 'Répartition des performances',
+      'stats.successBreakdown': 'Réussies',
+      'stats.failedBreakdown': 'Échouées',
+      'stats.hoverHint':
+          'Touchez ou survolez un diagramme pour afficher les détails',
+      'stats.activeWeekTotal': '{count} analyses cette semaine',
+      'stats.peakDay': 'Pic : {day}',
+      'stats.scoreOverall': 'Score biomécanique',
+      'profile.hoverHint': 'Survolez une jauge pour voir vos métriques',
       'date.todayAt': 'Aujourd\'hui à {time}',
       'date.yesterdayAt': 'Hier à {time}',
       'date.at': '{day} à {time}',
@@ -403,6 +424,26 @@ class AppLocalizations {
       'stats.view': 'View',
       'stats.frames': '{count} frames',
       'stats.detectedRate': '{rate} % detected',
+      'stats.totalAnalyses': 'Analyses',
+      'stats.successRate': 'Success rate',
+      'stats.avgDuration': 'Avg. duration',
+      'stats.avgDetection': 'Avg. detection',
+      'stats.activityTitle': 'Activity',
+      'stats.activitySubtitle': 'Last 7 days',
+      'stats.recentTitle': 'History',
+      'stats.filterAll': 'All',
+      'stats.filterCompleted': 'Completed',
+      'stats.filterFailed': 'Failed',
+      'stats.emptyFilterTitle': 'No results',
+      'stats.emptyFilterSubtitle': 'No analysis matches this filter.',
+      'stats.breakdownTitle': 'Performance breakdown',
+      'stats.successBreakdown': 'Successful',
+      'stats.failedBreakdown': 'Failed',
+      'stats.hoverHint': 'Tap or hover a chart to inspect details',
+      'stats.activeWeekTotal': '{count} analyses this week',
+      'stats.peakDay': 'Peak: {day}',
+      'stats.scoreOverall': 'Biomechanical score',
+      'profile.hoverHint': 'Hover a gauge to see your metrics',
       'date.todayAt': 'Today at {time}',
       'date.yesterdayAt': 'Yesterday at {time}',
       'date.at': '{day} at {time}',

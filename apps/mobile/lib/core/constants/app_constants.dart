@@ -1,8 +1,8 @@
-// @date 2026-03-12
+// @date 2026-09-03
 // @file app_constants.dart
 // @brief File description.
 // @project Ascension
-// @author Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'dart:io';
@@ -24,6 +24,14 @@ class AppConstants {
     return 'http://10.0.2.2:8080';
   }
 
+  /// Whether [ApiService] should serve canned responses instead of calling
+  /// the real backend. Defaults to on so the app is usable without a running
+  /// server; pass `--dart-define=MOCK_API=false` once the backend is up.
+  static const bool useMockApiByDefault = bool.fromEnvironment(
+    'MOCK_API',
+    defaultValue: true,
+  );
+
   // Secure storage keys
   static const String accessTokenKey = 'access_token';
   static const String refreshTokenKey = 'refresh_token';
@@ -31,4 +39,5 @@ class AppConstants {
   static const String usernameKey = 'username';
   static const String emailKey = 'email';
   static const String roleKey = 'role';
+  static const String mockApiEnabledKey = 'mock_api_enabled';
 }

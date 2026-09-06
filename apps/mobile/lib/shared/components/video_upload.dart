@@ -1,14 +1,16 @@
-// @date 2026-09-06
+// @date 2026-09-07
 // @file video_upload.dart
 // @brief File description.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:forui/forui.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/accessibility/accessibility_announcer.dart';
 import 'package:mobile/core/accessibility/accessibility_settings_service.dart';
@@ -31,67 +33,67 @@ enum _UploadState { idle, selected, uploading, analysing, done, error }
 
 const List<_PromoMessage> _promoMessages = [
   _PromoMessage(
-    icon: Icons.rocket_launch_rounded,
+    icon: FLucideIcons.rocket,
     textKey: 'video.promo.1',
     isPromo: true,
   ),
   _PromoMessage(
-    icon: Icons.bolt_rounded,
+    icon: FLucideIcons.bolt,
     textKey: 'video.promo.2',
     isPromo: true,
   ),
   _PromoMessage(
-    icon: Icons.stars_rounded,
+    icon: FLucideIcons.sparkles,
     textKey: 'video.promo.3',
     isPromo: true,
   ),
   _PromoMessage(
-    icon: Icons.history_rounded,
+    icon: FLucideIcons.history,
     textKey: 'video.promo.4',
     isPromo: true,
   ),
   _PromoMessage(
-    icon: Icons.compare_arrows_rounded,
+    icon: FLucideIcons.arrowLeftRight,
     textKey: 'video.promo.5',
     isPromo: true,
   ),
   _PromoMessage(
-    icon: Icons.bar_chart_rounded,
+    icon: FLucideIcons.chartColumn,
     textKey: 'video.promo.6',
     isPromo: true,
   ),
   _PromoMessage(
-    icon: Icons.tips_and_updates_rounded,
+    icon: FLucideIcons.lightbulb,
     textKey: 'video.promo.7',
     isPromo: false,
   ),
   _PromoMessage(
-    icon: Icons.wb_sunny_rounded,
+    icon: FLucideIcons.sun,
     textKey: 'video.promo.8',
     isPromo: false,
   ),
   _PromoMessage(
-    icon: Icons.trending_up_rounded,
+    icon: FLucideIcons.trendingUp,
     textKey: 'video.promo.9',
     isPromo: false,
   ),
   _PromoMessage(
-    icon: Icons.cloud_done_rounded,
+    icon: FLucideIcons.cloudCheck,
     textKey: 'video.promo.10',
     isPromo: false,
   ),
   _PromoMessage(
-    icon: Icons.people_rounded,
+    icon: FLucideIcons.users,
     textKey: 'video.promo.11',
     isPromo: true,
   ),
   _PromoMessage(
-    icon: Icons.emoji_events_rounded,
+    icon: FLucideIcons.trophy,
     textKey: 'video.promo.12',
     isPromo: true,
   ),
   _PromoMessage(
-    icon: Icons.psychology_rounded,
+    icon: FLucideIcons.brain,
     textKey: 'video.promo.13',
     isPromo: false,
   ),
@@ -340,7 +342,7 @@ class _VideoUploadState extends State<VideoUpload> {
 
   @override
   Widget build(BuildContext context) {
-    return switch (_state) {
+    final content = switch (_state) {
       _UploadState.idle => _buildIdle(),
       _UploadState.selected => _buildSelected(),
       _UploadState.uploading => _buildUploading(),
@@ -348,37 +350,42 @@ class _VideoUploadState extends State<VideoUpload> {
       _UploadState.done => _buildDone(),
       _UploadState.error => _buildError(),
     };
+    return content
+        .animate(key: ValueKey(_state))
+        .fadeIn(duration: 300.ms, curve: Curves.easeOutCubic)
+        .slideY(begin: 0.05, end: 0, curve: Curves.easeOutCubic);
   }
 
   Widget _buildIdle() {
     final l10n = AppLocalizations.of(context);
+    final colors = context.theme.colors;
+    final typo = context.theme.typography;
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
+          SizedBox(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 48),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey[300]!, width: 1.5),
-            ),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.video_library_outlined,
-                  size: 72,
-                  color: Colors.grey[400],
+            child: FCard(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 48),
+                child: Column(
+                  children: [
+                    Icon(
+                      FLucideIcons.video,
+                      size: 72,
+                      color: colors.mutedForeground,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      l10n.t('video.pickOrRecord'),
+                      textAlign: TextAlign.center,
+                      style: typo.body.md,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.t('video.pickOrRecord'),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                ),
-              ],
+              ),
             ),
           ),
           const SizedBox(height: 32),
@@ -386,7 +393,7 @@ class _VideoUploadState extends State<VideoUpload> {
             children: [
               Expanded(
                 child: _PickerButton(
-                  icon: Icons.videocam_rounded,
+                  icon: FLucideIcons.camera,
                   label: l10n.t('video.record'),
                   onTap: () => _pickVideo(ImageSource.camera),
                 ),
@@ -394,7 +401,7 @@ class _VideoUploadState extends State<VideoUpload> {
               const SizedBox(width: 16),
               Expanded(
                 child: _PickerButton(
-                  icon: Icons.photo_library_rounded,
+                  icon: FLucideIcons.images,
                   label: l10n.t('video.import'),
                   onTap: () => _pickVideo(ImageSource.gallery),
                 ),
@@ -408,6 +415,8 @@ class _VideoUploadState extends State<VideoUpload> {
 
   Widget _buildSelected() {
     final l10n = AppLocalizations.of(context);
+    final colors = context.theme.colors;
+    final typo = context.theme.typography;
     final controller = _playerController;
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -440,7 +449,7 @@ class _VideoUploadState extends State<VideoUpload> {
                                 ),
                                 padding: const EdgeInsets.all(16),
                                 child: const Icon(
-                                  Icons.play_arrow_rounded,
+                                  FLucideIcons.play,
                                   size: 48,
                                   color: Colors.white,
                                 ),
@@ -468,26 +477,20 @@ class _VideoUploadState extends State<VideoUpload> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.video_file_rounded,
+                          FLucideIcons.fileVideo,
                           size: 80,
-                          color: Colors.grey[400],
+                          color: colors.mutedForeground,
                         ),
                         const SizedBox(height: 16),
                         Text(
                           _videoFile?.path.split('/').last ?? '',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.grey[600],
-                          ),
+                          style: typo.body.md,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           l10n.t('video.previewUnavailable'),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[400],
-                          ),
+                          style: typo.body.sm,
                         ),
                       ],
                     ),
@@ -497,33 +500,24 @@ class _VideoUploadState extends State<VideoUpload> {
           if (_videoFile != null)
             Text(
               _videoFile!.path.split('/').last,
-              style: TextStyle(color: Colors.grey[600], fontSize: 13),
+              style: typo.body.sm,
               overflow: TextOverflow.ellipsis,
             ),
           const SizedBox(height: 16),
           Row(
             children: [
-              OutlinedButton.icon(
-                onPressed: _reset,
-                icon: const Icon(Icons.close_rounded),
-                label: Text(AppLocalizations.of(context).t('profile.cancel')),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 14,
-                    horizontal: 20,
-                  ),
-                ),
+              FButton(
+                variant: .outline,
+                onPress: _reset,
+                prefix: const Icon(FLucideIcons.x),
+                child: Text(AppLocalizations.of(context).t('profile.cancel')),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: FilledButton.icon(
-                  onPressed: _upload,
-                  icon: const Icon(Icons.upload_rounded),
-                  label: Text(l10n.t('video.analyze')),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.secondary,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
+                child: FButton(
+                  onPress: _upload,
+                  prefix: const Icon(FLucideIcons.upload),
+                  child: Text(l10n.t('video.analyze')),
                 ),
               ),
             ],
@@ -535,6 +529,8 @@ class _VideoUploadState extends State<VideoUpload> {
 
   Widget _buildUploading() {
     final l10n = AppLocalizations.of(context);
+    final colors = context.theme.colors;
+    final typo = context.theme.typography;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -543,24 +539,17 @@ class _VideoUploadState extends State<VideoUpload> {
           children: [
             CircularProgressIndicator(
               value: _uploadProgress > 0 ? _uploadProgress : null,
-              color: Theme.of(context).colorScheme.secondary,
+              color: colors.primary,
             ),
             const SizedBox(height: 24),
             Text(
               l10n.tr('video.uploadingProgress', {
                 'progress': '${(_uploadProgress * 100).toInt()}',
               }),
-              style: const TextStyle(fontSize: 16),
+              style: typo.display.lg.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: LinearProgressIndicator(
-                value: _uploadProgress > 0 ? _uploadProgress : null,
-                color: Theme.of(context).colorScheme.secondary,
-                minHeight: 8,
-              ),
-            ),
+            FDeterminateProgress(value: _uploadProgress.clamp(0.0, 1.0)),
           ],
         ),
       ),
@@ -609,32 +598,28 @@ class _VideoUploadState extends State<VideoUpload> {
 
   Widget _buildError() {
     final l10n = AppLocalizations.of(context);
+    final colors = context.theme.colors;
+    final typo = context.theme.typography;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_rounded, size: 72, color: Colors.redAccent),
+            Icon(FLucideIcons.circleAlert, size: 72, color: colors.destructive),
             const SizedBox(height: 16),
             Text(
               l10n.t('video.errorTitle'),
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: typo.display.lg.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             Text(
               _errorMessage ?? l10n.t('video.errorUnknown'),
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[500], fontSize: 13),
+              style: typo.body.sm,
             ),
             const SizedBox(height: 32),
-            FilledButton(
-              onPressed: _reset,
-              style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.secondary,
-              ),
-              child: Text(l10n.t('video.retry')),
-            ),
+            FButton(onPress: _reset, child: Text(l10n.t('video.retry'))),
           ],
         ),
       ),
@@ -643,6 +628,8 @@ class _VideoUploadState extends State<VideoUpload> {
 
   Widget _buildDone() {
     final l10n = AppLocalizations.of(context);
+    final colors = context.theme.colors;
+    final typo = context.theme.typography;
     final result = _analysisResult;
     final status = result?['status'] as String? ?? '—';
     final processingMs = result?['processing_time'] as int?;
@@ -665,18 +652,16 @@ class _VideoUploadState extends State<VideoUpload> {
       child: Column(
         children: [
           Icon(
-            isCompleted ? Icons.check_circle_rounded : Icons.cancel_rounded,
+            isCompleted ? FLucideIcons.circleCheck : FLucideIcons.circleX,
             size: 80,
-            color: isCompleted
-                ? Theme.of(context).colorScheme.secondary
-                : Colors.redAccent,
+            color: isCompleted ? colors.primary : colors.destructive,
           ),
           const SizedBox(height: 16),
           Text(
             isCompleted
                 ? l10n.t('video.doneSuccess')
                 : l10n.t('video.doneFailed'),
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: typo.display.xl2.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           if (processingMs != null)
@@ -684,13 +669,13 @@ class _VideoUploadState extends State<VideoUpload> {
               l10n.tr('video.processingTime', {
                 'seconds': (processingMs / 1000).toStringAsFixed(1),
               }),
-              style: TextStyle(color: Colors.grey[500], fontSize: 14),
+              style: typo.body.sm.copyWith(color: colors.mutedForeground),
             ),
           if (frameCount != null) ...[
             const SizedBox(height: 4),
             Text(
               l10n.tr('video.framesAnalyzed', {'count': '$frameCount'}),
-              style: TextStyle(color: Colors.grey[500], fontSize: 14),
+              style: typo.body.sm.copyWith(color: colors.mutedForeground),
             ),
           ],
           const SizedBox(height: 24),
@@ -701,8 +686,9 @@ class _VideoUploadState extends State<VideoUpload> {
           if (resultJson != null && isCompleted) ...[
             SizedBox(
               width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: () {
+              child: FButton(
+                prefix: const Icon(FLucideIcons.circlePlay),
+                onPress: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => AnalysisViewPage(
@@ -714,23 +700,16 @@ class _VideoUploadState extends State<VideoUpload> {
                     ),
                   );
                 },
-                icon: const Icon(Icons.play_circle_outline_rounded),
-                label: Text(l10n.t('video.viewAnalysis')),
-                style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.secondary,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
+                child: Text(l10n.t('video.viewAnalysis')),
               ),
             ),
             const SizedBox(height: 12),
           ],
           SizedBox(
             width: double.infinity,
-            child: OutlinedButton(
-              onPressed: _reset,
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
+            child: FButton(
+              variant: .outline,
+              onPress: _reset,
               child: Text(l10n.t('video.analyzeAnother')),
             ),
           ),
@@ -747,6 +726,8 @@ class _AnalysisSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final colors = context.theme.colors;
+    final typo = context.theme.typography;
     Map<String, dynamic>? data;
     try {
       data = jsonDecode(resultJson) as Map<String, dynamic>;
@@ -762,38 +743,34 @@ class _AnalysisSummaryCard extends StatelessWidget {
         ? 0.0
         : detectedFrames / frames.length * 100;
 
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3),
+      child: FCard(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.t('video.results'),
+                style: typo.body.md.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: colors.primary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _StatRow(
+                label: l10n.t('video.totalFrames'),
+                value: '${frames.length}',
+              ),
+              _StatRow(
+                label: l10n.t('video.poseDetected'),
+                value:
+                    '$detectedFrames frames (${detectionRate.toStringAsFixed(0)} %)',
+              ),
+            ],
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l10n.t('video.results'),
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: Theme.of(context).colorScheme.secondary,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _StatRow(
-            label: l10n.t('video.totalFrames'),
-            value: '${frames.length}',
-          ),
-          _StatRow(
-            label: l10n.t('video.poseDetected'),
-            value:
-                '$detectedFrames frames (${detectionRate.toStringAsFixed(0)} %)',
-          ),
-        ],
       ),
     );
   }
@@ -806,15 +783,16 @@ class _StatRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final typo = context.theme.typography;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: Colors.grey[500], fontSize: 13)),
+          Text(label, style: typo.body.sm),
           Text(
             value,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            style: typo.body.sm.copyWith(fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -836,6 +814,7 @@ class _PickerButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final colors = context.theme.colors;
     return Semantics(
       button: true,
       label: label,
@@ -847,26 +826,18 @@ class _PickerButton extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 72),
           padding: const EdgeInsets.symmetric(vertical: 24),
           decoration: BoxDecoration(
-            border: Border.all(
-              color: Theme.of(context).colorScheme.secondary,
-              width: 1.5,
-            ),
+            border: Border.all(color: colors.primary, width: 1.5),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
             children: [
-              Icon(
-                icon,
-                size: 36,
-                color: Theme.of(context).colorScheme.secondary,
-              ),
+              Icon(icon, size: 36, color: colors.primary),
               const SizedBox(height: 8),
               Text(
                 label,
-                style: const TextStyle(
-                  color: Color(0xFF00B5D3),
+                style: context.theme.typography.body.md.copyWith(
+                  color: colors.primary,
                   fontWeight: FontWeight.w600,
-                  fontSize: 15,
                 ),
               ),
             ],
@@ -951,7 +922,8 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
+    final colors = context.theme.colors;
+    final typo = context.theme.typography;
 
     return Center(
       child: Padding(
@@ -970,10 +942,8 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                     value: widget.isGeneratingHints
                         ? null
                         : (widget.progress > 0 ? widget.progress : null),
-                    color: colorScheme.secondary,
-                    backgroundColor: colorScheme.secondary.withValues(
-                      alpha: 0.15,
-                    ),
+                    color: colors.secondary,
+                    backgroundColor: colors.secondary.withValues(alpha: 0.15),
                     strokeWidth: 8,
                   ),
                 ),
@@ -986,19 +956,16 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: colorScheme.secondary,
+                          color: colors.secondary,
                         ),
                       ),
-                      Text(
-                        widget.remainingLabel,
-                        style: TextStyle(fontSize: 11, color: Colors.grey[500]),
-                      ),
+                      Text(widget.remainingLabel, style: typo.body.sm),
                     ],
                   )
                 else
                   Icon(
-                    Icons.auto_awesome_rounded,
-                    color: colorScheme.secondary,
+                    FLucideIcons.sparkles,
+                    color: colors.secondary,
                     size: 32,
                   ),
               ],
@@ -1008,7 +975,7 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
               widget.isGeneratingHints
                   ? l10n.t('video.generatingHints')
                   : l10n.t('video.analysisInProgress'),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: typo.display.xl,
             ),
             const SizedBox(height: 6),
             Text(
@@ -1016,24 +983,13 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                   ? l10n.t('video.generatingHintsSubtitle')
                   : l10n.t('video.analysisSubtitle'),
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[500], fontSize: 14),
+              style: typo.body.md.copyWith(color: colors.mutedForeground),
             ),
             const SizedBox(height: 28),
 
             // ── Swipeable promo / tips cards ──
             Row(
               children: [
-                //_NavArrow(
-                //  onTap: () {
-                //    _autoSlideCtrl.forward(from: 0);
-                //    _goToPage(
-                //      (_pageIndex - 1 + _promoMessages.length) %
-                //          _promoMessages.length,
-                //    );
-                //  },
-                //  icon: Icons.chevron_left_rounded,
-                //  accent: colorScheme.secondary,
-                //),
                 const SizedBox(width: 4),
                 Expanded(
                   child: SizedBox(
@@ -1052,20 +1008,12 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                         padding: const EdgeInsets.symmetric(horizontal: 6),
                         child: _PromoCard(
                           msg: _promoMessages[i],
-                          accent: colorScheme.secondary,
+                          accent: colors.secondary,
                         ),
                       ),
                     ),
                   ),
                 ),
-                //_NavArrow(
-                //  onTap: () {
-                //    _autoSlideCtrl.forward(from: 0);
-                //    _nextPage();
-                //  },
-                //  icon: Icons.chevron_right_rounded,
-                //  accent: colorScheme.secondary,
-                //),
               ],
             ),
 
@@ -1095,8 +1043,8 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
                       height: 6,
                       decoration: BoxDecoration(
                         color: i == _pageIndex
-                            ? colorScheme.secondary
-                            : Colors.grey.withValues(alpha: 0.35),
+                            ? colors.secondary
+                            : colors.mutedForeground.withValues(alpha: 0.35),
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),
@@ -1109,14 +1057,9 @@ class _AnalysingScreenState extends State<_AnalysingScreen>
             const SizedBox(height: 10),
             AnimatedBuilder(
               animation: _autoSlideCtrl,
-              builder: (context, _) => ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: widget.reducedMotion ? 0 : _autoSlideCtrl.value,
-                  color: colorScheme.secondary.withValues(alpha: 0.5),
-                  backgroundColor: colorScheme.secondary.withValues(alpha: 0.1),
-                  minHeight: 3,
-                ),
+              builder: (context, _) => FDeterminateProgress(
+                value: (widget.reducedMotion ? 0.0 : _autoSlideCtrl.value)
+                    .clamp(0.0, 1.0),
               ),
             ),
           ],
@@ -1165,17 +1108,15 @@ class _PromoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final colors = context.theme.colors;
+    final typo = context.theme.typography;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: msg.isPromo
-            ? accent.withValues(alpha: 0.10)
-            : Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
+        color: msg.isPromo ? accent.withValues(alpha: 0.10) : colors.card,
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: msg.isPromo
-              ? accent.withValues(alpha: 0.35)
-              : Colors.grey.withValues(alpha: 0.20),
+          color: msg.isPromo ? accent.withValues(alpha: 0.35) : colors.border,
         ),
       ),
       child: Row(
@@ -1184,7 +1125,7 @@ class _PromoCard extends StatelessWidget {
           Icon(
             msg.icon,
             size: 26,
-            color: msg.isPromo ? accent : Colors.grey[400],
+            color: msg.isPromo ? accent : colors.mutedForeground,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -1207,9 +1148,10 @@ class _PromoCard extends StatelessWidget {
                   ),
                 Text(
                   l10n.t(msg.textKey),
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: msg.isPromo ? Colors.white : Colors.grey[400],
+                  style: typo.body.sm.copyWith(
+                    color: msg.isPromo
+                        ? colors.foreground
+                        : colors.mutedForeground,
                     height: 1.4,
                   ),
                   maxLines: 3,

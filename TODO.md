@@ -1,0 +1,7 @@
+- [x] update les symlinks sur le nouveau skill graphify
+- [x] supprimer tout ce qui concerne les squads (docs, skills, workflows, etc)
+- [x] supprimer les mentions de squads dans les skills
+- [ ] enlever les mocks du mobile qui servait à faire la refonte graphique (migration 100% Forui, suppression de shadcn et hux)
+- [ ] ajouter redis (à approfondir, pcq on a rabbitmq mais pas redis)
+- [ ] regarder les nouvelles IA pour l'ia principale de l'app
+- [ ] rajouter dans les doc le forui + symlinks des skills
