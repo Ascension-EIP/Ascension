@@ -214,3 +214,7 @@ The Ascension project is part of the **Technical Track** of EIP (Epitech Innovat
 # graphify
 - **graphify** (`.claude/skills/graphify/SKILL.md`) - any input to knowledge graph. Trigger: `/graphify`
 When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
+
+# forui
+- **forui** (`.claude/skills/forui/SKILL.md`) - Flutter UI library (shadcn/ui-inspired) used across `apps/mobile`. 40+ accessible, customizable widgets (FButton, FCard, FAvatar, FBadge, FTextField, FDialog, FSheet, FTile, etc.), plus focused sub-skills for setup, theming, controls, forms/inputs, layout/navigation, overlays/feedback, and the Ascension UI polish standard (FLucideIcons only, `flutter_animate` entrance animations, `Skeletonizer` loading states).
+When building or styling any Flutter UI in `apps/mobile`, consult the installed forui skill before writing widget code.
