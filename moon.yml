@@ -3,7 +3,9 @@ tasks:
     script: |
       git config core.hooksPath .github/hooks
       git config commit.template .gitmessage
-      go -C apps/server run ./cmd/migrate
+      if [ -z "$GITHUB_ACTIONS" ] && [ -z "$CI" ]; then
+        go -C apps/server run ./cmd/migrate
+      fi
     options:
       cache: false
       envFile: true
