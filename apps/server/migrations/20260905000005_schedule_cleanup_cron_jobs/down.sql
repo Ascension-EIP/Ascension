@@ -1,3 +1,2 @@
 SELECT cron.unschedule('clean-expired-sessions');
-
-DROP EXTENSION IF EXISTS pg_cron;
+SELECT cron.unschedule('clean-expired-upload');
