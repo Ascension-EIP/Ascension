@@ -81,7 +81,7 @@ Examples:
 
 Each issue must include at least one domain label (`AI`, `Server`, `Mobile`, `CI/CD`, `Documentation`, etc.).
 
-Squad workflow can add optional labels:
+Additional optional labels can be applied:
 - one type label (`type:feature`, `type:bug`, `type:chore`, `type:spike`, `type:epic`);
 - one priority label (`priority:p0`, `priority:p1`, `priority:p2`) unless explicitly justified.
 - one status label (`go:yes`, `go:no`, `go:needs-research`)

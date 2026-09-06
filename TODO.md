@@ -1,5 +1,5 @@
 - [x] update les symlinks sur le nouveau skill graphify
-- [ ] supprimer tout ce qui concerne les squads (docs, skills, workflows, etc)
-- [ ] supprimer les mentions de squads dans les skills
+- [x] supprimer tout ce qui concerne les squads (docs, skills, workflows, etc)
+- [x] supprimer les mentions de squads dans les skills
 - [ ] enlever les mocks du mobile qui servait à faire la refonte graphique
 - [ ] ajouter redis (à approfondir, pcq on a rabbitmq mais pas redis)

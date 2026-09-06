@@ -1,6 +1,6 @@
-> **Last updated:** 26th February 2026
-> **Version:** 1.1
-> **Authors:** Nicolas TORO
+> **Last updated:** 6th September 2026
+> **Version:** 1.2
+> **Authors:** Nicolas TORO, Gianni TUERO
 > **Status:** Done
 > {.is-success}
 
@@ -47,16 +47,6 @@ These mechanisms enforce code quality, naming conventions, and automate the CI/C
       - [Job: `mirror_repository` (needs: `merge_branch`)](#job-mirror_repository-needs-merge_branch)
     - [5.4 Docs-to-wiki workflow (`docs-to-wiki.yml`)](#54-docs-to-wiki-workflow-docs-to-wikiyml)
       - [Job: `update_wiki`](#job-update_wiki)
-    - [5.5 Squad triage workflow (`squad-triage.yml`)](#55-squad-triage-workflow-squad-triageyml)
-      - [Job: `triage`](#job-triage)
-    - [5.6 Squad issue assign workflow (`squad-issue-assign.yml`)](#56-squad-issue-assign-workflow-squad-issue-assignyml)
-      - [Job: `assign-work`](#job-assign-work)
-    - [5.7 Squad label cleaner workflow (`squad-label-cleaner.yml`)](#57-squad-label-cleaner-workflow-squad-label-cleaneryml)
-      - [Job: `clean_labels`](#job-clean_labels)
-    - [5.8 Squad pull request review workflow (`squad-pull-request-review.yml`)](#58-squad-pull-request-review-workflow-squad-pull-request-reviewyml)
-      - [Job: `route-review`](#job-route-review)
-    - [5.9 Sync squad labels workflow (`sync-squad-labels.yml`)](#59-sync-squad-labels-workflow-sync-squad-labelsyml)
-      - [Job: `sync-labels`](#job-sync-labels)
   - [6. Secrets and variables](#6-secrets-and-variables)
 
 ---
@@ -72,8 +62,7 @@ Both layers rely on the same shared Python validation scripts located in `.githu
 
 ```
 .github/
-├── agents/
-│   └── squad.agent.md        # GitHub Copilot coding agent instructions
+├── agents/                   # GitHub Copilot coding agent instructions
 ├── hooks/
 │   ├── pre-commit            # Runs before a commit is created
 │   ├── commit-msg            # Validates the commit message format
@@ -90,12 +79,7 @@ Both layers rely on the same shared Python validation scripts located in `.githu
 │   ├── ci.yml                # Continuous Integration on every push / PR
 │   ├── deploy.yml            # Build and publish artifacts on version tags
 │   ├── dev-to-production.yml # Merge dev → main, tag, mirror
-│   ├── docs-to-wiki.yml      # Sync docs/ to GitHub Wiki on push to main
-│   ├── squad-issue-assign.yml       # Assign issues to squad members via labels
-│   ├── squad-label-cleaner.yml      # Enforce label namespace mutual exclusivity
-│   ├── squad-pull-request-review.yml # Auto-route PR reviews to domain experts
-│   ├── squad-triage.yml             # Triage new issues via the Lead agent
-│   └── sync-squad-labels.yml        # Sync squad member labels from team roster
+│   └── docs-to-wiki.yml      # Sync docs/ to GitHub Wiki on push to main
 ├── dependabot.yml            # Dependabot configuration
 ├── keywords.txt              # Allowed types for branch names and commit messages
 └── pull_request_template.md  # Default pull request description template
@@ -322,10 +306,7 @@ All workflows are in `.github/workflows/`. They share the following common confi
 - `GITHUB_ACTIONS: true` is set as an environment variable so validation scripts output GitHub-formatted annotations.
 - **Concurrency** is configured per workflow and branch: a new run cancels any in-progress run for the same branch (where applicable).
 
-The project has two categories of workflows:
-
-- **Core workflows** (`ci.yml`, `deploy.yml`, `dev-to-production.yml`, `docs-to-wiki.yml`): manage code quality, builds, releases, and documentation.
-- **Squad workflows** (`squad-triage.yml`, `squad-issue-assign.yml`, `squad-label-cleaner.yml`, `squad-pull-request-review.yml`, `sync-squad-labels.yml`): automate issue triage, assignment, and label management using the squad agent system defined in `.squad/team.md`.
+The project's workflows (`ci.yml`, `deploy.yml`, `dev-to-production.yml`, `docs-to-wiki.yml`) manage code quality, builds, releases, and documentation.
 
 ### 5.1 CI workflow (`ci.yml`)
 
@@ -546,93 +527,6 @@ ascension-staging-to-main (success)
    (generate + push wiki)
 ```
 
-### 5.5 Squad triage workflow (`squad-triage.yml`)
-
-**Name:** `ascension-squad-triage`
-**Triggers:** `issues` event — `labeled` type, only when the label `squad` is applied.
-
-#### Job: `triage`
-
-Reads the team roster from `.squad/team.md` (falls back to `.ai-team/team.md`) and posts a triage comment that mentions all squad members. If `@copilot` is on the team, it analyses the issue title and body against the configured capability keywords (`good fit` / `needs review` / `not suitable`) and includes a routing recommendation.
-
-| Step                        | Description                                              |
-| --------------------------- | -------------------------------------------------------- |
-| Checkout                    | Checks out the repository                                |
-| Triage issue via Lead agent | Runs a GitHub Script that parses the roster and comments |
-
-### 5.6 Squad issue assign workflow (`squad-issue-assign.yml`)
-
-**Name:** `ascension-squad-issue-assign`
-**Triggers:** `issues` event — `labeled` type, only for labels starting with `squad:`.
-
-#### Job: `assign-work`
-
-Reads the team roster, finds the member matching the applied `squad:<member>` label, and posts an assignment comment. If the member is `copilot`, the comment uses a special coding-agent format.
-
-| Step                                      | Description                                                       |
-| ----------------------------------------- | ----------------------------------------------------------------- |
-| Checkout                                  | Checks out the repository                                         |
-| Identify assigned member and trigger work | Runs a GitHub Script that parses the roster and posts the comment |
-
-### 5.7 Squad label cleaner workflow (`squad-label-cleaner.yml`)
-
-**Name:** `ascension-squad-label-cleaner`
-**Triggers:** `issues` event — `labeled` type, for any label.
-
-#### Job: `clean_labels`
-
-Enforces mutual exclusivity within the following label namespaces: `go:`, `release:`, `type:`, and `priority:`. When a new label in one of these namespaces is applied, any previously existing label from the same namespace is automatically removed. Additional side-effects:
-
-- Applying `go:yes` auto-applies `release:backlog` if no `release:` label is present.
-- Applying `go:no` removes all existing `release:` labels.
-
-| Step                        | Description                                                  |
-| --------------------------- | ------------------------------------------------------------ |
-| Checkout                    | Checks out the repository                                    |
-| Enforce mutual exclusivity  | Runs a GitHub Script that removes conflicting labels         |
-
-### 5.8 Squad pull request review workflow (`squad-pull-request-review.yml`)
-
-**Name:** `ascension-squad-pull-request-review`
-**Triggers:** `pull_request` event — `opened`, `synchronize`, `reopened`.
-
-#### Job: `route-review`
-
-Analyses the files changed in the PR and applies `squad:<agent>` labels to route the review to the appropriate domain expert(s). If files span more than one domain, `squad:eric` (Architecture / Lead) is added as an additional reviewer.
-
-Routing table:
-
-| Path pattern                                     | Agent       | Domain              |
-| ------------------------------------------------ | ----------- | ------------------- |
-| `apps/ai/**`                                     | `quentin`   | AI / Python         |
-| `apps/server/**`                                 | `renaud`    | Rust / API          |
-| `apps/mobile/**`                                 | `romaric`   | Flutter / Mobile    |
-| `.github/**`, `docker-compose.yml`, `Dockerfile` | `arthur`    | DevOps / CI         |
-| `docs/**`                                        | `darius`    | Documentation       |
-| `**/test(s)/**`                                  | `ridjan`    | Testing             |
-| `**/migrations/**`, RabbitMQ/MinIO config        | `alexandra` | Database / Infra    |
-| Multi-domain changes                             | `eric`      | Architecture / Lead |
-
-| Step                                  | Description       Mais Ralph go reste pertinent si tu veux une analyse de code                                        |
-| ------------------------------------- | --------------------------------------------------------- |
-| Analyze PR and assign squad reviewers | Runs a GitHub Script that routes files, applies labels, and posts/updates one routing comment plus one dedicated comment per impacted squad agent |
-
-### 5.9 Sync squad labels workflow (`sync-squad-labels.yml`)
-
-**Name:** `ascension-sync-squad-labels`
-**Triggers:**
-- `push` touching `.squad/team.md` or `.ai-team/team.md`.
-- Manual dispatch (`workflow_dispatch`).
-
-#### Job: `sync-labels`
-
-Parses the team roster and ensures all `squad:<member>` labels exist in the repository with the correct colour and description. Also creates or updates the static `go:`, `release:`, `type:`, and `priority:` label sets.
-
-| Step                          | Description                                                       |
-| ----------------------------- | ----------------------------------------------------------------- |
-| Checkout                      | Checks out the repository                                         |
-| Parse roster and sync labels  | Runs a GitHub Script that creates/updates labels from the roster  |
-
 ---
 
 ## 6. Secrets and variables
@@ -648,5 +542,3 @@ The following secrets and variables must be configured in the GitHub repository 
 | `MIRROR_REPOSITORY_URL` | Variable | `staging-to-main.yml`      | Comma-separated list of target repositories to mirror to (e.g. `repo1,repo2,repo3`) |
 
 > ℹ️ `GITHUB_TOKEN` is automatically provided by GitHub Actions and does not need to be configured manually.
-
-> ℹ️ The squad workflows (`squad-triage.yml`, `squad-issue-assign.yml`, `squad-label-cleaner.yml`, `squad-pull-request-review.yml`, `sync-squad-labels.yml`) rely on `GITHUB_TOKEN` with the permissions declared in their respective workflow files (`issues: write`, `pull-requests: write`, `contents: read`). No additional secrets are required.
