@@ -28,6 +28,7 @@ tasks:
     inputs:
       - 'lib/**/*'
       - 'test/**/*'
+      - 'assets/**/*'
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'analysis_options.yaml'
@@ -41,6 +42,7 @@ tasks:
     inputs:
       - 'lib/**/*'
       - 'test/**/*'
+      - 'assets/**/*'
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'analysis_options.yaml'
@@ -52,6 +54,7 @@ tasks:
     args: ['build', 'apk', '--dart-define=BACKEND_URL=${BACKEND_URL}']
     inputs:
       - 'lib/**/*'
+      - 'assets/**/*'
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'android/**/*'
@@ -67,6 +70,7 @@ tasks:
     args: ['build', 'ios', '--no-codesign', '--dart-define=BACKEND_URL=${BACKEND_URL}']
     inputs:
       - 'lib/**/*'
+      - 'assets/**/*'
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'ios/**/*'
@@ -82,6 +86,7 @@ tasks:
     args: ['scripts/build.sh']
     inputs:
       - 'lib/**/*'
+      - 'assets/**/*'
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'android/**/*'
@@ -100,8 +105,10 @@ tasks:
     inputs:
       - 'lib/**/*'
       - 'test/**/*'
+      - 'assets/**/*'
       - 'pubspec.yaml'
       - 'pubspec.lock'
+      - 'analysis_options.yaml'
     deps:
       - 'install'
 

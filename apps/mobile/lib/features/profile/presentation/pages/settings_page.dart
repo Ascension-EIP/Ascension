@@ -399,127 +399,24 @@ class _SwitchRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final typo = context.theme.typography;
-    final colors = context.theme.colors;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: typo.body.md.copyWith(fontWeight: FontWeight.w500),
-              ),
-              Text(
-                subtitle,
-                style: typo.body.xs.copyWith(color: colors.mutedForeground),
-              ),
-            ],
-          ),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Semantics(
+        container: true,
+        label: title,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            ...children,
+          ],
         ),
-        const SizedBox(width: 12),
-        FSwitch(value: value, onChange: onChanged),
-      ],
-    );
-  }
-}
-
-class _SelectRow<T> extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final T value;
-  final Map<T, String> options;
-  final ValueChanged<T> onChanged;
-
-  const _SelectRow({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    required this.options,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final typo = context.theme.typography;
-    final colors = context.theme.colors;
-    final selectedLabel = options[value] ?? '';
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: typo.body.md.copyWith(fontWeight: FontWeight.w500),
-              ),
-              Text(
-                subtitle,
-                style: typo.body.xs.copyWith(color: colors.mutedForeground),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        FButton(
-          variant: .outline,
-          onPress: () {
-            showFSheet<void>(
-              context: context,
-              side: FLayout.btt,
-              builder: (ctx) => SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: typo.display.lg.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      ...options.entries.map((entry) {
-                        final isSelected = entry.key == value;
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: FButton(
-                              variant: isSelected ? .primary : .secondary,
-                              onPress: () {
-                                Navigator.pop(ctx);
-                                onChanged(entry.key);
-                              },
-                              child: Text(entry.value),
-                            ),
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(selectedLabel),
-              const SizedBox(width: 4),
-              const Icon(Icons.arrow_drop_down, size: 18),
-            ],
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

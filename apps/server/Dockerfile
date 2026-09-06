@@ -1,4 +1,4 @@
-FROM golang:1.25-alpine AS go-builder
+FROM golang:1.27-alpine AS go-builder
 WORKDIR /app
 
 COPY go.mod go.sum ./
@@ -13,7 +13,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 	cmd/server/main.go
 
 
-FROM alpine:3.20
+FROM alpine:3.24
 WORKDIR /app
 
 RUN addgroup -g 1000 bob && adduser -D -u 1000 -G bob bob

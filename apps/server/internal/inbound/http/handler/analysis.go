@@ -1,8 +1,8 @@
-// @date 2026-03-18
+// @date 2026-09-06
 // @file analysis.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package handler
@@ -41,7 +41,7 @@ func (h *AnalyseHandler) Create(c *gin.Context) {
 		return
 	}
 
-	analysis, err := h.s.TriggerAnalysis(c.Request.Context(), req.VideoID, userID)
+	analysis, err := h.s.TriggerAnalysis(c.Request.Context(), req.VideoID, userID, req.Type)
 	if err != nil {
 		utils.Error(c, err, h.l)
 		return

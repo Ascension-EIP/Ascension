@@ -1,8 +1,8 @@
-// @date 2026-03-18
+// @date 2026-09-06
 // @file video.go
-// @brief File description.
+// @brief Database transfer object for videos.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package dto
@@ -20,6 +20,8 @@ type Video struct {
 	Bucket    string    `db:"bucket"`
 	ObjectKey string    `db:"object_key"`
 	Status    string    `db:"status"`
+	Duration  *int64    `db:"duration"`
+	Size      *int64    `db:"size"`
 	ExpiresAt time.Time `db:"expires_at"`
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
@@ -32,6 +34,8 @@ func (v *Video) ToVideoInfo() *model.VideoInfo {
 		Bucket:    v.Bucket,
 		ObjectKey: v.ObjectKey,
 		Status:    model.VideoStatus(v.Status),
+		Duration:  v.Duration,
+		Size:      v.Size,
 		ExpiresAt: v.ExpiresAt,
 	}
 }

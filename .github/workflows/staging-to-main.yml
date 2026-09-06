@@ -136,56 +136,58 @@ jobs:
             --notes-file RELEASE_NOTES.md
   #############################################################################
 
-  ########################## MIRROR REPOSITORY ################################
-  mirror_repository:
+  ########################## PREPARE MIRROR MATRIX ############################
+  prepare_mirror_matrix:
     runs-on: ubuntu-latest
     needs: create_tag
     if: github.repository == 'Ascension-EIP/Ascension'
+    outputs:
+      matrix: ${{ steps.set_matrix.outputs.matrix }}
 
     ######################## STEPS ############################################
     steps:
-      - name: Generate token
-        id: generate_token
-        uses: actions/create-github-app-token@v3
-        with:
-          client-id: ${{ secrets.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
-      - name: Checkout main
-        uses: actions/checkout@v7
-        with:
-          token: ${{ steps.generate_token.outputs.token }}
-          fetch-depth: 0
-          ref: main
-
-      - name: Mirror to external repositories
+      - name: Parse mirror repository URLs
+        id: set_matrix
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.MIRROR_SSH_KEY }}
           MIRROR_REPOS: ${{ vars.MIRROR_REPOSITORY_URL }}
         run: |
           if [ -z "$MIRROR_REPOS" ]; then
-            echo "No mirror repository specified in VARS. Skipping."
+            echo "No mirror repository specified in VARS."
+            echo "matrix=[]" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null || true
+          JSON=$(echo "$MIRROR_REPOS" | jq -R -c '
+            split(",") 
+            | map(gsub("^\\s+|\\s+$"; "")) 
+            | map(select(length > 0)) 
+            | map(if (startswith("git@") or startswith("ssh://") or startswith("https://") or startswith("http://")) then . else "git@github.com:" + . + ".git" end)
+          ')
+          echo "matrix=$JSON" >> "$GITHUB_OUTPUT"
+  #############################################################################
 
-          IFS=',' read -ra REPOS <<< "$MIRROR_REPOS"
-          for repo in "${REPOS[@]}"; do
-            repo=$(echo "$repo" | xargs)
-            if [ -n "$repo" ]; then
-              if [[ "$repo" != git@* && "$repo" != ssh://* && "$repo" != https://* && "$repo" != http://* ]]; then
-                target_url="git@github.com:${repo}.git"
-              else
-                target_url="$repo"
-              fi
-              echo "Mirroring to $target_url..."
-              git push --prune "$target_url" "+refs/heads/*:refs/heads/*" "+refs/tags/*:refs/tags/*"
-            fi
-          done
+  ########################## MIRROR REPOSITORY ################################
+  mirror_repository:
+    runs-on: ubuntu-latest
+    needs: prepare_mirror_matrix
+    if: github.repository == 'Ascension-EIP/Ascension' && needs.prepare_mirror_matrix.outputs.matrix != '[]' && needs.prepare_mirror_matrix.outputs.matrix != ''
+    strategy:
+      matrix:
+        target_repo: ${{ fromJson(needs.prepare_mirror_matrix.outputs.matrix) }}
+      fail-fast: false
+
+    ######################## STEPS ############################################
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Mirror to external repository
+        uses: pixta-dev/repository-mirroring-action@v1
+        with:
+          target_repo_url: ${{ matrix.target_repo }}
+          ssh_private_key: ${{ secrets.MIRROR_SSH_KEY }}
   #############################################################################
 
 ###############################################################################

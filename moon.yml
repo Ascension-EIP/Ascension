@@ -3,6 +3,13 @@ tasks:
     script: |
       git config core.hooksPath .github/hooks
       git config commit.template .gitmessage
+      if [ -z "$GITHUB_ACTIONS" ] && [ -z "$CI" ]; then
+        go -C apps/server run ./cmd/migrate
+      fi
+    options:
+      cache: false
+      envFile: true
+
 
   db-up:
     command: "docker"
@@ -38,9 +45,9 @@ tasks:
     command: "python3"
     args: ["scripts/manage_headers.py"]
     inputs:
-      - "apps/**/*.go"
-      - "apps/**/*.dart"
-      - "apps/**/*.py"
+      - "**/*.go"
+      - "**/*.dart"
+      - "**/*.py"
       - "scripts/manage_headers.py"
 
   sonar-up:

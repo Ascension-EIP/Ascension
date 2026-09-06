@@ -277,8 +277,8 @@ class _VideoUploadState extends State<VideoUpload> {
         completedAt: completedAtRaw != null
             ? DateTime.tryParse(completedAtRaw)
             : null,
-        processingTimeMs: result['processing_time_ms'] as int?,
-        resultJson: result['result_json'] as String?,
+        processingTimeMs: result['processing_time'] as int?,
+        resultJson: result['result'] as String?,
         status: result['status'] as String? ?? 'unknown',
       );
       await AnalysisHistoryService().saveEntry(userId, historyEntry);
@@ -632,8 +632,8 @@ class _VideoUploadState extends State<VideoUpload> {
     final typo = context.theme.typography;
     final result = _analysisResult;
     final status = result?['status'] as String? ?? '—';
-    final processingMs = result?['processing_time_ms'] as int?;
-    final resultJson = result?['result_json'] as String?;
+    final processingMs = result?['processing_time'] as int?;
+    final resultJson = result?['result'] as String?;
     final hints = result?['hints'] as String?;
 
     // Parse frame count from JSON if available

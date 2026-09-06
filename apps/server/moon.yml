@@ -20,13 +20,20 @@ tasks:
       go mod tidy
     options:
       cache: false
+
+  migrate:
+    command: "go"
+    args: ["run", "./cmd/migrate"]
+    options:
+      cache: false
+      envFile: true
+
   
   format:
     command: "go"
     args: ["fmt", "./..."]
     inputs:
-      - "cmd/**/*"
-      - "internal/**/*"
+      - "**/*.go"
       - "go.mod"
       - "go.sum"
     deps:
@@ -37,8 +44,7 @@ tasks:
     command: "go"
     args: ["vet", "./..."]
     inputs:
-      - "cmd/**/*"
-      - "internal/**/*"
+      - "**/*.go"
       - "go.mod"
       - "go.sum"
     deps:
@@ -48,8 +54,7 @@ tasks:
     command: "go"
     args: ["build", "-o", "bin/server", "./cmd/server"]
     inputs:
-      - "cmd/**/*"
-      - "internal/**/*"
+      - "**/*.go"
       - "go.mod"
       - "go.sum"
     outputs:
@@ -61,10 +66,10 @@ tasks:
     command: "go"
     args: ["test", "./..."]
     inputs:
-      - "cmd/**/*"
-      - "internal/**/*"
+      - "**/*.go"
       - "go.mod"
       - "go.sum"
+      - "migrations/**/*"
     deps:
       - "install"
 

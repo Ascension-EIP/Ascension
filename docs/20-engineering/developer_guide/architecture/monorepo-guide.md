@@ -145,7 +145,7 @@ projects:
 # https://moonrepo.dev/docs/config/toolchain
 
 go:
-  version: '1.25.5'
+  version: '1.26.0'
 
 python:
   version: '3.11'
@@ -407,7 +407,7 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0   # required for affected detection
 
@@ -432,7 +432,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install moon
         run: curl -fsSL https://moonrepo.dev/install/moon.sh | bash

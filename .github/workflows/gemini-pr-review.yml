@@ -1,0 +1,65 @@
+############################ CONFIGURATION ####################################
+name: ascension-gemini-pr-review
+
+on:
+  pull_request:
+    types: [opened, reopened]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      pull_number:
+        description: "PR number to review"
+        required: true
+        type: string
+
+permissions:
+  pull-requests: write
+  contents: read
+  issues: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || github.run_id }}
+  cancel-in-progress: true
+###############################################################################
+
+############################ JOBS #############################################
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    # Conditions:
+    # 1. pull_request: target (base) branch is NOT main or NOT dependabot PR
+    # 2. issue_comment: comment is on a PR and starts with /gemini-review or /review
+    # 3. workflow_dispatch: always run
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.base.ref != 'main' && !startsWith(github.head_ref, 'dependabot/')) ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request && (startsWith(github.event.comment.body, '/gemini-review') || startsWith(github.event.comment.body, '/review'))) ||
+      (github.event_name == 'workflow_dispatch')
+
+    ######################## STEPS ############################################
+    steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout repo
+        uses: actions/checkout@v7
+        with:
+          token: ${{ steps.generate_token.outputs.token || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Run Gemini PR Review
+        run: .github/scripts/gemini_pr_review
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token || secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PR_NUMBER: ${{ github.event.inputs.pull_number }}
+###############################################################################
