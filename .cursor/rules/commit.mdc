@@ -1,1 +1,0 @@
-../../docs/20-engineering/ai/commandes/commit.md
