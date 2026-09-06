@@ -1,8 +1,8 @@
-// @date 2026-03-20
+// @date 2026-09-06
 // @file video.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package service
@@ -78,6 +78,7 @@ func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo *model.FileInf
 			Bucket:    s.storage.VideoBucket(),
 			ObjectKey: objectKey,
 			Status:    model.VideoStatusPending,
+			Size:      &fileInfo.Size,
 			ExpiresAt: time.Now().Add(s.storage.UploadExp()),
 		}); err != nil {
 			return err

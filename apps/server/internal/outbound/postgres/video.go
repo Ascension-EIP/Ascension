@@ -1,8 +1,8 @@
-// @date 2026-03-20
+// @date 2026-09-06
 // @file video.go
-// @brief File description.
+// @brief PostgreSQL repository implementation for videos.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package postgres
@@ -26,8 +26,8 @@ func (r *PostgresRepository) CreateVideoInfo(ctx context.Context, info *model.Vi
 	tx := r.getTx(ctx)
 
 	_, err := tx.Exec(ctx,
-		"INSERT INTO videos (id, user_id, bucket, object_key, status, expires_at) VALUES ($1, $2, $3, $4, $5, $6)",
-		info.ID, info.UserID, info.Bucket, info.ObjectKey, info.Status, info.ExpiresAt)
+		"INSERT INTO videos (id, user_id, bucket, object_key, status, duration, size, expires_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+		info.ID, info.UserID, info.Bucket, info.ObjectKey, info.Status, info.Duration, info.Size, info.ExpiresAt)
 	if err != nil {
 		return err
 	}
@@ -89,6 +89,16 @@ func (r *PostgresRepository) UpdateVideoInfo(ctx context.Context, partialInfo *m
 	if partialInfo.Status != nil {
 		setParts = append(setParts, fmt.Sprintf("status=$%d", argID))
 		args = append(args, *partialInfo.Status)
+		argID++
+	}
+	if partialInfo.Duration != nil {
+		setParts = append(setParts, fmt.Sprintf("duration=$%d", argID))
+		args = append(args, *partialInfo.Duration)
+		argID++
+	}
+	if partialInfo.Size != nil {
+		setParts = append(setParts, fmt.Sprintf("size=$%d", argID))
+		args = append(args, *partialInfo.Size)
 		argID++
 	}
 	if partialInfo.ExpiresAt != nil {
