@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-09-06
 # @file database.py
 # @brief PostgreSQL repository for saving analyses results and progress.
 # @project Ascension
@@ -72,8 +72,8 @@ class AnalysisRepository:
         self,
         conn: PgConnection,
         analysis_id: str,
-        result_json: dict[str, Any],
-        processing_time_ms: int,
+        result: dict[str, Any],
+        processing_time: int,
         hints: str | None = None,
     ) -> None:
         """Save successful analysis completion."""
@@ -82,19 +82,19 @@ class AnalysisRepository:
                 cur.execute(
                     """
                     UPDATE analyses
-                       SET status             = 'completed',
-                           result_json        = %s,
-                           hints              = %s,
-                           processing_time_ms = %s,
-                           completed_at       = %s,
-                           progress           = 100,
-                           updated_at         = NOW()
+                       SET status          = 'completed',
+                           result          = %s,
+                           hints           = %s,
+                           processing_time = %s,
+                           completed_at    = %s,
+                           progress        = 100,
+                           updated_at      = NOW()
                      WHERE id = %s
                     """,
                     (
-                        json.dumps(result_json),
+                        json.dumps(result),
                         hints,
-                        processing_time_ms,
+                        processing_time,
                         datetime.now(timezone.utc),
                         analysis_id,
                     ),
@@ -105,7 +105,12 @@ class AnalysisRepository:
             conn.rollback()
             raise DatabaseError(f"Failed to save completed analysis {analysis_id}: {e}") from e
 
-    def mark_failed(self, conn: PgConnection, analysis_id: str) -> None:
+    def mark_failed(
+        self,
+        conn: PgConnection,
+        analysis_id: str,
+        error: str | None = None,
+    ) -> None:
         """Mark analysis as failed."""
         try:
             with conn.cursor() as cur:
@@ -113,13 +118,15 @@ class AnalysisRepository:
                     """
                     UPDATE analyses
                        SET status     = 'failed',
+                           error      = %s,
                            updated_at = NOW()
                      WHERE id = %s
                     """,
-                    (analysis_id,),
+                    (error, analysis_id),
                 )
             conn.commit()
             logger.info("Marked analysis %s as failed in PostgreSQL", analysis_id)
         except Exception as e:
             conn.rollback()
             logger.warning("Could not mark analysis %s as failed: %s", analysis_id, e)
+

@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-09-06
 # @file coordinator.py
 # @brief Job coordinator orchestrating storage, AI pipelines, database, and messaging.
 # @project Ascension
@@ -105,8 +105,8 @@ class JobCoordinator:
             self.db_repo.save_completed(
                 conn=db_conn,
                 analysis_id=job.analysis_id,
-                result_json=analysis_result,
-                processing_time_ms=processing_ms,
+                result=analysis_result,
+                processing_time=processing_ms,
                 hints=hints,
             )
 
@@ -129,7 +129,7 @@ class JobCoordinator:
             try:
                 if db_conn is None:
                     db_conn = self.db_repo.get_connection()
-                self.db_repo.mark_failed(db_conn, job.analysis_id)
+                self.db_repo.mark_failed(db_conn, job.analysis_id, error=str(err))
             except Exception as db_err:
                 logger.error("Failed to mark analysis %s as failed: %s", job.analysis_id, db_err)
 
