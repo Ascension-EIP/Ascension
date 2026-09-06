@@ -20,6 +20,14 @@ tasks:
       go mod tidy
     options:
       cache: false
+
+  migrate:
+    command: "go"
+    args: ["run", "./cmd/migrate"]
+    options:
+      cache: false
+      envFile: true
+
   
   format:
     command: "go"

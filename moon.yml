@@ -3,8 +3,10 @@ tasks:
     script: |
       git config core.hooksPath .github/hooks
       git config commit.template .gitmessage
+      go -C apps/server run ./cmd/migrate
     options:
       cache: false
+      envFile: true
 
 
   db-up:
