@@ -1,62 +1,99 @@
-// @date 2026-09-03
+// @date 2026-09-07
 // @file app_theme.dart
-// @brief File description.
+// @brief Configuration du thème Forui et des adaptations d'accessibilité.
 // @project Ascension
 // @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';
-import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:forui/forui.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Pure shadcn/ui defaults (zinc) — no app-specific branding.
-  static const ShadColorScheme _darkScheme = ShadZincColorScheme.dark();
-  static const ShadColorScheme _lightScheme = ShadZincColorScheme.light();
+  /// Ascension's brand typeface: Plus Jakarta Sans — a geometric, highly
+  /// legible sans with just enough character to be recognisable, without
+  /// being a novelty display font. Used across both the Material and Forui
+  /// layers so the app reads as one coherent product rather than a
+  /// framework's default look.
+  static String get fontFamily => GoogleFonts.plusJakartaSans().fontFamily!;
 
-  // High contrast keeps the default zinc scheme but pushes background/
-  // foreground/border to pure black/white for maximum contrast.
-  static const ShadColorScheme _highContrastDarkScheme =
-      ShadZincColorScheme.dark(
-        background: Colors.black,
-        foreground: Colors.white,
-        card: Colors.black,
-        cardForeground: Colors.white,
-        popover: Colors.black,
-        popoverForeground: Colors.white,
-        border: Colors.white,
-        input: Colors.white,
-        ring: Colors.white,
-      );
+  static FTypography _typography({
+    required FColors colors,
+    required bool touch,
+  }) {
+    final typeface = FTypeface.inherit(
+      colors: colors,
+      touch: touch,
+      fontFamily: fontFamily,
+    );
+    return FTypography(display: typeface, body: typeface);
+  }
 
-  static const ShadColorScheme _highContrastLightScheme =
-      ShadZincColorScheme.light(
-        background: Colors.white,
-        foreground: Colors.black,
-        card: Colors.white,
-        cardForeground: Colors.black,
-        popover: Colors.white,
-        popoverForeground: Colors.black,
-        border: Colors.black,
-        input: Colors.black,
-        ring: Colors.black,
-      );
+  /// Forui dark theme data
+  static FThemeData foruiDark({required bool highContrast}) {
+    final colors = highContrast
+        ? FColors.neutralDark.copyWith(
+            background: Colors.black,
+            foreground: Colors.white,
+            card: Colors.black,
+            border: Colors.white,
+          )
+        : FColors.neutralDark;
+    return FThemeData(
+      colors: colors,
+      touch: true,
+      typography: _typography(colors: colors, touch: true),
+    );
+  }
 
-  /// Shadcn theme used for the dark [ShadApp.router] theme.
-  static ShadThemeData shadDark({required bool highContrast}) => ShadThemeData(
-    brightness: Brightness.dark,
-    colorScheme: highContrast ? _highContrastDarkScheme : _darkScheme,
-  );
+  /// Forui light theme data
+  static FThemeData foruiLight({required bool highContrast}) {
+    final colors = highContrast
+        ? FColors.neutralLight.copyWith(
+            background: Colors.white,
+            foreground: Colors.black,
+            card: Colors.white,
+            border: Colors.black,
+          )
+        : FColors.neutralLight;
+    return FThemeData(
+      colors: colors,
+      touch: true,
+      typography: _typography(colors: colors, touch: true),
+    );
+  }
 
-  /// Shadcn theme used for the light [ShadApp.router] theme.
-  static ShadThemeData shadLight({required bool highContrast}) => ShadThemeData(
-    brightness: Brightness.light,
-    colorScheme: highContrast ? _highContrastLightScheme : _lightScheme,
-  );
+  /// Material ThemeData used by [MaterialApp.router]
+  static ThemeData materialBase(
+    Brightness brightness, {
+    required bool highContrast,
+  }) {
+    final isDark = brightness == Brightness.dark;
+    final colorScheme = ColorScheme(
+      brightness: brightness,
+      primary: isDark ? Colors.white : Colors.black,
+      onPrimary: isDark ? Colors.black : Colors.white,
+      secondary: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF71717A),
+      onSecondary: isDark ? Colors.black : Colors.white,
+      error: const Color(0xFFEF4444),
+      onError: Colors.white,
+      surface: isDark
+          ? (highContrast ? Colors.black : const Color(0xFF09090B))
+          : (highContrast ? Colors.white : const Color(0xFFFAFAFA)),
+      onSurface: isDark ? Colors.white : Colors.black,
+    );
 
-  /// Applies the accessibility-driven tweaks (dyslexia spacing, simplified
-  /// density, reduced motion, high-contrast borders) on top of the Material
-  /// [ThemeData] that [ShadApp.router] derives automatically from the shad
-  /// color scheme above.
+    return ThemeData(
+      useMaterial3: true,
+      brightness: brightness,
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: colorScheme.surface,
+      fontFamily: fontFamily,
+    );
+  }
+
+  /// Applies accessibility tweaks (dyslexia font spacing, simplified density,
+  /// reduced motion transitions) on top of the base Material ThemeData.
   static ThemeData applyAccessibility(
     ThemeData base, {
     required bool highContrast,
@@ -100,28 +137,6 @@ class AppTheme {
         elevation: 0,
         titleTextStyle: base.appBarTheme.titleTextStyle?.copyWith(
           fontWeight: FontWeight.w600,
-        ),
-      ),
-      inputDecorationTheme: base.inputDecorationTheme.copyWith(
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colorScheme.primary,
-            width: highContrast ? 3 : 2,
-          ),
-        ),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: colorScheme.primary,
-          foregroundColor: colorScheme.onPrimary,
-          minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: highContrast
-                ? BorderSide(color: colorScheme.onSurface, width: 1.4)
-                : BorderSide.none,
-          ),
         ),
       ),
       textTheme: textTheme,

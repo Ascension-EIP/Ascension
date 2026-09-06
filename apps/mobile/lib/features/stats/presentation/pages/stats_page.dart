@@ -1,18 +1,22 @@
-// @date 2026-09-03
+// @date 2026-09-07
 // @file stats_page.dart
-// @brief File description.
+// @brief Page des statistiques d'analyses avec composants Forui.
 // @project Ascension
 // @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:forui/forui.dart';
 import 'package:mobile/core/auth/auth_service.dart';
 import 'package:mobile/core/services/analysis_history_service.dart';
+import 'package:mobile/features/stats/presentation/widgets/interactive_activity_chart.dart';
+import 'package:mobile/features/stats/presentation/widgets/interactive_performance_donut.dart';
 import 'package:mobile/features/upload/presentation/pages/analysis_page.dart';
 import 'package:mobile/shared/components/header.dart';
+import 'package:mobile/shared/components/interactive_circular_gauge.dart';
 import 'package:mobile/shared/localization/app_localizations.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 enum _Filter { all, completed, failed }
 
@@ -71,16 +75,42 @@ class _StatsPageState extends State<StatsPage> {
 
   Widget _buildBody() {
     final l10n = AppLocalizations.of(context);
-    final theme = ShadTheme.of(context);
+    final typo = context.theme.typography;
     final history = _history;
 
     if (history == null) {
-      return ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        children: const [
-          SizedBox(height: 200),
-          Center(child: CircularProgressIndicator()),
-        ],
+      final dummy = List.generate(
+        3,
+        (i) => AnalysisHistoryEntry(
+          analysisId: 'placeholder-$i',
+          createdAt: DateTime.now(),
+          status: 'completed',
+          processingTimeMs: 1500,
+          resultJson: '{"frames":[{"pose_detected":true}]}',
+        ),
+      );
+      return Skeletonizer(
+        enabled: true,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+          children: [
+            _PerformanceOverviewHub(history: dummy),
+            const SizedBox(height: 16),
+            InteractiveActivityChart(history: dummy),
+            const SizedBox(height: 24),
+            Text(
+              l10n.t('stats.recentTitle'),
+              style: typo.display.lg.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 12),
+            for (final e in dummy)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _AnalysisCard(entry: e),
+              ),
+          ],
+        ),
       );
     }
 
@@ -90,10 +120,13 @@ class _StatsPageState extends State<StatsPage> {
         children: [
           SizedBox(height: MediaQuery.of(context).size.height * 0.2),
           _EmptyState(
-            icon: Icons.insights_rounded,
-            title: l10n.t('stats.emptyTitle'),
-            subtitle: l10n.t('stats.emptySubtitle'),
-          ),
+                icon: FLucideIcons.chartSpline,
+                title: l10n.t('stats.emptyTitle'),
+                subtitle: l10n.t('stats.emptySubtitle'),
+              )
+              .animate()
+              .fadeIn(duration: 400.ms, curve: Curves.easeOutCubic)
+              .slideY(begin: 0.1, end: 0, curve: Curves.easeOutCubic),
         ],
       );
     }
@@ -104,53 +137,78 @@ class _StatsPageState extends State<StatsPage> {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       children: [
-        _SummaryGrid(history: history),
+        _PerformanceOverviewHub(history: history)
+            .animate()
+            .fadeIn(duration: 400.ms, curve: Curves.easeOutCubic)
+            .slideY(begin: 0.08, end: 0, curve: Curves.easeOutCubic),
         const SizedBox(height: 16),
-        _ActivityChartCard(history: history),
+        InteractiveActivityChart(history: history)
+            .animate()
+            .fadeIn(duration: 400.ms, delay: 100.ms, curve: Curves.easeOutCubic)
+            .slideY(begin: 0.08, end: 0, curve: Curves.easeOutCubic),
         const SizedBox(height: 24),
-        Text(l10n.t('stats.recentTitle'), style: theme.textTheme.h4),
+        Text(
+          l10n.t('stats.recentTitle'),
+          style: typo.display.lg.copyWith(fontWeight: FontWeight.w700),
+        ).animate().fadeIn(
+          duration: 350.ms,
+          delay: 150.ms,
+          curve: Curves.easeOutCubic,
+        ),
         const SizedBox(height: 12),
         _FilterBar(
           value: _filter,
           onChanged: (f) => setState(() => _filter = f),
+        ).animate().fadeIn(
+          duration: 350.ms,
+          delay: 180.ms,
+          curve: Curves.easeOutCubic,
         ),
         const SizedBox(height: 12),
         if (filtered.isEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 24),
             child: _EmptyState(
-              icon: Icons.filter_alt_off_rounded,
+              icon: FLucideIcons.filterX,
               title: l10n.t('stats.emptyFilterTitle'),
               subtitle: l10n.t('stats.emptyFilterSubtitle'),
               compact: true,
             ),
-          )
+          ).animate().fadeIn(duration: 300.ms, curve: Curves.easeOutCubic)
         else
-          ...filtered.map(
-            (e) => Padding(
+          for (int i = 0; i < filtered.length; i++)
+            Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: _AnalysisCard(entry: e),
+              child: _AnalysisCard(entry: filtered[i])
+                  .animate()
+                  .fadeIn(
+                    duration: 350.ms,
+                    delay: (50 * i).ms,
+                    curve: Curves.easeOutCubic,
+                  )
+                  .slideX(begin: 0.06, end: 0, curve: Curves.easeOutCubic),
             ),
-          ),
       ],
     );
   }
 }
 
-// ── Summary grid ──
+// ── Performance overview hub ──
 
-class _SummaryGrid extends StatelessWidget {
+class _PerformanceOverviewHub extends StatelessWidget {
   final List<AnalysisHistoryEntry> history;
-  const _SummaryGrid({required this.history});
+  const _PerformanceOverviewHub({required this.history});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = ShadTheme.of(context);
+    final colors = context.theme.colors;
+    final typo = context.theme.typography;
 
     final total = history.length;
     final completed = history.where((e) => e.isCompleted).toList();
-    final successRate = total == 0 ? 0.0 : completed.length / total * 100;
+    final failed = total - completed.length;
+    final successRate = total == 0 ? 0.0 : (completed.length / total) * 100;
 
     final durations = completed
         .where((e) => e.processingTimeMs != null)
@@ -168,219 +226,99 @@ class _SummaryGrid extends StatelessWidget {
         ? 0.0
         : detectionRates.reduce((a, b) => a + b) / detectionRates.length;
 
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 1.65,
-      children: [
-        _StatCard(
-          icon: Icons.bar_chart_rounded,
-          label: l10n.t('stats.totalAnalyses'),
-          value: '$total',
-          color: theme.colorScheme.primary,
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.card.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: colors.border.withValues(alpha: 0.6),
+          width: 1,
         ),
-        _StatCard(
-          icon: Icons.check_circle_rounded,
-          label: l10n.t('stats.successRate'),
-          value: '${successRate.toStringAsFixed(0)}%',
-          color: _AccentColors.emerald,
-        ),
-        _StatCard(
-          icon: Icons.timer_rounded,
-          label: l10n.t('stats.avgDuration'),
-          value: '${avgDurationS.toStringAsFixed(1)}s',
-          color: _AccentColors.amber,
-        ),
-        _StatCard(
-          icon: Icons.person_search_rounded,
-          label: l10n.t('stats.avgDetection'),
-          value: '${avgDetection.toStringAsFixed(0)}%',
-          color: _AccentColors.sky,
-        ),
-      ],
-    );
-  }
-}
-
-/// Minimal accent palette so summary cards get distinct colors without
-/// depending on the app's single-brand shadcn scheme.
-class _AccentColors {
-  static const emerald = Color(0xFF10B981);
-  static const amber = Color(0xFFF59E0B);
-  static const sky = Color(0xFF0EA5E9);
-}
-
-class _StatCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color color;
-
-  const _StatCard({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = ShadTheme.of(context);
-    return ShadCard(
-      padding: const EdgeInsets.all(14),
+      ),
+      padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(9),
-            ),
-            child: Icon(icon, size: 17, color: color),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            value,
-            style: theme.textTheme.h3.copyWith(fontWeight: FontWeight.w700),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  l10n.t('stats.breakdownTitle'),
+                  style: typo.body.md.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: colors.foreground,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(FLucideIcons.pieChart, size: 18, color: colors.primary),
+            ],
           ),
           const SizedBox(height: 2),
           Text(
-            label,
-            style: theme.textTheme.muted.copyWith(fontSize: 12),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Activity chart ──
-
-class _ActivityChartCard extends StatelessWidget {
-  final List<AnalysisHistoryEntry> history;
-  const _ActivityChartCard({required this.history});
-
-  static const _dayKeys = [
-    'date.day.monday',
-    'date.day.tuesday',
-    'date.day.wednesday',
-    'date.day.thursday',
-    'date.day.friday',
-    'date.day.saturday',
-    'date.day.sunday',
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = ShadTheme.of(context);
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final days = List.generate(7, (i) => today.subtract(Duration(days: 6 - i)));
-
-    final counts = days.map((day) {
-      return history.where((e) {
-        final d = e.createdAt;
-        return d.year == day.year && d.month == day.month && d.day == day.day;
-      }).length;
-    }).toList();
-
-    final maxCount = counts.fold<int>(1, (m, c) => c > m ? c : m);
-
-    return ShadCard(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(l10n.t('stats.activityTitle'), style: theme.textTheme.h4),
-          Text(l10n.t('stats.activitySubtitle'), style: theme.textTheme.muted),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 140,
-            child: BarChart(
-              BarChartData(
-                maxY: (maxCount + 1).toDouble(),
-                alignment: BarChartAlignment.spaceAround,
-                gridData: const FlGridData(show: false),
-                borderData: FlBorderData(show: false),
-                barTouchData: BarTouchData(
-                  touchTooltipData: BarTouchTooltipData(
-                    getTooltipColor: (_) => theme.colorScheme.popover,
-                    getTooltipItem: (group, _, rod, _) => BarTooltipItem(
-                      rod.toY.toInt().toString(),
-                      theme.textTheme.small.copyWith(
-                        color: theme.colorScheme.popoverForeground,
-                      ),
-                    ),
-                  ),
-                ),
-                titlesData: FlTitlesData(
-                  leftTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 28,
-                      getTitlesWidget: (value, _) {
-                        final index = value.toInt();
-                        if (index < 0 || index >= days.length) {
-                          return const SizedBox.shrink();
-                        }
-                        final weekday = days[index].weekday - 1;
-                        final label = l10n.t(_dayKeys[weekday]);
-                        final isToday = index == days.length - 1;
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            label.substring(0, 3),
-                            style: theme.textTheme.small.copyWith(
-                              fontSize: 11,
-                              fontWeight: isToday
-                                  ? FontWeight.w700
-                                  : FontWeight.w400,
-                              color: isToday
-                                  ? theme.colorScheme.foreground
-                                  : theme.colorScheme.mutedForeground,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                barGroups: List.generate(days.length, (i) {
-                  final isToday = i == days.length - 1;
-                  return BarChartGroupData(
-                    x: i,
-                    barRods: [
-                      BarChartRodData(
-                        toY: counts[i].toDouble(),
-                        width: 20,
-                        borderRadius: BorderRadius.circular(6),
-                        color: isToday
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.primary.withValues(alpha: 0.35),
-                      ),
-                    ],
-                  );
-                }),
-              ),
+            l10n.t('stats.hoverHint'),
+            style: typo.body.xs.copyWith(
+              color: colors.mutedForeground,
+              fontSize: 11,
             ),
+          ),
+          const SizedBox(height: 16),
+
+          // Central Interactive Performance Donut
+          InteractivePerformanceDonut(
+            completedCount: completed.length,
+            failedCount: failed,
+          ),
+
+          const SizedBox(height: 20),
+          Divider(color: colors.border.withValues(alpha: 0.3)),
+          const SizedBox(height: 16),
+
+          // Responsive interactive circular gauges row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Expanded(
+                child: InteractiveCircularGauge(
+                  value: total == 0 ? 0.0 : (completed.length / total),
+                  displayValue: '${successRate.toStringAsFixed(0)}%',
+                  label: l10n.t('stats.successRate'),
+                  icon: FLucideIcons.checkCircle,
+                  color: const Color(0xFF10B981),
+                  size: 78,
+                  strokeWidth: 5.5,
+                  tooltipText: '${completed.length}/$total réussies',
+                ),
+              ),
+              Expanded(
+                child: InteractiveCircularGauge(
+                  value: (avgDetection / 100).clamp(0.0, 1.0),
+                  displayValue: '${avgDetection.toStringAsFixed(0)}%',
+                  label: l10n.t('stats.avgDetection'),
+                  icon: FLucideIcons.userCheck,
+                  color: const Color(0xFF0EA5E9),
+                  size: 78,
+                  strokeWidth: 5.5,
+                  tooltipText:
+                      'Précision IA : ${avgDetection.toStringAsFixed(1)}%',
+                ),
+              ),
+              Expanded(
+                child: InteractiveCircularGauge(
+                  value: (avgDurationS / 60).clamp(0.0, 1.0),
+                  displayValue: '${avgDurationS.toStringAsFixed(1)}s',
+                  label: l10n.t('stats.avgDuration'),
+                  icon: FLucideIcons.timer,
+                  color: const Color(0xFFF59E0B),
+                  size: 78,
+                  strokeWidth: 5.5,
+                  tooltipText:
+                      'Durée moyenne : ${avgDurationS.toStringAsFixed(1)}s',
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -398,7 +336,8 @@ class _FilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = ShadTheme.of(context);
+    final colors = context.theme.colors;
+    final typo = context.theme.typography;
 
     final options = [
       (_Filter.all, l10n.t('stats.filterAll')),
@@ -409,7 +348,7 @@ class _FilterBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: theme.colorScheme.muted.withValues(alpha: 0.5),
+        color: colors.muted.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
@@ -422,22 +361,18 @@ class _FilterBar extends StatelessWidget {
                 duration: const Duration(milliseconds: 150),
                 padding: const EdgeInsets.symmetric(vertical: 7),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? theme.colorScheme.background
-                      : Colors.transparent,
+                  color: isSelected ? colors.background : Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
-                  border: isSelected
-                      ? Border.all(color: theme.colorScheme.border)
-                      : null,
+                  border: isSelected ? Border.all(color: colors.border) : null,
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   o.$2,
-                  style: theme.textTheme.small.copyWith(
+                  style: typo.body.sm.copyWith(
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                     color: isSelected
-                        ? theme.colorScheme.foreground
-                        : theme.colorScheme.mutedForeground,
+                        ? colors.foreground
+                        : colors.mutedForeground,
                   ),
                 ),
               ),
@@ -458,121 +393,143 @@ class _AnalysisCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = ShadTheme.of(context);
+    final colors = context.theme.colors;
+    final typo = context.theme.typography;
     final isCompleted = entry.isCompleted;
-    final accent = isCompleted
-        ? theme.colorScheme.primary
-        : theme.colorScheme.destructive;
+    final accent = isCompleted ? const Color(0xFF10B981) : colors.destructive;
     final canOpen = isCompleted && entry.resultJson != null;
 
-    return ShadCard(
-      padding: EdgeInsets.zero,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: canOpen
-            ? () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => AnalysisViewPage(
-                      resultJson: entry.resultJson!,
-                      processingMs: entry.processingTimeMs,
-                      videoFile: null,
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.card.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: colors.border.withValues(alpha: 0.6),
+          width: 1,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: canOpen
+              ? () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => AnalysisViewPage(
+                        resultJson: entry.resultJson!,
+                        processingMs: entry.processingTimeMs,
+                        videoFile: null,
+                      ),
                     ),
-                  ),
-                );
-              }
-            : null,
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  isCompleted
-                      ? Icons.check_rounded
-                      : Icons.priority_high_rounded,
-                  size: 20,
-                  color: accent,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                  );
+                }
+              : null,
+          child: IntrinsicHeight(
+            child: Row(
+              children: [
+                Container(width: 4, color: accent),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Text(
-                            _formatDate(context, entry.createdAt),
-                            style: theme.textTheme.small.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: accent.withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            isCompleted
+                                ? FLucideIcons.check
+                                : FLucideIcons.circleAlert,
+                            size: 18,
+                            color: accent,
                           ),
                         ),
-                        isCompleted
-                            ? ShadBadge(
-                                backgroundColor: accent.withValues(alpha: 0.12),
-                                foregroundColor: accent,
-                                child: Text(l10n.t('stats.statusCompleted')),
-                              )
-                            : ShadBadge.destructive(
-                                backgroundColor: accent.withValues(alpha: 0.12),
-                                foregroundColor: accent,
-                                child: Text(l10n.t('stats.statusFailed')),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      _formatDate(context, entry.createdAt),
+                                      style: typo.body.sm.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color: colors.foreground,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  isCompleted
+                                      ? FBadge(
+                                          child: Text(
+                                            l10n.t('stats.statusCompleted'),
+                                          ),
+                                        )
+                                      : FBadge(
+                                          variant: FBadgeVariant.destructive,
+                                          child: Text(
+                                            l10n.t('stats.statusFailed'),
+                                          ),
+                                        ),
+                                ],
                               ),
+                              if (isCompleted) ...[
+                                const SizedBox(height: 8),
+                                Wrap(
+                                  spacing: 12,
+                                  runSpacing: 4,
+                                  children: [
+                                    if (entry.processingTimeMs != null)
+                                      _MetricPill(
+                                        icon: FLucideIcons.timer,
+                                        label:
+                                            '${(entry.processingTimeMs! / 1000).toStringAsFixed(1)} s',
+                                      ),
+                                    if (entry.frameCount > 0)
+                                      _MetricPill(
+                                        icon: FLucideIcons.fileVideo,
+                                        label: l10n.tr('stats.frames', {
+                                          'count': '${entry.frameCount}',
+                                        }),
+                                      ),
+                                    if (entry.frameCount > 0)
+                                      _MetricPill(
+                                        icon: FLucideIcons.user,
+                                        label: l10n.tr('stats.detectedRate', {
+                                          'rate': entry.detectionRate
+                                              .toStringAsFixed(0),
+                                        }),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        if (canOpen) ...[
+                          const SizedBox(width: 8),
+                          Icon(
+                            FLucideIcons.chevronRight,
+                            size: 18,
+                            color: colors.mutedForeground,
+                          ),
+                        ],
                       ],
                     ),
-                    if (isCompleted) ...[
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 4,
-                        children: [
-                          if (entry.processingTimeMs != null)
-                            _StatChip(
-                              icon: Icons.timer_outlined,
-                              label:
-                                  '${(entry.processingTimeMs! / 1000).toStringAsFixed(1)} s',
-                            ),
-                          if (entry.frameCount > 0)
-                            _StatChip(
-                              icon: Icons.video_file_outlined,
-                              label: l10n.tr('stats.frames', {
-                                'count': '${entry.frameCount}',
-                              }),
-                            ),
-                          if (entry.frameCount > 0)
-                            _StatChip(
-                              icon: Icons.person_outlined,
-                              label: l10n.tr('stats.detectedRate', {
-                                'rate': entry.detectionRate.toStringAsFixed(0),
-                              }),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              if (canOpen) ...[
-                const SizedBox(width: 4),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 20,
-                  color: theme.colorScheme.mutedForeground,
+                  ),
                 ),
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -609,20 +566,21 @@ class _AnalysisCard extends StatelessWidget {
   String _pad(int n) => n.toString().padLeft(2, '0');
 }
 
-class _StatChip extends StatelessWidget {
+class _MetricPill extends StatelessWidget {
   final IconData icon;
   final String label;
-  const _StatChip({required this.icon, required this.label});
+  const _MetricPill({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
-    final theme = ShadTheme.of(context);
+    final colors = context.theme.colors;
+    final typo = context.theme.typography;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 13, color: theme.colorScheme.mutedForeground),
+        Icon(icon, size: 13, color: colors.mutedForeground),
         const SizedBox(width: 4),
-        Text(label, style: theme.textTheme.small.copyWith(fontSize: 12)),
+        Text(label, style: typo.body.xs),
       ],
     );
   }
@@ -645,32 +603,30 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ShadTheme.of(context);
+    final colors = context.theme.colors;
+    final typo = context.theme.typography;
     return Column(
       children: [
         Container(
           width: compact ? 56 : 72,
           height: compact ? 56 : 72,
           decoration: BoxDecoration(
-            color: theme.colorScheme.muted,
+            color: colors.muted,
             shape: BoxShape.circle,
           ),
           child: Icon(
             icon,
             size: compact ? 26 : 32,
-            color: theme.colorScheme.mutedForeground,
+            color: colors.mutedForeground,
           ),
         ),
         const SizedBox(height: 16),
-        Text(
-          title,
-          style: theme.textTheme.p.copyWith(fontWeight: FontWeight.w600),
-        ),
+        Text(title, style: typo.body.md.copyWith(fontWeight: FontWeight.w600)),
         const SizedBox(height: 6),
         Text(
           subtitle,
           textAlign: TextAlign.center,
-          style: theme.textTheme.muted,
+          style: typo.body.sm.copyWith(color: colors.mutedForeground),
         ),
       ],
     );

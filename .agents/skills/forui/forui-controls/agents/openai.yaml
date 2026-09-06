@@ -1,0 +1,7 @@
+interface:
+  display_name: "Forui Controls"
+  short_description: "Manage Forui controls and state"
+  default_prompt: "Use $forui-controls to choose lifted or managed Forui controls."
+
+policy:
+  allow_implicit_invocation: true

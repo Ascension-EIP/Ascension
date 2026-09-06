@@ -1,13 +1,12 @@
-// @date 2026-09-03
+// @date 2026-09-07
 // @file header.dart
-// @brief File description.
+// @brief Composant d'en-tête AppBar compatible Forui.
 // @project Ascension
 // @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';
-import 'package:shadcn_ui/shadcn_ui.dart';
-
+import 'package:forui/forui.dart';
 import '../localization/app_localizations.dart';
 
 class Header extends StatelessWidget implements PreferredSizeWidget {
@@ -36,7 +35,9 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ShadTheme.of(context);
+    final typo = context.theme.typography;
+    final colors = context.theme.colors;
+
     return AppBar(
       centerTitle: centerTitle,
       toolbarHeight: description != null ? 100 : kToolbarHeight,
@@ -49,7 +50,10 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
           children: [
             Text(
               title,
-              style: theme.textTheme.h2.copyWith(color: titleColor),
+              style: typo.display.xl2.copyWith(
+                fontWeight: FontWeight.w700,
+                color: titleColor ?? colors.foreground,
+              ),
               softWrap: true,
               overflow: TextOverflow.visible,
             ),
@@ -58,7 +62,9 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
                 height: 46,
                 child: Text(
                   description!,
-                  style: theme.textTheme.p.copyWith(color: descriptionColor),
+                  style: typo.body.sm.copyWith(
+                    color: descriptionColor ?? colors.mutedForeground,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -70,7 +76,7 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
         ...?actions,
         if (logoPath != null)
           Padding(
-            padding: EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.only(right: 16),
             child: Semantics(
               image: true,
               label: AppLocalizations.of(context).t('common.logoAscension'),

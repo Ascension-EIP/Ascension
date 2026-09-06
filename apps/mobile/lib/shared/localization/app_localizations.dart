@@ -1,4 +1,4 @@
-// @date 2026-09-03
+// @date 2026-09-07
 // @file app_localizations.dart
 // @brief File description.
 // @project Ascension
@@ -156,6 +156,15 @@ class AppLocalizations {
       'stats.filterFailed': 'Échouées',
       'stats.emptyFilterTitle': 'Aucun résultat',
       'stats.emptyFilterSubtitle': 'Aucune analyse ne correspond à ce filtre.',
+      'stats.breakdownTitle': 'Répartition des performances',
+      'stats.successBreakdown': 'Réussies',
+      'stats.failedBreakdown': 'Échouées',
+      'stats.hoverHint':
+          'Touchez ou survolez un diagramme pour afficher les détails',
+      'stats.activeWeekTotal': '{count} analyses cette semaine',
+      'stats.peakDay': 'Pic : {day}',
+      'stats.scoreOverall': 'Score biomécanique',
+      'profile.hoverHint': 'Survolez une jauge pour voir vos métriques',
       'date.todayAt': 'Aujourd\'hui à {time}',
       'date.yesterdayAt': 'Hier à {time}',
       'date.at': '{day} à {time}',
@@ -427,6 +436,14 @@ class AppLocalizations {
       'stats.filterFailed': 'Failed',
       'stats.emptyFilterTitle': 'No results',
       'stats.emptyFilterSubtitle': 'No analysis matches this filter.',
+      'stats.breakdownTitle': 'Performance breakdown',
+      'stats.successBreakdown': 'Successful',
+      'stats.failedBreakdown': 'Failed',
+      'stats.hoverHint': 'Tap or hover a chart to inspect details',
+      'stats.activeWeekTotal': '{count} analyses this week',
+      'stats.peakDay': 'Peak: {day}',
+      'stats.scoreOverall': 'Biomechanical score',
+      'profile.hoverHint': 'Hover a gauge to see your metrics',
       'date.todayAt': 'Today at {time}',
       'date.yesterdayAt': 'Yesterday at {time}',
       'date.at': '{day} at {time}',

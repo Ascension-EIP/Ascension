@@ -1,6 +1,6 @@
-// @date 2026-09-03
+// @date 2026-09-07
 // @file settings_page_accessibility_test.dart
-// @brief File description.
+// @brief Tests unitaires d'accessibilité de SettingsPage avec Forui.
 // @project Ascension
 // @author Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
@@ -8,23 +8,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:forui/forui.dart';
 import 'package:mobile/core/accessibility/accessibility_settings_service.dart';
 import 'package:mobile/features/profile/presentation/pages/settings_page.dart';
 import 'package:mobile/shared/localization/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Widget _buildTestApp() {
-  return const ShadApp(
-    locale: Locale('fr'),
+  return MaterialApp(
+    locale: const Locale('fr'),
     supportedLocales: AppLocalizations.supportedLocales,
-    localizationsDelegates: [
+    localizationsDelegates: const [
       AppLocalizations.delegate,
       GlobalMaterialLocalizations.delegate,
       GlobalWidgetsLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,
     ],
-    home: SettingsPage(),
+    home: FTheme(
+      data: FThemeData(colors: FColors.neutralLight, touch: true),
+      child: const FToaster(child: FTooltipGroup(child: SettingsPage())),
+    ),
   );
 }
 
@@ -83,7 +86,7 @@ void main() {
         .first;
     final contrastSwitch = find.descendant(
       of: contrastRow,
-      matching: find.byType(ShadSwitch),
+      matching: find.byType(FSwitch),
     );
     await tester.tap(contrastSwitch);
     await tester.pumpAndSettle();

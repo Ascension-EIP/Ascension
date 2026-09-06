@@ -1,0 +1,4 @@
+interface:
+  display_name: "Forui Widget Previews"
+  short_description: "Preview Forui widgets in Flutter Web"
+  default_prompt: "Use $forui-widget-previews to add Flutter Widget Previewer coverage for a Forui component."

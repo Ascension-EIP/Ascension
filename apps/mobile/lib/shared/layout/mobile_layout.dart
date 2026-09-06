@@ -1,13 +1,12 @@
-// @date 2026-09-03
+// @date 2026-09-07
 // @file mobile_layout.dart
-// @brief File description.
+// @brief Layout principal mobile avec barre de navigation Forui.
 // @project Ascension
 // @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:forui/forui.dart';
 import 'package:mobile/core/accessibility/accessibility_settings_service.dart';
 import 'package:mobile/features/home/presentation/pages/home_page.dart';
 import 'package:mobile/features/upload/presentation/pages/upload_page.dart';
@@ -33,26 +32,10 @@ class _MobileLayoutState extends State<MobileLayout> {
   ];
 
   static const List<_NavItemData> _items = [
-    _NavItemData(
-      icon: CupertinoIcons.house,
-      selectedIcon: CupertinoIcons.house_fill,
-      labelKey: 'nav.home',
-    ),
-    _NavItemData(
-      icon: CupertinoIcons.cloud_upload,
-      selectedIcon: CupertinoIcons.cloud_upload_fill,
-      labelKey: 'nav.upload',
-    ),
-    _NavItemData(
-      icon: CupertinoIcons.graph_square,
-      selectedIcon: CupertinoIcons.graph_square_fill,
-      labelKey: 'nav.stats',
-    ),
-    _NavItemData(
-      icon: CupertinoIcons.person,
-      selectedIcon: CupertinoIcons.person_solid,
-      labelKey: 'nav.profile',
-    ),
+    _NavItemData(icon: FLucideIcons.house, labelKey: 'nav.home'),
+    _NavItemData(icon: FLucideIcons.cloudUpload, labelKey: 'nav.upload'),
+    _NavItemData(icon: FLucideIcons.chartColumn, labelKey: 'nav.stats'),
+    _NavItemData(icon: FLucideIcons.user, labelKey: 'nav.profile'),
   ];
 
   @override
@@ -62,7 +45,29 @@ class _MobileLayoutState extends State<MobileLayout> {
     return Scaffold(
       body: FocusTraversalGroup(
         policy: OrderedTraversalPolicy(),
-        child: IndexedStack(index: _currentIndex, children: _pages),
+        child: settings.reducedMotion
+            ? IndexedStack(index: _currentIndex, children: _pages)
+            : AnimatedSwitcher(
+                duration: const Duration(milliseconds: 280),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, 0.02),
+                        end: Offset.zero,
+                      ).animate(animation),
+                      child: child,
+                    ),
+                  );
+                },
+                child: KeyedSubtree(
+                  key: ValueKey<int>(_currentIndex),
+                  child: _pages[_currentIndex],
+                ),
+              ),
       ),
       bottomNavigationBar: _CustomNavBar(
         currentIndex: _currentIndex,
@@ -76,14 +81,9 @@ class _MobileLayoutState extends State<MobileLayout> {
 
 class _NavItemData {
   final IconData icon;
-  final IconData selectedIcon;
   final String labelKey;
 
-  const _NavItemData({
-    required this.icon,
-    required this.selectedIcon,
-    required this.labelKey,
-  });
+  const _NavItemData({required this.icon, required this.labelKey});
 }
 
 class _CustomNavBar extends StatelessWidget {
@@ -101,11 +101,11 @@ class _CustomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = ShadTheme.of(context).colorScheme;
+    final colors = context.theme.colors;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colorScheme.background,
-        border: Border(top: BorderSide(color: colorScheme.border)),
+        color: colors.background,
+        border: Border(top: BorderSide(color: colors.border)),
       ),
       child: SafeArea(
         child: SizedBox(
@@ -179,16 +179,10 @@ class _NavItemState extends State<_NavItem>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final colorScheme = ShadTheme.of(context).colorScheme;
-    final color = widget.isSelected
-        ? colorScheme.primary
-        : colorScheme.mutedForeground;
+    final colors = context.theme.colors;
+    final color = widget.isSelected ? colors.primary : colors.mutedForeground;
     final label = l10n.t(widget.data.labelKey);
-    final icon = Icon(
-      widget.isSelected ? widget.data.selectedIcon : widget.data.icon,
-      size: 32,
-      color: color,
-    );
+    final icon = Icon(widget.data.icon, size: 24, color: color);
 
     return Semantics(
       container: true,

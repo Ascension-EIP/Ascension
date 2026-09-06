@@ -1,11 +1,11 @@
 {
   "version": 1,
   "skills": {
-    "shadcn-ui-flutter": {
-      "source": "nank1ro/flutter-shadcn-ui",
+    "forui": {
+      "source": "duobaseio/forui",
       "sourceType": "github",
-      "skillPath": "skills/shadcn-ui-flutter/SKILL.md",
-      "computedHash": "7663f2fb51d11cde73a5f03253c0578db305c80ee7c33a6c03923491eba8980b"
+      "skillPath": "skills/forui/SKILL.md",
+      "computedHash": "46d21a5e7d72786d23fa07c43805d5b80c5414b224e847da58cabecef7ab7c2d"
     }
   }
 }

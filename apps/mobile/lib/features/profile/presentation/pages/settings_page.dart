@@ -1,13 +1,13 @@
-// @date 2026-09-03
+// @date 2026-09-07
 // @file settings_page.dart
-// @brief File description.
+// @brief Page des paramètres de l'application Ascension avec intégration Forui.
 // @project Ascension
 // @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:forui/forui.dart';
 import 'package:mobile/core/accessibility/accessibility_announcer.dart';
 import 'package:mobile/core/accessibility/accessibility_settings_service.dart';
 import 'package:mobile/core/audio/audio_service.dart';
@@ -100,11 +100,11 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _resetA11yDefaults() async {
+    final l10n = AppLocalizations.of(context);
     await _a11y.resetToDefaults();
     if (!mounted) return;
-    final l10n = AppLocalizations.of(context);
     setState(() => _sliderEpoch++);
-    AccessibilityAnnouncer.announce(context, l10n.t('settings.resetAnnounce'));
+    AccessibilityAnnouncer.announce(context, l10n.t('settings.resetDone'));
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(l10n.t('settings.resetDone'))));
@@ -112,7 +112,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ShadTheme.of(context);
+    final typo = context.theme.typography;
+    final colors = context.theme.colors;
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
@@ -120,7 +121,10 @@ class _SettingsPageState extends State<SettingsPage> {
       body: ListView(
         padding: const EdgeInsets.all(24.0),
         children: [
-          Text('Apparence', style: theme.textTheme.h4),
+          Text(
+            'Apparence',
+            style: typo.display.lg.copyWith(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 8),
           _SelectRow<ThemeMode>(
             key: ValueKey('theme-$_sliderEpoch'),
@@ -135,9 +139,12 @@ class _SettingsPageState extends State<SettingsPage> {
             onChanged: _onThemeModeChanged,
           ),
           const SizedBox(height: 20),
-          const ShadSeparator.horizontal(),
+          const FDivider(),
           const SizedBox(height: 20),
-          Text(l10n.t('settings.backend'), style: theme.textTheme.h4),
+          Text(
+            l10n.t('settings.backend'),
+            style: typo.display.lg.copyWith(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 8),
           _SwitchRow(
             title: 'Mode simulation (sans serveur)',
@@ -147,31 +154,29 @@ class _SettingsPageState extends State<SettingsPage> {
             value: _mockApiEnabled,
             onChanged: _onMockApiChanged,
           ),
-          const SizedBox(height: 8),
-          ShadInput(
-            controller: _urlController,
+          const SizedBox(height: 12),
+          FTextField(
+            control: FTextFieldControl.managed(controller: _urlController),
             enabled: !_mockApiEnabled,
             keyboardType: TextInputType.url,
-            autocorrect: false,
-            minLines: 1,
-            maxLines: 2,
-            placeholder: Text(l10n.t('settings.backendHint')),
-            onChanged: (_) {
-              if (_saved) setState(() => _saved = false);
-            },
-            trailing: _saved
-                ? const Icon(Icons.check_circle, color: Colors.green)
+            hint: l10n.t('settings.backendHint'),
+            description: Text(l10n.t('settings.backendHelper')),
+            suffixBuilder: _saved
+                ? (context, style, variants) => const Icon(
+                    Icons.check_circle,
+                    color: Colors.green,
+                    size: 20,
+                  )
                 : null,
           ),
-          const SizedBox(height: 4),
-          Text(l10n.t('settings.backendHelper'), style: theme.textTheme.muted),
           const SizedBox(height: 16),
-          ShadButton(
+          SizedBox(
             width: double.infinity,
-            enabled: !_mockApiEnabled,
-            onPressed: _mockApiEnabled ? null : _save,
-            leading: const Icon(Icons.save_outlined),
-            child: Text(l10n.t('settings.save')),
+            child: FButton(
+              onPress: _mockApiEnabled ? null : _save,
+              prefix: const Icon(Icons.save_outlined),
+              child: Text(l10n.t('settings.save')),
+            ),
           ),
           const SizedBox(height: 20),
           _SwitchRow(
@@ -184,13 +189,16 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           const SizedBox(height: 28),
-          const ShadSeparator.horizontal(),
+          const FDivider(),
           const SizedBox(height: 20),
-          Text(l10n.t('settings.accessibility'), style: theme.textTheme.h3),
+          Text(
+            l10n.t('settings.accessibility'),
+            style: typo.display.xl2.copyWith(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 6),
           Text(
             l10n.t('settings.accessibilitySubtitle'),
-            style: theme.textTheme.muted,
+            style: typo.body.sm.copyWith(color: colors.mutedForeground),
           ),
           const SizedBox(height: 16),
           AnimatedBuilder(
@@ -199,137 +207,171 @@ class _SettingsPageState extends State<SettingsPage> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ShadCard(
-                    title: Text(l10n.t('settings.readingDisplay')),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _LabeledSlider(
-                          key: ValueKey('textScale-$_sliderEpoch'),
-                          label: l10n.t('settings.textSize'),
-                          helpText: l10n.t('settings.textSizeHelp'),
-                          valueLabel:
-                              '${(_a11y.textScale * 100).round().toString()} %',
-                          min: AccessibilitySettingsService.minTextScale,
-                          max: AccessibilitySettingsService.maxTextScale,
-                          value: _a11y.textScale,
-                          onChanged: _a11y.setTextScale,
-                        ),
-                        const SizedBox(height: 8),
-                        _SelectRow<AppLanguage>(
-                          key: ValueKey('language-$_sliderEpoch'),
-                          title: l10n.t('settings.language'),
-                          subtitle: l10n.t('settings.languageSubtitle'),
-                          value: _a11y.appLanguage,
-                          options: {
-                            AppLanguage.french: l10n.t('settings.languageFr'),
-                            AppLanguage.english: l10n.t('settings.languageEn'),
-                          },
-                          onChanged: _a11y.setAppLanguage,
-                        ),
-                        const SizedBox(height: 8),
-                        _SwitchRow(
-                          title: l10n.t('settings.highContrast'),
-                          subtitle: l10n.t('settings.highContrastHelp'),
-                          value: _a11y.highContrast,
-                          onChanged: _a11y.setHighContrast,
-                        ),
-                        const SizedBox(height: 8),
-                        _SwitchRow(
-                          title: l10n.t('settings.dyslexia'),
-                          subtitle: l10n.t('settings.dyslexiaHelp'),
-                          value: _a11y.dyslexiaProfile,
-                          onChanged: _a11y.setDyslexiaProfile,
-                        ),
-                        const SizedBox(height: 8),
-                        _LabeledSlider(
-                          key: ValueKey('readingSpeed-$_sliderEpoch'),
-                          label: l10n.t('settings.readingSpeed'),
-                          helpText: l10n.t('settings.readingSpeedHelp'),
-                          valueLabel:
-                              '${_a11y.readingSpeed.toStringAsFixed(2)}×',
-                          min: AccessibilitySettingsService.minReadingSpeed,
-                          max: AccessibilitySettingsService.maxReadingSpeed,
-                          value: _a11y.readingSpeed,
-                          onChanged: _a11y.setReadingSpeed,
-                        ),
-                      ],
+                  FCard(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.t('settings.readingDisplay'),
+                            style: typo.body.md.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _LabeledSlider(
+                            key: ValueKey('textScale-$_sliderEpoch'),
+                            label: l10n.t('settings.textSize'),
+                            helpText: l10n.t('settings.textSizeHelp'),
+                            valueLabel:
+                                '${(_a11y.textScale * 100).round().toString()} %',
+                            min: AccessibilitySettingsService.minTextScale,
+                            max: AccessibilitySettingsService.maxTextScale,
+                            value: _a11y.textScale,
+                            onChanged: _a11y.setTextScale,
+                          ),
+                          const SizedBox(height: 12),
+                          _SelectRow<AppLanguage>(
+                            key: ValueKey('language-$_sliderEpoch'),
+                            title: l10n.t('settings.language'),
+                            subtitle: l10n.t('settings.languageSubtitle'),
+                            value: _a11y.appLanguage,
+                            options: {
+                              AppLanguage.french: l10n.t('settings.languageFr'),
+                              AppLanguage.english: l10n.t(
+                                'settings.languageEn',
+                              ),
+                            },
+                            onChanged: _a11y.setAppLanguage,
+                          ),
+                          const SizedBox(height: 12),
+                          _SwitchRow(
+                            title: l10n.t('settings.highContrast'),
+                            subtitle: l10n.t('settings.highContrastHelp'),
+                            value: _a11y.highContrast,
+                            onChanged: _a11y.setHighContrast,
+                          ),
+                          const SizedBox(height: 12),
+                          _SwitchRow(
+                            title: l10n.t('settings.dyslexia'),
+                            subtitle: l10n.t('settings.dyslexiaHelp'),
+                            value: _a11y.dyslexiaProfile,
+                            onChanged: _a11y.setDyslexiaProfile,
+                          ),
+                          const SizedBox(height: 12),
+                          _LabeledSlider(
+                            key: ValueKey('readingSpeed-$_sliderEpoch'),
+                            label: l10n.t('settings.readingSpeed'),
+                            helpText: l10n.t('settings.readingSpeedHelp'),
+                            valueLabel:
+                                '${_a11y.readingSpeed.toStringAsFixed(2)}×',
+                            min: AccessibilitySettingsService.minReadingSpeed,
+                            max: AccessibilitySettingsService.maxReadingSpeed,
+                            value: _a11y.readingSpeed,
+                            onChanged: _a11y.setReadingSpeed,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 14),
-                  ShadCard(
-                    title: Text(l10n.t('settings.interactionComfort')),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _SwitchRow(
-                          title: l10n.t('settings.reducedMotion'),
-                          subtitle: l10n.t('settings.reducedMotionHelp'),
-                          value: _a11y.reducedMotion,
-                          onChanged: _a11y.setReducedMotion,
-                        ),
-                        const SizedBox(height: 8),
-                        _SwitchRow(
-                          title: l10n.t('settings.simplifiedUi'),
-                          subtitle: l10n.t('settings.simplifiedUiHelp'),
-                          value: _a11y.simplifiedInterface,
-                          onChanged: _a11y.setSimplifiedInterface,
-                        ),
-                        const SizedBox(height: 8),
-                        _SwitchRow(
-                          title: l10n.t('settings.captions'),
-                          subtitle: l10n.t('settings.captionsHelp'),
-                          value: _a11y.captionsEnabled,
-                          onChanged: _a11y.setCaptionsEnabled,
-                        ),
-                        const SizedBox(height: 8),
-                        _SelectRow<HapticIntensity>(
-                          key: ValueKey('haptic-$_sliderEpoch'),
-                          title: l10n.t('settings.hapticIntensity'),
-                          subtitle: l10n.t('settings.hapticHelp'),
-                          value: _a11y.hapticIntensity,
-                          options: {
-                            HapticIntensity.off: l10n.t('settings.hapticOff'),
-                            HapticIntensity.light: l10n.t(
-                              'settings.hapticLight',
+                  FCard(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.t('settings.interactionComfort'),
+                            style: typo.body.md.copyWith(
+                              fontWeight: FontWeight.w700,
                             ),
-                            HapticIntensity.medium: l10n.t(
-                              'settings.hapticMedium',
+                          ),
+                          const SizedBox(height: 12),
+                          _SwitchRow(
+                            title: l10n.t('settings.reducedMotion'),
+                            subtitle: l10n.t('settings.reducedMotionHelp'),
+                            value: _a11y.reducedMotion,
+                            onChanged: _a11y.setReducedMotion,
+                          ),
+                          const SizedBox(height: 12),
+                          _SwitchRow(
+                            title: l10n.t('settings.simplifiedUi'),
+                            subtitle: l10n.t('settings.simplifiedUiHelp'),
+                            value: _a11y.simplifiedInterface,
+                            onChanged: _a11y.setSimplifiedInterface,
+                          ),
+                          const SizedBox(height: 12),
+                          _SwitchRow(
+                            title: l10n.t('settings.captions'),
+                            subtitle: l10n.t('settings.captionsHelp'),
+                            value: _a11y.captionsEnabled,
+                            onChanged: _a11y.setCaptionsEnabled,
+                          ),
+                          const SizedBox(height: 12),
+                          _SelectRow<HapticIntensity>(
+                            key: ValueKey('haptic-$_sliderEpoch'),
+                            title: l10n.t('settings.hapticIntensity'),
+                            subtitle: l10n.t('settings.hapticHelp'),
+                            value: _a11y.hapticIntensity,
+                            options: {
+                              HapticIntensity.off: l10n.t('settings.hapticOff'),
+                              HapticIntensity.light: l10n.t(
+                                'settings.hapticLight',
+                              ),
+                              HapticIntensity.medium: l10n.t(
+                                'settings.hapticMedium',
+                              ),
+                              HapticIntensity.strong: l10n.t(
+                                'settings.hapticStrong',
+                              ),
+                            },
+                            onChanged: _onHapticIntensityChanged,
+                          ),
+                          const SizedBox(height: 12),
+                          _SwitchRow(
+                            title: l10n.t('settings.reducedInterruptions'),
+                            subtitle: l10n.t(
+                              'settings.reducedInterruptionsHelp',
                             ),
-                            HapticIntensity.strong: l10n.t(
-                              'settings.hapticStrong',
-                            ),
-                          },
-                          onChanged: _onHapticIntensityChanged,
-                        ),
-                        const SizedBox(height: 8),
-                        _SwitchRow(
-                          title: l10n.t('settings.reducedInterruptions'),
-                          subtitle: l10n.t('settings.reducedInterruptionsHelp'),
-                          value: _a11y.reducedInterruptions,
-                          onChanged: _a11y.setReducedInterruptions,
-                        ),
-                      ],
+                            value: _a11y.reducedInterruptions,
+                            onChanged: _a11y.setReducedInterruptions,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 14),
-                  ShadCard(
-                    title: Text(l10n.t('settings.preview')),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.t('settings.previewText'),
-                          style: theme.textTheme.p,
-                        ),
-                        const SizedBox(height: 10),
-                        ShadButton.outline(
-                          width: double.infinity,
-                          leading: const Icon(Icons.restore),
-                          onPressed: _resetA11yDefaults,
-                          child: Text(l10n.t('settings.reset')),
-                        ),
-                      ],
+                  FCard(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.t('settings.preview'),
+                            style: typo.body.md.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.t('settings.previewText'),
+                            style: typo.body.sm,
+                          ),
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FButton(
+                              variant: .outline,
+                              prefix: const Icon(Icons.restore),
+                              onPress: _resetA11yDefaults,
+                              child: Text(l10n.t('settings.reset')),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -342,8 +384,6 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 }
 
-/// Row pairing a title/subtitle with a trailing [ShadSwitch], mirroring the
-/// former Material `SwitchListTile` layout.
 class _SwitchRow extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -359,7 +399,8 @@ class _SwitchRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ShadTheme.of(context);
+    final typo = context.theme.typography;
+    final colors = context.theme.colors;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -367,20 +408,24 @@ class _SwitchRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: theme.textTheme.p),
-              Text(subtitle, style: theme.textTheme.muted),
+              Text(
+                title,
+                style: typo.body.md.copyWith(fontWeight: FontWeight.w500),
+              ),
+              Text(
+                subtitle,
+                style: typo.body.xs.copyWith(color: colors.mutedForeground),
+              ),
             ],
           ),
         ),
         const SizedBox(width: 12),
-        ShadSwitch(value: value, onChanged: onChanged),
+        FSwitch(value: value, onChange: onChanged),
       ],
     );
   }
 }
 
-/// Row pairing a title/subtitle with a trailing [ShadSelect], mirroring the
-/// former Material `ListTile` + `DropdownButton` layout.
 class _SelectRow<T> extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -399,7 +444,10 @@ class _SelectRow<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ShadTheme.of(context);
+    final typo = context.theme.typography;
+    final colors = context.theme.colors;
+    final selectedLabel = options[value] ?? '';
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -407,22 +455,69 @@ class _SelectRow<T> extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: theme.textTheme.p),
-              Text(subtitle, style: theme.textTheme.muted),
+              Text(
+                title,
+                style: typo.body.md.copyWith(fontWeight: FontWeight.w500),
+              ),
+              Text(
+                subtitle,
+                style: typo.body.xs.copyWith(color: colors.mutedForeground),
+              ),
             ],
           ),
         ),
         const SizedBox(width: 12),
-        ShadSelect<T>(
-          initialValue: value,
-          minWidth: 140,
-          options: options.entries
-              .map((e) => ShadOption(value: e.key, child: Text(e.value)))
-              .toList(),
-          selectedOptionBuilder: (context, v) => Text(options[v] ?? ''),
-          onChanged: (v) {
-            if (v != null) onChanged(v);
+        FButton(
+          variant: .outline,
+          onPress: () {
+            showFSheet<void>(
+              context: context,
+              side: FLayout.btt,
+              builder: (ctx) => SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: typo.display.lg.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ...options.entries.map((entry) {
+                        final isSelected = entry.key == value;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: FButton(
+                              variant: isSelected ? .primary : .secondary,
+                              onPress: () {
+                                Navigator.pop(ctx);
+                                onChanged(entry.key);
+                              },
+                              child: Text(entry.value),
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              ),
+            );
           },
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(selectedLabel),
+              const SizedBox(width: 4),
+              const Icon(Icons.arrow_drop_down, size: 18),
+            ],
+          ),
         ),
       ],
     );
@@ -451,7 +546,8 @@ class _LabeledSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ShadTheme.of(context);
+    final typo = context.theme.typography;
+    final colors = context.theme.colors;
     return Semantics(
       slider: true,
       label: label,
@@ -462,19 +558,32 @@ class _LabeledSlider extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: Text(label, style: theme.textTheme.p)),
-              Text(valueLabel, style: theme.textTheme.small),
+              Expanded(
+                child: Text(
+                  label,
+                  style: typo.body.md.copyWith(fontWeight: FontWeight.w500),
+                ),
+              ),
+              Text(
+                valueLabel,
+                style: typo.body.sm.copyWith(fontWeight: FontWeight.w600),
+              ),
             ],
           ),
-          ShadSlider(
+          Slider(
             min: min,
             max: max,
-            initialValue: value,
+            value: value.clamp(min, max),
+            activeColor: colors.primary,
+            inactiveColor: colors.muted,
             onChanged: onChanged,
           ),
           Padding(
             padding: const EdgeInsets.only(bottom: 6),
-            child: Text(helpText, style: theme.textTheme.small),
+            child: Text(
+              helpText,
+              style: typo.body.xs.copyWith(color: colors.mutedForeground),
+            ),
           ),
         ],
       ),
