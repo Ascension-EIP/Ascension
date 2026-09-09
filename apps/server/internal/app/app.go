@@ -30,7 +30,7 @@ import (
 )
 
 func Run(cfg *config.Config) {
-	repo, err := postgres.New(cfg.DB.DSN(), cfg.DB.Migration)
+	repo, err := postgres.New(cfg.DB.DSN())
 	if err != nil {
 		slog.Error("failed to create a new postgres repository", slog.String("err", err.Error()))
 		os.Exit(1)
@@ -58,7 +58,7 @@ func Run(cfg *config.Config) {
 	userS := service.NewUserService(&repo)
 	authS := service.NewAuthService(&jwtS, &sessionS, &repo)
 	videoS := service.NewVideoService(&storage, &repo)
-	analyseS := service.NewAnalysisService(&repo, &queue)
+	analyseS := service.NewAnalysisService(&repo, &repo, &queue)
 
 	authMW := middleware.Auth(&jwtS)
 	guestMW := middleware.Guest(&jwtS)

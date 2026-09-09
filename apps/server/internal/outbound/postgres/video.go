@@ -14,8 +14,8 @@ import (
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres/dto"
-	"uuid"
 	"github.com/jackc/pgx/v5"
+	"uuid"
 )
 
 func (r *PostgresRepository) CreateVideoInfo(ctx context.Context, info *model.VideoInfo) error {

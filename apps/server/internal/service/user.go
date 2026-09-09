@@ -11,24 +11,16 @@ import (
 	"context"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"uuid"
 	"golang.org/x/crypto/bcrypt"
+	"uuid"
 )
 
-type userRepository interface {
-	CreateUser(context.Context, *model.NewUser) (*model.User, error)
-	GetUserByID(context.Context, uuid.UUID) (*model.User, error)
-	ListAllUsers(context.Context) ([]*model.User, error)
-	UpdateUser(context.Context, *model.PartialUser) (*model.User, error)
-	DeleteUser(context.Context, uuid.UUID) error
-}
-
 type UserService struct {
-	r userRepository
+	repo model.UserRepository
 }
 
-func NewUserService(r userRepository) UserService {
-	return UserService{r: r}
+func NewUserService(repo model.UserRepository) UserService {
+	return UserService{repo: repo}
 }
 
 func (s *UserService) CreateUser(c context.Context, user *model.NewUser) (*model.User, error) {
@@ -38,21 +30,21 @@ func (s *UserService) CreateUser(c context.Context, user *model.NewUser) (*model
 	}
 	user.Password = hashPassword
 
-	return s.r.CreateUser(c, user)
+	return s.repo.CreateUser(c, user)
 }
 
 func (s *UserService) GetUserByID(c context.Context, id uuid.UUID) (*model.User, error) {
-	return s.r.GetUserByID(c, id)
+	return s.repo.GetUserByID(c, id)
 }
 
 func (s *UserService) ListAllUsers(c context.Context) ([]*model.User, error) {
-	return s.r.ListAllUsers(c)
+	return s.repo.ListAllUsers(c)
 }
 
 func (s *UserService) UpdateUser(c context.Context, user *model.PartialUser) (*model.User, error) {
-	return s.r.UpdateUser(c, user)
+	return s.repo.UpdateUser(c, user)
 }
 
 func (s *UserService) DeleteUser(c context.Context, id uuid.UUID) error {
-	return s.r.DeleteUser(c, id)
+	return s.repo.DeleteUser(c, id)
 }

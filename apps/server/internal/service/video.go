@@ -17,30 +17,12 @@ import (
 	"uuid"
 )
 
-type videoStorage interface {
-	PresignedUploadURL(context.Context, string) (*url.URL, time.Time, error)
-	PresignedDownloadURL(context.Context, string) (*url.URL, time.Time, error)
-	FileExist(context.Context, string) error
-	Delete(context.Context, string) error
-	UploadExp() time.Duration
-	DownloadExp() time.Duration
-	VideoBucket() string
-}
-
-type videoRepository interface {
-	CreateVideoInfo(context.Context, *model.VideoInfo) error
-	GetVideoInfoByUserID(context.Context, uuid.UUID, uuid.UUID) (*model.VideoInfo, error)
-	GetCompletedVideoInfoByUserID(context.Context, uuid.UUID, uuid.UUID) (*model.VideoInfo, error)
-	UpdateVideoInfo(context.Context, *model.PartialVideoInfo) (*model.VideoInfo, error)
-	WithTransaction(context.Context, func(context.Context) error) error
-}
-
 type VideoService struct {
-	storage videoStorage
-	repo    videoRepository
+	storage model.VideoStorage
+	repo    model.VideoRepository
 }
 
-func NewVideoService(storage videoStorage, repo videoRepository) VideoService {
+func NewVideoService(storage model.VideoStorage, repo model.VideoRepository) VideoService {
 	return VideoService{storage: storage, repo: repo}
 }
 

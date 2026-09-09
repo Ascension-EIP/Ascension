@@ -16,35 +16,25 @@ import (
 	"uuid"
 )
 
-type analysisRepository interface {
-	GetCompletedVideoInfoByUserID(context.Context, uuid.UUID, uuid.UUID) (*model.VideoInfo, error)
-	CreateAnalysis(context.Context, *model.NewAnalysis) (*model.Analysis, error)
-	GetAnalysis(context.Context, uuid.UUID) (*model.Analysis, error)
-	WithTransaction(context.Context, func(context.Context) error) error
-}
-
-type analysisQueue interface {
-	PublishJSONIntoQueueAI(ctx context.Context, body []byte) error
-}
-
 type AnalysisService struct {
-	repo  analysisRepository
-	queue analysisQueue
+	analysisRepo model.AnalysisRepository
+	videoRepo    model.VideoRepository
+	queue        model.AnalysisQueue
 }
 
-func NewAnalysisService(repo analysisRepository, queue analysisQueue) AnalysisService {
-	return AnalysisService{repo: repo, queue: queue}
+func NewAnalysisService(analysisRepo model.AnalysisRepository, videoRepo model.VideoRepository, queue model.AnalysisQueue) AnalysisService {
+	return AnalysisService{analysisRepo: analysisRepo, videoRepo: videoRepo, queue: queue}
 }
 
 func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (*model.Analysis, error) {
-	videoInfo, err := s.repo.GetCompletedVideoInfoByUserID(ctx, videoID, userID)
+	videoInfo, err := s.videoRepo.GetCompletedVideoInfoByUserID(ctx, videoID, userID)
 	if err != nil {
 		return nil, err
 	}
 
 	var analysis *model.Analysis
-	if err := s.repo.WithTransaction(ctx, func(ctx context.Context) error {
-		analysis, err = s.repo.CreateAnalysis(ctx, &model.NewAnalysis{VideoID: videoID})
+	if err := s.analysisRepo.WithTransaction(ctx, func(ctx context.Context) error {
+		analysis, err = s.analysisRepo.CreateAnalysis(ctx, &model.NewAnalysis{VideoID: videoID})
 		if err != nil {
 			return err
 		}
@@ -75,7 +65,7 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID
 }
 
 func (s *AnalysisService) GetAnalysis(ctx context.Context, id uuid.UUID) (*model.Analysis, error) {
-	analysis, err := s.repo.GetAnalysis(ctx, id)
+	analysis, err := s.analysisRepo.GetAnalysis(ctx, id)
 	if err != nil {
 		return nil, err
 	}

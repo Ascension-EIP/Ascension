@@ -11,23 +11,17 @@ import (
 	"context"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"uuid"
 	"golang.org/x/crypto/bcrypt"
+	"uuid"
 )
-
-type authRepository interface {
-	CreateUser(context.Context, *model.NewUser) (*model.User, error)
-	GetUserByEmail(context.Context, string) (*model.User, error)
-	WithTransaction(context.Context, func(context.Context) error) error
-}
 
 type AuthService struct {
 	jwtS     *JWTService
 	sessionS *SessionService
-	repo     authRepository
+	repo     model.UserRepository
 }
 
-func NewAuthService(jwtS *JWTService, sessionS *SessionService, repo authRepository) AuthService {
+func NewAuthService(jwtS *JWTService, sessionS *SessionService, repo model.UserRepository) AuthService {
 	return AuthService{
 		jwtS:     jwtS,
 		sessionS: sessionS,

@@ -16,33 +16,22 @@ import (
 	"uuid"
 )
 
-type sessionRepository interface {
-	CreateSession(context.Context, *model.NewSession) (*model.Session, error)
-	GetUserByUnexpiredSessionID(context.Context, uuid.UUID) (*model.User, error)
-	// GetUnexpiredSession(ctx context.Context, sessionID string) (*model.Session, error)
-	// UpdateSession(ctx context.Context, session *model.Session) error
-	DeleteSessionByUserID(context.Context, uuid.UUID, uuid.UUID) error
-	// DeleteExpiredSessions(ctx context.Context) error
-}
-
 type SessionService struct {
-	repo        sessionRepository
-	exp         time.Duration
-	rememberExp time.Duration
+	cfg  config.SessionConfig
+	repo model.SessionRepository
 }
 
-func NewSessionService(cfg config.SessionConfig, repo sessionRepository) SessionService {
+func NewSessionService(cfg config.SessionConfig, repo model.SessionRepository) SessionService {
 	return SessionService{
-		repo:        repo,
-		exp:         cfg.Exp,
-		rememberExp: cfg.RememberExp,
+		cfg:  cfg,
+		repo: repo,
 	}
 }
 
 func (s *SessionService) CreateRefreshToken(ctx context.Context, userID uuid.UUID, remember bool) (uuid.UUID, error) {
 	session, err := s.repo.CreateSession(ctx, &model.NewSession{
 		UserID:    userID,
-		ExpiresAt: time.Now().Add(s.exp),
+		ExpiresAt: time.Now().Add(s.cfg.Exp),
 	})
 	if err != nil {
 		return uuid.UUID{}, err

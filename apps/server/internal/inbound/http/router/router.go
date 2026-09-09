@@ -34,7 +34,6 @@ func New(
 	app.Use(middleware.RequestID())
 	app.Use(middleware.Logger())
 	app.Use(middleware.Recovery())
-	gin.Recovery()
 
 	app.GET("/healthz", func(c *gin.Context) { c.Status(http.StatusNoContent) })
 
@@ -48,9 +47,8 @@ func New(
 			authGroup.PUT("/refresh", middleware.RateLimiter(time.Minute, 10), authH.RefreshToken)
 		}
 
-		usersGroup := v1.Group("/users")
+		usersGroup := v1.Group("/users", authMW, adminMW)
 		{
-			usersGroup.Use(authMW, adminMW)
 			usersGroup.POST("/", middleware.RateLimiter(time.Minute, 25), userH.Create)
 			usersGroup.GET("/", middleware.RateLimiter(time.Minute, 100), userH.List)
 			usersGroup.GET("/:id", middleware.RateLimiter(time.Minute, 100), userH.GetByID)
@@ -58,17 +56,15 @@ func New(
 			usersGroup.DELETE("/:id", middleware.RateLimiter(time.Minute, 25), userH.Delete)
 		}
 
-		videosGroup := v1.Group("/videos")
+		videosGroup := v1.Group("/videos", authMW, userMW)
 		{
-			videosGroup.Use(authMW, userMW)
 			videosGroup.GET("/upload-url", middleware.RateLimiter(time.Minute, 10), videoH.GetUploadURL)
 			videosGroup.PUT("/upload-done/:id", middleware.RateLimiter(time.Minute, 15), videoH.UploadComplete)
 			videosGroup.GET("/download-url/:id", middleware.RateLimiter(time.Minute, 10), videoH.GetDownloadURL)
 		}
 
-		analysesGroup := v1.Group("/analysis")
+		analysesGroup := v1.Group("/analysis", authMW, userMW)
 		{
-			analysesGroup.Use(authMW, userMW)
 			analysesGroup.POST("/", middleware.RateLimiter(time.Minute, 10), analyseH.Create)
 			analysesGroup.GET("/:id", middleware.RateLimiter(time.Minute, 10), analyseH.GetByID)
 		}

@@ -28,7 +28,7 @@ type PostgresRepository struct {
 //go:embed migrations/*.sql
 var migrationFS embed.FS
 
-func New(dsn string, migrationDir string) (PostgresRepository, error) {
+func New(dsn string) (PostgresRepository, error) {
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
 		return PostgresRepository{}, fmt.Errorf("open connection to %s: %w", dsn, err)

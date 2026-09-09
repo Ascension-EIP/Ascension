@@ -26,13 +26,12 @@ type (
 	}
 
 	DBConfig struct {
-		Host      string `env:"HOST" envDefault:"localhost"`
-		Port      int    `env:"PORT" envDefault:"5432"`
-		Name      string `env:"NAME,unset,required"`
-		User      string `env:"USER,unset,required"`
-		Password  string `env:"PASS,unset,required"`
-		Params    string `env:"PARAMS" envDefault:"sslmode=disable"`
-		Migration string `env:"MIGRATION"`
+		Host     string `env:"HOST" envDefault:"localhost"`
+		Port     int    `env:"PORT" envDefault:"5432"`
+		Name     string `env:"NAME,unset,required"`
+		User     string `env:"USER,unset,required"`
+		Password string `env:"PASS,unset,required"`
+		Params   string `env:"PARAMS" envDefault:"sslmode=disable"`
 	}
 
 	MinIOConfig struct {
