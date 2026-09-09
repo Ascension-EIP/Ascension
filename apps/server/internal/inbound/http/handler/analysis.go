@@ -16,16 +16,14 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/gin-gonic/gin"
 	"uuid"
-	"github.com/rs/zerolog"
 )
 
 type AnalyseHandler struct {
 	s *service.AnalysisService
-	l *zerolog.Logger
 }
 
-func NewAnalyseHandler(l *zerolog.Logger, s *service.AnalysisService) AnalyseHandler {
-	return AnalyseHandler{s: s, l: l}
+func NewAnalyseHandler(s *service.AnalysisService) AnalyseHandler {
+	return AnalyseHandler{s: s}
 }
 
 func (h *AnalyseHandler) Create(c *gin.Context) {
@@ -43,7 +41,7 @@ func (h *AnalyseHandler) Create(c *gin.Context) {
 
 	analysis, err := h.s.TriggerAnalysis(c.Request.Context(), req.VideoID, userID)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -60,7 +58,7 @@ func (h *AnalyseHandler) GetByID(c *gin.Context) {
 
 	analysis, err := h.s.GetAnalysis(c.Request.Context(), id)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 

@@ -16,16 +16,14 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/gin-gonic/gin"
 	"uuid"
-	"github.com/rs/zerolog"
 )
 
 type AuthHandler struct {
 	s *service.AuthService
-	l *zerolog.Logger
 }
 
-func NewAuthHandler(l *zerolog.Logger, s *service.AuthService) AuthHandler {
-	return AuthHandler{s: s, l: l}
+func NewAuthHandler(s *service.AuthService) AuthHandler {
+	return AuthHandler{s: s}
 }
 
 func (h *AuthHandler) Signup(c *gin.Context) {
@@ -42,7 +40,7 @@ func (h *AuthHandler) Signup(c *gin.Context) {
 
 	user, err := h.s.Signup(c.Request.Context(), &form)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -63,7 +61,7 @@ func (h *AuthHandler) SignupLogin(c *gin.Context) {
 
 	user, tokens, err := h.s.SignupAndLogin(c.Request.Context(), &form)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -84,7 +82,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	user, tokens, err := h.s.Login(c.Request.Context(), &form)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -105,7 +103,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	}
 
 	if err := h.s.Logout(c.Request.Context(), userID, req.Token); err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -121,7 +119,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 
 	accessToken, err := h.s.RefreshAccessToken(c.Request.Context(), req.Token)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 

@@ -15,13 +15,11 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/middleware"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
 )
 
 func New(
 	app *gin.Engine,
 	cfg *config.Config,
-	l *zerolog.Logger,
 
 	authMW gin.HandlerFunc,
 	guestMW gin.HandlerFunc,
@@ -34,8 +32,8 @@ func New(
 	analyseH *handler.AnalyseHandler,
 ) {
 	app.Use(middleware.RequestID())
-	app.Use(middleware.Logger(l))
-	app.Use(middleware.Recovery(l))
+	app.Use(middleware.Logger())
+	app.Use(middleware.Recovery())
 	gin.Recovery()
 
 	app.GET("/healthz", func(c *gin.Context) { c.Status(http.StatusNoContent) })

@@ -9,18 +9,19 @@ package middleware
 
 import (
 	"errors"
+	"log/slog"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"runtime/debug"
 	"strings"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
 )
 
-func isBrokenPipe(err interface{}) bool {
+func isBrokenPipe(err any) bool {
 	if ne, ok := err.(*net.OpError); ok {
 		var se *os.SyscallError
 		if errors.As(ne, &se) {
@@ -42,40 +43,53 @@ func isBrokenPipe(err interface{}) bool {
 	return false
 }
 
-func Recovery(logger *zerolog.Logger) gin.HandlerFunc {
+func Recovery() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
-				requestID, exists := c.Get("request_id")
-				if !exists {
-					requestID = "unknown"
-				}
+				path := c.Request.URL.Path
+				rawQuery := c.Request.URL.RawQuery
+				method := c.Request.Method
+				clientIP := c.ClientIP()
+				userAgent := c.Request.UserAgent()
+
+				query, _ := url.ParseQuery(rawQuery)
 
 				if isBrokenPipe(err) {
-					logger.Warn().
-						Str("request_id", requestID.(string)).
-						Str("method", c.Request.Method).
-						Str("path", c.Request.URL.Path).
-						Str("ip", c.ClientIP()).
-						Interface("error", err).
-						Msg("client connection broken")
+
+					slog.LogAttrs(c.Request.Context(), slog.LevelError, "client connection broken",
+						slog.Group(
+							"request",
+							slog.String("method", method),
+							slog.String("path", path),
+							slog.Any("params", query),
+							slog.String("ip", clientIP),
+							slog.String("user_agent", userAgent),
+						),
+						slog.String("stack", string(debug.Stack())),
+					)
 
 					c.Abort()
 					return
 				}
 
-				stack := string(debug.Stack())
+				slog.LogAttrs(c.Request.Context(), slog.LevelError, "panic recovered",
+					slog.Group(
+						"request",
+						slog.String("method", method),
+						slog.String("path", path),
+						slog.Any("params", query),
+						slog.String("ip", clientIP),
+						slog.String("user_agent", userAgent),
+					),
+					slog.String("stack", string(debug.Stack())),
+				)
 
-				logger.Error().
-					Str("request_id", requestID.(string)).
-					Str("method", c.Request.Method).
-					Str("path", c.Request.URL.Path).
-					Str("ip", c.ClientIP()).
-					Interface("error", err).
-					Str("stack", stack).
-					Msg("panic recovered")
-
-				c.AbortWithStatusJSON(http.StatusInternalServerError, response.Error{Message: "Internal server error"})
+				c.AbortWithStatusJSON(
+					http.StatusInternalServerError,
+					response.Error{Message: "Internal server error"},
+				)
+				return
 			}
 		}()
 

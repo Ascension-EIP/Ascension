@@ -9,38 +9,37 @@ package logger
 
 import (
 	"io"
+	"log/slog"
 	"os"
-	"time"
-
-	"github.com/rs/zerolog"
+	"strings"
 )
 
-func New(level string, pretty bool) zerolog.Logger {
+func New(level string, pretty bool) *slog.Logger {
 	var output io.Writer = os.Stdout
+
+	handlerOpts := &slog.HandlerOptions{Level: parseLevel(level)}
+
+	var handler slog.Handler
 	if pretty {
-		output = zerolog.ConsoleWriter{
-			Out:         os.Stdout,
-			TimeFormat:  time.RFC3339,
-			FieldsOrder: []string{"time", "level", "request_id", "ip", "method", "path", "status", "latency"},
-		}
+		handler = slog.NewTextHandler(output, handlerOpts)
+	} else {
+		handler = slog.NewJSONHandler(output, handlerOpts)
 	}
 
-	lvl := parseLevel(level)
-
-	return zerolog.New(output).Level(lvl).With().Timestamp().Logger()
+	return slog.New(handler)
 }
 
-func parseLevel(level string) zerolog.Level {
-	switch level {
+func parseLevel(level string) slog.Level {
+	switch strings.ToLower(level) {
 	case "debug":
-		return zerolog.DebugLevel
+		return slog.LevelDebug
 	case "info":
-		return zerolog.InfoLevel
+		return slog.LevelInfo
 	case "warn":
-		return zerolog.WarnLevel
+		return slog.LevelWarn
 	case "error":
-		return zerolog.ErrorLevel
+		return slog.LevelError
 	default:
-		return zerolog.InfoLevel
+		return slog.LevelInfo
 	}
 }

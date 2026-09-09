@@ -9,7 +9,9 @@ package app
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
+	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
@@ -24,23 +26,31 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
 	"github.com/gin-gonic/gin"
-
 	// "github.com/robfig/cron"
-	"github.com/rs/zerolog"
 )
 
-func Run(cfg *config.Config, l *zerolog.Logger) {
-	repo, err := postgres.New(l, cfg.DB.DSN(), cfg.DB.Migration)
+func Run(cfg *config.Config) {
+	repo, err := postgres.New(cfg.DB.DSN(), cfg.DB.Migration)
 	if err != nil {
-		l.Fatal().Msg(err.Error())
+		slog.Error("failed to create a new postgres repository", slog.String("err", err.Error()))
+		os.Exit(1)
 	}
+	if err := repo.Migrate(cfg.DB.DSN()); err != nil {
+		slog.Error("failed to migrate the database", slog.String("err", err.Error()))
+		os.Exit(1)
+	} else {
+		slog.Info("migration completed successfully")
+	}
+
 	storage, err := minio.New(&cfg.MinIO)
 	if err != nil {
-		l.Fatal().Msg(err.Error())
+		slog.Error("failed to create a new minio storage", slog.String("err", err.Error()))
+		os.Exit(1)
 	}
 	queue, err := rabbitmq.New(&cfg.RabbitMQ)
 	if err != nil {
-		l.Fatal().Msg(err.Error())
+		slog.Error("failed to create a new rabbitmq queue", slog.String("err", err.Error()))
+		os.Exit(1)
 	}
 
 	jwtS := service.NewJWTService(cfg.Auth.JWT)
@@ -55,10 +65,10 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 	adminMW := middleware.Admin()
 	userMW := middleware.User()
 
-	userH := handler.NewUserHandler(l, &userS)
-	authH := handler.NewAuthHandler(l, &authS)
-	videoH := handler.NewVideoHandler(l, &videoS)
-	analyseH := handler.NewAnalyseHandler(l, &analyseS)
+	userH := handler.NewUserHandler(&userS)
+	authH := handler.NewAuthHandler(&authS)
+	videoH := handler.NewVideoHandler(&videoS)
+	analyseH := handler.NewAnalyseHandler(&analyseS)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -70,7 +80,7 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 	// c.Start()
 
 	app := gin.New()
-	router.New(app, cfg, l,
+	router.New(app, cfg,
 		authMW,
 		guestMW,
 		adminMW,
@@ -86,20 +96,19 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 		Handler: app,
 	}
 	go func() {
-		l.Info().Msg("server starting on " + httpServ.Addr)
+		slog.Info("server starting on " + httpServ.Addr)
 		if err := httpServ.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			l.Error().Err(err).Msg("failed to start server")
+			slog.Error("failed to start server", slog.String("err", err.Error()))
 		}
 	}()
 
 	<-ctx.Done()
-	stop()
-	l.Info().Msg("CTRL-C successfully handle")
+	slog.Info("CTRL-C successfully handle")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	if err := httpServ.Shutdown(ctx); err != nil {
-		l.Error().Err(err).Msg("server forced to shutdown")
+		slog.Error("server forced to shutdown", slog.String("err", err.Error()))
 	}
 	// c.Stop().Done()
 }

@@ -19,16 +19,14 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/gin-gonic/gin"
 	"uuid"
-	"github.com/rs/zerolog"
 )
 
 type VideoHandler struct {
 	s *service.VideoService
-	l *zerolog.Logger
 }
 
-func NewVideoHandler(l *zerolog.Logger, s *service.VideoService) VideoHandler {
-	return VideoHandler{l: l, s: s}
+func NewVideoHandler(s *service.VideoService) VideoHandler {
+	return VideoHandler{s: s}
 }
 
 func (h *VideoHandler) GetDownloadURL(c *gin.Context) {
@@ -47,7 +45,7 @@ func (h *VideoHandler) GetDownloadURL(c *gin.Context) {
 
 	downloadURL, err := h.s.GetDownloadURL(c.Request.Context(), videoID, userID)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -81,7 +79,7 @@ func (h *VideoHandler) GetUploadURL(c *gin.Context) {
 
 	uploadURL, err := h.s.GetUploadURL(c.Request.Context(), fileInfo)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -137,7 +135,7 @@ func (h *VideoHandler) UploadComplete(c *gin.Context) {
 	}
 
 	if err := h.s.UploadComplete(c.Request.Context(), videoID, userID); err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
