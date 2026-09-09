@@ -14,5 +14,6 @@ dependencies = [
     "pika>=1.4.1",
     "psycopg2-binary>=2.9.12",
     "pytest>=9.1.1",
+    "pytest-cov>=7.0.0",
     "ruff>=0.15.18",
 ]

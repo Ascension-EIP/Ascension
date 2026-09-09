@@ -75,6 +75,21 @@ tasks:
     deps:
       - 'install'
 
+  coverage:
+    command: 'uv'
+    args: ['run', 'pytest', '-p', 'no:cacheprovider', '--cov=src', '--cov-report=xml:coverage.xml']
+    inputs:
+      - '**/*.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+    outputs:
+      - 'coverage.xml'
+    options:
+      allowFailure: true
+      cache: false
+    deps:
+      - 'install'
+
   dev:
     command: 'uv'
     args: ['run', 'python', '-u', 'src/main.py', 'worker']
@@ -106,7 +121,7 @@ tasks:
 
   clean:
     script: |
-      rm -rf .venv .ruff_cache .pytest_cache
+      rm -rf .venv .ruff_cache .pytest_cache coverage.xml
       find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
     options:
       cache: false

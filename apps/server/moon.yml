@@ -73,6 +73,21 @@ tasks:
     deps:
       - "install"
 
+  coverage:
+    command: "go"
+    args: ["test", "./...", "-coverprofile=coverage.out", "-covermode=atomic"]
+    inputs:
+      - "**/*.go"
+      - "go.mod"
+      - "go.sum"
+      - "migrations/**/*"
+    outputs:
+      - "coverage.out"
+    options:
+      cache: false
+    deps:
+      - "install"
+
   dev:
     command: "go"
     args: ["run", "./cmd/server"]
@@ -87,6 +102,6 @@ tasks:
 
   clean:
     command: "rm"
-    args: ["-rf", "bin"]
+    args: ["-rf", "bin", "coverage.out"]
     options:
       cache: false
