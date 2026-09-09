@@ -7,7 +7,7 @@
 // @status done
 package model
 
-import "github.com/google/uuid"
+import "uuid"
 
 type NewUser struct {
 	Name     string

@@ -9,7 +9,7 @@ package response
 
 import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type AnalysisResponse struct {

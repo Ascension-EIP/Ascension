@@ -13,7 +13,7 @@ import (
 	"fmt"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type analysisRepository interface {

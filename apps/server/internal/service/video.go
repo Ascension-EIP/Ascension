@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type videoStorage interface {
@@ -62,10 +62,7 @@ func (s *VideoService) GetDownloadURL(ctx context.Context, videoID uuid.UUID, us
 }
 
 func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo *model.FileInfo) (*model.UploadVideoURL, error) {
-	videoID, err := uuid.NewV7()
-	if err != nil {
-		return nil, err
-	}
+	videoID := uuid.NewV7()
 	var url *url.URL
 	var expiresAt time.Time
 
@@ -83,6 +80,7 @@ func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo *model.FileInf
 			return err
 		}
 
+		var err error
 		url, expiresAt, err = s.storage.PresignedUploadURL(ctx, objectKey)
 		if err != nil {
 			return err

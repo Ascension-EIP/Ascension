@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type User struct {

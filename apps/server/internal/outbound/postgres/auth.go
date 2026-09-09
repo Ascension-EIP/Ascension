@@ -13,7 +13,7 @@ import (
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres/dto"
-	"github.com/google/uuid"
+	"uuid"
 	"github.com/jackc/pgx/v5"
 )
 

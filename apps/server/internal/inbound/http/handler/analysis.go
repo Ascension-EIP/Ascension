@@ -15,7 +15,7 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"uuid"
 	"github.com/rs/zerolog"
 )
 

@@ -11,7 +11,7 @@ import (
 	"context"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/google/uuid"
+	"uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 

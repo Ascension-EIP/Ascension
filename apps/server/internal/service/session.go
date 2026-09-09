@@ -13,7 +13,7 @@ import (
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type sessionRepository interface {

@@ -22,6 +22,7 @@
   languages = {
     go = {
       enable = true;
+      version = "1.27.1";
     };
   };
 

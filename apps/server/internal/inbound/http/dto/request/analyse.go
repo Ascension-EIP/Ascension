@@ -7,7 +7,7 @@
 // @status done
 package request
 
-import "github.com/google/uuid"
+import "uuid"
 
 type CreateAnalyseRequest struct {
 	VideoID uuid.UUID `json:"video_id"`
