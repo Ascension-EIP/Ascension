@@ -6,8 +6,9 @@ tasks:
       if [ -z "$GITHUB_ACTIONS" ] && [ -z "$CI" ]; then
         go -C apps/server run ./cmd/migrate
       fi
+    inputs:
+      - "apps/server/migrations/**/*"
     options:
-      cache: false
       envFile: true
 
   update:
@@ -94,6 +95,13 @@ tasks:
 
   commit:
     command: "./.github/scripts/gemini_commit"
+    options:
+      cache: false
+      envFile: true
+      interactive: true
+
+  stand-up:
+    command: "./scripts/stand_up"
     options:
       cache: false
       envFile: true
