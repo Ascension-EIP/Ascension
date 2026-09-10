@@ -1,0 +1,26 @@
+[project]
+name = "worker"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Gianni TUERO", email = "gianni.tuero@epitech.eu" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "cv>=1.0.0",
+    "dotenv>=0.9.9",
+    "mediapipe>=0.10.35,<1.0.0",
+    "pika>=1.4.4",
+    "psycopg[binary]>=3.3.5",
+    "pydantic>=2.13.5",
+    "rich>=15.0.0",
+    "ruff>=0.16.6",
+]
+
+[project.scripts]
+worker = "worker:main"
+
+[build-system]
+requires = ["uv_build>=0.12.10,<0.13.0"]
+build-backend = "uv_build"
