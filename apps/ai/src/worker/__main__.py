@@ -1,4 +1,4 @@
-# @date 2026-09-07
+# @date 2026-09-05
 # @file __main__.py
 # @brief Direct execution entry point for worker (python -m src.worker).
 # @project Ascension

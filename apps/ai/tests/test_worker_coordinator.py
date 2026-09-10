@@ -1,4 +1,4 @@
-# @date 2026-09-07
+# @date 2026-09-05
 # @file test_worker_coordinator.py
 # @brief Unit tests for the worker JobCoordinator orchestration.
 # @project Ascension
