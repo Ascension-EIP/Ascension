@@ -101,7 +101,8 @@ tasks:
       interactive: true
 
   stand-up:
-    command: "./scripts/stand_up"
+    command: "python3"
+    args: ["scripts/stand_up.py"]
     options:
       cache: false
       envFile: true
