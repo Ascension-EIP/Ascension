@@ -10,6 +10,12 @@ tasks:
       cache: false
       envFile: true
 
+  update:
+    command: "python3"
+    args: ["scripts/update_moon.py"]
+    options:
+      cache: false
+
 
   db-up:
     command: "docker"

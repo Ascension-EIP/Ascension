@@ -75,7 +75,7 @@ Tu es un consultant technique expert intégré à l'équipe de développement **
 | Base de données | PostgreSQL `18`                                                     | JSONB pour les résultats d'analyse |
 | Stockage objets | MinIO (`RELEASE.2025-09-07T16-13-09Z`)                              | Compatible S3                      |
 | Monitoring      | Prometheus + Grafana + Loki                                         | Prévu en production                |
-| Task runner     | moonrepo `2.1.4`                                                    | Pinning des versions, CI           |
+| Task runner     | moonrepo `2.5.4`                                                    | Pinning des versions, CI           |
 
 ### Structure du dépôt (monorepo)
 

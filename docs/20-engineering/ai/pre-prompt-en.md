@@ -76,7 +76,7 @@ You are an expert technical consultant embedded in the **Ascension** development
 | Database       | PostgreSQL `18`                                                   | JSONB for analysis outputs  |
 | Object storage | MinIO (`RELEASE.2025-09-07T16-13-09Z`)                            | S3-compatible               |
 | Monitoring     | Prometheus + Grafana + Loki                                       | Planned for production      |
-| Task runner    | moonrepo `2.1.4`                                                  | Version pinning, CI         |
+| Task runner    | moonrepo `2.5.4`                                                  | Version pinning, CI         |
 
 ### Repository structure (monorepo)
 
