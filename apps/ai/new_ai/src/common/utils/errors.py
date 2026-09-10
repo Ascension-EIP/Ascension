@@ -12,4 +12,5 @@ def throw_if_none(model: BaseModel):
     fields_with_none = [
         field for field, value in model.model_dump().items() if value is None
     ]
-    raise ValueError(f"fields: {fields_with_none} are mandatory.")
+    if fields_with_none:
+        raise ValueError(f"fields: {fields_with_none} are mandatory.")

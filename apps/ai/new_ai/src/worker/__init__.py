@@ -9,7 +9,8 @@ import sys
 
 from dotenv import load_dotenv
 
-from services.postgresql import Database
+from services.minio import MinIO
+from services.postgresql import PostgreSQL
 from services.rabbitmq import Broker
 
 load_dotenv()
@@ -18,8 +19,10 @@ load_dotenv()
 def main() -> None:
     broker = Broker()
     broker.connect()
-    db = Database()
+    db = PostgreSQL()
     db.connect()
+    storage = MinIO()
+    storage.connect()
 
     # if args = aucun
     # try:

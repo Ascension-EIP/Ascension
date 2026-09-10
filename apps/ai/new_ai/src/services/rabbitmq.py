@@ -39,8 +39,8 @@ class Broker:
             password=broker_pass,
             retry_delay=int(os.getenv("RABBITMQ_RETRY_DELAY", "5")),
             max_retries=int(os.getenv("RABBITMQ_MAX_RETRIES", "12")),
-            queue_skeleton="ascension.skeleton",
-            exchange_events="ascension.events",
+            queue="ascension.skeleton",
+            exchange="ascension.events",
         )
         throw_if_none(self.config)
 
@@ -49,6 +49,12 @@ class Broker:
             self.setup_config()
 
         self.connection = pika.BlockingConnection(
-            pika.ConnectionParameters("localhost")
+            pika.ConnectionParameters(
+                host=self.config.host,
+                port=self.config.port,
+                credentials=pika.PlainCredentials(
+                    self.config.user, self.config.password
+                ),
+            )
         )
         self.channel = self.connection.channel()

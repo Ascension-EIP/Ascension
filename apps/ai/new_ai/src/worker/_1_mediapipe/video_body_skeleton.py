@@ -12,7 +12,8 @@ import mediapipe as mp
 from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.vision import drawing_styles, drawing_utils
 from rich.progress import track
-from utils.logger import log
+
+from common.utils.logger import log
 
 
 class VideoBodySkeleton:
