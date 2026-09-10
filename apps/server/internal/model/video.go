@@ -1,8 +1,8 @@
-// @date 2026-03-20
+// @date 2026-09-06
 // @file video.go
-// @brief File description.
+// @brief Domain models for videos.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package model
@@ -25,7 +25,7 @@ type (
 	FileInfo struct {
 		UserID    uuid.UUID
 		Extension string
-		Size      int
+		Size      int64
 	}
 
 	DownloadVideoURL struct {
@@ -45,6 +45,8 @@ type (
 		Bucket    string
 		ObjectKey string
 		Status    VideoStatus
+		Duration  *int64
+		Size      *int64
 		ExpiresAt time.Time
 	}
 
@@ -54,6 +56,8 @@ type (
 		Bucket    *string
 		ObjectKey *string
 		Status    *VideoStatus
+		Duration  *int64
+		Size      *int64
 		ExpiresAt *time.Time
 	}
 )

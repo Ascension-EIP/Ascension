@@ -1,8 +1,8 @@
-// @date 2026-03-19
+// @date 2026-09-06
 // @file analysis.go
-// @brief File description.
+// @brief Application service orchestrating analysis workflows.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package service
@@ -36,7 +36,11 @@ func NewAnalysisService(repo analysisRepository, queue analysisQueue) AnalysisSe
 	return AnalysisService{repo: repo, queue: queue}
 }
 
-func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (*model.Analysis, error) {
+func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID, userID uuid.UUID, analysisType model.AnalysisType) (*model.Analysis, error) {
+	if analysisType == "" {
+		analysisType = model.AnalysisType2D
+	}
+
 	videoInfo, err := s.repo.GetCompletedVideoInfoByUserID(ctx, videoID, userID)
 	if err != nil {
 		return nil, err
@@ -44,7 +48,10 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID
 
 	var analysis *model.Analysis
 	if err := s.repo.WithTransaction(ctx, func(ctx context.Context) error {
-		analysis, err = s.repo.CreateAnalysis(ctx, &model.NewAnalysis{VideoID: videoID})
+		analysis, err = s.repo.CreateAnalysis(ctx, &model.NewAnalysis{
+			VideoID: videoID,
+			Type:    analysisType,
+		})
 		if err != nil {
 			return err
 		}
@@ -52,11 +59,15 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID
 		videoURL := fmt.Sprintf("s3://%s/%s", videoInfo.Bucket, videoInfo.ObjectKey)
 
 		data, err := json.Marshal(struct {
-			AnalysisID uuid.UUID `json:"analysis_id"`
-			VideoURL   string    `json:"video_url"`
+			AnalysisID   uuid.UUID `json:"analysis_id"`
+			VideoURL     string    `json:"video_url"`
+			Type         string    `json:"type"`
+			PipelineName string    `json:"pipeline_name,omitempty"`
 		}{
-			AnalysisID: analysis.ID,
-			VideoURL:   videoURL,
+			AnalysisID:   analysis.ID,
+			VideoURL:     videoURL,
+			Type:         string(analysis.Type),
+			PipelineName: string(analysis.Type),
 		})
 		if err != nil {
 			return err

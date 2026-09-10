@@ -1,0 +1,7 @@
+interface:
+  display_name: "Forui Styling"
+  short_description: "Customize Forui styles and variants"
+  default_prompt: "Use $forui-styling to customize a Forui widget style."
+
+policy:
+  allow_implicit_invocation: true

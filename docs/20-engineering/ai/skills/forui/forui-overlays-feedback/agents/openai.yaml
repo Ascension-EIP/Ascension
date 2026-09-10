@@ -1,0 +1,7 @@
+interface:
+  display_name: "Forui Overlays"
+  short_description: "Use dialogs, sheets, popovers, toasts"
+  default_prompt: "Use $forui-overlays-feedback to implement a Forui overlay or toast."
+
+policy:
+  allow_implicit_invocation: true

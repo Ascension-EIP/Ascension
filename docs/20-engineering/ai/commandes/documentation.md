@@ -58,7 +58,7 @@ Before auditing or mass-updating documentation, check for a `.docignore` file at
 The following files and patterns are **always ignored** — never add a project header, TOC, or apply these guidelines to them:
 
 - `.github/prompts/*.prompt.md` — Copilot prompt files use their own YAML frontmatter format and must not be reformatted.
-- `.github/agents/*.agent.md` — Squad agent definition files.
+- `.github/agents/*.agent.md` — Copilot agent definition files.
 - `**/.docignore` — the ignore files themselves.
 - Any file explicitly listed inside a `.docignore` file found in the same directory or any parent directory.
 

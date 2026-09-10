@@ -1,8 +1,8 @@
-// @date 2026-03-18
+// @date 2026-09-04
 // @file config.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package config
@@ -17,7 +17,7 @@ import (
 
 type (
 	Config struct {
-		DB       DBConfig       `envPrefix:"DB_"`
+		DB       DBConfig       `envPrefix:"POSTGRES_"`
 		MinIO    MinIOConfig    `envPrefix:"MINIO_"`
 		RabbitMQ RabbitMQConfig `envPrefix:"RABBITMQ_"`
 		Auth     AuthConfig     `envPrefix:"AUTH_"`
@@ -28,9 +28,9 @@ type (
 	DBConfig struct {
 		Host      string `env:"HOST" envDefault:"localhost"`
 		Port      int    `env:"PORT" envDefault:"5432"`
-		Name      string `env:"NAME,unset,required"`
+		Name      string `env:"DB,unset,required"`
 		User      string `env:"USER,unset,required"`
-		Password  string `env:"PASS,unset,required"`
+		Password  string `env:"PASSWORD,unset,required"`
 		Params    string `env:"PARAMS" envDefault:"sslmode=disable"`
 		Migration string `env:"MIGRATION"`
 	}
@@ -42,7 +42,7 @@ type (
 		BucketName  string        `env:"BUCKET,required"`
 		SSL         bool          `env:"SSL" envDefault:"false"`
 		UploadExp   time.Duration `env:"UPLOAD_EXP" envDefault:"1h"`
-		DownloadExp time.Duration `env:"DOWNLAOD_EXP" envDefault:"1h"`
+		DownloadExp time.Duration `env:"DOWNLOAD_EXP" envDefault:"1h"`
 	}
 
 	RabbitMQConfig struct {

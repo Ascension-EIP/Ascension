@@ -1,0 +1,7 @@
+interface:
+  display_name: "Forui CLI"
+  short_description: "Run Forui init, snippets, styles, themes"
+  default_prompt: "Use $forui-cli to generate or update Forui CLI files."
+
+policy:
+  allow_implicit_invocation: true

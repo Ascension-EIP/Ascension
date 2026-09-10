@@ -1,0 +1,7 @@
+interface:
+  display_name: "Forui Setup"
+  short_description: "Install and wire Forui app roots"
+  default_prompt: "Use $forui-setup to install Forui and wire the Flutter app root."
+
+policy:
+  allow_implicit_invocation: true

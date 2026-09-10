@@ -1,0 +1,7 @@
+interface:
+  display_name: "Forui Best Practices"
+  short_description: "Review Forui app architecture"
+  default_prompt: "Use $forui-best-practices to review a Forui app architecture."
+
+policy:
+  allow_implicit_invocation: true

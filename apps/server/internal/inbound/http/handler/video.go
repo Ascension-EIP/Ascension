@@ -1,8 +1,8 @@
-// @date 2026-03-20
+// @date 2026-09-06
 // @file video.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package handler
@@ -108,11 +108,11 @@ func getVideoExtension(contentType string) (string, error) {
 	return ext, nil
 }
 
-func validateVideoSize(s string) (int, error) {
+func validateVideoSize(s string) (int64, error) {
 	if s == "" {
 		return 0, fmt.Errorf("size missing")
 	}
-	size, err := strconv.Atoi(s)
+	size, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
 		return 0, fmt.Errorf("invalid size")
 	}

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Forui Forms"
+  short_description: "Build Forui inputs and forms"
+  default_prompt: "Use $forui-forms-inputs to build a Forui form or input flow."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Forui Hooks And Icons"
+  short_description: "Use Forui hooks, icons, localization"
+  default_prompt: "Use $forui-hooks-icons-localization to wire Forui hooks, icons, or localization."
+
+policy:
+  allow_implicit_invocation: true

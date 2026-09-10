@@ -1,0 +1,7 @@
+interface:
+  display_name: "Forui Layout"
+  short_description: "Build Forui shells and navigation"
+  default_prompt: "Use $forui-layout-navigation to build a Forui app shell."
+
+policy:
+  allow_implicit_invocation: true

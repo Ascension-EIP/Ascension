@@ -1,5 +1,5 @@
-> **Last updated:** 16th July 2026
-> **Version:** 2.4
+> **Last updated:** 10th September 2026
+> **Version:** 2.5
 > **Authors:** Gianni TUERO
 > **Status:** Done
 > {.is-success}
@@ -134,6 +134,7 @@ Ascension/ (Monorepo)
 $schema: './cache/schemas/workspace.json'
 
 projects:
+  root: '.'
   mobile: 'apps/mobile'
   server: 'apps/server'
   ai:     'apps/ai'
@@ -319,7 +320,7 @@ moon run :lint
 # Clean build/cache directories across all projects
 moon run :clean
 
-# Update and lock dependencies across all projects
+# Update and lock dependencies across all projects (including moon at root)
 moon run :update
 ```
 

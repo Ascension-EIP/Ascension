@@ -1,0 +1,7 @@
+interface:
+  display_name: "Forui Content"
+  short_description: "Use Forui cards, tiles, alerts, progress"
+  default_prompt: "Use $forui-content-components to build a Forui content component."
+
+policy:
+  allow_implicit_invocation: true

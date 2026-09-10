@@ -1,8 +1,8 @@
-// @date 2026-03-14
+// @date 2026-09-06
 // @file postgres.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package postgres
@@ -10,6 +10,8 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -44,7 +46,7 @@ func New(l *zerolog.Logger, dsn string, migrationDir string) (PostgresRepository
 	}
 
 	if migrationDir != "" {
-		if err := migrateDB(dsn, migrationDir); err != nil {
+		if err := MigrateDB(dsn, migrationDir); err != nil {
 			return PostgresRepository{}, err
 		}
 		l.Info().Msg("migration completed successfully")
@@ -53,17 +55,41 @@ func New(l *zerolog.Logger, dsn string, migrationDir string) (PostgresRepository
 	return PostgresRepository{Pool: pool}, nil
 }
 
-func migrateDB(dsn string, migrationDir string) error {
-	m, err := migrate.New(
-		migrationDir,
+func ResolveMigrationDir(migrationDir string) string {
+	clean := strings.TrimPrefix(migrationDir, "file://")
+	clean = strings.TrimPrefix(clean, "folder://")
+	clean = strings.TrimPrefix(clean, "dir://")
+	if clean == "" || clean == "true" || clean == "1" {
+		if _, err := os.Stat("migrations"); err == nil {
+			return "migrations"
+		}
+		if _, err := os.Stat("apps/server/migrations"); err == nil {
+			return "apps/server/migrations"
+		}
+		return "migrations"
+	}
+	return clean
+}
+
+func MigrateDB(dsn string, migrationDir string) error {
+	dirPath := ResolveMigrationDir(migrationDir)
+	src, err := NewDirSource(dirPath)
+	if err != nil {
+		return fmt.Errorf("cannot create migration source: %w", err)
+	}
+
+	m, err := migrate.NewWithSourceInstance(
+		"folder",
+		src,
 		dsn,
 	)
 	if err != nil {
-		return fmt.Errorf("cannot create migrate instance: %v", err)
+		return fmt.Errorf("cannot create migrate instance: %w", err)
 	}
+	defer m.Close()
 
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		return fmt.Errorf("cannot migrate: %v", err)
+		return fmt.Errorf("cannot migrate: %w", err)
 	}
 
 	return nil
