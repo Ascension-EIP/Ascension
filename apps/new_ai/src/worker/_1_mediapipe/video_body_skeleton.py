@@ -18,7 +18,7 @@ from common.utils.logger import log
 
 class VideoBodySkeleton:
     def __init__(
-        self, video_path: str, model: str = "resources/pose_landmarker_heavy.task"
+        self, video_path: str, model: str = "resources/pose_landmarker_full.task"
     ):
         self.video_path = video_path
         self.landmarker = self.init_model(model)

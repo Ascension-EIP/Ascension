@@ -6,6 +6,7 @@
 # @copyright (c) 2026 Ascension
 # @status done
 import os
+from typing import Self
 
 from minio import Minio
 
@@ -18,7 +19,7 @@ class MinIO:
         self.config: StorageModel | None = None
         self.client: Minio | None = None
 
-    def setup_config(self):
+    def setup_config(self) -> Self:
         endpoint = os.getenv("MINIO_ENDPOINT")
         if not endpoint:
             minio_host = os.getenv("MINIO_HOST", "localhost")
@@ -44,7 +45,7 @@ class MinIO:
         )
         throw_if_none(self.config)
 
-    def connect(self):
+    def connect(self) -> Self:
         if not self.config:
             self.setup_config()
 

@@ -6,6 +6,7 @@
 # @copyright (c) 2026 Ascension
 # @status done
 import os
+from typing import Self
 
 import psycopg
 from psycopg import Connection
@@ -19,7 +20,7 @@ class PostgreSQL:
         self.config: DatabaseModel | None = None
         self.connection: Connection | None = None
 
-    def setup_config(self):
+    def setup_config(self) -> Self:
         self.config = DatabaseModel(
             url=os.getenv("POSTGRES_DB_URL"),
             host=os.getenv("POSTGRES_HOST", "localhost"),
@@ -30,7 +31,7 @@ class PostgreSQL:
         )
         throw_if_none(self.config)
 
-    def connect(self):
+    def connect(self) -> Self:
         if not self.config:
             self.setup_config()
 

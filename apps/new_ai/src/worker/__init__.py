@@ -6,9 +6,11 @@
 # @copyright (c) 2026 Ascension
 # @status done
 import sys
+import traceback
 
 from dotenv import load_dotenv
 
+from common.utils.logger import log
 from services.minio import MinIO
 from services.postgresql import PostgreSQL
 from services.rabbitmq import Broker
@@ -17,12 +19,12 @@ load_dotenv()
 
 
 def main() -> None:
-    broker = Broker()
-    broker.connect()
-    db = PostgreSQL()
-    db.connect()
-    storage = MinIO()
-    storage.connect()
+    try:
+        broker = Broker().connect().setup_channel().start_consuming()  # noqa: F841
+        db = PostgreSQL().connect()  # noqa: F841
+        storage = MinIO().connect()  # noqa: F841
+    except Exception:  # noqa: BLE001
+        log.error(traceback.format_exc())
 
     # if args = aucun
     # try:
