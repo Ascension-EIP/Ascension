@@ -1,3 +1,10 @@
+# @date 2026-09-10
+# @file video_body_skeleton.py
+# @brief File description.
+# @project Ascension
+# @author Gianni TUERO <gianni.tuero@epitech.eu>
+# @copyright (c) 2026 Ascension
+# @status done
 from pathlib import Path
 
 import cv2

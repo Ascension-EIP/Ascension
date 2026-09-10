@@ -1,8 +1,8 @@
-// @date 2026-09-07
+// @date 2026-09-06
 // @file analyse.go
 // @brief Request DTO for analysis endpoints.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package request

@@ -1,4 +1,4 @@
-# @date 2026-09-07
+# @date 2026-09-05
 # @file base.py
 # @brief Base pipeline class and advice capability protocol.
 # @project Ascension
