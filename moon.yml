@@ -10,13 +10,14 @@ tasks:
       - "apps/server/migrations/**/*"
     options:
       envFile: true
+      outputStyle: "buffer-only-failure"
+
 
   update:
     command: "python3"
     args: ["scripts/update_moon.py"]
     options:
       cache: false
-
 
   db-up:
     command: "docker"
@@ -56,6 +57,8 @@ tasks:
       - "**/*.dart"
       - "**/*.py"
       - "scripts/manage_headers.py"
+    options:
+      outputStyle: "buffer-only-failure"
 
   sonar-up:
     command: "docker"

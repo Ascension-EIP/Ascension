@@ -13,6 +13,8 @@ tasks:
       - "go.sum"
     deps:
       - "root:setup"
+    #options:
+    #  outputStyle: "buffer-only-failure"
 
   update:
     script: |
