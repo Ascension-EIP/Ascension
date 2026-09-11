@@ -26,6 +26,10 @@ func NewUserService(repo model.UserRepository) UserService {
 }
 
 func (s *UserService) CreateUser(ctx context.Context, user model.User) (model.User, error) {
+	if err := user.IsValid(); err != nil {
+		return model.User{}, fmt.Errorf("user validation: %w", err)
+	}
+
 	hashPassword, err := bcrypt.GenerateFromPassword(user.Password, bcrypt.DefaultCost)
 	if err != nil {
 		return model.User{}, fmt.Errorf("create password hash for new user %v: %w", user.Email, err)
@@ -72,6 +76,10 @@ func (s *UserService) ListUsersByFilter(ctx context.Context, filter model.UserFi
 }
 
 func (s *UserService) UpdateUser(ctx context.Context, partial model.UserPartial) (model.User, error) {
+	if err := partial.IsValid(); err != nil {
+		return model.User{}, fmt.Errorf("user validation: %w", err)
+	}
+
 	user, err := s.repo.UpdateUser(ctx, partial)
 	if err != nil {
 		return model.User{}, fmt.Errorf("update user %s: %w", partial.ID.String(), err)

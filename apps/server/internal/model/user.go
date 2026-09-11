@@ -74,10 +74,50 @@ type UserPartial struct {
 	Role     *UserRole
 }
 
+func (u UserPartial) IsValid() error {
+	if err := u.Name.IsValid(); err != nil {
+		return err
+	}
+
+	if err := u.Email.IsValid(); err != nil {
+		return err
+	}
+
+	if err := u.Password.IsValid(); err != nil {
+		return err
+	}
+
+	if err := u.Role.IsValid(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type User struct {
 	ID       uuid.UUID
 	Name     UserName
 	Email    UserEmail
 	Password UserPassword
 	Role     UserRole
+}
+
+func (u User) IsValid() error {
+	if err := u.Name.IsValid(); err != nil {
+		return err
+	}
+
+	if err := u.Email.IsValid(); err != nil {
+		return err
+	}
+
+	if err := u.Password.IsValid(); err != nil {
+		return err
+	}
+
+	if err := u.Role.IsValid(); err != nil {
+		return err
+	}
+
+	return nil
 }
