@@ -22,8 +22,14 @@ import "errors"
 // )
 
 var (
-	ErrEmailDuplicate = errors.New("email already exists")
-	ErrUserNotFound   = errors.New("user not found")
-	ErrBadPassword    = errors.New("incorrect password")
-	ErrUnknown        = errors.New("unknown error")
+	ErrEmailDuplicated = errors.New("email already exists")
+	ErrUserNotFound    = errors.New("user not found")
+	ErrBadPassword     = errors.New("incorrect password")
+
+	ErrInvalidInput = errors.New("invalid input")
+	ErrConflict     = errors.New("conflict")
+	ErrNotFound     = errors.New("not found")
+	ErrInternalDB   = errors.New("internal database error")
+
+	ErrUnknown = errors.New("unknown error")
 )

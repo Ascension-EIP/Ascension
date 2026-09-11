@@ -24,8 +24,8 @@ type User struct {
 	UpdatedAt time.Time      `db:"updated_at"`
 }
 
-func (u *User) ToUser() *model.User {
-	return &model.User{
+func (u User) ToUser() model.User {
+	return model.User{
 		ID:       u.ID,
 		Name:     u.Name,
 		Email:    u.Email,
@@ -34,10 +34,10 @@ func (u *User) ToUser() *model.User {
 	}
 }
 
-func UsersToUsers(dto []*User) []*model.User {
-	users := []*model.User{}
+func UsersToUsers(dto []User) []model.User {
+	users := []model.User{}
 	for _, user := range dto {
-		users = append(users, &model.User{
+		users = append(users, model.User{
 			ID:       user.ID,
 			Name:     user.Name,
 			Email:    user.Email,
