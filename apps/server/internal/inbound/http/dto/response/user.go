@@ -16,17 +16,17 @@ type User struct {
 	Role  string
 }
 
-func UserToResponse(user *model.User) *User {
-	return &User{
+func UserToResponse(user model.User) User {
+	return User{
 		ID:    user.ID.String(),
-		Name:  user.Name,
-		Email: user.Email,
+		Name:  string(user.Name),
+		Email: string(user.Email),
 		Role:  string(user.Role),
 	}
 }
 
-func UsersToResponse(users []*model.User) []*User {
-	r := []*User{}
+func UsersToResponse(users []model.User) []User {
+	r := []User{}
 	for _, user := range users {
 		r = append(r, UserToResponse(user))
 	}

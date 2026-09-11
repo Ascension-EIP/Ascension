@@ -9,10 +9,12 @@ package service
 
 import (
 	"context"
+	"fmt"
+
+	"uuid"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"golang.org/x/crypto/bcrypt"
-	"uuid"
 )
 
 type UserService struct {
@@ -23,28 +25,65 @@ func NewUserService(repo model.UserRepository) UserService {
 	return UserService{repo: repo}
 }
 
-func (s *UserService) CreateUser(c context.Context, user *model.NewUser) (*model.User, error) {
+func (s *UserService) CreateUser(ctx context.Context, user model.User) (model.User, error) {
 	hashPassword, err := bcrypt.GenerateFromPassword(user.Password, bcrypt.DefaultCost)
 	if err != nil {
-		return nil, err
+		return model.User{}, fmt.Errorf("create password hash for new user %v: %w", user.Email, err)
 	}
 	user.Password = hashPassword
 
-	return s.repo.CreateUser(c, user)
+	return s.repo.CreateUser(ctx, user)
 }
 
-func (s *UserService) GetUserByID(c context.Context, id uuid.UUID) (*model.User, error) {
-	return s.repo.GetUserByID(c, id)
+func (s *UserService) GetUserByID(ctx context.Context, userID uuid.UUID) (model.User, error) {
+	user, err := s.repo.GetUserByFilter(ctx, model.UserFilter{ID: &userID})
+	if err != nil {
+		return model.User{}, fmt.Errorf("get user with id %v: %w", userID, err)
+	}
+
+	return user, nil
 }
 
-func (s *UserService) ListAllUsers(c context.Context) ([]*model.User, error) {
-	return s.repo.ListAllUsers(c)
+func (s *UserService) GetUserByFilter(ctx context.Context, filter model.UserFilter) (model.User, error) {
+	user, err := s.repo.GetUserByFilter(ctx, filter)
+	if err != nil {
+		return model.User{}, fmt.Errorf("get user for filter %v: %w", filter, err)
+	}
+
+	return user, nil
 }
 
-func (s *UserService) UpdateUser(c context.Context, user *model.PartialUser) (*model.User, error) {
-	return s.repo.UpdateUser(c, user)
+func (s *UserService) ListAllUsers(ctx context.Context) ([]model.User, error) {
+	users, err := s.repo.ListUsersByFilter(ctx, model.UserFilter{})
+	if err != nil {
+		return []model.User{}, fmt.Errorf("list all users: %w", err)
+	}
+
+	return users, nil
 }
 
-func (s *UserService) DeleteUser(c context.Context, id uuid.UUID) error {
-	return s.repo.DeleteUser(c, id)
+func (s *UserService) ListUsersByFilter(ctx context.Context, filter model.UserFilter) ([]model.User, error) {
+	users, err := s.repo.ListUsersByFilter(ctx, filter)
+	if err != nil {
+		return []model.User{}, fmt.Errorf("list users for filter %v: %w", filter, err)
+	}
+
+	return users, nil
+}
+
+func (s *UserService) UpdateUser(ctx context.Context, partial model.UserPartial) (model.User, error) {
+	user, err := s.repo.UpdateUser(ctx, partial)
+	if err != nil {
+		return model.User{}, fmt.Errorf("update user %s: %w", partial.ID.String(), err)
+	}
+
+	return user, nil
+}
+
+func (s *UserService) DeleteUser(ctx context.Context, id uuid.UUID) error {
+	if err := s.repo.DeleteUser(ctx, id); err != nil {
+		return fmt.Errorf("delete user %s: %w", id.String(), err)
+	}
+
+	return nil
 }

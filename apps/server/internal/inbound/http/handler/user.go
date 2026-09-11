@@ -9,6 +9,7 @@ package handler
 
 import (
 	"net/http"
+	"uuid"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/request"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
@@ -31,13 +32,13 @@ func (h *UserHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
-	user, err := req.IntoNewUser()
+	user, err := req.IntoUser()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
 
-	createdUser, err := h.s.CreateUser(c.Request.Context(), &user)
+	createdUser, err := h.s.CreateUser(c.Request.Context(), user)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -49,7 +50,7 @@ func (h *UserHandler) Create(c *gin.Context) {
 
 func (h *UserHandler) GetByID(c *gin.Context) {
 	id := c.Param("id")
-	userID, err := request.IntoUUID(id)
+	userID, err := uuid.Parse(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
@@ -83,13 +84,13 @@ func (h *UserHandler) Update(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
-	user, err := req.IntoPartialUser(id)
+	user, err := req.IntoUserPartial(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
 
-	updatedUser, err := h.s.UpdateUser(c.Request.Context(), &user)
+	updatedUser, err := h.s.UpdateUser(c.Request.Context(), user)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -101,7 +102,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 
 func (h *UserHandler) Delete(c *gin.Context) {
 	id := c.Param("id")
-	userID, err := request.IntoUUID(id)
+	userID, err := uuid.Parse(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return

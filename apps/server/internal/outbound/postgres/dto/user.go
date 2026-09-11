@@ -15,13 +15,13 @@ import (
 )
 
 type User struct {
-	ID        uuid.UUID      `db:"id"`
-	Name      string         `db:"name"`
-	Email     string         `db:"email"`
-	Password  []byte         `db:"password"`
-	Role      model.UserRole `db:"role"`
-	CreatedAt time.Time      `db:"created_at"`
-	UpdatedAt time.Time      `db:"updated_at"`
+	ID        uuid.UUID `db:"id"`
+	Name      string    `db:"name"`
+	Email     string    `db:"email"`
+	Password  []byte    `db:"password"`
+	Role      string    `db:"role"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
 }
 
 func (u User) ToUser() model.User {

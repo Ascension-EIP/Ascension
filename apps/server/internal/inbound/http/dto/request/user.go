@@ -8,59 +8,55 @@
 package request
 
 import (
-	"errors"
-
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"uuid"
 )
 
 type CreateUser struct {
-	Name     string         `json:"name" binding:"required,min=3,max=20,alphanumunicode|contains=_"`
-	Email    string         `json:"email" binding:"required,email"`
+	Name     model.UserName `json:"name" binding:"required"`
+	Email    string         `json:"email" binding:"required"`
 	Password string         `json:"password" binding:"required"`
-	Role     model.UserRole `json:"role" binding:"required"`
+	Role     string         `json:"role" binding:"required"`
 }
 
-func (req *CreateUser) IntoNewUser() (model.NewUser, error) {
-	return model.NewUser{
-		Name:     req.Name,
-		Email:    req.Email,
-		Password: []byte(req.Password),
-		Role:     req.Role,
+func (req *CreateUser) IntoUser() (model.User, error) {
+	return model.User{
+		Name:     model.UserName(req.Name),
+		Email:    model.UserEmail(req.Email),
+		Password: model.UserPassword(req.Password),
+		Role:     model.UserRole(req.Role),
 	}, nil
 }
 
 type UpdateUser struct {
-	Name     *string         `json:"name" binding:"required,min=3,max=20,alphanumunicode|contains=_"`
-	Email    *string         `json:"email" binding:"omitempty,email"`
-	Password *string         `json:"password"`
-	Role     *model.UserRole `json:"role"`
+	Name     *string `json:"name"`
+	Email    *string `json:"email"`
+	Password *string `json:"password"`
+	Role     *string `json:"role"`
 }
 
-func (req *UpdateUser) IntoPartialUser(idStr string) (model.PartialUser, error) {
-	id, err := IntoUUID(idStr)
+func (req *UpdateUser) IntoUserPartial(id string) (model.UserPartial, error) {
+	userID, err := uuid.Parse(id)
 	if err != nil {
-		return model.PartialUser{}, err
+		return model.UserPartial{}, err
 	}
 
-	var bytePassword []byte
+	userPartial := model.UserPartial{
+		ID: userID,
+	}
+
+	if req.Name != nil {
+		userPartial.Name = new(model.UserName(*req.Name))
+	}
+	if req.Email != nil {
+		userPartial.Email = new(model.UserEmail(*req.Email))
+	}
 	if req.Password != nil {
-		bytePassword = []byte(*(req.Password))
+		userPartial.Password = new(model.UserPassword(*req.Password))
+	}
+	if req.Role != nil {
+		userPartial.Role = new(model.UserRole(*req.Role))
 	}
 
-	return model.PartialUser{
-		ID:       id,
-		Name:     req.Name,
-		Email:    req.Email,
-		Password: &bytePassword,
-		Role:     req.Role,
-	}, nil
-}
-
-func IntoUUID(s string) (uuid.UUID, error) {
-	id, err := uuid.Parse(s)
-	if err != nil {
-		return uuid.UUID{}, errors.New("invalid uuid")
-	}
-	return id, nil
+	return userPartial, nil
 }

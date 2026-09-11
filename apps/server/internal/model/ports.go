@@ -11,11 +11,10 @@ import (
 
 type UserRepository interface {
 	TransactionRepository
-	CreateUser(ctx context.Context, user *NewUser) (*User, error)
-	GetUserByID(ctx context.Context, userID uuid.UUID) (*User, error)
-	GetUserByEmail(ctx context.Context, email string) (*User, error)
-	ListAllUsers(ctx context.Context) ([]*User, error)
-	UpdateUser(ctx context.Context, user *PartialUser) (*User, error)
+	CreateUser(ctx context.Context, user User) (User, error)
+	GetUserByFilter(ctx context.Context, filter UserFilter) (User, error)
+	ListUsersByFilter(ctx context.Context, filter UserFilter) ([]User, error)
+	UpdateUser(ctx context.Context, partial UserPartial) (User, error)
 	DeleteUser(ctx context.Context, userID uuid.UUID) error
 }
 
