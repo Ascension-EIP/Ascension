@@ -21,39 +21,46 @@ const (
 	VideoStatusCompleted VideoStatus = "completed"
 )
 
-type (
-	FileInfo struct {
-		UserID    uuid.UUID
-		Extension string
-		Size      int
-	}
+type FileInfo struct {
+	UserID    uuid.UUID
+	Extension string
+	Size      int
+}
 
-	DownloadVideoURL struct {
-		URL       *url.URL
-		ExpiresAt time.Time
-	}
+type VideoDownloadURL struct {
+	URL       *url.URL
+	ExpiresAt time.Time
+}
 
-	UploadVideoURL struct {
-		VideoID   uuid.UUID
-		URL       *url.URL
-		ExpiresAt time.Time
-	}
+type VideoUploadURL struct {
+	VideoID   uuid.UUID
+	URL       *url.URL
+	ExpiresAt time.Time
+}
 
-	VideoInfo struct {
-		ID        uuid.UUID
-		UserID    uuid.UUID
-		Bucket    string
-		ObjectKey string
-		Status    VideoStatus
-		ExpiresAt time.Time
-	}
+type Video struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	Bucket    string
+	ObjectKey string
+	Status    VideoStatus
+	ExpiresAt time.Time
+}
 
-	PartialVideoInfo struct {
-		ID        uuid.UUID
-		UserID    uuid.UUID
-		Bucket    *string
-		ObjectKey *string
-		Status    *VideoStatus
-		ExpiresAt *time.Time
-	}
-)
+type VideoFilter struct {
+	ID        *uuid.UUID
+	UserID    *uuid.UUID
+	Bucket    *string
+	ObjectKey *string
+	Status    *VideoStatus
+	ExpiresAt *time.Time
+}
+
+type VideoPartial struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	Bucket    *string
+	ObjectKey *string
+	Status    *VideoStatus
+	ExpiresAt *time.Time
+}

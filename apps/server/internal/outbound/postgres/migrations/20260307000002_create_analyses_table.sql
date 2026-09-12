@@ -1,5 +1,5 @@
 CREATE TABLE analyses (
-    id TEXT PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
     video_id TEXT NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
     job_id TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'pending',

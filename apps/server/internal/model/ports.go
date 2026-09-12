@@ -34,11 +34,9 @@ type AnalysisRepository interface {
 
 type VideoRepository interface {
 	TransactionRepository
-	CreateVideoInfo(ctx context.Context, video *VideoInfo) error
-	GetVideoInfoByUserID(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (*VideoInfo, error)
-	GetCompletedVideoInfoByUserID(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (*VideoInfo, error)
-	UpdateVideoInfo(ctx context.Context, video *PartialVideoInfo) (*VideoInfo, error)
-	WithTransaction(ctx context.Context, fn func(context.Context) error) error
+	CreateVideo(ctx context.Context, video Video) error
+	GetVideoByFilter(ctx context.Context, filter VideoFilter) (Video, error)
+	UpdateVideo(ctx context.Context, partial VideoPartial) (Video, error)
 }
 
 type TransactionRepository interface {

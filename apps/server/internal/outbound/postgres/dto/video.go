@@ -25,8 +25,8 @@ type Video struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-func (v *Video) ToVideoInfo() *model.VideoInfo {
-	return &model.VideoInfo{
+func (v Video) ToVideo() model.Video {
+	return model.Video{
 		ID:        v.ID,
 		UserID:    v.UserID,
 		Bucket:    v.Bucket,

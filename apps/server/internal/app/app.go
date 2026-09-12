@@ -56,7 +56,7 @@ func Run(cfg *config.Config) {
 	jwtS := service.NewJWTService(cfg.Auth.JWT)
 	sessionS := service.NewSessionService(cfg.Auth.Session, &repo)
 	userS := service.NewUserService(&repo)
-	authS := service.NewAuthService(&jwtS, &sessionS, &repo)
+	authS := service.NewAuthService(&jwtS, &sessionS, &userS)
 	videoS := service.NewVideoService(&storage, &repo)
 	analyseS := service.NewAnalysisService(&repo, &repo, &queue)
 
