@@ -17,29 +17,33 @@ import (
 )
 
 type AnalysisService struct {
-	analysisRepo model.AnalysisRepository
-	videoRepo    model.VideoRepository
-	queue        model.AnalysisQueue
+	analysisR model.AnalysisRepository
+	videoR    model.VideoRepository
+	queue     model.AnalysisQueue
 }
 
-func NewAnalysisService(analysisRepo model.AnalysisRepository, videoRepo model.VideoRepository, queue model.AnalysisQueue) AnalysisService {
-	return AnalysisService{analysisRepo: analysisRepo, videoRepo: videoRepo, queue: queue}
+func NewAnalysisService(analysisR model.AnalysisRepository, videoR model.VideoRepository, queue model.AnalysisQueue) AnalysisService {
+	return AnalysisService{analysisR: analysisR, videoR: videoR, queue: queue}
 }
 
-func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (*model.Analysis, error) {
-	videoInfo, err := s.videoRepo.GetCompletedVideoInfoByUserID(ctx, videoID, userID)
+func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (model.Analysis, error) {
+	video, err := s.videoR.GetVideoByFilter(ctx, model.VideoFilter{ID: &videoID, UserID: &userID})
 	if err != nil {
-		return nil, err
+		return model.Analysis{}, err
 	}
 
-	var analysis *model.Analysis
-	if err := s.analysisRepo.WithTransaction(ctx, func(ctx context.Context) error {
-		analysis, err = s.analysisRepo.CreateAnalysis(ctx, &model.NewAnalysis{VideoID: videoID})
+	if video.Status != model.VideoStatusCompleted {
+		return model.Analysis{}, model.ErrVideoUploading
+	}
+
+	var analysis model.Analysis
+	if err := s.analysisR.WithTransaction(ctx, func(ctx context.Context) error {
+		analysis, err = s.analysisR.CreateAnalysis(ctx, model.Analysis{VideoID: videoID})
 		if err != nil {
 			return err
 		}
 
-		videoURL := fmt.Sprintf("s3://%s/%s", videoInfo.Bucket, videoInfo.ObjectKey)
+		videoURL := fmt.Sprintf("s3://%s/%s", video.Bucket, video.ObjectKey)
 
 		data, err := json.Marshal(struct {
 			AnalysisID uuid.UUID `json:"analysis_id"`
@@ -58,16 +62,17 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID
 
 		return nil
 	}); err != nil {
-		return nil, err
+		return model.Analysis{}, err
 	}
 
 	return analysis, nil
 }
 
-func (s *AnalysisService) GetAnalysis(ctx context.Context, id uuid.UUID) (*model.Analysis, error) {
-	analysis, err := s.analysisRepo.GetAnalysis(ctx, id)
+func (s *AnalysisService) GetAnalysis(ctx context.Context, videoID uuid.UUID) (model.Analysis, error) {
+	analysis, err := s.analysisR.GetAnalysisByFilter(ctx, model.AnalysisFilter{ID: &videoID})
 	if err != nil {
-		return nil, err
+		return model.Analysis{}, err
 	}
+
 	return analysis, nil
 }

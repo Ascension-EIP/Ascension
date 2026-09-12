@@ -17,8 +17,8 @@ type AnalysisResponse struct {
 	Status model.AnalysisStatus `json:"status"`
 }
 
-func AnalysisToResponse(analysis *model.Analysis) *AnalysisResponse {
-	return &AnalysisResponse{
+func AnalysisToResponse(analysis model.Analysis) AnalysisResponse {
+	return AnalysisResponse{
 		ID:     analysis.ID,
 		Status: analysis.Status,
 	}
@@ -29,8 +29,8 @@ type AnalysisInfoResponse struct {
 	Status model.AnalysisStatus `json:"status"`
 }
 
-func AnalysisInfoToResponse(analysis *model.Analysis) *AnalysisInfoResponse {
-	return &AnalysisInfoResponse{
+func AnalysisInfoToResponse(analysis model.Analysis) AnalysisInfoResponse {
+	return AnalysisInfoResponse{
 		ID:     analysis.ID,
 		Status: analysis.Status,
 	}

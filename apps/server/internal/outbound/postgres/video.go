@@ -54,10 +54,6 @@ func (r *PostgresRepository) GetVideoByFilter(ctx context.Context, filter model.
 		args = append(args, *filter.Status)
 		setParts = append(setParts, fmt.Sprintf("status = $%d", len(args)))
 	}
-	if filter.ExpiresAt != nil {
-		args = append(args, *filter.ExpiresAt)
-		setParts = append(setParts, fmt.Sprintf("expires_at = $%d", len(args)))
-	}
 
 	query := "SELECT * FROM videos"
 
@@ -105,10 +101,6 @@ func (r *PostgresRepository) ListVideosByFilter(ctx context.Context, filter mode
 	if filter.Status != nil {
 		args = append(args, *filter.Status)
 		setParts = append(setParts, fmt.Sprintf("status = $%d", len(args)))
-	}
-	if filter.ExpiresAt != nil {
-		args = append(args, *filter.ExpiresAt)
-		setParts = append(setParts, fmt.Sprintf("expires_at = $%d", len(args)))
 	}
 
 	query := "SELECT * FROM videos"

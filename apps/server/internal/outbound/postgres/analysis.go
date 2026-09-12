@@ -9,48 +9,68 @@ package postgres
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres/dto"
-	"uuid"
 	"github.com/jackc/pgx/v5"
 )
 
-func (r *PostgresRepository) CreateAnalysis(ctx context.Context, newAnalysis *model.NewAnalysis) (*model.Analysis, error) {
-	if newAnalysis == nil {
-		return nil, model.ErrUnknown
-	}
+func (r *PostgresRepository) CreateAnalysis(ctx context.Context, analysis model.Analysis) (model.Analysis, error) {
 	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx,
 		"INSERT INTO analysis (video_id) VALUES ($1) RETURNING *",
-		newAnalysis.VideoID)
+		analysis.VideoID)
 	if err != nil {
-		return nil, err
+		return model.Analysis{}, dto.Error(err)
 	}
 
-	analysis, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.Analysis])
+	dbAnalysis, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[dto.Analysis])
 	if err != nil {
-		return nil, err
+		return model.Analysis{}, dto.Error(err)
 	}
 
-	return analysis.ToAnalysis(), nil
+	return dbAnalysis.ToAnalysis(), nil
 
 }
 
-func (r *PostgresRepository) GetAnalysis(ctx context.Context, ID uuid.UUID) (*model.Analysis, error) {
-	tx := r.getTx(ctx)
+func (r *PostgresRepository) GetAnalysisByFilter(ctx context.Context, filter model.AnalysisFilter) (model.Analysis, error) {
+	setParts := []string{}
+	args := []any{}
 
-	rows, err := tx.Query(ctx,
-		"SELECT * FROM analysis WHERE id = $1 LIMIT 1",
-		ID)
-	if err != nil {
-		return nil, err
+	if filter.ID != nil {
+		args = append(args, *filter.ID)
+		setParts = append(setParts, fmt.Sprintf("id = $%d", len(args)))
+	}
+	if filter.VideoID != nil {
+		args = append(args, *filter.VideoID)
+		setParts = append(setParts, fmt.Sprintf("video_id = $%d", len(args)))
+	}
+	if filter.Status != nil {
+		args = append(args, *filter.Status)
+		setParts = append(setParts, fmt.Sprintf("status = $%d", len(args)))
 	}
 
-	analysis, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.Analysis])
+	query := "SELECT * FROM analysis"
+
+	if len(setParts) > 0 {
+		query += " WHERE " + strings.Join(setParts, " AND ")
+	}
+
+	query += " LIMIT 1"
+
+	tx := r.getTx(ctx)
+
+	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return model.Analysis{}, dto.Error(err)
+	}
+
+	analysis, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[dto.Analysis])
+	if err != nil {
+		return model.Analysis{}, dto.Error(err)
 	}
 
 	return analysis.ToAnalysis(), nil

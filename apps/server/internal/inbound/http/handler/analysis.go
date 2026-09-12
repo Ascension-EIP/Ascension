@@ -50,7 +50,7 @@ func (h *AnalyseHandler) Create(c *gin.Context) {
 
 func (h *AnalyseHandler) GetByID(c *gin.Context) {
 	idStr := c.Param("id")
-	id, err := request.IntoUUID(idStr)
+	id, err := uuid.Parse(idStr)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

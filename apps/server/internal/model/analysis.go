@@ -20,10 +20,6 @@ const (
 	AnalysisStatusCompleted AnalysisStatus = "completed"
 )
 
-type NewAnalysis struct {
-	VideoID uuid.UUID
-}
-
 type Analysis struct {
 	ID               uuid.UUID
 	VideoID          uuid.UUID
@@ -33,4 +29,10 @@ type Analysis struct {
 	CompletedAt      *time.Time
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
+}
+
+type AnalysisFilter struct {
+	ID      *uuid.UUID
+	VideoID *uuid.UUID
+	Status  *AnalysisStatus
 }

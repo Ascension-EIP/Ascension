@@ -11,17 +11,17 @@ import "github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 
 type User struct {
 	ID    string
-	Name  string
-	Email string
-	Role  string
+	Name  model.UserName
+	Email model.UserEmail
+	Role  model.UserRole
 }
 
 func UserToResponse(user model.User) User {
 	return User{
 		ID:    user.ID.String(),
-		Name:  string(user.Name),
-		Email: string(user.Email),
-		Role:  string(user.Role),
+		Name:  user.Name,
+		Email: user.Email,
+		Role:  user.Role,
 	}
 }
 

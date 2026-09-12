@@ -53,7 +53,6 @@ type VideoFilter struct {
 	Bucket    *string
 	ObjectKey *string
 	Status    *VideoStatus
-	ExpiresAt *time.Time
 }
 
 type VideoPartial struct {

@@ -28,8 +28,8 @@ type SessionRepository interface {
 
 type AnalysisRepository interface {
 	TransactionRepository
-	CreateAnalysis(ctx context.Context, analysis *NewAnalysis) (*Analysis, error)
-	GetAnalysis(ctx context.Context, analysisID uuid.UUID) (*Analysis, error)
+	CreateAnalysis(ctx context.Context, analysis Analysis) (Analysis, error)
+	GetAnalysisByFilter(ctx context.Context, filter AnalysisFilter) (Analysis, error)
 }
 
 type VideoRepository interface {
