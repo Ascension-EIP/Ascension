@@ -18,27 +18,22 @@ import (
 type AuthService struct {
 	jwtS     *JWTService
 	sessionS *SessionService
-	repo     model.UserRepository
+	userS    *UserService
 }
 
-func NewAuthService(jwtS *JWTService, sessionS *SessionService, repo model.UserRepository) AuthService {
+func NewAuthService(jwtS *JWTService, sessionS *SessionService, userS *UserService) AuthService {
 	return AuthService{
 		jwtS:     jwtS,
 		sessionS: sessionS,
-		repo:     repo,
+		userS:    userS,
 	}
 }
 
 func (s *AuthService) SignupAndLogin(ctx context.Context, form model.SignupForm, remember bool) (model.User, model.Tokens, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return model.User{}, model.Tokens{}, model.ErrUnknown
-	}
-
-	user, err := s.repo.CreateUser(ctx, model.User{
+	user, err := s.userS.CreateUser(ctx, model.User{
 		Name:     form.Name,
 		Email:    form.Email,
-		Password: hash,
+		Password: form.Password,
 		Role:     model.UserRoleUser,
 	})
 	if err != nil {
@@ -54,15 +49,10 @@ func (s *AuthService) SignupAndLogin(ctx context.Context, form model.SignupForm,
 }
 
 func (s *AuthService) Signup(ctx context.Context, form model.SignupForm) (model.User, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return model.User{}, model.ErrUnknown
-	}
-
-	user, err := s.repo.CreateUser(ctx, model.User{
+	user, err := s.userS.CreateUser(ctx, model.User{
 		Name:     form.Name,
 		Email:    form.Email,
-		Password: hash,
+		Password: form.Password,
 		Role:     model.UserRoleUser,
 	})
 	if err != nil {
@@ -73,7 +63,7 @@ func (s *AuthService) Signup(ctx context.Context, form model.SignupForm) (model.
 }
 
 func (s *AuthService) Login(ctx context.Context, form model.LoginForm, remember bool) (model.User, model.Tokens, error) {
-	user, err := s.repo.GetUserByFilter(ctx, model.UserFilter{
+	user, err := s.userS.GetUserByFilter(ctx, model.UserFilter{
 		Email: &form.Email,
 	})
 	if err != nil {

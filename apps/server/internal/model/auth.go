@@ -14,14 +14,14 @@ import (
 )
 
 type SignupForm struct {
-	Name     string
-	Email    string
-	Password []byte
+	Name     UserName
+	Email    UserEmail
+	Password UserPassword
 }
 
 type LoginForm struct {
-	Email    string
-	Password []byte
+	Email    UserEmail
+	Password UserPassword
 }
 
 type Tokens struct {

@@ -9,7 +9,6 @@ package request
 
 import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"uuid"
 )
 
 type SignupForm struct {
@@ -20,9 +19,9 @@ type SignupForm struct {
 
 func (req *SignupForm) IntoSignupForm() (model.SignupForm, error) {
 	return model.SignupForm{
-		Name:     req.Name,
-		Email:    req.Email,
-		Password: []byte(req.Password),
+		Name:     model.UserName(req.Name),
+		Email:    model.UserEmail(req.Email),
+		Password: model.UserPassword(req.Password),
 	}, nil
 }
 
@@ -35,9 +34,9 @@ type SignupLoginForm struct {
 
 func (req *SignupLoginForm) IntoSignupLoginForm() (model.SignupForm, error) {
 	return model.SignupForm{
-		Name:     req.Name,
-		Email:    req.Email,
-		Password: []byte(req.Password),
+		Name:     model.UserName(req.Name),
+		Email:    model.UserEmail(req.Email),
+		Password: model.UserPassword(req.Password),
 	}, nil
 }
 
@@ -49,8 +48,8 @@ type LoginForm struct {
 
 func (req *LoginForm) IntoLoginForm() (model.LoginForm, error) {
 	return model.LoginForm{
-		Email:    req.Email,
-		Password: []byte(req.Password),
+		Email:    model.UserEmail(req.Email),
+		Password: model.UserPassword(req.Password),
 	}, nil
 }
 
