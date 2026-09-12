@@ -17,7 +17,7 @@ import (
 
 type (
 	Config struct {
-		DB       DBConfig       `envPrefix:"DB_"`
+		DB       DBConfig       `envPrefix:"POSTGRES_"`
 		MinIO    MinIOConfig    `envPrefix:"MINIO_"`
 		RabbitMQ RabbitMQConfig `envPrefix:"RABBITMQ_"`
 		Auth     AuthConfig     `envPrefix:"AUTH_"`
@@ -28,9 +28,9 @@ type (
 	DBConfig struct {
 		Host     string `env:"HOST" envDefault:"localhost"`
 		Port     int    `env:"PORT" envDefault:"5432"`
-		Name     string `env:"NAME,unset,required"`
+		Name     string `env:"DB,unset,required"`
 		User     string `env:"USER,unset,required"`
-		Password string `env:"PASS,unset,required"`
+		Password string `env:"PASSWORD,unset,required"`
 		Params   string `env:"PARAMS" envDefault:"sslmode=disable"`
 	}
 
