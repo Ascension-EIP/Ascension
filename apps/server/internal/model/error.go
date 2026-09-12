@@ -26,6 +26,8 @@ var (
 	ErrUserNotFound    = errors.New("user not found")
 	ErrBadPassword     = errors.New("incorrect password")
 
+	ErrInvalidToken = errors.New("invalid token")
+
 	ErrInvalidInput = errors.New("invalid input")
 	ErrConflict     = errors.New("conflict")
 	ErrNotFound     = errors.New("not found")

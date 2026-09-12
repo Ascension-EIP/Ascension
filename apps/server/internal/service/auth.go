@@ -29,100 +29,103 @@ func NewAuthService(jwtS *JWTService, sessionS *SessionService, repo model.UserR
 	}
 }
 
-func (s *AuthService) SignupAndLogin(ctx context.Context, form *model.SignupLoginForm) (*model.User, *model.Tokens, error) {
+func (s *AuthService) SignupAndLogin(ctx context.Context, form model.SignupForm, remember bool) (model.User, model.Tokens, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, nil, model.ErrUnknown
+		return model.User{}, model.Tokens{}, model.ErrUnknown
 	}
 
-	user, err := s.repo.CreateUser(ctx, &model.NewUser{
+	user, err := s.repo.CreateUser(ctx, model.User{
 		Name:     form.Name,
 		Email:    form.Email,
 		Password: hash,
 		Role:     model.UserRoleUser,
 	})
 	if err != nil {
-		return nil, nil, err
+		return model.User{}, model.Tokens{}, err
 	}
 
-	accessToken, err := s.jwtS.CreateAccessToken(ctx, user)
+	tokens, err := s.CreateTokens(ctx, user, remember)
 	if err != nil {
-		return nil, nil, err
+		return model.User{}, model.Tokens{}, err
 	}
 
-	refreshToken, err := s.sessionS.CreateRefreshToken(ctx, user.ID, form.Remember)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return user, &model.Tokens{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-	}, nil
+	return user, tokens, nil
 }
 
-func (s *AuthService) Signup(ctx context.Context, form *model.SignupForm) (*model.User, error) {
+func (s *AuthService) Signup(ctx context.Context, form model.SignupForm) (model.User, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, model.ErrUnknown
+		return model.User{}, model.ErrUnknown
 	}
 
-	user, err := s.repo.CreateUser(ctx, &model.NewUser{
+	user, err := s.repo.CreateUser(ctx, model.User{
 		Name:     form.Name,
 		Email:    form.Email,
 		Password: hash,
 		Role:     model.UserRoleUser,
 	})
 	if err != nil {
-		return nil, err
+		return model.User{}, err
 	}
 
 	return user, nil
 }
 
-func (s *AuthService) Login(ctx context.Context, form *model.LoginForm) (*model.User, *model.Tokens, error) {
-	user, err := s.repo.GetUserByEmail(ctx, form.Email)
+func (s *AuthService) Login(ctx context.Context, form model.LoginForm, remember bool) (model.User, model.Tokens, error) {
+	user, err := s.repo.GetUserByFilter(ctx, model.UserFilter{
+		Email: &form.Email,
+	})
 	if err != nil {
-		return nil, nil, err
+		return model.User{}, model.Tokens{}, err
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password)); err != nil {
-		return nil, nil, model.ErrBadPassword
+		return model.User{}, model.Tokens{}, model.ErrBadPassword
 	}
 
+	tokens, err := s.CreateTokens(ctx, user, remember)
+	if err != nil {
+		return model.User{}, model.Tokens{}, err
+	}
+
+	return user, tokens, nil
+}
+
+func (s *AuthService) CreateTokens(ctx context.Context, user model.User, remember bool) (model.Tokens, error) {
 	accessToken, err := s.jwtS.CreateAccessToken(ctx, user)
 	if err != nil {
-		return nil, nil, err
+		return model.Tokens{}, err
 	}
 
-	refreshToken, err := s.sessionS.CreateRefreshToken(ctx, user.ID, form.Remember)
+	refreshToken, err := s.sessionS.CreateRefreshToken(ctx, user.ID, remember)
 	if err != nil {
-		return nil, nil, err
+		return model.Tokens{}, err
 	}
 
-	return user, &model.Tokens{
+	return model.Tokens{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil
 }
 
-func (s *AuthService) Logout(ctx context.Context, userID uuid.UUID, sessionID uuid.UUID) error {
-	if err := s.sessionS.DeleteRefreshTokenByUserID(ctx, userID, sessionID); err != nil {
+func (s *AuthService) Logout(ctx context.Context, userID uuid.UUID, token string) error {
+	if err := s.sessionS.DeleteSessionByTokenAndUserID(ctx, token, userID); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *AuthService) RefreshAccessToken(ctx context.Context, sessionID uuid.UUID) (*model.AccessToken, error) {
-	user, err := s.sessionS.GetUserBySessionID(ctx, sessionID)
+func (s *AuthService) RefreshAccessToken(ctx context.Context, token string) (model.AccessToken, error) {
+	user, err := s.sessionS.GetUserByValidToken(ctx, token)
 	if err != nil {
-		return nil, err
+		return model.AccessToken{}, err
 	}
 
 	accessToken, err := s.jwtS.CreateAccessToken(ctx, user)
 	if err != nil {
-		return nil, err
+		return model.AccessToken{}, err
 	}
 
-	return &accessToken, nil
+	return accessToken, nil
 }

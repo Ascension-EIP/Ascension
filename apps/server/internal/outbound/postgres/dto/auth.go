@@ -17,14 +17,16 @@ import (
 type Session struct {
 	ID        uuid.UUID `db:"id"`
 	UserID    uuid.UUID `db:"user_id"`
+	Token     string    `db:"token"`
 	ExpiresAt time.Time `db:"expires_at"`
 	CreatedAt time.Time `db:"created_at"`
 }
 
-func (v *Session) ToSession() *model.Session {
-	return &model.Session{
+func (v Session) ToSession() model.Session {
+	return model.Session{
 		ID:        v.ID,
 		UserID:    v.UserID,
+		Token:     v.Token,
 		ExpiresAt: v.ExpiresAt,
 		CreatedAt: v.CreatedAt,
 	}

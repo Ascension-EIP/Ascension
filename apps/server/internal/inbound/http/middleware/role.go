@@ -18,7 +18,8 @@ import (
 func Admin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role, err := utils.GetFromContext[model.UserRole](c, "userRole")
-		if err != nil || role != model.UserRoleAdmin {
+		if err != nil ||
+			role != model.UserRoleAdmin {
 			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
@@ -30,7 +31,8 @@ func Admin() gin.HandlerFunc {
 func User() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role, err := utils.GetFromContext[model.UserRole](c, "userRole")
-		if err != nil || !role.IsValid() {
+		if err != nil ||
+			(role != model.UserRoleUser && role != model.UserRoleAdmin) {
 			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}

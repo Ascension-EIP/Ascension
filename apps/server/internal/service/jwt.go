@@ -27,7 +27,7 @@ func NewJWTService(cfg config.JWTConfig) JWTService {
 	}
 }
 
-func (s *JWTService) CreateAccessToken(ctx context.Context, user *model.User) (model.AccessToken, error) {
+func (s *JWTService) CreateAccessToken(ctx context.Context, user model.User) (model.AccessToken, error) {
 	claims := model.JWTClaims{
 		UserID:    user.ID,
 		UserRole:  user.Role,
@@ -65,7 +65,7 @@ func (s *JWTService) ValidateAccessToken(ctx context.Context, tokenStr string) (
 
 	claims, ok := token.Claims.(*model.JWTClaims)
 	if !ok || !token.Valid {
-		return nil, fmt.Errorf("invalid token")
+		return nil, model.ErrInvalidToken
 	}
 
 	return claims, nil

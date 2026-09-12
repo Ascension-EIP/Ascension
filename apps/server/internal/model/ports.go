@@ -20,12 +20,10 @@ type UserRepository interface {
 
 type SessionRepository interface {
 	TransactionRepository
-	CreateSession(ctx context.Context, session *NewSession) (*Session, error)
-	GetUserByUnexpiredSessionID(ctx context.Context, sessionID uuid.UUID) (*User, error)
-	// GetUnexpiredSession(ctx context.Context, sessionID string) (*model.Session, error)
-	// UpdateSession(ctx context.Context, session *model.Session) error
-	DeleteSessionByUserID(ctx context.Context, sessionID uuid.UUID, userID uuid.UUID) error
-	// DeleteExpiredSessions(ctx context.Context) error
+	CreateSession(ctx context.Context, session Session) (Session, error)
+	GetUserByValidToken(ctx context.Context, token string) (User, error)
+	DeleteSessionByTokenAndUserID(ctx context.Context, token string, userID uuid.UUID) error
+	DeleteExpiredSessions(ctx context.Context) error
 }
 
 type AnalysisRepository interface {

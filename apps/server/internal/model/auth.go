@@ -19,22 +19,18 @@ type SignupForm struct {
 	Password []byte
 }
 
-type SignupLoginForm struct {
-	Name     string
-	Email    string
-	Password []byte
-	Remember bool
-}
-
 type LoginForm struct {
 	Email    string
 	Password []byte
-	Remember bool
 }
 
 type Tokens struct {
-	RefreshToken uuid.UUID
+	RefreshToken
 	AccessToken
+}
+
+type RefreshToken struct {
+	SessionToken string
 }
 
 type AccessToken struct {
@@ -43,14 +39,10 @@ type AccessToken struct {
 	ExpiresIn uint
 }
 
-type NewSession struct {
-	UserID    uuid.UUID
-	ExpiresAt time.Time
-}
-
 type Session struct {
 	ID        uuid.UUID
 	UserID    uuid.UUID
+	Token     string
 	ExpiresAt time.Time
 	CreatedAt time.Time
 }

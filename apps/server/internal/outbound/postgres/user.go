@@ -184,7 +184,7 @@ func (r *PostgresRepository) UpdateUser(ctx context.Context, partial model.UserP
 		return model.User{}, dto.Error(err)
 	}
 
-	user, err := pgx.CollectExactlyOneRow(
+	dbUser, err := pgx.CollectExactlyOneRow(
 		rows,
 		pgx.RowToStructByName[dto.User],
 	)
@@ -192,7 +192,7 @@ func (r *PostgresRepository) UpdateUser(ctx context.Context, partial model.UserP
 		return model.User{}, dto.Error(err)
 	}
 
-	return user.ToUser(), nil
+	return dbUser.ToUser(), nil
 }
 
 func (r *PostgresRepository) DeleteUser(ctx context.Context, userID uuid.UUID) error {

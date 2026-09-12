@@ -9,11 +9,15 @@ package service
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
+	"fmt"
 	"time"
+
+	"uuid"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
-	"uuid"
 )
 
 type SessionService struct {
@@ -28,22 +32,55 @@ func NewSessionService(cfg config.SessionConfig, repo model.SessionRepository) S
 	}
 }
 
-func (s *SessionService) CreateRefreshToken(ctx context.Context, userID uuid.UUID, remember bool) (uuid.UUID, error) {
-	session, err := s.repo.CreateSession(ctx, &model.NewSession{
-		UserID:    userID,
-		ExpiresAt: time.Now().Add(s.cfg.Exp),
-	})
+func (s *SessionService) GenerateSessionToken() (string, error) {
+	b := make([]byte, 32)
+	_, err := rand.Read(b)
 	if err != nil {
-		return uuid.UUID{}, err
+		return "", fmt.Errorf("session token generation: %w", err)
+	}
+	return hex.EncodeToString(b), nil
+}
+
+func (s *SessionService) CreateRefreshToken(ctx context.Context, userID uuid.UUID, remember bool) (model.RefreshToken, error) {
+	token, err := s.GenerateSessionToken()
+	if err != nil {
+		return model.RefreshToken{}, fmt.Errorf("create token for new session: %w", err)
 	}
 
-	return session.ID, nil
+	var expiresAt time.Time
+	if remember {
+		expiresAt = time.Now().Add(s.cfg.RememberExp)
+	} else {
+		expiresAt = time.Now().Add(s.cfg.Exp)
+	}
+
+	session, err := s.repo.CreateSession(ctx, model.Session{
+		UserID:    userID,
+		Token:     token,
+		ExpiresAt: expiresAt,
+	})
+	if err != nil {
+		return model.RefreshToken{}, fmt.Errorf("create new session: %w", err)
+	}
+
+	return model.RefreshToken{
+		SessionToken: session.Token,
+	}, nil
 }
 
-func (s *SessionService) DeleteRefreshTokenByUserID(ctx context.Context, userID uuid.UUID, sessionID uuid.UUID) error {
-	return s.repo.DeleteSessionByUserID(ctx, userID, sessionID)
+func (s *SessionService) DeleteSessionByTokenAndUserID(ctx context.Context, token string, userID uuid.UUID) error {
+	if err := s.repo.DeleteSessionByTokenAndUserID(ctx, token, userID); err != nil {
+		return fmt.Errorf("delete user %v session by token %v: %w", userID, token, err)
+	}
+
+	return nil
 }
 
-func (s *SessionService) GetUserBySessionID(ctx context.Context, sessionID uuid.UUID) (*model.User, error) {
-	return s.repo.GetUserByUnexpiredSessionID(ctx, sessionID)
+func (s *SessionService) GetUserByValidToken(ctx context.Context, token string) (model.User, error) {
+	user, err := s.repo.GetUserByValidToken(ctx, token)
+	if err != nil {
+		return model.User{}, fmt.Errorf("get user by token %v: %w", token, err)
+	}
+
+	return user, nil
 }

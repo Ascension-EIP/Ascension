@@ -25,9 +25,9 @@ func Error(c *gin.Context, err error) {
 	slog.ErrorContext(c.Request.Context(), "handler forward domain error", slog.String("err", err.Error()))
 
 	switch {
-	case errors.Is(err, model.ErrRoleInvalid):
+	case errors.Is(err, model.ErrInvalidInput):
 		c.JSON(http.StatusUnprocessableEntity, response.Error{Message: err.Error()})
-	case errors.Is(err, model.ErrEmailDuplicate):
+	case errors.Is(err, model.ErrEmailDuplicated):
 		c.JSON(http.StatusConflict, response.Error{Message: err.Error()})
 	case errors.Is(err, model.ErrUserNotFound):
 		c.JSON(http.StatusNotFound, response.Error{Message: err.Error()})

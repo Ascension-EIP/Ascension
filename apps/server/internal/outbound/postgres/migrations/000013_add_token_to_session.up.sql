@@ -1,0 +1,2 @@
+ALTER TABLE sessions
+    ADD COLUMN token TEXT NOT NULL UNIQUE;

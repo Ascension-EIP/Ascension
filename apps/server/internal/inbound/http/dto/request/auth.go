@@ -33,12 +33,11 @@ type SignupLoginForm struct {
 	Remember bool   `json:"remember"`
 }
 
-func (req *SignupLoginForm) IntoSignupLoginForm() (model.SignupLoginForm, error) {
-	return model.SignupLoginForm{
+func (req *SignupLoginForm) IntoSignupLoginForm() (model.SignupForm, error) {
+	return model.SignupForm{
 		Name:     req.Name,
 		Email:    req.Email,
 		Password: []byte(req.Password),
-		Remember: req.Remember,
 	}, nil
 }
 
@@ -56,5 +55,5 @@ func (req *LoginForm) IntoLoginForm() (model.LoginForm, error) {
 }
 
 type RefreshToken struct {
-	Token uuid.UUID `json:"refresh_token" binding:"required"`
+	Token string `json:"refresh_token" binding:"required"`
 }
