@@ -33,5 +33,8 @@ var (
 	ErrNotFound     = errors.New("not found")
 	ErrInternalDB   = errors.New("internal database error")
 
+	// -- Video -- //
+	ErrVideoUploading = errors.New("video is uploading")
+
 	ErrUnknown = errors.New("unknown error")
 )

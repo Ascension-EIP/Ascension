@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/request"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
@@ -37,19 +36,19 @@ func (h *VideoHandler) GetDownloadURL(c *gin.Context) {
 	}
 
 	id := c.Param("id")
-	videoID, err := request.IntoUUID(id)
+	videoID, err := uuid.Parse(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
 
-	downloadURL, err := h.s.GetDownloadURL(c.Request.Context(), videoID, userID)
+	url, err := h.s.GetDownloadURL(c.Request.Context(), videoID, userID)
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, response.DownloadURLToResponse(downloadURL))
+	c.JSON(http.StatusOK, response.DownloadURLToResponse(url))
 }
 
 func (h *VideoHandler) GetUploadURL(c *gin.Context) {
@@ -71,19 +70,17 @@ func (h *VideoHandler) GetUploadURL(c *gin.Context) {
 		return
 	}
 
-	fileInfo := &model.FileInfo{
+	url, err := h.s.GetUploadURL(c.Request.Context(), model.FileInfo{
 		UserID:    userID,
 		Extension: ext,
 		Size:      size,
-	}
-
-	uploadURL, err := h.s.GetUploadURL(c.Request.Context(), fileInfo)
+	})
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, response.UploadURLToResponse(uploadURL))
+	c.JSON(http.StatusOK, response.UploadURLToResponse(url))
 }
 
 func getVideoExtension(contentType string) (string, error) {
@@ -128,7 +125,7 @@ func (h *VideoHandler) UploadComplete(c *gin.Context) {
 	}
 
 	id := c.Param("id")
-	videoID, err := request.IntoUUID(id)
+	videoID, err := uuid.Parse(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return

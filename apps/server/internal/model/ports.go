@@ -36,6 +36,7 @@ type VideoRepository interface {
 	TransactionRepository
 	CreateVideo(ctx context.Context, video Video) error
 	GetVideoByFilter(ctx context.Context, filter VideoFilter) (Video, error)
+	ListVideosByFilter(ctx context.Context, filter VideoFilter) ([]Video, error)
 	UpdateVideo(ctx context.Context, partial VideoPartial) (Video, error)
 }
 

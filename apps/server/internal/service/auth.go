@@ -42,7 +42,7 @@ func (s *AuthService) SignupAndLogin(ctx context.Context, form model.SignupForm,
 
 	tokens, err := s.CreateTokens(ctx, user, remember)
 	if err != nil {
-		return model.User{}, model.Tokens{}, err
+		return user, model.Tokens{}, nil
 	}
 
 	return user, tokens, nil

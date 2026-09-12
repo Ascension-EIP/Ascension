@@ -26,32 +26,37 @@ func NewVideoService(storage model.VideoStorage, repo model.VideoRepository) Vid
 	return VideoService{storage: storage, repo: repo}
 }
 
-func (s *VideoService) GetDownloadURL(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (*model.DownloadVideoURL, error) {
-	videoInfo, err := s.repo.GetCompletedVideoInfoByUserID(ctx, videoID, userID)
+func (s *VideoService) GetDownloadURL(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (model.VideoDownloadURL, error) {
+	video, err := s.repo.GetVideoByFilter(ctx, model.VideoFilter{ID: &videoID, UserID: &userID})
 	if err != nil {
-		return nil, err
+		return model.VideoDownloadURL{}, err
 	}
 
-	url, expiresAt, err := s.storage.PresignedDownloadURL(ctx, videoInfo.ObjectKey)
-	if err != nil {
-		return nil, err
+	if video.Status != model.VideoStatusCompleted {
+		return model.VideoDownloadURL{}, model.ErrVideoUploading
 	}
 
-	return &model.DownloadVideoURL{
+	url, expiresAt, err := s.storage.PresignedDownloadURL(ctx, video.ObjectKey)
+	if err != nil {
+		return model.VideoDownloadURL{}, err
+	}
+
+	return model.VideoDownloadURL{
 		URL:       url,
 		ExpiresAt: expiresAt,
 	}, nil
 }
 
-func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo *model.FileInfo) (*model.UploadVideoURL, error) {
-	videoID := uuid.NewV7()
+func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo model.FileInfo) (model.VideoUploadURL, error) {
 	var url *url.URL
 	var expiresAt time.Time
+
+	videoID := uuid.NewV7() // can't rely on repo for this one since we need the id for the objectKey
 
 	objectKey := fmt.Sprintf("%s/%s.%s", fileInfo.UserID.String(), videoID.String(), fileInfo.Extension)
 
 	if err := s.repo.WithTransaction(ctx, func(ctx context.Context) error {
-		if err := s.repo.CreateVideoInfo(ctx, &model.VideoInfo{
+		if err := s.repo.CreateVideo(ctx, model.Video{
 			ID:        videoID,
 			UserID:    fileInfo.UserID,
 			Bucket:    s.storage.VideoBucket(),
@@ -69,10 +74,10 @@ func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo *model.FileInf
 		}
 		return nil
 	}); err != nil {
-		return nil, err
+		return model.VideoUploadURL{}, err
 	}
 
-	return &model.UploadVideoURL{
+	return model.VideoUploadURL{
 		VideoID:   videoID,
 		URL:       url,
 		ExpiresAt: expiresAt,
@@ -80,17 +85,16 @@ func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo *model.FileInf
 }
 
 func (s *VideoService) UploadComplete(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) error {
-	videoInfo, err := s.repo.GetVideoInfoByUserID(ctx, videoID, userID)
+	video, err := s.repo.GetVideoByFilter(ctx, model.VideoFilter{ID: &videoID, UserID: &userID})
 	if err != nil {
 		return err
 	}
 
-	if err := s.storage.FileExist(ctx, videoInfo.ObjectKey); err != nil {
+	if err := s.storage.FileExist(ctx, video.ObjectKey); err != nil {
 		return err
 	}
 
-	status := model.VideoStatusCompleted
-	if _, err := s.repo.UpdateVideoInfo(ctx, &model.PartialVideoInfo{ID: videoID, UserID: userID, Status: &status}); err != nil {
+	if _, err := s.repo.UpdateVideo(ctx, model.VideoPartial{ID: videoID, UserID: userID, Status: new(model.VideoStatusCompleted)}); err != nil {
 		return err
 	}
 	return nil
