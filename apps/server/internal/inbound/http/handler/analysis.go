@@ -10,12 +10,15 @@ package handler
 import (
 	"net/http"
 
+	"uuid"
+
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/request"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/macro"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/gin-gonic/gin"
-	"uuid"
 )
 
 type AnalyseHandler struct {
@@ -27,7 +30,7 @@ func NewAnalyseHandler(s *service.AnalysisService) AnalyseHandler {
 }
 
 func (h *AnalyseHandler) Create(c *gin.Context) {
-	userID, err := utils.GetFromContext[uuid.UUID](c, "userID")
+	user, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -39,7 +42,7 @@ func (h *AnalyseHandler) Create(c *gin.Context) {
 		return
 	}
 
-	analysis, err := h.s.TriggerAnalysis(c.Request.Context(), req.VideoID, userID)
+	analysis, err := h.s.TriggerAnalysis(c.Request.Context(), req.VideoID, user.ID)
 	if err != nil {
 		utils.Error(c, err)
 		return

@@ -12,10 +12,11 @@ import (
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/request"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/macro"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/gin-gonic/gin"
-	"uuid"
 )
 
 type AuthHandler struct {
@@ -90,7 +91,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
-	userID, err := utils.GetFromContext[uuid.UUID](c, "userID")
+	user, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -102,7 +103,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 		return
 	}
 
-	if err := h.s.Logout(c.Request.Context(), userID, req.Token); err != nil {
+	if err := h.s.Logout(c.Request.Context(), user.ID, req.Token); err != nil {
 		utils.Error(c, err)
 		return
 	}

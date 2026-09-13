@@ -30,6 +30,8 @@ func NewJWTService(cfg config.JWTConfig) JWTService {
 func (s *JWTService) CreateAccessToken(ctx context.Context, user model.User) (model.AccessToken, error) {
 	claims := model.JWTClaims{
 		UserID:    user.ID,
+		UserName:  user.Name,
+		UserEmail: user.Email,
 		UserRole:  user.Role,
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(s.cfg.Exp)),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),

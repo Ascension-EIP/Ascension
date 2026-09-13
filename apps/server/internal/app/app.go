@@ -60,10 +60,7 @@ func Run(cfg *config.Config) {
 	videoS := service.NewVideoService(&storage, &repo)
 	analyseS := service.NewAnalysisService(&repo, &repo, &queue)
 
-	authMW := middleware.Auth(&jwtS)
-	guestMW := middleware.Guest(&jwtS)
-	adminMW := middleware.Admin()
-	userMW := middleware.User()
+	authMW := middleware.AuthMiddleware(&jwtS)
 
 	userH := handler.NewUserHandler(&userS)
 	authH := handler.NewAuthHandler(&authS)
@@ -82,9 +79,6 @@ func Run(cfg *config.Config) {
 	app := gin.New()
 	router.New(app, cfg,
 		authMW,
-		guestMW,
-		adminMW,
-		userMW,
 
 		&userH,
 		&authH,

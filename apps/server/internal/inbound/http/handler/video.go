@@ -12,12 +12,14 @@ import (
 	"net/http"
 	"strconv"
 
+	"uuid"
+
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/macro"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/gin-gonic/gin"
-	"uuid"
 )
 
 type VideoHandler struct {
@@ -29,7 +31,7 @@ func NewVideoHandler(s *service.VideoService) VideoHandler {
 }
 
 func (h *VideoHandler) GetDownloadURL(c *gin.Context) {
-	userID, err := utils.GetFromContext[uuid.UUID](c, "userID")
+	user, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -42,7 +44,7 @@ func (h *VideoHandler) GetDownloadURL(c *gin.Context) {
 		return
 	}
 
-	url, err := h.s.GetDownloadURL(c.Request.Context(), videoID, userID)
+	url, err := h.s.GetDownloadURL(c.Request.Context(), videoID, user.ID)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -52,7 +54,7 @@ func (h *VideoHandler) GetDownloadURL(c *gin.Context) {
 }
 
 func (h *VideoHandler) GetUploadURL(c *gin.Context) {
-	userID, err := utils.GetFromContext[uuid.UUID](c, "userID")
+	user, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -71,7 +73,7 @@ func (h *VideoHandler) GetUploadURL(c *gin.Context) {
 	}
 
 	url, err := h.s.GetUploadURL(c.Request.Context(), model.FileInfo{
-		UserID:    userID,
+		UserID:    user.ID,
 		Extension: ext,
 		Size:      size,
 	})
@@ -118,7 +120,7 @@ func validateVideoSize(s string) (int, error) {
 }
 
 func (h *VideoHandler) UploadComplete(c *gin.Context) {
-	userID, err := utils.GetFromContext[uuid.UUID](c, "userID")
+	user, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -131,7 +133,7 @@ func (h *VideoHandler) UploadComplete(c *gin.Context) {
 		return
 	}
 
-	if err := h.s.UploadComplete(c.Request.Context(), videoID, userID); err != nil {
+	if err := h.s.UploadComplete(c.Request.Context(), videoID, user.ID); err != nil {
 		utils.Error(c, err)
 		return
 	}
