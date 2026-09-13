@@ -70,7 +70,7 @@ func (r *PostgresRepository) DeleteSessionByTokenAndUserID(ctx context.Context, 
 	return nil
 }
 
-func (r *PostgresRepository) DeleteExpiredSessions(ctx context.Context) error {
+func (r *PostgresRepository) DeleteSessionsExpired(ctx context.Context) error {
 	tx := r.getTx(ctx)
 
 	_, err := tx.Exec(ctx,

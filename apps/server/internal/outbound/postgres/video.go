@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres/dto"
@@ -170,4 +171,17 @@ func (r *PostgresRepository) UpdateVideo(ctx context.Context, partial model.Vide
 	}
 
 	return video.ToVideo(), nil
+}
+
+func (r *PostgresRepository) DeleteVideosExpired(ctx context.Context) error {
+	tx := r.getTx(ctx)
+
+	_, err := tx.Exec(ctx,
+		"DELETE FROM videos WHERE expires_at < $1 AND status != $2",
+		time.Now(), model.VideoStatusCompleted)
+	if err != nil {
+		return dto.Error(err)
+	}
+
+	return nil
 }

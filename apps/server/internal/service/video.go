@@ -99,3 +99,7 @@ func (s *VideoService) UploadComplete(ctx context.Context, videoID uuid.UUID, us
 	}
 	return nil
 }
+
+func (s *VideoService) ClearExpiredVideos(ctx context.Context) error {
+	return s.repo.DeleteVideosExpired(ctx)
+}

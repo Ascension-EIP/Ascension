@@ -23,7 +23,7 @@ type SessionRepository interface {
 	CreateSession(ctx context.Context, session Session) (Session, error)
 	GetUserByValidToken(ctx context.Context, token string) (User, error)
 	DeleteSessionByTokenAndUserID(ctx context.Context, token string, userID uuid.UUID) error
-	DeleteExpiredSessions(ctx context.Context) error
+	DeleteSessionsExpired(ctx context.Context) error
 }
 
 type AnalysisRepository interface {
@@ -38,6 +38,7 @@ type VideoRepository interface {
 	GetVideoByFilter(ctx context.Context, filter VideoFilter) (Video, error)
 	ListVideosByFilter(ctx context.Context, filter VideoFilter) ([]Video, error)
 	UpdateVideo(ctx context.Context, partial VideoPartial) (Video, error)
+	DeleteVideosExpired(ctx context.Context) error
 }
 
 type TransactionRepository interface {

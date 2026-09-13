@@ -110,3 +110,7 @@ func (s *SessionService) GetUserByValidToken(ctx context.Context, token string) 
 
 	return user, nil
 }
+
+func (s *SessionService) ClearExpiredSessions(ctx context.Context) error {
+	return s.repo.DeleteSessionsExpired(ctx)
+}
