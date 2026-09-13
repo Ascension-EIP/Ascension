@@ -1,6 +1,6 @@
 #:schema https://json.schemastore.org/any.json
 
-env_files = ["../../.env"]
+env_files = [".env.dev"]
 root = "."
 testdata_dir = "testdata"
 tmp_dir = "tmp"

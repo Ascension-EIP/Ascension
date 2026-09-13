@@ -20,7 +20,7 @@ import (
 
 func New(
 	app *gin.Engine,
-	cfg *config.Config,
+	cfg config.Config,
 
 	authMW middleware.AuthHandler,
 

@@ -82,7 +82,7 @@ type (
 )
 
 func (c *DBConfig) DSN() string {
-	u := &url.URL{
+	u := url.URL{
 		Scheme:   "postgres",
 		User:     url.UserPassword(c.User, c.Password),
 		Host:     fmt.Sprintf("%s:%d", c.Host, c.Port),
@@ -97,7 +97,7 @@ func (c *RabbitMQConfig) DSN() string {
 	if c.TLS {
 		scheme += "s"
 	}
-	u := &url.URL{
+	u := url.URL{
 		Scheme: scheme,
 		User:   url.UserPassword(c.User, c.Password),
 		Host:   fmt.Sprintf("%s:%d", c.Host, c.Port),
@@ -106,10 +106,10 @@ func (c *RabbitMQConfig) DSN() string {
 	return u.String()
 }
 
-func Load() (*Config, error) {
-	cfg := &Config{}
-	if err := env.Parse(cfg); err != nil {
-		return nil, err
+func Load() (Config, error) {
+	cfg := Config{}
+	if err := env.Parse(&cfg); err != nil {
+		return Config{}, err
 	}
 	return cfg, nil
 }

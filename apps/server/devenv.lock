@@ -3,11 +3,11 @@
     "devenv": {
       "locked": {
         "dir": "src/modules",
-        "lastModified": 1788819331,
-        "narHash": "sha256-PXClmncMTmWutJvFGrA6rKyvxWtUwaMUT615XrDHdB8=",
+        "lastModified": 1789332998,
+        "narHash": "sha256-YX8sJ7qxSpLWwOs3ZAeAoIFxixjtf/kx1Hs7DmKF39c=",
         "owner": "cachix",
         "repo": "devenv",
-        "rev": "190959a9a4bb52d4802f076a90c3c4e3aa2e6fa2",
+        "rev": "ac06d58653d409c978e658eb943c4a979472274a",
         "type": "github"
       },
       "original": {
@@ -54,45 +54,22 @@
     "git-hooks": {
       "inputs": {
         "flake-compat": "flake-compat",
-        "gitignore": "gitignore",
         "nixpkgs": [
           "go-overlay",
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1778507602,
-        "narHash": "sha256-kTwur1wV+01SdqskVMSo6JMEpg71ps3HpbFY2GsflKs=",
+        "lastModified": 1788267358,
+        "narHash": "sha256-nt+lUqYVpc9Y6JeMd2WmXzCDojasdadKo0mWcluvY2Y=",
         "owner": "cachix",
         "repo": "git-hooks.nix",
-        "rev": "61ab0e80d9c7ab14c256b5b453d8b3fb0189ba0a",
+        "rev": "27555e2624241fb116b49095df4caaee85a25691",
         "type": "github"
       },
       "original": {
         "owner": "cachix",
         "repo": "git-hooks.nix",
-        "type": "github"
-      }
-    },
-    "gitignore": {
-      "inputs": {
-        "nixpkgs": [
-          "go-overlay",
-          "git-hooks",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1709087332,
-        "narHash": "sha256-HG2cCnktfHsKV0s4XW83gU3F57gaTljL9KNSuG6bnQs=",
-        "owner": "hercules-ci",
-        "repo": "gitignore.nix",
-        "rev": "637db329424fd7e46cf4185293b9cc8c88c95394",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hercules-ci",
-        "repo": "gitignore.nix",
         "type": "github"
       }
     },
@@ -105,11 +82,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788835781,
-        "narHash": "sha256-IphemL5tEj9aHx3kPcnTmY9RurcGB+dGR/UpSgGeZQs=",
+        "lastModified": 1789140629,
+        "narHash": "sha256-1TN95Z5nh1z6pyuou2QguhkWJKAl+hIpcfVV/RayGQQ=",
         "owner": "purpleclay",
         "repo": "go-overlay",
-        "rev": "bcc6e5d3415e0bb74dbe0973d02e3874ef5dd584",
+        "rev": "7069b95f142184721d3aeac373d687912e7ada0e",
         "type": "github"
       },
       "original": {
