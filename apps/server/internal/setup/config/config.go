@@ -61,12 +61,13 @@ type (
 
 	JWTConfig struct {
 		Exp    time.Duration `env:"EXP" envDefault:"15m"`
-		Secret string        `env:"SECRET" envDefault:"user_session"`
+		Secret string        `env:"SECRET" envDefault:"jwt_secret"`
 	}
 
 	SessionConfig struct {
 		Exp         time.Duration `env:"EXP" envDefault:"168h"`
 		RememberExp time.Duration `env:"REMEMBER_EXP" envDefault:"720h"`
+		Secret      string        `env:"SECRET" envDefault:"session_secret"`
 	}
 
 	HTTPConfig struct {

@@ -9,7 +9,9 @@ package service
 
 import (
 	"context"
+	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"time"
@@ -41,10 +43,24 @@ func (s *SessionService) GenerateSessionToken() (string, error) {
 	return hex.EncodeToString(b), nil
 }
 
+func (s *SessionService) hashSessionToken(token string) (string, error) {
+	mac := hmac.New(sha256.New, []byte(s.cfg.Secret))
+	if _, err := mac.Write([]byte(token)); err != nil {
+		return "", err
+	}
+	sum := mac.Sum(nil)
+	return hex.EncodeToString(sum), nil
+}
+
 func (s *SessionService) CreateRefreshToken(ctx context.Context, userID uuid.UUID, remember bool) (model.RefreshToken, error) {
 	token, err := s.GenerateSessionToken()
 	if err != nil {
 		return model.RefreshToken{}, fmt.Errorf("create token for new session: %w", err)
+	}
+
+	hashedToken, err := s.hashSessionToken(token)
+	if err != nil {
+		return model.RefreshToken{}, fmt.Errorf("hash token for new session: %w", err)
 	}
 
 	var expiresAt time.Time
@@ -54,9 +70,9 @@ func (s *SessionService) CreateRefreshToken(ctx context.Context, userID uuid.UUI
 		expiresAt = time.Now().Add(s.cfg.Exp)
 	}
 
-	session, err := s.repo.CreateSession(ctx, model.Session{
+	_, err = s.repo.CreateSession(ctx, model.Session{
 		UserID:    userID,
-		Token:     token,
+		Token:     hashedToken,
 		ExpiresAt: expiresAt,
 	})
 	if err != nil {
@@ -64,12 +80,17 @@ func (s *SessionService) CreateRefreshToken(ctx context.Context, userID uuid.UUI
 	}
 
 	return model.RefreshToken{
-		SessionToken: session.Token,
+		SessionToken: token,
 	}, nil
 }
 
 func (s *SessionService) DeleteSessionByTokenAndUserID(ctx context.Context, token string, userID uuid.UUID) error {
-	if err := s.repo.DeleteSessionByTokenAndUserID(ctx, token, userID); err != nil {
+	hashedToken, err := s.hashSessionToken(token)
+	if err != nil {
+		return fmt.Errorf("hash token: %w", err)
+	}
+
+	if err := s.repo.DeleteSessionByTokenAndUserID(ctx, hashedToken, userID); err != nil {
 		return fmt.Errorf("delete user %v session by token %v: %w", userID, token, err)
 	}
 
@@ -77,7 +98,12 @@ func (s *SessionService) DeleteSessionByTokenAndUserID(ctx context.Context, toke
 }
 
 func (s *SessionService) GetUserByValidToken(ctx context.Context, token string) (model.User, error) {
-	user, err := s.repo.GetUserByValidToken(ctx, token)
+	hashedToken, err := s.hashSessionToken(token)
+	if err != nil {
+		return model.User{}, fmt.Errorf("hash token: %w", err)
+	}
+
+	user, err := s.repo.GetUserByValidToken(ctx, hashedToken)
 	if err != nil {
 		return model.User{}, fmt.Errorf("get user by token %v: %w", token, err)
 	}
