@@ -13,17 +13,20 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"uuid"
+
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
 )
 
 type VideoService struct {
+	cfg     config.MinIOConfig
 	storage model.VideoStorage
 	repo    model.VideoRepository
 }
 
-func NewVideoService(storage model.VideoStorage, repo model.VideoRepository) VideoService {
-	return VideoService{storage: storage, repo: repo}
+func NewVideoService(cfg config.MinIOConfig, storage model.VideoStorage, repo model.VideoRepository) VideoService {
+	return VideoService{cfg: cfg, storage: storage, repo: repo}
 }
 
 func (s *VideoService) GetDownloadURL(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (model.VideoDownloadURL, error) {
@@ -59,10 +62,9 @@ func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo model.FileInfo
 		if err := s.repo.CreateVideo(ctx, model.Video{
 			ID:        videoID,
 			UserID:    fileInfo.UserID,
-			Bucket:    s.storage.VideoBucket(),
 			ObjectKey: objectKey,
 			Status:    model.VideoStatusPending,
-			ExpiresAt: time.Now().Add(s.storage.UploadExp()),
+			ExpiresAt: time.Now().Add(s.cfg.UploadExp),
 		}); err != nil {
 			return err
 		}

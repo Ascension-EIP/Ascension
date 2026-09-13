@@ -17,7 +17,6 @@ import (
 type Video struct {
 	ID        uuid.UUID         `db:"id"`
 	UserID    uuid.UUID         `db:"user_id"`
-	Bucket    string            `db:"bucket"`
 	ObjectKey string            `db:"object_key"`
 	Status    model.VideoStatus `db:"status"`
 	ExpiresAt time.Time         `db:"expires_at"`
@@ -29,24 +28,18 @@ func (v Video) ToVideo() model.Video {
 	return model.Video{
 		ID:        v.ID,
 		UserID:    v.UserID,
-		Bucket:    v.Bucket,
 		ObjectKey: v.ObjectKey,
 		Status:    v.Status,
 		ExpiresAt: v.ExpiresAt,
+		CreatedAt: v.CreatedAt,
+		UpdatedAt: v.UpdatedAt,
 	}
 }
 
 func VideosToVideos(dto []Video) []model.Video {
 	videos := []model.Video{}
 	for _, video := range dto {
-		videos = append(videos, model.Video{
-			ID:        video.ID,
-			UserID:    video.UserID,
-			Bucket:    video.Bucket,
-			ObjectKey: video.ObjectKey,
-			Status:    video.Status,
-			ExpiresAt: video.ExpiresAt,
-		})
+		videos = append(videos, video.ToVideo())
 	}
 
 	return videos

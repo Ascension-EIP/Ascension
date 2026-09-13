@@ -7,12 +7,6 @@
 // @status done
 package model
 
-import (
-	"time"
-
-	"uuid"
-)
-
 type SignupForm struct {
 	Name     UserName
 	Email    UserEmail
@@ -37,12 +31,4 @@ type AccessToken struct {
 	Token     string
 	TokenType string
 	ExpiresIn uint
-}
-
-type Session struct {
-	ID        uuid.UUID
-	UserID    uuid.UUID
-	Token     string
-	ExpiresAt time.Time
-	CreatedAt time.Time
 }

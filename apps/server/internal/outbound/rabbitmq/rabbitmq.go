@@ -17,11 +17,11 @@ import (
 type RabbitMQ struct {
 	conn *amqp091.Connection
 	ch   *amqp091.Channel
-	cfg  *config.RabbitMQConfig
+	cfg  config.RabbitMQConfig
 	qAI  amqp091.Queue
 }
 
-func New(cfg *config.RabbitMQConfig) (RabbitMQ, error) {
+func New(cfg config.RabbitMQConfig) (RabbitMQ, error) {
 	conn, err := amqp091.Dial(cfg.DSN())
 	if err != nil {
 		return RabbitMQ{}, fmt.Errorf("RabbitMQ.New: %w", err)

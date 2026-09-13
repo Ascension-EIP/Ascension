@@ -1,10 +1,17 @@
-CREATE TABLE analysis (
+CREATE TABLE analyses (
 	id UUID PRIMARY KEY DEFAULT uuidv7(),
 	video_id UUID NOT NULL UNIQUE REFERENCES videos(id) ON DELETE CASCADE,
-    status TEXT NOT NULL DEFAULT 'pending',
+    status VARCHAR(32) NOT NULL DEFAULT 'pending',
     result_json JSONB,
+	advice VARCHAR(4096),
+	progress INTEGER NOT NULL DEFAULT 0,
     processing_time_ms INTEGER,
     completed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )
+
+CREATE TRIGGER update_analyses_updated_at
+	BEFORE UPDATE ON analyses
+	FOR EACH ROW
+	EXECUTE FUNCTION update_updated_at_column();

@@ -26,24 +26,20 @@ type User struct {
 
 func (u User) ToUser() model.User {
 	return model.User{
-		ID:       u.ID,
-		Name:     u.Name,
-		Email:    u.Email,
-		Password: u.Password,
-		Role:     u.Role,
+		ID:        u.ID,
+		Name:      u.Name,
+		Email:     u.Email,
+		Password:  u.Password,
+		Role:      u.Role,
+		CreatedAt: u.CreatedAt,
+		UpdatedAt: u.UpdatedAt,
 	}
 }
 
 func UsersToUsers(dto []User) []model.User {
 	users := []model.User{}
 	for _, user := range dto {
-		users = append(users, model.User{
-			ID:       user.ID,
-			Name:     user.Name,
-			Email:    user.Email,
-			Password: user.Password,
-			Role:     user.Role,
-		})
+		users = append(users, user.ToUser())
 	}
 	return users
 }

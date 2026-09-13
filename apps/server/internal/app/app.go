@@ -26,7 +26,6 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
 	"github.com/gin-gonic/gin"
-	// "github.com/robfig/cron"
 )
 
 func Run(cfg *config.Config) {
@@ -42,12 +41,12 @@ func Run(cfg *config.Config) {
 		slog.Info("migration completed successfully")
 	}
 
-	storage, err := minio.New(&cfg.MinIO)
+	storage, err := minio.New(cfg.MinIO)
 	if err != nil {
 		slog.Error("failed to create a new minio storage", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
-	queue, err := rabbitmq.New(&cfg.RabbitMQ)
+	queue, err := rabbitmq.New(cfg.RabbitMQ)
 	if err != nil {
 		slog.Error("failed to create a new rabbitmq queue", slog.String("err", err.Error()))
 		os.Exit(1)
@@ -57,8 +56,8 @@ func Run(cfg *config.Config) {
 	sessionS := service.NewSessionService(cfg.Auth.Session, &repo)
 	userS := service.NewUserService(&repo)
 	authS := service.NewAuthService(&jwtS, &sessionS, &userS)
-	videoS := service.NewVideoService(&storage, &repo)
-	analyseS := service.NewAnalysisService(&repo, &repo, &queue)
+	videoS := service.NewVideoService(cfg.MinIO, &storage, &repo)
+	analyseS := service.NewAnalysisService(cfg.MinIO, &repo, &repo, &queue)
 
 	authMW := middleware.AuthMiddleware(&jwtS)
 
@@ -69,12 +68,6 @@ func Run(cfg *config.Config) {
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
-
-	// c := cron.New()
-	// if _, err := jobs.ExpiredSession(c, ctx, l, authS); err != nil {
-	// 	l.Fatal().Err(err).Msg("failed to connect to database")
-	// }
-	// c.Start()
 
 	app := gin.New()
 	router.New(app, cfg,
@@ -104,5 +97,4 @@ func Run(cfg *config.Config) {
 	if err := httpServ.Shutdown(ctx); err != nil {
 		slog.Error("server forced to shutdown", slog.String("err", err.Error()))
 	}
-	// c.Stop().Done()
 }

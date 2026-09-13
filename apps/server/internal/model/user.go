@@ -9,6 +9,7 @@ package model
 
 import (
 	"fmt"
+	"time"
 	"uuid"
 )
 
@@ -95,11 +96,13 @@ func (u UserPartial) IsValid() error {
 }
 
 type User struct {
-	ID       uuid.UUID
-	Name     UserName
-	Email    UserEmail
-	Password UserPassword
-	Role     UserRole
+	ID        uuid.UUID
+	Name      UserName
+	Email     UserEmail
+	Password  UserPassword
+	Role      UserRole
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func (u User) IsValid() error {

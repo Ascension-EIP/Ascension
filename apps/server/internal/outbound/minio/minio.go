@@ -17,10 +17,10 @@ import (
 
 type MinIOStorage struct {
 	client *minio.Client
-	cfg    *config.MinIOConfig
+	cfg    config.MinIOConfig
 }
 
-func New(cfg *config.MinIOConfig) (MinIOStorage, error) {
+func New(cfg config.MinIOConfig) (MinIOStorage, error) {
 	minioClient, err := minio.New(cfg.Endpoint, &minio.Options{
 		Creds: credentials.NewStaticV4(cfg.ID, cfg.Secret, ""),
 	})

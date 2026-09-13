@@ -38,14 +38,14 @@ func main() {
 		slog.Info("migration completed successfully")
 	}
 
-	storage, err := minio.New(&cfg.MinIO)
+	storage, err := minio.New(cfg.MinIO)
 	if err != nil {
 		slog.Error("failed to create a new minio storage", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
 
 	sessionS := service.NewSessionService(cfg.Auth.Session, &repo)
-	videoS := service.NewVideoService(&storage, &repo)
+	videoS := service.NewVideoService(cfg.MinIO, &storage, &repo)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()

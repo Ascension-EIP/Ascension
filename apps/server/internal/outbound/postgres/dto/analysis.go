@@ -19,6 +19,8 @@ type Analysis struct {
 	VideoID          uuid.UUID            `db:"video_id"`
 	Status           model.AnalysisStatus `db:"status"`
 	ResultJSON       *[]byte              `db:"result_json"`
+	Advice           *string              `db:"advice"`
+	Progress         int                  `db:"progress"`
 	ProcessingTimeMS *int                 `db:"processing_time_ms"`
 	CompletedAt      *time.Time           `db:"completed_at"`
 	CreatedAt        time.Time            `db:"created_at"`
@@ -31,6 +33,8 @@ func (a Analysis) ToAnalysis() model.Analysis {
 		VideoID:          a.VideoID,
 		Status:           a.Status,
 		ResultJSON:       a.ResultJSON,
+		Advice:           a.Advice,
+		Progress:         a.Progress,
 		ProcessingTimeMS: a.ProcessingTimeMS,
 		CompletedAt:      a.CompletedAt,
 		CreatedAt:        a.CreatedAt,

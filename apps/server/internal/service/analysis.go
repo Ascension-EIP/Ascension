@@ -12,18 +12,21 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"uuid"
+
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
 )
 
 type AnalysisService struct {
+	cfg       config.MinIOConfig
 	analysisR model.AnalysisRepository
 	videoR    model.VideoRepository
 	queue     model.AnalysisQueue
 }
 
-func NewAnalysisService(analysisR model.AnalysisRepository, videoR model.VideoRepository, queue model.AnalysisQueue) AnalysisService {
-	return AnalysisService{analysisR: analysisR, videoR: videoR, queue: queue}
+func NewAnalysisService(cfg config.MinIOConfig, analysisR model.AnalysisRepository, videoR model.VideoRepository, queue model.AnalysisQueue) AnalysisService {
+	return AnalysisService{cfg: cfg, analysisR: analysisR, videoR: videoR, queue: queue}
 }
 
 func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (model.Analysis, error) {
@@ -43,7 +46,7 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID
 			return err
 		}
 
-		videoURL := fmt.Sprintf("s3://%s/%s", video.Bucket, video.ObjectKey)
+		videoURL := fmt.Sprintf("s3://%s/%s", s.cfg.BucketName, video.ObjectKey)
 
 		data, err := json.Marshal(struct {
 			AnalysisID uuid.UUID `json:"analysis_id"`

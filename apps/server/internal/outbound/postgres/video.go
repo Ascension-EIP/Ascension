@@ -22,8 +22,8 @@ func (r *PostgresRepository) CreateVideo(ctx context.Context, video model.Video)
 	tx := r.getTx(ctx)
 
 	_, err := tx.Exec(ctx,
-		"INSERT INTO videos (id, user_id, bucket, object_key, status, expires_at) VALUES ($1, $2, $3, $4, $5, $6)",
-		video.ID, video.UserID, video.Bucket, video.ObjectKey, video.Status, video.ExpiresAt)
+		"INSERT INTO videos (id, user_id, object_key, status, expires_at) VALUES ($1, $2, $3, $4, $5, $6)",
+		video.ID, video.UserID, video.ObjectKey, video.Status, video.ExpiresAt)
 	if err != nil {
 		return err
 	}
@@ -42,10 +42,6 @@ func (r *PostgresRepository) GetVideoByFilter(ctx context.Context, filter model.
 	if filter.UserID != nil {
 		args = append(args, *filter.UserID)
 		setParts = append(setParts, fmt.Sprintf("user_id = $%d", len(args)))
-	}
-	if filter.Bucket != nil {
-		args = append(args, *filter.Bucket)
-		setParts = append(setParts, fmt.Sprintf("bucket = $%d", len(args)))
 	}
 	if filter.ObjectKey != nil {
 		args = append(args, *filter.ObjectKey)
@@ -91,10 +87,6 @@ func (r *PostgresRepository) ListVideosByFilter(ctx context.Context, filter mode
 		args = append(args, *filter.UserID)
 		setParts = append(setParts, fmt.Sprintf("user_id = $%d", len(args)))
 	}
-	if filter.Bucket != nil {
-		args = append(args, *filter.Bucket)
-		setParts = append(setParts, fmt.Sprintf("bucket = $%d", len(args)))
-	}
 	if filter.ObjectKey != nil {
 		args = append(args, *filter.ObjectKey)
 		setParts = append(setParts, fmt.Sprintf("object_key = $%d", len(args)))
@@ -129,10 +121,6 @@ func (r *PostgresRepository) UpdateVideo(ctx context.Context, partial model.Vide
 	setParts := []string{}
 	args := []any{}
 
-	if partial.Bucket != nil {
-		args = append(args, *partial.Bucket)
-		setParts = append(setParts, fmt.Sprintf("bucket = $%d", len(args)))
-	}
 	if partial.ObjectKey != nil {
 		args = append(args, *partial.ObjectKey)
 		setParts = append(setParts, fmt.Sprintf("object_key = $%d", len(args)))

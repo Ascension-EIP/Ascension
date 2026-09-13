@@ -41,16 +41,16 @@ type VideoUploadURL struct {
 type Video struct {
 	ID        uuid.UUID
 	UserID    uuid.UUID
-	Bucket    string
 	ObjectKey string
 	Status    VideoStatus
 	ExpiresAt time.Time
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type VideoFilter struct {
 	ID        *uuid.UUID
 	UserID    *uuid.UUID
-	Bucket    *string
 	ObjectKey *string
 	Status    *VideoStatus
 }
@@ -58,7 +58,6 @@ type VideoFilter struct {
 type VideoPartial struct {
 	ID        uuid.UUID
 	UserID    uuid.UUID
-	Bucket    *string
 	ObjectKey *string
 	Status    *VideoStatus
 	ExpiresAt *time.Time

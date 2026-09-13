@@ -25,6 +25,8 @@ type Analysis struct {
 	VideoID          uuid.UUID
 	Status           AnalysisStatus
 	ResultJSON       *[]byte
+	Advice           *string
+	Progress         int
 	ProcessingTimeMS *int
 	CompletedAt      *time.Time
 	CreatedAt        time.Time
