@@ -26,7 +26,7 @@
 - [Action Plan — Ascension (Technical Track)](./action-plan-ascension-technical-track.md)
 - [Ascension Action Plan](./ascension-action-plan.md)
 - [Ascension Beta Test Plan (BTP)](./ascension-beta-test-plan.md)
-- [Ascension Alpha Test Plan (ATP)](./ascension-alpha-test-plan.md)
+- [Ascension Acceptance Test Plan (ATP)](./ascension-acceptance-test-plan.md)
 
 ---
 

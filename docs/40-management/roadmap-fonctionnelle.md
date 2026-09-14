@@ -53,7 +53,7 @@
 
 - **Action Plan**: document qui explique **comment on travaille** (méthode, organisation, suivi), pas le détail fonctionnel du produit.
 - **BTP (Beta Test Plan)**: document qui décrit **ce qu'on doit livrer pour le GreenLight**.
-- **ATP (Alpha Test Plan)**: document qui décrit **ce qu'on doit livrer pour la phase alpha** jusqu'au jury de mars 2028.
+- **ATP (Acceptance Test Plan)**: document qui décrit **ce qu'on doit livrer pour la phase alpha** jusqu'au jury de mars 2028.
 
 ---
 

@@ -8,13 +8,13 @@
 
 ---
 
-# Ascension Alpha Test Plan (ATP)
+# Ascension Acceptance Test Plan (ATP)
 
 ---
 
 ## Table of Contents
 
-- [Ascension Alpha Test Plan (ATP)](#ascension-alpha-test-plan-atp)
+- [Ascension Acceptance Test Plan (ATP)](#ascension-acceptance-test-plan-atp)
   - [Table of Contents](#table-of-contents)
   - [1. Project context, objectives and workflow](#1-project-context-objectives-and-workflow)
   - [2. User roles](#2-user-roles)
