@@ -43,13 +43,20 @@ Film yourself on the wall. Upload the video. Get a biomechanical breakdown of yo
 
 ## Core Features
 
-| Feature                 | Description                                                             |   Tier   |
-| :---------------------- | :---------------------------------------------------------------------- | :------: |
-| **Skeleton Extraction** | 33-point pose estimation per frame (joint angles, center of gravity)    |   All    |
-| **Coaching Advice**     | Move-by-move targeted feedback combining skeleton data + hold positions |   All    |
-| **Hold Detection**      | AI classifies holds from a route photo; manual correction supported     |   All    |
-| **Training Programs**   | Personalized routines from level, goals, and analysis history           |   All    |
-| **Ghost Climber**       | Optimal path overlay rendered frame-by-frame on the user's video        | Premium+ |
+| Feature | Description | Phase |
+| :--- | :--- | :---: |
+| **Morphological Profile** | Tailored body setup (height, weight, limbs) and interactive injury/amputation map | BTP |
+| **Video Analysis & Feedback** | Objective climb analysis from video with key movement breakdowns | MVP -> BTP |
+| **Skeleton Extraction (2D/3D)** | 33-point pose estimation (MediaPipe) in 2D, moving to 3D pose AI | MVP -> ATP |
+| **Global Score & Progress** | Session-by-session technical scores and long-term progress metrics | BTP |
+| **Ghost Mode (Comparison & Photo)** | Optimal path overlay on video or wall photo based on user morphology | BTP -> ATP |
+| **Hold Detection & Analysis** | Automatic hold qualification and contouring with manual fallback | ATP |
+| **Interactive 3D Experience** | Interactive 3D scene (orbit, pan, zoom) for movement inspection | ATP |
+| **Targeted Coaching Advice** | Contextualized actionable technical feedback powered by LLM (Gemini API) | BTP |
+| **Training Programs & Routines** | Personalized routines adapted to level, goals, injuries, and history | BTP |
+| **Community & Sharing** | Climb sharing, friend performance comparison, and fine-grained privacy controls | BTP |
+| **Assisted Climbing (AR + Audio)** | Real-time ascent tracking with audio coaching cues through earphones | ATP |
+| **Subscriptions & Quotas** | Flexible tiers (Freemium, Premium, Infinity) with transparent quotas | ATP |
 
 ---
 
@@ -78,20 +85,20 @@ Each app under `apps/` is independently buildable and deployable. See the [Monor
 | :------------- | :----------------------------------------------------------- |
 | Mobile         | Flutter (Dart) — `CustomPainter` for local overlay rendering |
 | API            | Go, Gin, pgx — JWT auth, REST + WebSocket         |
-| AI Workers     | Python 3.10+, MediaPipe, PyTorch, OpenCV                     |
-| Message Queue  | RabbitMQ 3.x — async job dispatch between API and workers    |
-| Database       | PostgreSQL 16 — JSONB for analysis results                   |
+| AI Workers     | Python 3.11, MediaPipe, PyTorch, OpenCV                     |
+| Message Queue  | RabbitMQ 4.2.4 — async job dispatch between API and workers    |
+| Database       | PostgreSQL 18 — JSONB for analysis results                   |
 | Object Storage | MinIO (dev) / Hetzner Storage Box (prod) — S3-compatible     |
 | Infrastructure | Hetzner Cloud (EU), Docker Compose → Kubernetes              |
 | Monorepo       | moonrepo                                                     |
 
-For the full rationale behind every technology choice, see the [Architecture Decision Record](docs/developer_guide/architecture/README.md).
+For the full rationale behind every technology choice, see the [Architecture Decision Record](docs/20-engineering/developer_guide/architecture/README.md).
 
 ---
 
 ## Getting Started
 
-> Full step-by-step instructions, prerequisites, and environment variables are in the **[Development Environment Setup](docs/developer_guide/architecture/deployment/development.md)** guide.
+> Full step-by-step instructions, prerequisites, and environment variables are in the **[Development Environment Setup](docs/20-engineering/developer_guide/architecture/deployment/development.md)** guide.
 
 **Quick start (local dev):**
 
@@ -114,7 +121,7 @@ moon run server:dev     # Go API
 moon run ai:dev         # Python AI worker
 ```
 
-For production deployment, see the [Production Setup Guide](docs/developer_guide/architecture/deployment/production.md).
+For production deployment, see the [Production Setup Guide](docs/20-engineering/developer_guide/architecture/deployment/production.md).
 
 ---
 
