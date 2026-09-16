@@ -1,11 +1,25 @@
-# @date 2026-09-10
+# @date 2026-09-17
 # @file broker.py
 # @brief File description.
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
+from dataclasses import dataclass
+
 from pydantic import BaseModel
+
+
+@dataclass
+class Bind:
+    queue: str
+    routing_key: str
+
+
+BROKER_BINDINGS: list[Bind] = [
+    Bind(queue="poses.detect", routing_key="pose.detect.requested"),
+    Bind(queue="poses.analyze", routing_key="pose.detect.completed"),
+]
 
 
 class BrokerModel(BaseModel):
@@ -15,5 +29,4 @@ class BrokerModel(BaseModel):
     password: str | None = None
     retry_delay: int | None = None
     max_retries: int | None = None
-    queue: str | None = None
     exchange: str | None = None

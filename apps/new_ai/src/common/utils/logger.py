@@ -1,4 +1,4 @@
-# @date 2026-09-10
+# @date 2026-09-17
 # @file logger.py
 # @brief File description.
 # @project Ascension
@@ -12,7 +12,7 @@ from rich.logging import RichHandler
 
 FORMAT = "%(name)s: %(message)s"
 logging.basicConfig(
-    level="NOTSET",
+    level=logging.INFO,
     format=FORMAT,
     datefmt="[%X]",
     handlers=[RichHandler(rich_tracebacks=True)],

@@ -1,10 +1,11 @@
-# @date 2026-09-10
+# @date 2026-09-17
 # @file __init__.py
 # @brief File description.
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
+import os
 import sys
 import traceback
 
@@ -20,9 +21,11 @@ load_dotenv()
 
 def main() -> None:
     try:
-        broker = Broker().connect().setup_channel().start_consuming()  # noqa: F841
-        db = PostgreSQL().connect()  # noqa: F841
-        storage = MinIO().connect()  # noqa: F841
+        load_dotenv()
+        db = PostgreSQL().connect()
+        storage = MinIO().connect()
+        # start_consuming() est bloquant : il doit être appelé en dernier.
+        Broker().setup_config().connect().setup_channel().start_consuming()
     except Exception:  # noqa: BLE001
         log.error(traceback.format_exc())
 
@@ -35,4 +38,3 @@ def main() -> None:
     #     result.render_video()
     # except Exception:
     # log.error(traceback.format_exc())
-    sys.exit(0)
