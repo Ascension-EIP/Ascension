@@ -114,8 +114,8 @@ Examples of what to avoid by default:
 | Feature                      | Description                                                                                                                      |
 |------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
 | **Skeleton Extraction (2D)** | MediaPipe Pose extracts 33 body keypoints per frame from a climbing video.                                                       |
-| **Pose AI (SAM3D)**          | Rebuilt pipeline for posture extraction and standardized output generation (biomechanical intermediate file).                    |
-| **3D Mobile Experience**     | Interactive 3D scene (rotation, zoom) to visualize movement reconstruction through Pose AI (SAM3D), smoothly on Android and iOS. |
+| **Pose AI (3D)**             | Rebuilt pipeline for 3D posture extraction and standardized output generation (biomechanical intermediate file).                 |
+| **3D Mobile Experience**     | Interactive 3D scene (rotation, zoom) to visualize movement reconstruction through 3D Pose AI, smoothly on Android and iOS.     |
 | **Advanced Hold Analysis**   | Automatic hold detection and qualification (type, difficulty, usability), with color-based selection or manual contour fallback. |
 | **Advice Generation**        | Targeted technical feedback through an external model (Gemini API-like), based on route context and user biomechanics.           |
 | **Ghost Mode**               | Pathfinding / inverse kinematics computes an optimal movement path based on user morphology and renders it as an overlay.        |
