@@ -26,8 +26,8 @@ This file contains the unified, global instructions and context for all AI model
   - [13. Academic Framework: Technical Track (EIP)](#13-academic-framework-technical-track-eip)
     - [Mandatory Objectives](#mandatory-objectives)
     - [Selected Complementary Objectives](#selected-complementary-objectives)
-  - [14. Graphify Knowledge Graph](#14-graphify-knowledge-graph)
-    - [Rules for using Graphify](#rules-for-using-graphify)
+  - [14. Graphify](#14-graphify)
+  - [15. Forui](#15-forui)
 
 ---
 
@@ -209,12 +209,16 @@ The Ascension project is part of the **Technical Track** of EIP (Epitech Innovat
 - **Collaborate with Technical Experts:** Identification of specific technical needs and structured collaboration with external experts (CTOs, engineers, open-source contributors) to validate or refine architecture decisions.
 - **Measure, Test, and Optimize Technical Performance:** Definition of performance KPIs, setup of load/stress tests, and implementation of technical optimizations based on concrete measurements.
 
+---
 
+## 14. Graphify
 
-# graphify
-- **graphify** (`.claude/skills/graphify/SKILL.md`) - any input to knowledge graph. Trigger: `/graphify`
+- **graphify** - any input to knowledge graph. Trigger: `/graphify`
 When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
 
-# forui
-- **forui** (`.claude/skills/forui/SKILL.md`) - Flutter UI library (shadcn/ui-inspired) used across `apps/mobile`. 40+ accessible, customizable widgets (FButton, FCard, FAvatar, FBadge, FTextField, FDialog, FSheet, FTile, etc.), plus focused sub-skills for setup, theming, controls, forms/inputs, layout/navigation, overlays/feedback, and the Ascension UI polish standard (FLucideIcons only, `flutter_animate` entrance animations, `Skeletonizer` loading states).
+---
+
+## 15. Forui
+
+- **forui** - Flutter UI library (shadcn/ui-inspired) used across `apps/mobile`. 40+ accessible, customizable widgets (FButton, FCard, FAvatar, FBadge, FTextField, FDialog, FSheet, FTile, etc.), plus focused sub-skills for setup, theming, controls, forms/inputs, layout/navigation, overlays/feedback, and the Ascension UI polish standard (FLucideIcons only, `flutter_animate` entrance animations, `Skeletonizer` loading states).
 When building or styling any Flutter UI in `apps/mobile`, consult the installed forui skill before writing widget code.
