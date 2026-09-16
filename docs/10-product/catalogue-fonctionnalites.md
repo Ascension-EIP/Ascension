@@ -8,8 +8,6 @@
 
 # Catalogue complet des fonctionnalités Ascension
 
----
-
 ## Table of Contents
 
 - [Catalogue complet des fonctionnalités Ascension](#catalogue-complet-des-fonctionnalités-ascension)
@@ -65,21 +63,21 @@ Ce document distingue aussi ce qui est :
 | Code | Fonctionnalité | Problème résolu | Phase cible principale |
 |---|---|---|---|
 | F01 | Profil morphologique | Le feedback n'est pas adapté au corps de l'utilisateur | BTP |
-| F02 | Analyse de grimpe (vidéo -> feedback) | Le grimpeur ne voit pas ses erreurs en direct | MVP / BTP |
-| F03 | Extraction de squelette et biomécanique | Manque de mesures objectives sur le mouvement | MVP / BTP |
+| F02 | Analyse de grimpe (vidéo -> feedback) | Le grimpeur ne voit pas ses erreurs en direct | MVP -> BTP |
+| F03 | Extraction de squelette et biomécanique | Manque de mesures objectives sur le mouvement | MVP -> ATP |
 | F04 | Score global et progression | Difficulté à suivre ses progrès dans le temps | BTP |
 | F05 | Mode Fantôme en comparaison | Difficulté à visualiser une bêta optimale pendant la grimpe | BTP -> ATP |
 | F06 | Analyse des prises | Difficulté à lire une voie de manière fiable | ATP |
 | F07 | Mode Fantôme sans grimpe | Difficulté à préparer une voie avant essai réel | BTP -> ATP |
-| F08 | Expérience 3D mobile | Les résultats techniques restent abstraits | BTP |
+| F08 | Expérience 3D mobile | Les résultats techniques restent abstraits | ATP |
 | F09 | Conseils techniques personnalisés | Les retours sont trop génériques | BTP |
-| F10 | Coach perso / routines | Manque de plan de progression concret | ATP |
-| F11 | Communauté et partage | Progression isolée, faible motivation sociale | ATP |
+| F10 | Coach perso / routines | Manque de plan de progression concret | BTP |
+| F11 | Communauté et partage | Progression isolée, faible motivation sociale | BTP |
 | F12 | Grimpe assistée (AR + audio) | Besoin d'aide pendant la montée | ATP |
-| F13 | Abonnements et quotas | Besoin d'un modèle économique durable | MVP -> ATP |
+| F13 | Abonnements et quotas | Besoin d'un modèle économique durable | ATP |
 | F14 | Onboarding et tutoriels | L'utilisateur débutant ne comprend pas vite l'app | BTP |
 | F15 | Accessibilité numérique | L'app devient inutilisable pour certains profils | MVP -> ATP |
-| F16 | Fiabilité plateforme (CI/CD, pipeline) | Expérience instable, retards, incidents | Action Plan -> BTP -> ATP |
+| F16 | Fiabilité plateforme (CI/CD, pipeline) | Expérience instable, retards, incidents | Action Plan -> ATP |
 
 ---
 
@@ -181,7 +179,7 @@ Ce document distingue aussi ce qui est :
 - Il voit enfin des données objectives sur sa grimpe.
 
 **Niveau de maturité dans la roadmap**
-- Base MVP, puis reconstruction autour de SAM3D en BTP.
+- Base MVP, amélioration de l'analyse 2D, puis reconstruction autour de d'un modèle 3D en BTP.
 
 ---
 
@@ -318,7 +316,7 @@ Ce document distingue aussi ce qui est :
 - Il comprend mieux les détails de posture qu'en simple 2D.
 
 **Niveau de maturité dans la roadmap**
-- Cible BTP.
+- Cible ATP.
 
 ---
 
@@ -370,7 +368,7 @@ Ce document distingue aussi ce qui est :
 - Il passe d'un diagnostic ponctuel à une progression continue.
 
 **Niveau de maturité dans la roadmap**
-- Principalement ATP.
+- Cible BTP (avec enrichissement ATP).
 
 ---
 
@@ -397,7 +395,7 @@ Ce document distingue aussi ce qui est :
 - La progression devient plus motivante et sociale.
 
 **Niveau de maturité dans la roadmap**
-- ATP.
+- BTP.
 
 ---
 
@@ -424,7 +422,7 @@ Ce document distingue aussi ce qui est :
 - Un coaching "pendant l'action", pas seulement après.
 
 **Niveau de maturité dans la roadmap**
-- ATP (fonction avancée).
+- MVP fonctionnel en ATP.
 
 ---
 
@@ -544,12 +542,13 @@ Ce document distingue aussi ce qui est :
 
 ### Exécution BTP (septembre 2026 -> juillet 2027)
 
-- Parcours utilisateur complet.
-- IA de pose reconstruite autour de SAM3D.
-- Expérience 3D mobile.
 - Mode Fantôme MVP.
-- Accessibilité forte.
+- IA de Pose 2D fonctionnelle.
 - Conseils personnalisés exploitables.
+- Communauté et partage.
+- Création de routines et suivi de progression.
+- Parcours utilisateur complet.
+- Accessibilité forte.
 
 ### Passage GreenLight + livraison ATP (juillet 2027)
 
@@ -558,10 +557,12 @@ Ce document distingue aussi ce qui est :
 
 ### Exécution ATP (août 2027 -> mars 2028)
 
-- Mode Fantôme complet.
+- IA de pose reconstruite autour de modèle d'analyse 3D.
+- Expérience 3D mobile.
 - Lecture de prises avancée.
-- Communauté et coach perso enrichis.
-- Grimpe assistée temps réel.
+- Mode Fantôme complet.
+- Coach perso enrichis.
+- Grimpe assistée temps réel MVP.
 - Cycle business complet et instrumentation produit.
 
 ---
