@@ -88,6 +88,17 @@ tasks:
     deps:
       - 'install'
 
+  producer:
+    command: 'uv'
+    args: ['run', 'python', 'src/producer.py']
+    env:
+      PYTHONUNBUFFERED: '1'
+    options:
+      cache: false
+      envFile: true
+    deps:
+      - 'install'
+
   # pose-2d:
   #   command: 'uv'
   #   args: ['run', 'python', 'src/main.py', 'pose-2d']

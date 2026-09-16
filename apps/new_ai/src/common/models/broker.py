@@ -5,6 +5,7 @@
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from pydantic import BaseModel
@@ -14,13 +15,7 @@ from pydantic import BaseModel
 class Bind:
     queue: str
     routing_key: str
-
-
-BROKER_BINDINGS: list[Bind] = [
-    Bind(queue="poses.detect", routing_key="pose.detect.requested"),
-    Bind(queue="poses.analyze", routing_key="pose.detect.completed"),
-]
-
+    callback: Callable
 
 class BrokerModel(BaseModel):
     host: str | None = None

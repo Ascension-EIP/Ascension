@@ -5,50 +5,18 @@
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
-import functools
-import json
 import os
 import time
-from collections.abc import Callable
-from typing import Any, Self
+from typing import Self
 
 import pika
 from pika import BlockingConnection
 from pika.adapters.blocking_connection import BlockingChannel
 
-from common.models.broker import BROKER_BINDINGS, BrokerModel
+from common.models.broker import BrokerModel
 from common.utils.errors import throw_if_none
 from common.utils.logger import log
 
-
-def payload_validity(func: Callable[..., Any]) -> Callable[..., Any]:
-    """Décode le corps JSON avant d'appeler le consommateur.
-
-    Le callback enveloppé est appelé avec ``(channel, method, properties,
-    payload)`` : le dernier argument est le JSON désérialisé, pas les octets
-    bruts transmis par pika.
-    """
-
-    @functools.wraps(func)
-    def validator(ch, method, properties, body):
-        try:
-            payload = json.loads(body.decode("utf-8"))
-        except (json.JSONDecodeError, UnicodeDecodeError) as e:
-            log.error("Échec du pré-traitement (JSON invalide): %s", e)
-            # Rejet immédiat si le prérequis échoue
-            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
-            return None
-
-        return func(ch, method, properties, payload)
-
-    return validator
-
-
-@payload_validity
-def callbackee(ch, method, properties, payload):
-    log.info(f" [x] Received {payload}")
-    # TODO: traiter le job ici, puis acquitter le message.
-    ch.basic_ack(delivery_tag=method.delivery_tag)
 
 
 class Broker:
@@ -121,6 +89,8 @@ class Broker:
         )
 
     def setup_channel(self) -> Self:
+        from common.utils.macro import BROKER_BINDINGS
+        self.channel.basic_qos(prefetch_count=1)
         self.channel.exchange_declare(
             exchange=self.config.exchange,
             exchange_type="topic",
@@ -135,10 +105,12 @@ class Broker:
 
     def start_consuming(self) -> Self:
         """Start listening for jobs on the queue."""
+        from common.utils.macro import BROKER_BINDINGS  # avoids a circular import with worker.handlers
+
         for bind in BROKER_BINDINGS:
             self.channel.basic_consume(
                 queue=bind.queue,
-                on_message_callback=callbackee,
+                on_message_callback=bind.callback,
                 auto_ack=False,
             )
             log.info("Consuming jobs from %s...", bind.queue)
