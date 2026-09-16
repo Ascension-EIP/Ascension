@@ -1,7 +1,7 @@
 > **Last updated:** 16th March 2026  
 > **Version:** 1.0  
 > **Authors:** Darius (Docs), Nicolas TORO  
-> **Status:** Done  
+> **Status:** Final  
 > {.is-success}
 
 ---
@@ -45,7 +45,7 @@ Sources :
 ## Registre des risques prioritaires
 
 | Risque                           | Impact                            | Probabilité    | Niveau      | Mitigation clé                                                     |
-|:---------------------------------|:----------------------------------|:---------------|:------------|:-------------------------------------------------------------------|
+| :------------------------------- | :-------------------------------- | :------------- | :---------- | :----------------------------------------------------------------- |
 | Précision modèle IA insuffisante | Qualité feedback dégradée         | Moyenne/haute  | Élevé       | Dataset métier + validation utilisateur + indicateurs de confiance |
 | Indisponibilité RabbitMQ/DB      | Blocage du flux d’analyse         | Moyenne        | Élevé       | Queue durable, retry, supervision, procédure de reprise            |
 | Fuite de données sensibles       | Risque légal et réputationnel     | Faible/moyenne | Élevé       | Durcissement secrets, chiffrement, revue d’accès, conformité RGPD  |
@@ -129,6 +129,6 @@ Exemple déjà présent dans l’existant :
 ## Traçabilité RNCP M1 (O10, O11)
 
 | Observable                                      | Éléments de preuve                                                       | Couverture |
-|:------------------------------------------------|:-------------------------------------------------------------------------|:-----------|
+| :---------------------------------------------- | :----------------------------------------------------------------------- | :--------- |
 | **O10** — étude prospective évolution/migration | registre de risques + feuille de route + stratégie de migration additive | **Forte**  |
 | **O11** — capacité à vulgariser                 | trame orale courte, orientée décision/risque/mitigation                  | **Forte**  |

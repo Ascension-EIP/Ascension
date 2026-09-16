@@ -1,3 +1,14 @@
+<!-- markdownlint-disable MD041 -->
+
+> **Last updated:** 17th September 2026  
+> **Version:** 1.0  
+> **Authors:** Nicolas TORO  
+> **Original language:** French  
+> **Status:** Done  
+> {.is-success}
+
+---
+
 # Go vs Rust — Comparaison fonctionnelle serveur
 
 _Date: 2026-04-01_
@@ -23,6 +34,7 @@ _Date: 2026-04-01_
 ## 1) Authentification
 
 ### Go (`apps/server`)
+
 - Endpoints:
   - `POST /v1/auth/signup`
   - `POST /v1/auth/signup` + login implicite via `SignupLogin`
@@ -34,6 +46,7 @@ _Date: 2026-04-01_
   - Middlewares appliqués (`auth`, `admin`, `user`) selon groupes de routes.
 
 ### Rust (`apps/server-rust`)
+
 - Endpoints:
   - `POST /v1/auth/register`
   - `POST /v1/auth/login`
@@ -44,6 +57,7 @@ _Date: 2026-04-01_
   - Middleware auth implémenté mais non branché explicitement sur les groupes de routes dans `src/inbound/http.rs`.
 
 ### Écart
+
 - Go > Rust: refresh token + stratégie rôles effectivement appliquée au routeur.
 - Rust > Go: ergonomie web via cookie HttpOnly natif.
 
@@ -52,14 +66,17 @@ _Date: 2026-04-01_
 ## 2) Users
 
 ### Go
+
 - CRUD users complet sous `/v1/users`.
 - Routes protégées avec `auth + admin`.
 
 ### Rust
+
 - CRUD users complet sous `/v1/users`.
 - Contrôles middleware définis, mais leur application explicite aux routes n’est pas visible dans le routeur principal.
 
 ### Écart
+
 - Couverture fonctionnelle quasi équivalente, différence surtout côté wiring sécurité.
 
 ---
@@ -67,6 +84,7 @@ _Date: 2026-04-01_
 ## 3) Videos
 
 ### Go
+
 - Endpoints:
   - `GET /v1/videos/upload-url`
   - `PUT /v1/videos/upload-done/:id`
@@ -74,11 +92,13 @@ _Date: 2026-04-01_
 - Flux complet: présign upload, confirmation d’upload, récupération URL de téléchargement.
 
 ### Rust
+
 - Endpoints:
   - `POST /v1/videos/upload-url`
 - Flux présent mais partiel: pas d’endpoint `upload-done`, pas d’endpoint `download-url`.
 
 ### Écart
+
 - Go > Rust: workflow vidéo plus complet.
 
 ---
@@ -86,6 +106,7 @@ _Date: 2026-04-01_
 ## 4) Analyses IA
 
 ### Go
+
 - Endpoints:
   - `POST /v1/analysis`
   - `GET /v1/analysis/:id`
@@ -93,6 +114,7 @@ _Date: 2026-04-01_
 - Table `analysis` sans colonnes `job_id`, `progress`, `hints`.
 
 ### Rust
+
 - Endpoints:
   - `POST /v1/analyses`
   - `GET /v1/analyses/{id}`
@@ -107,6 +129,7 @@ _Date: 2026-04-01_
   - `20260312000001_add_hints_to_analyses.sql`
 
 ### Écart
+
 - Rust > Go: observabilité/statut métier d’analyse plus riche.
 
 ---
@@ -114,12 +137,15 @@ _Date: 2026-04-01_
 ## 5) Documentation API
 
 ### Go
+
 - Pas d’OpenAPI/Swagger intégré observé.
 
 ### Rust
+
 - OpenAPI + Swagger UI intégrés (`utoipa`, `utoipa-swagger-ui`).
 
 ### Écart
+
 - Rust > Go: DX/visibilité API meilleure côté doc.
 
 ---

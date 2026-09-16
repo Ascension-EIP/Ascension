@@ -1,7 +1,7 @@
 > **Last updated:** 23rd February 2026  
 > **Version:** 1.0  
 > **Authors:** Olivier POUECH and Nicolas TORO  
-> **Status:** Done  
+> **Status:** Final  
 > {.is-success}
 
 ---
@@ -21,7 +21,6 @@
   - [2.2 Stack Technique : L'optimisation au service du budget](#22-stack-technique-loptimisation-au-service-du-budget)
 - [3. Architecture & Sizing (MVP)](#3-architecture-sizing-mvp)
 - [4. Stratégie de Scaling](#4-stratégie-de-scaling)
-
 
 ---
 
@@ -75,11 +74,11 @@ D'après notre benchmark financier (cf. onglet `Part2 - Benchmark`), AWS reviend
 
 Le déploiement initial repose sur une architecture conteneurisée (Docker) répartie sur 3 machines physiques virtuelles pour isoler les charges de travail critiques.
 
-| **Machine** |         **Rôle**         | **CPU / RAM**  | **Stockage** |
-| :---------: | :----------------------: | :------------: | :----------: |
-| **Srv-API** | Nginx / API Rust         | 4 vCPU / 8 GB  |  80 GB SSD   |
-| **Srv-DB**  |   PostgreSQL / Backup    | 4 vCPU / 16 GB | 500 GB NVMe  |
-| **Srv-ML**  | 2 Workers Python (pika)  | 8 vCPU / 16 GB |  100 GB SSD  |
+| **Machine** |        **Rôle**         | **CPU / RAM**  | **Stockage** |
+| :---------: | :---------------------: | :------------: | :----------: |
+| **Srv-API** |    Nginx / API Rust     | 4 vCPU / 8 GB  |  80 GB SSD   |
+| **Srv-DB**  |   PostgreSQL / Backup   | 4 vCPU / 16 GB | 500 GB NVMe  |
+| **Srv-ML**  | 2 Workers Python (pika) | 8 vCPU / 16 GB |  100 GB SSD  |
 
 ---
 

@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD041 -->
 
-> **Last updated:** 20th April 2026  
-> **Version:** 1.2  
+> **Last updated:** 17th September 2026  
+> **Version:** 1.3  
 > **Authors:** Nicolas TORO  
 > **Original language:** English  
 > **Status:** Done  
@@ -22,6 +22,7 @@ This document defines the formatting standards for all Markdown files in this pr
   - [1. General Principles](#1-general-principles)
   - [2. File Naming Convention](#2-file-naming-convention)
   - [3. Required Header](#3-required-header)
+    - [3.1 Status Types](#31-status-types)
   - [4. Structural Rules](#4-structural-rules)
     - [4.1 Headings and Separation](#41-headings-and-separation)
     - [4.2 Lists and Spacing](#42-lists-and-spacing)
@@ -61,8 +62,20 @@ Every single Markdown file must start with the following header block using bloc
 > **Authors:** [Name]
 > **Original language:** [Language]
 > **Status:** [Status]
-{.is-[status-color]}  
+> {.is-[status-color]}
 ```
+
+### 3.1 Status Types
+
+The `Status` field must strictly use one of the following authorized values, paired with its corresponding callout class:
+
+| Status        | Callout Class   | Description (EN)                                                         |
+| ------------- | --------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `Final`       | `{.is-success}` | Final version not to be modified (used for historical/frozen documents). |
+| `Done`        | `{.is-success}` | Completed and validated, can still be modified in the future.            |
+| `In progress` | `{.is-warning}` | Work in progress, currently being authored or modified.                  |
+| `Todo`        | `{.is-danger}`  | To do (planned document not yet written).                                |
+| `Need update` | `{.is-warning}` | Needs to be updated (outdated or incomplete document).                   |
 
 ---
 

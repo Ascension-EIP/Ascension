@@ -1,7 +1,7 @@
 > **Last updated:** 16th March 2026  
 > **Version:** 1.0  
 > **Authors:** Darius (Docs), Nicolas TORO  
-> **Status:** Done  
+> **Status:** Final  
 > {.is-success}
 
 ---
@@ -81,7 +81,7 @@ Justification repo : ce choix est cohérent avec l’implémentation actuelle (
 Valeurs reprises de `costs.md` (estimations atelier) :
 
 | Scénario           | CAPEX | OPEX mensuel | Coût par utilisateur (indiqué) |
-|:-------------------|------:|-------------:|-------------------------------:|
+| :----------------- | ----: | -----------: | -----------------------------: |
 | MVP (100 users)    | 133 € |         96 € |                         0,96 € |
 | Scale (1k users)   |   0 € |        231 € |                         0,23 € |
 | Scale+ (10k users) |   0 € |        655 € |                         0,06 € |
@@ -118,11 +118,12 @@ Sans ligne budgétaire dédiée, le risque est de traiter la conformité trop ta
 ## Traçabilité RNCP M1 (O8, O9)
 
 | Observable                           | Éléments de preuve                                           | Couverture                            |
-|:-------------------------------------|:-------------------------------------------------------------|:--------------------------------------|
+| :----------------------------------- | :----------------------------------------------------------- | :------------------------------------ |
 | **O8** — analyse financière          | `costs.md`, `costs.xlsx`, cohérence avec architecture réelle | **Forte**                             |
 | **O9** — scénarios appuyés benchmark | comparaison provider + 3 scénarios de charge                 | **Forte** (à revalider régulièrement) |
 
 ## Calendrier de développement (Horizon 3 ans)
+
 - **0–12 mois: Consolidation.** On stabilise l'analyse vidéo et on s'assure que l'application est parfaitement utilisable par les personnes en situation de handicap (PSH).
 - **12–24 mois : Montée en puissance.** On augmente la capacité de nos serveurs pour accueillir plus de grimpeurs et on renforce la protection des données personnelles.
 - **24–36 mois : Maturité.** On passe à une gestion automatisée des serveurs et on met en place un système de versions pour que les anciennes applications continuent de fonctionner même après une mise à jour.

@@ -4,7 +4,7 @@
 > **Version:** 1.0  
 > **Authors:** Nicolas TORO  
 > **Original language:** French  
-> **Status:** Done  
+> **Status:** Final  
 > {.is-success}
 
 ---
@@ -14,7 +14,6 @@
 Ce document dresse le bilan de notre expérience durant la "Prototyping Pool". Entre découvertes techniques majeures et frustration organisationnelle, voici le ressenti de l'équipe Ascension sur ces cinq semaines intensives.
 
 ---
-
 
 ## Table of Contents
 
@@ -44,11 +43,10 @@ Ce document dresse le bilan de notre expérience durant la "Prototyping Pool". E
 La piscine s'est déroulée en deux phases distinctes :
 
 1.  **Phase de cadrage (3 semaines) :** Focus total sur l'administratif, les benchmarks, la documentation stratégique et la définition de la stack technique.
-    
+
 2.  **Phase de POC (2 semaines) :** Développement d'un prototype fonctionnel de bout en bout pour valider notre flux de données.
-    
+
 3.  **Finalisation :** Soutenance du bloc RNCP 1 une semaine après la fin de la piscine.
-    
 
 ---
 

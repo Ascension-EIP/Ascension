@@ -1,7 +1,7 @@
 > **Last updated:** 16th March 2026  
 > **Version:** 1.0  
 > **Authors:** Darius (Docs), Nicolas TORO  
-> **Status:** Done  
+> **Status:** Final  
 > {.is-success}
 
 ---
@@ -64,7 +64,7 @@ Positionnement oral recommandé : distinguer explicitement **“implémenté et
 ## Acteurs et cas d’usage
 
 | Acteur                          | Objectif                       | Cas d’usage                                          |
-|:--------------------------------|:-------------------------------|:-----------------------------------------------------|
+| :------------------------------ | :----------------------------- | :--------------------------------------------------- |
 | Grimpeur                        | Recevoir un feedback technique | Upload vidéo -> lancer analyse -> lire résultats     |
 | Backend API                     | Orchestrer le flux             | Générer URL présignée, créer analyse, exposer statut |
 | Worker IA                       | Produire l’analyse             | Consommer job, traiter vidéo, écrire résultat        |
@@ -98,7 +98,7 @@ Preuves de flux : `apps/server/src/inbound/http.rs`, `apps/server/src/inbound/h
 ## Critères d’acceptation fonctionnels
 
 | ID   | Critère                  | Résultat attendu                                      |
-|:-----|:-------------------------|:------------------------------------------------------|
+| :--- | :----------------------- | :---------------------------------------------------- |
 | F-01 | Création d’URL d’upload  | Retourne `video_id` + `upload_url`                    |
 | F-02 | Création d’analyse       | Retourne `analysis_id`, `job_id`, `status=pending`    |
 | F-03 | Suivi d’analyse          | Endpoint de consultation renvoie statut + progression |
@@ -123,7 +123,7 @@ Source d’alignement : `docs/10-product/prototype-pool/workshop/tech-func-spec
 ## Traçabilité besoins -> fonctions
 
 | Besoin                      | Fonction couverte                  | Preuve repo                                                      |
-|:----------------------------|:-----------------------------------|:-----------------------------------------------------------------|
+| :-------------------------- | :--------------------------------- | :--------------------------------------------------------------- |
 | Feedback technique objectif | Analyse asynchrone vidéo           | `apps/ai/src/worker.py`                                          |
 | Fluidité d’usage            | Upload direct via URL présignée    | `apps/server/src/inbound/http/handlers/video/get_upload_url.rs`  |
 | Visibilité utilisateur      | Statut/progress/résultat d’analyse | `apps/server/src/inbound/http/handlers/analysis/get_analysis.rs` |

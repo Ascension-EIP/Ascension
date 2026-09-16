@@ -1,7 +1,7 @@
 > **Last updated:** 16th March 2026  
 > **Version:** 1.0  
 > **Authors:** Darius (Docs), Nicolas TORO  
-> **Status:** Done  
+> **Status:** Final  
 > {.is-success}
 
 ---
@@ -145,6 +145,6 @@ Conclusion PSH audit :
 ## Traçabilité RNCP M1 (O3, O4)
 
 | Observable                                    | Éléments de preuve                                                                                                   | Couverture |
-|:----------------------------------------------|:---------------------------------------------------------------------------------------------------------------------|:-----------|
+| :-------------------------------------------- | :------------------------------------------------------------------------------------------------------------------- | :--------- |
 | **O3** — audit technique/fonctionnel/sécurité | `docker-compose.yml`, `apps/server/src/inbound/http.rs`, `apps/ai/src/worker.py`, migrations SQL, docs atelier audit | **Forte**  |
 | **O4** — méthode d’audit explicitée           | Démarche en 4 étapes + sources et limites documentées ici                                                            | **Forte**  |

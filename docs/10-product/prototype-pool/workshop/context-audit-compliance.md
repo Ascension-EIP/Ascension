@@ -1,7 +1,7 @@
 > **Last updated:** 11th March 2026
 > **Version:** 1.1
 > **Authors:** Nicolas TORO
-> **Status:** Done
+> **Status:** Final  
 > {.is-success}
 
 ---
@@ -52,10 +52,10 @@
 
 The platform targets two primary personas:
 
-| Persona | Profile | Core Need |
-| :--- | :--- | :--- |
+| Persona                                          | Profile                                                   | Core Need                                                                  |
+| :----------------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------------------------------- |
 | **Progressive Pierre** — Stagnating Intermediate | Climber stuck at grade 6a+, cannot afford a private coach | Instant, affordable technical feedback on posture and mass transfer errors |
-| **Technical Tanya** — Data-Driven Expert | High-level climber seeking marginal gains | Deep biomechanical analysis and energy-efficient beta computation |
+| **Technical Tanya** — Data-Driven Expert         | High-level climber seeking marginal gains                 | Deep biomechanical analysis and energy-efficient beta computation          |
 
 The key value proposition is **"AI coaching democratized"**: delivering expert-level feedback at zero cost to the end-user, replacing the 50 €/hour cost of a human coach with an automated, asynchronous analysis pipeline.
 
@@ -65,11 +65,11 @@ The key value proposition is **"AI coaching democratized"**: delivering expert-l
 
 The platform is deployed on **Hetzner Cloud (Falkenstein, Germany)** across three dedicated VPS machines, each isolating a critical workload:
 
-| Machine | Role | Specs |
-| :---: | :--- | :---: |
-| **Srv-API** | Nginx Reverse Proxy + Rust API (Axum) | CX31 — 4 vCPU / 8 GB RAM |
-| **Srv-DB** | PostgreSQL 16 + RabbitMQ 3.x + MinIO | CX41 — 4 vCPU / 16 GB RAM |
-| **Srv-ML** | 2 × Python AI Workers (MediaPipe/OpenCV) | CX51 — 8 vCPU / 16 GB RAM |
+|   Machine   | Role                                     |           Specs           |
+| :---------: | :--------------------------------------- | :-----------------------: |
+| **Srv-API** | Nginx Reverse Proxy + Rust API (Axum)    | CX31 — 4 vCPU / 8 GB RAM  |
+| **Srv-DB**  | PostgreSQL 16 + RabbitMQ 3.x + MinIO     | CX41 — 4 vCPU / 16 GB RAM |
+| **Srv-ML**  | 2 × Python AI Workers (MediaPipe/OpenCV) | CX51 — 8 vCPU / 16 GB RAM |
 
 **Environments:**
 
@@ -101,13 +101,13 @@ This audit was conducted using three complementary approaches:
 
 ### 2.1 Execution Environment
 
-| Dimension | Current State | Assessment |
-| :--- | :--- | :---: |
-| **Hosting** | Hetzner VPS (Falkenstein, DE) | ✅ |
-| **Containerization** | Docker Compose (dev/staging) → Kubernetes target (prod scale) | ✅ |
-| **Environment isolation** | dev / staging / production | ✅ |
-| **Scalability plan** | Horizontal (K8s HPA workers) + Vertical (DB upgrade) | ✅ |
-| **Toolchain versioning** | Fixed in `.moon/toolchain.yml` (Rust + Python) | ✅ |
+| Dimension                 | Current State                                                 | Assessment |
+| :------------------------ | :------------------------------------------------------------ | :--------: |
+| **Hosting**               | Hetzner VPS (Falkenstein, DE)                                 |     ✅     |
+| **Containerization**      | Docker Compose (dev/staging) → Kubernetes target (prod scale) |     ✅     |
+| **Environment isolation** | dev / staging / production                                    |     ✅     |
+| **Scalability plan**      | Horizontal (K8s HPA workers) + Vertical (DB upgrade)          |     ✅     |
+| **Toolchain versioning**  | Fixed in `.moon/toolchain.yml` (Rust + Python)                |     ✅     |
 
 **Monorepo structure (moonrepo):** The project uses a single Git repository managed by `moonrepo`, containing three apps under `apps/`:
 
@@ -121,15 +121,15 @@ Each app declares its tasks in a `moon.yml`. The toolchain ensures reproducible 
 
 ### 2.2 Technical Stack
 
-| Layer | Technology | Justification |
-| :--- | :--- | :--- |
-| **Mobile** | Flutter (Dart) | Single codebase for iOS & Android; `CustomPainter` enables local skeleton rendering |
-| **API Backend** | Rust — Axum + Tokio | Memory-safe, low resource usage (idle < 100 MB), concurrent WebSocket handling |
-| **AI/ML** | Python — MediaPipe + OpenCV + PyTorch | Industry-standard ML ecosystem; MediaPipe delivers 33-keypoint pose estimation out-of-the-box |
-| **Database** | PostgreSQL 16 | JSONB support for analysis results; strong relational model for users/videos/analyses |
-| **Message Broker** | RabbitMQ 3.x | Persistent queues guarantee job delivery even if workers crash; enables horizontal scaling |
-| **Object Storage** | MinIO (dev) → Hetzner Storage Box (prod) | S3-compatible API; presigned URLs allow direct client-to-storage upload, bypassing the API |
-| **Infrastructure** | Hetzner Cloud | Best price/performance ratio for EU-based startup; 100% renewable energy |
+| Layer              | Technology                               | Justification                                                                                 |
+| :----------------- | :--------------------------------------- | :-------------------------------------------------------------------------------------------- |
+| **Mobile**         | Flutter (Dart)                           | Single codebase for iOS & Android; `CustomPainter` enables local skeleton rendering           |
+| **API Backend**    | Rust — Axum + Tokio                      | Memory-safe, low resource usage (idle < 100 MB), concurrent WebSocket handling                |
+| **AI/ML**          | Python — MediaPipe + OpenCV + PyTorch    | Industry-standard ML ecosystem; MediaPipe delivers 33-keypoint pose estimation out-of-the-box |
+| **Database**       | PostgreSQL 16                            | JSONB support for analysis results; strong relational model for users/videos/analyses         |
+| **Message Broker** | RabbitMQ 3.x                             | Persistent queues guarantee job delivery even if workers crash; enables horizontal scaling    |
+| **Object Storage** | MinIO (dev) → Hetzner Storage Box (prod) | S3-compatible API; presigned URLs allow direct client-to-storage upload, bypassing the API    |
+| **Infrastructure** | Hetzner Cloud                            | Best price/performance ratio for EU-based startup; 100% renewable energy                      |
 
 **Critical dependency assessment:**
 
@@ -210,14 +210,14 @@ sequenceDiagram
 
 **Single Points of Failure (SPOF) analysis:**
 
-| Component | SPOF? | Mitigation |
-| :--- | :---: | :--- |
-| Rust API (Srv-API) | ⚠️ Partial | 2 instances behind Nginx load balancer (`least_conn`) |
-| PostgreSQL (Srv-DB) | ⚠️ Partial | Read replica + failover manual; WAL archiving RPO < 15 min |
-| RabbitMQ (Srv-DB) | ⚠️ Partial | Durable persistent queue; clustering planned for Phase 2 |
-| AI Workers (Srv-ML) | ✅ No | 2 workers active; if 1 fails, jobs remain in queue for the other |
-| MinIO / Object Storage | ✅ No | Hetzner Volume redundancy; daily sync to Hetzner Storage Box |
-| Cloudflare | ✅ No | 100% uptime SLA; multi-PoP global CDN |
+| Component              |   SPOF?    | Mitigation                                                       |
+| :--------------------- | :--------: | :--------------------------------------------------------------- |
+| Rust API (Srv-API)     | ⚠️ Partial | 2 instances behind Nginx load balancer (`least_conn`)            |
+| PostgreSQL (Srv-DB)    | ⚠️ Partial | Read replica + failover manual; WAL archiving RPO < 15 min       |
+| RabbitMQ (Srv-DB)      | ⚠️ Partial | Durable persistent queue; clustering planned for Phase 2         |
+| AI Workers (Srv-ML)    |   ✅ No    | 2 workers active; if 1 fails, jobs remain in queue for the other |
+| MinIO / Object Storage |   ✅ No    | Hetzner Volume redundancy; daily sync to Hetzner Storage Box     |
+| Cloudflare             |   ✅ No    | 100% uptime SLA; multi-PoP global CDN                            |
 
 ---
 
@@ -256,26 +256,27 @@ CD jobs on every `v*` tag release:
 
 **Monitoring stack:**
 
-| Tool | Role |
-| :--- | :--- |
-| **Prometheus** | Infrastructure and application metrics collection |
-| **Grafana** | Dashboards and alerting (CPU, queue depth, analysis latency) |
-| **Loki** | Centralized structured log aggregation |
+| Tool           | Role                                                         |
+| :------------- | :----------------------------------------------------------- |
+| **Prometheus** | Infrastructure and application metrics collection            |
+| **Grafana**    | Dashboards and alerting (CPU, queue depth, analysis latency) |
+| **Loki**       | Centralized structured log aggregation                       |
 
 Key alerting rules:
+
 - API CPU > 70% → scale-up alert
 - RabbitMQ queue depth > 50 jobs → spawn additional worker
 - Analysis latency > 10 min → critical alert + Slack notification
 
 **Backup policy:**
 
-| Asset | Type | Frequency | Retention | RPO |
-| :--- | :--- | :---: | :---: | :---: |
-| PostgreSQL | Full dump (`pg_dump` + gzip) | Daily (03:00) | 7 days | — |
-| PostgreSQL | WAL continuous archiving | Continuous | 7 days | < 15 min |
-| PostgreSQL | Restore test | Monthly | — | — |
-| MinIO videos | Bucket sync (`mc mirror`) | Daily | 30 days | — |
-| MinIO lifecycle | Auto-delete unsaved uploads | Auto (7 days) | — | — |
+| Asset           | Type                         |   Frequency   | Retention |   RPO    |
+| :-------------- | :--------------------------- | :-----------: | :-------: | :------: |
+| PostgreSQL      | Full dump (`pg_dump` + gzip) | Daily (03:00) |  7 days   |    —     |
+| PostgreSQL      | WAL continuous archiving     |  Continuous   |  7 days   | < 15 min |
+| PostgreSQL      | Restore test                 |    Monthly    |     —     |    —     |
+| MinIO videos    | Bucket sync (`mc mirror`)    |     Daily     |  30 days  |    —     |
+| MinIO lifecycle | Auto-delete unsaved uploads  | Auto (7 days) |     —     |    —     |
 
 **RTO (Recovery Time Objective):** < 1 hour for full server failure (provision VPS → restore DB → restart services).
 
@@ -289,27 +290,27 @@ Key alerting rules:
 
 **Primary use cases:**
 
-| Use Case | Pipeline | Expected Latency |
-| :--- | :--- | :---: |
-| **Hold Detection** | Photo of route → AI detects & classifies holds → user validation | < 10 s |
-| **Movement Analysis** | Video → skeleton extraction (keypoints + angles) + targeted advice | < 20 s |
-| **Ghost Mode** | Overlay of optimal "ghost" climber (morphologically adapted) on user video | < 60 s |
-| **Training Programs** | Personalized plans based on goals, injuries, analysis history | < 5 s |
+| Use Case              | Pipeline                                                                   | Expected Latency |
+| :-------------------- | :------------------------------------------------------------------------- | :--------------: |
+| **Hold Detection**    | Photo of route → AI detects & classifies holds → user validation           |      < 10 s      |
+| **Movement Analysis** | Video → skeleton extraction (keypoints + angles) + targeted advice         |      < 20 s      |
+| **Ghost Mode**        | Overlay of optimal "ghost" climber (morphologically adapted) on user video |      < 60 s      |
+| **Training Programs** | Personalized plans based on goals, injuries, analysis history              |      < 5 s       |
 
 **Functional scope (MoSCoW):**
 
-| Priority | Feature | Status |
-| :---: | :--- | :---: |
-| **Must Have** | 2D→3D Skeleton Extraction (MediaPipe) | ✅ Implemented |
-| **Must Have** | Video Upload & Async Analysis Pipeline | ✅ Implemented |
-| **Must Have** | Ghost Mode overlay | 🔄 In Progress |
-| **Should Have** | Hold Recognition (OpenCV) | 🔄 In Progress |
-| **Should Have** | Personalized Training Routines | 📋 Planned |
-| **Should Have** | Social Sharing (Instagram/TikTok export) | 📋 Planned |
-| **Could Have** | Server Priority for Infinity tier | 📋 Planned |
-| **Could Have** | Advanced Biomechanics (center of gravity) | 📋 Planned |
-| **Won't Have** | Live AR Glasses Support | ❌ Out of scope |
-| **Won't Have** | Human Coaching Marketplace | ❌ Out of scope |
+|    Priority     | Feature                                   |     Status      |
+| :-------------: | :---------------------------------------- | :-------------: |
+|  **Must Have**  | 2D→3D Skeleton Extraction (MediaPipe)     | ✅ Implemented  |
+|  **Must Have**  | Video Upload & Async Analysis Pipeline    | ✅ Implemented  |
+|  **Must Have**  | Ghost Mode overlay                        | 🔄 In Progress  |
+| **Should Have** | Hold Recognition (OpenCV)                 | 🔄 In Progress  |
+| **Should Have** | Personalized Training Routines            |   📋 Planned    |
+| **Should Have** | Social Sharing (Instagram/TikTok export)  |   📋 Planned    |
+| **Could Have**  | Server Priority for Infinity tier         |   📋 Planned    |
+| **Could Have**  | Advanced Biomechanics (center of gravity) |   📋 Planned    |
+| **Won't Have**  | Live AR Glasses Support                   | ❌ Out of scope |
+| **Won't Have**  | Human Coaching Marketplace                | ❌ Out of scope |
 
 ---
 
@@ -319,18 +320,19 @@ Key alerting rules:
 
 **Performance SLA alignment:**
 
-| Metric | Target | Current Capability |
-| :--- | :---: | :---: |
-| Hold detection latency | < 10 s | ✅ Achieved (OpenCV, CPU-only) |
-| Skeleton extraction latency | < 20 s | ✅ Achieved (MediaPipe GPU) |
-| Ghost mode generation | < 60 s | ⚠️ Depends on queue depth |
-| Training routine generation | < 5 s | ✅ Achieved (CPU Pipeline 2) |
-| API response time (P95) | < 200 ms | ✅ Rust Axum — typical < 50 ms |
-| Availability SLA | 99.5% | ⚠️ MVP: 99.9% Hetzner SLA |
+| Metric                      |  Target  |       Current Capability       |
+| :-------------------------- | :------: | :----------------------------: |
+| Hold detection latency      |  < 10 s  | ✅ Achieved (OpenCV, CPU-only) |
+| Skeleton extraction latency |  < 20 s  |  ✅ Achieved (MediaPipe GPU)   |
+| Ghost mode generation       |  < 60 s  |   ⚠️ Depends on queue depth    |
+| Training routine generation |  < 5 s   |  ✅ Achieved (CPU Pipeline 2)  |
+| API response time (P95)     | < 200 ms | ✅ Rust Axum — typical < 50 ms |
+| Availability SLA            |  99.5%   |   ⚠️ MVP: 99.9% Hetzner SLA    |
 
 **Key architectural strength — "Maths over Video":**
 
 The MediaPipe output is a compact JSON structure (~50 KB per video) containing per-frame landmark coordinates and joint angles. This JSON is stored in PostgreSQL as JSONB and served directly to the Flutter client, which renders the skeleton overlay locally. This approach:
+
 - Eliminates server-side video re-encoding (saves ~30 s + bandwidth)
 - Reuses skeleton data across multiple features (analysis → advice → ghost → training)
 - Reduces per-analysis storage cost from ~50 MB to ~50 KB
@@ -341,12 +343,12 @@ The MediaPipe output is a compact JSON structure (~50 KB per video) containing p
 
 **User roles and rights:**
 
-| Role | Quota | Features |
-| :--- | :---: | :--- |
-| **Guest / Freemium** | 10 analyses/month | Basic skeleton overlay, training programs |
-| **Premium** (20 €/month) | 50 analyses/month | + Ghost Mode, targeted advice |
-| **Infinity** (30 €/month) | Unlimited | + Server priority, advanced biomechanics |
-| **Admin** | N/A | User management, system monitoring |
+| Role                      |       Quota       | Features                                  |
+| :------------------------ | :---------------: | :---------------------------------------- |
+| **Guest / Freemium**      | 10 analyses/month | Basic skeleton overlay, training programs |
+| **Premium** (20 €/month)  | 50 analyses/month | + Ghost Mode, targeted advice             |
+| **Infinity** (30 €/month) |     Unlimited     | + Server priority, advanced biomechanics  |
+| **Admin**                 |        N/A        | User management, system monitoring        |
 
 **Nominal journey (standard analysis):**
 
@@ -377,14 +379,14 @@ User photographs route
 
 ### 4.1 Infrastructure Security
 
-| Control | Implementation | Status |
-| :--- | :--- | :---: |
-| **Network segmentation** | Docker Compose isolated networks; services not exposed to the internet | ✅ |
-| **Firewall** | `iptables` — only ports 22 (SSH) and 443 (HTTPS) open | ✅ |
-| **TLS encryption in transit** | TLS 1.3 mandatory via Nginx for all external traffic | ✅ |
-| **Encryption at rest** | AES-256 disk encryption on all Hetzner volumes | ✅ |
-| **CDN & DDoS protection** | Cloudflare Tunnel (hides origin IP, automatic DDoS mitigation) | ✅ |
-| **SSH hardening** | Key-based authentication only; root login disabled | ✅ |
+| Control                       | Implementation                                                         | Status |
+| :---------------------------- | :--------------------------------------------------------------------- | :----: |
+| **Network segmentation**      | Docker Compose isolated networks; services not exposed to the internet |   ✅   |
+| **Firewall**                  | `iptables` — only ports 22 (SSH) and 443 (HTTPS) open                  |   ✅   |
+| **TLS encryption in transit** | TLS 1.3 mandatory via Nginx for all external traffic                   |   ✅   |
+| **Encryption at rest**        | AES-256 disk encryption on all Hetzner volumes                         |   ✅   |
+| **CDN & DDoS protection**     | Cloudflare Tunnel (hides origin IP, automatic DDoS mitigation)         |   ✅   |
+| **SSH hardening**             | Key-based authentication only; root login disabled                     |   ✅   |
 
 ---
 
@@ -393,6 +395,7 @@ User photographs route
 **Authentication mechanism:**
 
 The Rust API manages authentication internally. On `POST /auth/register` and `POST /auth/login`, the server:
+
 1. Hashes the password using **bcrypt** (cost factor 12).
 2. Issues a **JWT** signed with HS256 (1 h expiry) on successful login.
 3. Validates the JWT via the `Auth Handler` middleware on every protected endpoint.
@@ -405,12 +408,12 @@ Authorization: Bearer <jwt_access_token>
 
 Roles are stored in PostgreSQL (`subscription_tier` column on `users` table). The `Quota Middleware` (Tower Layer in Axum) enforces per-tier restrictions before any handler executes.
 
-| Role | Access Level | Quota enforcement |
-| :--- | :--- | :---: |
-| freemium | Basic features | 10 videos/month |
-| premium | + Ghost Mode | 50 videos/month |
-| infinity | All features | Unlimited |
-| admin | Full system access | N/A |
+| Role     | Access Level       | Quota enforcement |
+| :------- | :----------------- | :---------------: |
+| freemium | Basic features     |  10 videos/month  |
+| premium  | + Ghost Mode       |  50 videos/month  |
+| infinity | All features       |     Unlimited     |
+| admin    | Full system access |        N/A        |
 
 **Principle of least privilege:**
 
@@ -422,18 +425,18 @@ Roles are stored in PostgreSQL (`subscription_tier` column on `users` table). Th
 
 ### 4.3 Application Security (OWASP Top 10)
 
-| OWASP Risk | Mitigation | Implementation |
-| :--- | :--- | :--- |
-| **A01 — Broken Access Control** | JWT + RBAC on all endpoints | Axum middleware on every protected route |
-| **A02 — Cryptographic Failures** | TLS 1.3 in transit; AES-256 at rest; bcrypt for passwords | Nginx TLS config; Hetzner disk encryption |
-| **A03 — Injection** | SQLx compile-time parameterized queries | SQL injection is structurally impossible |
-| **A04 — Insecure Design** | Quota limits, rate limiting, input validation | Tower middleware; Nginx `limit_req` |
-| **A05 — Security Misconfiguration** | Secrets via env vars; no default credentials | `.env` injection at runtime |
-| **A06 — Vulnerable Components** | Pinned dependency versions; `cargo audit` / `pip-audit` in CI | `Cargo.lock`, `requirements.txt` |
-| **A07 — Auth Failures** | Short JWT expiry (1 h); bcrypt password hashing | Auth Handler in Rust API |
-| **A08 — Software Integrity** | Docker image signing; CI/CD on verified commits | GitHub Actions with protected branches |
-| **A09 — Logging Failures** | Structured logs (Loki); sensitive actions logged | All auth events and analysis lifecycle logged |
-| **A10 — SSRF** | No external URL fetching from user input; presigned URLs are API-generated | S3 presigned URL pattern |
+| OWASP Risk                          | Mitigation                                                                 | Implementation                                |
+| :---------------------------------- | :------------------------------------------------------------------------- | :-------------------------------------------- |
+| **A01 — Broken Access Control**     | JWT + RBAC on all endpoints                                                | Axum middleware on every protected route      |
+| **A02 — Cryptographic Failures**    | TLS 1.3 in transit; AES-256 at rest; bcrypt for passwords                  | Nginx TLS config; Hetzner disk encryption     |
+| **A03 — Injection**                 | SQLx compile-time parameterized queries                                    | SQL injection is structurally impossible      |
+| **A04 — Insecure Design**           | Quota limits, rate limiting, input validation                              | Tower middleware; Nginx `limit_req`           |
+| **A05 — Security Misconfiguration** | Secrets via env vars; no default credentials                               | `.env` injection at runtime                   |
+| **A06 — Vulnerable Components**     | Pinned dependency versions; `cargo audit` / `pip-audit` in CI              | `Cargo.lock`, `requirements.txt`              |
+| **A07 — Auth Failures**             | Short JWT expiry (1 h); bcrypt password hashing                            | Auth Handler in Rust API                      |
+| **A08 — Software Integrity**        | Docker image signing; CI/CD on verified commits                            | GitHub Actions with protected branches        |
+| **A09 — Logging Failures**          | Structured logs (Loki); sensitive actions logged                           | All auth events and analysis lifecycle logged |
+| **A10 — SSRF**                      | No external URL fetching from user input; presigned URLs are API-generated | S3 presigned URL pattern                      |
 
 **Rate limiting configuration (Nginx):**
 
@@ -448,17 +451,17 @@ limit_req zone=api burst=10 nodelay;
 
 ### 4.4 Compliance
 
-| Requirement | Status | Details |
-| :--- | :---: | :--- |
-| **GDPR — Data Minimization** | ✅ | Only strictly necessary data collected at registration |
-| **GDPR — Explicit Consent** | ✅ | 3 granular consents at onboarding (video storage, analysis, model improvement) |
-| **GDPR — Right to Erasure** | ✅ | `ON DELETE CASCADE` from `users` → `videos` (S3) → `analyses` (DB) |
-| **GDPR — Data Location (EU)** | ✅ | Hetzner Falkenstein, Germany only |
-| **GDPR — Breach Notification** | 📋 | Procedure documented; 72 h CNIL notification process defined |
-| **Apple App Store Guidelines** | 📋 | Privacy policy drafted; App Review buffer of 2 weeks planned |
-| **Google Play Policies** | 📋 | Privacy policy drafted; sensitive data declaration prepared |
-| **Log Retention** | ✅ | 30-day retention policy configured in Loki |
-| **Audit Trails** | ✅ | All auth events and analysis lifecycle events are logged |
+| Requirement                    | Status | Details                                                                        |
+| :----------------------------- | :----: | :----------------------------------------------------------------------------- |
+| **GDPR — Data Minimization**   |   ✅   | Only strictly necessary data collected at registration                         |
+| **GDPR — Explicit Consent**    |   ✅   | 3 granular consents at onboarding (video storage, analysis, model improvement) |
+| **GDPR — Right to Erasure**    |   ✅   | `ON DELETE CASCADE` from `users` → `videos` (S3) → `analyses` (DB)             |
+| **GDPR — Data Location (EU)**  |   ✅   | Hetzner Falkenstein, Germany only                                              |
+| **GDPR — Breach Notification** |   📋   | Procedure documented; 72 h CNIL notification process defined                   |
+| **Apple App Store Guidelines** |   📋   | Privacy policy drafted; App Review buffer of 2 weeks planned                   |
+| **Google Play Policies**       |   📋   | Privacy policy drafted; sensitive data declaration prepared                    |
+| **Log Retention**              |   ✅   | 30-day retention policy configured in Loki                                     |
+| **Audit Trails**               |   ✅   | All auth events and analysis lifecycle events are logged                       |
 
 ---
 
@@ -468,13 +471,13 @@ limit_req zone=api burst=10 nodelay;
 
 Ascension processes two categories of personal data, one of which is **sensitive** under GDPR Article 9:
 
-| Data Type | GDPR Category | Examples | Sensitivity |
-| :--- | :--- | :--- | :---: |
-| **Identity data** | Personal Data (Art. 4) | Email, first name, last name | 🟡 Standard |
-| **Video recordings** | Personal Data (Art. 4) | Climbing session videos showing the user's body | 🔴 High |
-| **Biometric data** | Special Category (Art. 9) | Skeleton keypoints, joint angles extracted from video | 🔴 **Critical** |
-| **Behavioral data** | Personal Data (Art. 4) | Analysis history, training logs, goals | 🟡 Standard |
-| **Technical data** | Personal Data (Art. 4) | IP addresses, device identifiers, session logs | 🟡 Standard |
+| Data Type            | GDPR Category             | Examples                                              |   Sensitivity   |
+| :------------------- | :------------------------ | :---------------------------------------------------- | :-------------: |
+| **Identity data**    | Personal Data (Art. 4)    | Email, first name, last name                          |   🟡 Standard   |
+| **Video recordings** | Personal Data (Art. 4)    | Climbing session videos showing the user's body       |     🔴 High     |
+| **Biometric data**   | Special Category (Art. 9) | Skeleton keypoints, joint angles extracted from video | 🔴 **Critical** |
+| **Behavioral data**  | Personal Data (Art. 4)    | Analysis history, training logs, goals                |   🟡 Standard   |
+| **Technical data**   | Personal Data (Art. 4)    | IP addresses, device identifiers, session logs        |   🟡 Standard   |
 
 > ⚠️ **Biometric data (GDPR Article 9):** The MediaPipe skeleton data (33 keypoints per frame, joint angles) constitutes biometric data used to uniquely identify a person's morphology and movement patterns. Processing this data requires **explicit, informed consent** and entails enhanced obligations including potential DPO (Data Protection Officer) designation.
 
@@ -482,13 +485,13 @@ Ascension processes two categories of personal data, one of which is **sensitive
 
 ### 5.2 Legal Bases & Consent Architecture
 
-| Processing Purpose | Legal Basis | Consent Required |
-| :--- | :--- | :---: |
-| Account creation and authentication | Art. 6(1)(b) — Contract performance | ❌ No (contractual necessity) |
-| Video storage and analysis | Art. 6(1)(a) + Art. 9(2)(a) — Explicit consent | ✅ **Yes — Consent 1** |
-| AI model improvement (fine-tuning) | Art. 6(1)(a) — Explicit consent | ✅ **Yes — Consent 2** |
-| Training program generation | Art. 6(1)(b) — Contract performance | ❌ No (contractual necessity) |
-| Marketing communications | Art. 6(1)(a) — Explicit consent | ✅ **Yes — Consent 3** |
+| Processing Purpose                  | Legal Basis                                    |       Consent Required        |
+| :---------------------------------- | :--------------------------------------------- | :---------------------------: |
+| Account creation and authentication | Art. 6(1)(b) — Contract performance            | ❌ No (contractual necessity) |
+| Video storage and analysis          | Art. 6(1)(a) + Art. 9(2)(a) — Explicit consent |    ✅ **Yes — Consent 1**     |
+| AI model improvement (fine-tuning)  | Art. 6(1)(a) — Explicit consent                |    ✅ **Yes — Consent 2**     |
+| Training program generation         | Art. 6(1)(b) — Contract performance            | ❌ No (contractual necessity) |
+| Marketing communications            | Art. 6(1)(a) — Explicit consent                |    ✅ **Yes — Consent 3**     |
 
 **Consent collection flow at onboarding:**
 
@@ -509,14 +512,14 @@ Ascension processes two categories of personal data, one of which is **sensitive
 
 ### 5.3 Data Subject Rights Implementation
 
-| Right | GDPR Article | Implementation Status | Technical Details |
-| :--- | :---: | :---: | :--- |
-| **Right of Access** | Art. 15 | ✅ | `GET /users/me/data-export` — returns all user data as JSON |
-| **Right to Rectification** | Art. 16 | ✅ | `PATCH /users/me` — updates profile data |
-| **Right to Erasure ("Right to be Forgotten")** | Art. 17 | ✅ | `DELETE /users/me` — triggers cascade deletion |
-| **Right to Data Portability** | Art. 20 | 📋 | JSON export endpoint planned |
-| **Right to Object** | Art. 21 | ✅ | Consent withdrawal at any time via profile settings |
-| **Right to Restrict Processing** | Art. 18 | 📋 | Account freeze feature planned |
+| Right                                          | GDPR Article | Implementation Status | Technical Details                                           |
+| :--------------------------------------------- | :----------: | :-------------------: | :---------------------------------------------------------- |
+| **Right of Access**                            |   Art. 15    |          ✅           | `GET /users/me/data-export` — returns all user data as JSON |
+| **Right to Rectification**                     |   Art. 16    |          ✅           | `PATCH /users/me` — updates profile data                    |
+| **Right to Erasure ("Right to be Forgotten")** |   Art. 17    |          ✅           | `DELETE /users/me` — triggers cascade deletion              |
+| **Right to Data Portability**                  |   Art. 20    |          📋           | JSON export endpoint planned                                |
+| **Right to Object**                            |   Art. 21    |          ✅           | Consent withdrawal at any time via profile settings         |
+| **Right to Restrict Processing**               |   Art. 18    |          📋           | Account freeze feature planned                              |
 
 **Right to Erasure — Cascade deletion chain:**
 
@@ -538,14 +541,14 @@ S3 video files are deleted asynchronously via a PostgreSQL trigger that queues a
 
 ### 5.4 Data Retention Policy
 
-| Data Type | Default Retention | Extended Retention (with consent) |
-| :--- | :---: | :---: |
-| Raw climbing videos | **90 days** | Indefinite (explicit save by user) |
-| Skeleton/analysis JSON | **90 days** | Indefinite (tied to saved video) |
-| Unsaved upload buffer | **7 days** | N/A |
-| Training & goal logs | Account lifetime | Account lifetime |
-| Authentication logs | **30 days** | — |
-| Infrastructure logs | **30 days** | — |
+| Data Type              | Default Retention | Extended Retention (with consent)  |
+| :--------------------- | :---------------: | :--------------------------------: |
+| Raw climbing videos    |    **90 days**    | Indefinite (explicit save by user) |
+| Skeleton/analysis JSON |    **90 days**    |  Indefinite (tied to saved video)  |
+| Unsaved upload buffer  |    **7 days**     |                N/A                 |
+| Training & goal logs   | Account lifetime  |          Account lifetime          |
+| Authentication logs    |    **30 days**    |                 —                  |
+| Infrastructure logs    |    **30 days**    |                 —                  |
 
 MinIO lifecycle policies enforce automatic deletion:
 
@@ -561,15 +564,15 @@ Rule: Delete all objects after 90 days (unless saved=true tag present)
 
 In the event of a data breach involving biometric or personal data, the following procedure applies:
 
-| Step | Action | Deadline |
-| :---: | :--- | :---: |
-| **1** | Detect breach (Grafana alert / Loki anomaly) | Immediate |
-| **2** | Isolate affected systems (firewall, service shutdown) | < 1 hour |
-| **3** | Assess scope: number of users affected, type of data exposed | < 4 hours |
-| **4** | Notify CNIL (French Data Protection Authority) | **< 72 hours** |
-| **5** | Notify affected users individually | **< 72 hours** (if high risk) |
-| **6** | Internal post-mortem and corrective action plan | < 7 days |
-| **7** | Update security controls and documentation | < 30 days |
+| Step  | Action                                                       |           Deadline            |
+| :---: | :----------------------------------------------------------- | :---------------------------: |
+| **1** | Detect breach (Grafana alert / Loki anomaly)                 |           Immediate           |
+| **2** | Isolate affected systems (firewall, service shutdown)        |           < 1 hour            |
+| **3** | Assess scope: number of users affected, type of data exposed |           < 4 hours           |
+| **4** | Notify CNIL (French Data Protection Authority)               |        **< 72 hours**         |
+| **5** | Notify affected users individually                           | **< 72 hours** (if high risk) |
+| **6** | Internal post-mortem and corrective action plan              |           < 7 days            |
+| **7** | Update security controls and documentation                   |           < 30 days           |
 
 > ⚠️ **GDPR Article 83(4):** Failure to notify the supervisory authority within 72 hours may result in fines up to **10 million € or 2% of global annual turnover**.
 
@@ -579,15 +582,15 @@ In the event of a data breach involving biometric or personal data, the followin
 
 ### 6.1 Audit Summary Dashboard
 
-| Domain | Score | Status |
-| :--- | :---: | :---: |
-| **Technical Architecture** | 9/10 | ✅ Excellent |
-| **Functional Coverage** | 7/10 | 🔄 In Progress |
-| **Infrastructure Security** | 8/10 | ✅ Good |
-| **Application Security (OWASP)** | 8/10 | ✅ Good |
-| **GDPR Compliance** | 7/10 | 🔄 Requires completion |
-| **Operational Resilience** | 8/10 | ✅ Good |
-| **GreenIT / Environmental** | 9/10 | ✅ Excellent |
+| Domain                           | Score |         Status         |
+| :------------------------------- | :---: | :--------------------: |
+| **Technical Architecture**       | 9/10  |      ✅ Excellent      |
+| **Functional Coverage**          | 7/10  |     🔄 In Progress     |
+| **Infrastructure Security**      | 8/10  |        ✅ Good         |
+| **Application Security (OWASP)** | 8/10  |        ✅ Good         |
+| **GDPR Compliance**              | 7/10  | 🔄 Requires completion |
+| **Operational Resilience**       | 8/10  |        ✅ Good         |
+| **GreenIT / Environmental**      | 9/10  |      ✅ Excellent      |
 
 **Overall assessment:** The Ascension platform demonstrates a mature and well-thought-out technical architecture for an early-stage project. The security foundations are solid (Rust memory safety, compile-time SQL, TLS 1.3). The main compliance gaps concern the completion of GDPR tooling (data export, breach response procedure) and the ML model accuracy risk, which remains the highest-priority technical risk.
 
@@ -595,18 +598,18 @@ In the event of a data breach involving biometric or personal data, the followin
 
 ### 6.2 Prioritized Action Plan
 
-| Priority | Action Item | Owner | Deadline | Impact |
-| :---: | :--- | :--- | :---: | :---: |
+| Priority  | Action Item                                                                    | Owner   | Deadline |                Impact                 |
+| :-------: | :----------------------------------------------------------------------------- | :------ | :------: | :-----------------------------------: |
 | 🔴 **P0** | Fine-tune MediaPipe model on climbing-specific dataset (≥ 500 labelled videos) | AI team | Sprint 4 | ML accuracy (Risk #1, criticality 20) |
-| 🔴 **P0** | Implement `DELETE /users/me` with full S3 cascade deletion | Backend | Sprint 3 | GDPR Art. 17 compliance |
-| 🔴 **P0** | Implement granular 3-consent onboarding screen | Mobile | Sprint 3 | GDPR Art. 9 biometric compliance |
-| 🟠 **P1** | Add `GET /users/me/data-export` endpoint (data portability) | Backend | Sprint 4 | GDPR Art. 20 |
-| 🟠 **P1** | Document and test data breach response procedure (72 h CNIL) | All | Sprint 4 | GDPR Art. 33 |
-| 🟠 **P1** | Configure RabbitMQ clustering (eliminate SPOF on Srv-DB) | Infra | Sprint 5 | Resilience |
-| 🟡 **P2** | Add `pip-audit` and `cargo audit` to CI pipeline | DevOps | Sprint 3 | OWASP A06 |
-| 🟡 **P2** | Implement account freeze / right to restrict processing | Backend | Sprint 5 | GDPR Art. 18 |
-| 🟡 **P2** | Add confidence score display in Flutter when ML score < 70% | Mobile | Sprint 4 | UX + risk mitigation |
-| 🟢 **P3** | Migrate MinIO to Hetzner Storage Box (managed S3) | Infra | Phase 2 | Operational simplicity |
-| 🟢 **P3** | K3s Kubernetes setup for horizontal worker auto-scaling | Infra | Phase 3 | Scale-out (20 000+ users) |
+| 🔴 **P0** | Implement `DELETE /users/me` with full S3 cascade deletion                     | Backend | Sprint 3 |        GDPR Art. 17 compliance        |
+| 🔴 **P0** | Implement granular 3-consent onboarding screen                                 | Mobile  | Sprint 3 |   GDPR Art. 9 biometric compliance    |
+| 🟠 **P1** | Add `GET /users/me/data-export` endpoint (data portability)                    | Backend | Sprint 4 |             GDPR Art. 20              |
+| 🟠 **P1** | Document and test data breach response procedure (72 h CNIL)                   | All     | Sprint 4 |             GDPR Art. 33              |
+| 🟠 **P1** | Configure RabbitMQ clustering (eliminate SPOF on Srv-DB)                       | Infra   | Sprint 5 |              Resilience               |
+| 🟡 **P2** | Add `pip-audit` and `cargo audit` to CI pipeline                               | DevOps  | Sprint 3 |               OWASP A06               |
+| 🟡 **P2** | Implement account freeze / right to restrict processing                        | Backend | Sprint 5 |             GDPR Art. 18              |
+| 🟡 **P2** | Add confidence score display in Flutter when ML score < 70%                    | Mobile  | Sprint 4 |         UX + risk mitigation          |
+| 🟢 **P3** | Migrate MinIO to Hetzner Storage Box (managed S3)                              | Infra   | Phase 2  |        Operational simplicity         |
+| 🟢 **P3** | K3s Kubernetes setup for horizontal worker auto-scaling                        | Infra   | Phase 3  |       Scale-out (20 000+ users)       |
 
 ---

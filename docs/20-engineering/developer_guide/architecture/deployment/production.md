@@ -1,7 +1,7 @@
 > **Last updated:** 25th February 2026  
 > **Version:** 2.0  
 > **Authors:** Gianni TUERO  
-> **Status:** Work in Progress  
+> **Status:** In progress  
 > {.is-warning}
 
 ---
@@ -62,7 +62,6 @@
     - [Comparison with Cloud Providers](#comparison-with-cloud-providers)
   - [Security Best Practices Checklist](#security-best-practices-checklist)
   - [Next Steps](#next-steps)
-
 
 ---
 
@@ -165,16 +164,16 @@ graph TB
 
 ### Hetzner Machines
 
-| Machine | Role | Specs | Cost |
-|---|---|---|---|
-| **Srv-API** | Nginx + Go API (×2) + Monitoring | CX31: 4 vCPU, 8 GB RAM, 80 GB SSD | 15€/month |
-| **Srv-DB** | PostgreSQL Master + Replica + RabbitMQ | CX41: 4 vCPU, 16 GB RAM, 160 GB SSD | 25€/month |
-| **Srv-ML** | Python AI Workers (×2-4) | CX51: 8 vCPU, 16 GB RAM, 240 GB SSD | 45€/month |
-| **Storage** | MinIO S3-compatible | Hetzner Volume 1 TB | 10€/month |
-| **Domain** | DNS | `.com` domain | 1€/month (12€/year) |
-| **SSL** | TLS Certificates | Let's Encrypt via Cloudflare | 0€ |
-| **Monitoring** | Prometheus + Grafana + Loki | Self-hosted on Srv-API | 0€ |
-| | | **Total (MVP)** | **96€/month** |
+| Machine        | Role                                   | Specs                               | Cost                |
+| -------------- | -------------------------------------- | ----------------------------------- | ------------------- |
+| **Srv-API**    | Nginx + Go API (×2) + Monitoring       | CX31: 4 vCPU, 8 GB RAM, 80 GB SSD   | 15€/month           |
+| **Srv-DB**     | PostgreSQL Master + Replica + RabbitMQ | CX41: 4 vCPU, 16 GB RAM, 160 GB SSD | 25€/month           |
+| **Srv-ML**     | Python AI Workers (×2-4)               | CX51: 8 vCPU, 16 GB RAM, 240 GB SSD | 45€/month           |
+| **Storage**    | MinIO S3-compatible                    | Hetzner Volume 1 TB                 | 10€/month           |
+| **Domain**     | DNS                                    | `.com` domain                       | 1€/month (12€/year) |
+| **SSL**        | TLS Certificates                       | Let's Encrypt via Cloudflare        | 0€                  |
+| **Monitoring** | Prometheus + Grafana + Loki            | Self-hosted on Srv-API              | 0€                  |
+|                |                                        | **Total (MVP)**                     | **96€/month**       |
 
 ### GPU Machine (AI Workers — Optional Upgrade)
 
@@ -772,21 +771,21 @@ global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: 'ascension-api'
+  - job_name: "ascension-api"
     static_configs:
-      - targets: ['api:8080']
+      - targets: ["api:8080"]
 
-  - job_name: 'rabbitmq'
+  - job_name: "rabbitmq"
     static_configs:
-      - targets: ['rabbitmq:15692']
+      - targets: ["rabbitmq:15692"]
 
-  - job_name: 'postgres'
+  - job_name: "postgres"
     static_configs:
-      - targets: ['postgres-exporter:9187']
+      - targets: ["postgres-exporter:9187"]
 
-  - job_name: 'node'
+  - job_name: "node"
     static_configs:
-      - targets: ['node-exporter:9100']
+      - targets: ["node-exporter:9100"]
 ```
 
 ### Grafana Data Sources
@@ -796,24 +795,24 @@ scrape_configs:
 
 ### Key Metrics
 
-| Component | Metrics |
-|---|---|
-| **API** | Request rate, error rate (%), response time (p50/p95/p99), active WebSocket connections |
-| **AI Workers** | RabbitMQ queue depth, processing time per video, failed jobs count |
-| **Database** | Query time (p50/p95), connection pool usage, cache hit rate |
-| **Storage** | Upload success rate, storage used (GB), download bandwidth |
-| **System** | CPU, RAM, disk usage per machine |
+| Component      | Metrics                                                                                 |
+| -------------- | --------------------------------------------------------------------------------------- |
+| **API**        | Request rate, error rate (%), response time (p50/p95/p99), active WebSocket connections |
+| **AI Workers** | RabbitMQ queue depth, processing time per video, failed jobs count                      |
+| **Database**   | Query time (p50/p95), connection pool usage, cache hit rate                             |
+| **Storage**    | Upload success rate, storage used (GB), download bandwidth                              |
+| **System**     | CPU, RAM, disk usage per machine                                                        |
 
 ### Alerting Rules (Grafana → Slack)
 
-| Condition | Severity | Action |
-|---|---|---|
-| API error rate > 5% for 5 min | Critical | Page on-call |
-| RabbitMQ queue depth > 200 jobs | Warning | Scale workers |
-| Database CPU > 80% for 10 min | Warning | Investigate |
-| Disk usage > 90% | Critical | Expand volume |
-| API latency p95 > 500ms | Warning | Investigate |
-| Worker processing > 5 min | Warning | Check worker health |
+| Condition                       | Severity | Action              |
+| ------------------------------- | -------- | ------------------- |
+| API error rate > 5% for 5 min   | Critical | Page on-call        |
+| RabbitMQ queue depth > 200 jobs | Warning  | Scale workers       |
+| Database CPU > 80% for 10 min   | Warning  | Investigate         |
+| Disk usage > 90%                | Critical | Expand volume       |
+| API latency p95 > 500ms         | Warning  | Investigate         |
+| Worker processing > 5 min       | Warning  | Check worker health |
 
 ### Application Metrics (Go API)
 
@@ -949,21 +948,21 @@ Estimated cost: **€3,000-3,500/month (~€0.035/user)**
 
 ### Cost by Scale
 
-| Phase | Users | Infrastructure | Monthly Cost | Cost/User |
-|---|---|---|---|---|
-| MVP | 100 | 3 VPS + Volume | 96€ | 0.96€ |
-| Scale | 1,000 | Upgraded VPS + extra workers | 231€ | 0.23€ |
-| Scale+ | 10,000 | Multi-VPS | 655€ | 0.07€ |
-| Production | 100,000 | K3s cluster + dedicated servers | ~3,500€ | 0.035€ |
+| Phase      | Users   | Infrastructure                  | Monthly Cost | Cost/User |
+| ---------- | ------- | ------------------------------- | ------------ | --------- |
+| MVP        | 100     | 3 VPS + Volume                  | 96€          | 0.96€     |
+| Scale      | 1,000   | Upgraded VPS + extra workers    | 231€         | 0.23€     |
+| Scale+     | 10,000  | Multi-VPS                       | 655€         | 0.07€     |
+| Production | 100,000 | K3s cluster + dedicated servers | ~3,500€      | 0.035€    |
 
 ### Comparison with Cloud Providers
 
-| Provider | MVP Cost | 100k Users | Extra Cost vs Hetzner |
-|---|---|---|---|
-| **Hetzner** | 96€/month | ~3,500€/month | Reference |
-| OVH | 140€/month | ~5,000€/month | +46% |
-| DigitalOcean | 207€/month | ~7,000€/month | +116% |
-| AWS | 312€/month | ~11,700€/month | +225% |
+| Provider     | MVP Cost   | 100k Users     | Extra Cost vs Hetzner |
+| ------------ | ---------- | -------------- | --------------------- |
+| **Hetzner**  | 96€/month  | ~3,500€/month  | Reference             |
+| OVH          | 140€/month | ~5,000€/month  | +46%                  |
+| DigitalOcean | 207€/month | ~7,000€/month  | +116%                 |
+| AWS          | 312€/month | ~11,700€/month | +225%                 |
 
 **Annual savings vs AWS**: 2,592€ (MVP) → 98,400€ (100k users)
 

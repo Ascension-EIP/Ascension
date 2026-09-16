@@ -1,13 +1,12 @@
 > **Last updated:** 13th February 2026  
 > **Version:** 1.0  
 > **Authors:** Nicolas TORO  
-> **Status:** Done  
-> {.is-success}  
+> **Status:** Final  
+> {.is-success}
 
 ---
 
 # Client Needs & Functional Scope - Workshop Deliverable
-
 
 ---
 

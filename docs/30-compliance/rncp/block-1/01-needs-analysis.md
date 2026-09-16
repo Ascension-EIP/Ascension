@@ -1,7 +1,7 @@
 > **Last updated:** 16th March 2026  
 > **Version:** 1.0  
 > **Authors:** Darius (Docs), Nicolas TORO  
-> **Status:** Done  
+> **Status:** Final  
 > {.is-success}
 
 ---
@@ -77,7 +77,7 @@ Limite assumée : les comptes-rendus d’entretiens terrain sont mentionnés da
 ### 2. Besoins utilisateurs consolidés
 
 | Segment                                    | Besoin principal                    | Douleur actuelle                                  | Réponse Ascension (cible)                          |
-|:-------------------------------------------|:------------------------------------|:--------------------------------------------------|:---------------------------------------------------|
+| :----------------------------------------- | :---------------------------------- | :------------------------------------------------ | :------------------------------------------------- |
 | Grimpeur intermédiaire                     | Comprendre ses erreurs de posture   | Feedback humain coûteux et irrégulier             | Analyse vidéo asynchrone + restitution exploitable |
 | Grimpeur expert                            | Optimiser la séquence de mouvements | Difficulté à objectiver les micro-ajustements     | Comparaison trajectoire + métriques biomécaniques  |
 | Utilisateur PSH (ex. malvoyance partielle) | Accéder aux résultats sans friction | Interfaces non vocalisées / contraste insuffisant | Contraintes WCAG 2.1 AA intégrées aux specs        |
@@ -127,7 +127,7 @@ Décision de cadrage : l’accessibilité n’est pas un add-on de fin de proje
 ## Traçabilité RNCP M1 (O1, O2)
 
 | Observable                              | Éléments de preuve                                                                                                                          | Couverture                                                         |
-|:----------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------|
+| :-------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------- |
 | **O1** — analyse des besoins + échanges | Personas, user stories, backlog priorisé dans `client-needs-and-functional-scope.md` + méthode d’enquête dans `context-audit-compliance.md` | **Partielle à forte** (verbatim d’entretiens à mieux formaliser)   |
 | **O2** — prise en compte PSH            | Exigences WCAG et contraintes PSH dans `tech-func-specs.md` + support oral atelier                                                          | **Partielle** (à renforcer par une matrice de conformité testable) |
 

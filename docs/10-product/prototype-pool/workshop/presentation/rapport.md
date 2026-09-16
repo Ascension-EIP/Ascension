@@ -1,7 +1,7 @@
 > **Last updated:** 16th March 2026  
 > **Version:** 1.0  
 > **Authors:** Nicolas  
-> **Status:** Done  
+> **Status:** Final  
 > {.is-success}
 
 ---

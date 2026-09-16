@@ -22,14 +22,17 @@ Do not skip this step, even if you think you already know the rules. The guideli
 After reading the guidelines, verify every point below before outputting a file:
 
 - [ ] **Header block** — the file starts with the required blockquote header:
+
   ```
-  > **Last updated:** [Day] [Month] [Year]  
-  > **Version:** [X.X]  
-  > **Authors:** [Name]  
-  > **Status:** [Status]  
+  > **Last updated:** [Day] [Month] [Year]
+  > **Version:** [X.X]
+  > **Authors:** [Name]
+  > **Status:** [Status]
   > {.is-[status-color]}
   ```
-  Each line ends with **two trailing spaces** to produce a Markdown line break.
+
+  Each line ends with **two trailing spaces** to produce a Markdown line break.  
+  Authorized statuses: `Final` (`{.is-success}`), `Done` (`{.is-success}`), `In progress` (`{.is-warning}`), `Todo` (`{.is-danger}`), `Need update` (`{.is-warning}`).
 
 - [ ] **Horizontal rule after header** — a `---` separator immediately follows the header block.
 

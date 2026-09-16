@@ -1,7 +1,7 @@
 > **Last updated:** 11th March 2026
 > **Version:** 1.1
 > **Authors:** Nicolas TORO
-> **Status:** Done
+> **Status:** Final  
 > {.is-success}
 
 ---
@@ -54,7 +54,6 @@
       - [Flow C — Degraded Mode (Network Loss During Upload)](#flow-c--degraded-mode-network-loss-during-upload)
     - [4.5 Accessibility (WCAG 2.1 AA)](#45-accessibility-wcag-21-aa)
   - [Appendix — Cross-Reference with Functional Scope](#appendix--cross-reference-with-functional-scope)
-
 
 ---
 
@@ -225,19 +224,19 @@ Tokens are issued on `POST /auth/login` and `POST /auth/register`. They are sign
 
 | Flow                | Endpoint                         | Method  | Auth required |
 | :------------------ | :------------------------------- | :-----: | :-----------: |
-| Register            | `/auth/register`                 | `POST`  |       ❌       |
-| Login               | `/auth/login`                    | `POST`  |       ❌       |
-| Request upload URL  | `/analysis/video/request-upload` | `POST`  |       ✅       |
-| Start analysis      | `/analysis/video/start`          | `POST`  |       ✅       |
-| Get analysis result | `/analysis/video/{id}`           |  `GET`  |       ✅       |
-| Generate ghost      | `/analysis/route/generate-ghost` | `POST`  | ✅ (Premium+)  |
-| Detect holds        | `/holds/detect`                  | `POST`  |       ✅       |
-| Correct hold        | `/holds/{id}`                    | `PATCH` |       ✅       |
-| Set goals           | `/coaching/goals`                | `POST`  |       ✅       |
-| Get routine         | `/coaching/routine`              |  `GET`  |       ✅       |
-| Log session         | `/coaching/sessions`             | `POST`  |       ✅       |
-| Get profile         | `/users/me`                      |  `GET`  |       ✅       |
-| Real-time updates   | `wss://…/ws?token={jwt}`         |   WS    |       ✅       |
+| Register            | `/auth/register`                 | `POST`  |      ❌       |
+| Login               | `/auth/login`                    | `POST`  |      ❌       |
+| Request upload URL  | `/analysis/video/request-upload` | `POST`  |      ✅       |
+| Start analysis      | `/analysis/video/start`          | `POST`  |      ✅       |
+| Get analysis result | `/analysis/video/{id}`           |  `GET`  |      ✅       |
+| Generate ghost      | `/analysis/route/generate-ghost` | `POST`  | ✅ (Premium+) |
+| Detect holds        | `/holds/detect`                  | `POST`  |      ✅       |
+| Correct hold        | `/holds/{id}`                    | `PATCH` |      ✅       |
+| Set goals           | `/coaching/goals`                | `POST`  |      ✅       |
+| Get routine         | `/coaching/routine`              |  `GET`  |      ✅       |
+| Log session         | `/coaching/sessions`             | `POST`  |      ✅       |
+| Get profile         | `/users/me`                      |  `GET`  |      ✅       |
+| Real-time updates   | `wss://…/ws?token={jwt}`         |   WS    |      ✅       |
 
 #### Standard Error Codes
 
@@ -313,13 +312,13 @@ graph TB
 
 ### 2.1 Context & Constraints
 
-| Constraint           | Description                                           |
-| :------------------- | :---------------------------------------------------- |
-| **Team size**        | 5 students (Epitech EIP)                              |
-| **Timeline**         | MVP within 6 months                                   |
-| **Budget**           | ~100 €/month max at launch                            |
-| **Key feature**      | Real-time skeleton overlay on climbing video          |
-| **Target**           | iOS + Android simultaneously                          |
+| Constraint           | Description                                          |
+| :------------------- | :--------------------------------------------------- |
+| **Team size**        | 5 students (Epitech EIP)                             |
+| **Timeline**         | MVP within 6 months                                  |
+| **Budget**           | ~100 €/month max at launch                           |
+| **Key feature**      | Real-time skeleton overlay on climbing video         |
+| **Target**           | iOS + Android simultaneously                         |
 | **Data sensitivity** | Biometric data (video body posture) → RGPD Article 9 |
 
 ---
@@ -339,23 +338,23 @@ graph TB
 
 #### Backend: Rust (Axum + Tokio)
 
-|                           |                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Decision**              | Rust with the Axum web framework and Tokio async runtime                                                                                                                                                                                                                                                                                                                                                              |
+|                           |                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Decision**              | Rust with the Axum web framework and Tokio async runtime                                                                                                                                                                                                                                                                                                                                                       |
 | **Rationale**             | Rust delivers C++-level throughput with near-zero memory footprint (idle < 100 MB), allowing the API and Nginx to coexist on a single CX31 node (15 €/month). Memory safety eliminates whole classes of vulnerabilities (buffer overflow, use-after-free). The type system catches data contract errors at compile time. Axum's async model handles thousands of concurrent WebSocket connections efficiently. |
-| **Alternatives rejected** | **Node.js** — higher memory usage, dynamically typed; **Go** — good performance but the team already has a Rust specialist; **Python** — too slow for high-concurrency API, GIL limits WebSocket scalability.                                                                                                                                                                                                         |
-| **Trade-offs**            | Steeper learning curve. Mitigated by pairing juniors with the Rust expert during code reviews.                                                                                                                                                                                                                                                                                                                        |
+| **Alternatives rejected** | **Node.js** — higher memory usage, dynamically typed; **Go** — good performance but the team already has a Rust specialist; **Python** — too slow for high-concurrency API, GIL limits WebSocket scalability.                                                                                                                                                                                                  |
+| **Trade-offs**            | Steeper learning curve. Mitigated by pairing juniors with the Rust expert during code reviews.                                                                                                                                                                                                                                                                                                                 |
 
 ---
 
 #### AI/ML: Python (PyTorch + MediaPipe + OpenCV)
 
-|                           |                                                                                                                                                                                                                                                                                                                                                |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Decision**              | Python workers using MediaPipe for pose estimation, OpenCV for video frame processing, PyTorch for model fine-tuning                                                                                                                                                                                                                           |
+|                           |                                                                                                                                                                                                                                                                                                                                              |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Decision**              | Python workers using MediaPipe for pose estimation, OpenCV for video frame processing, PyTorch for model fine-tuning                                                                                                                                                                                                                         |
 | **Rationale**             | Python is the lingua franca of AI/ML research. MediaPipe provides a production-ready, pre-trained human pose estimation model (33 landmarks) that runs without GPU for prototyping. The asynchronous worker pattern (RabbitMQ worker) isolates Python's GIL from the Rust API entirely. The team's AI specialist has deep PyTorch expertise. |
-| **Alternatives rejected** | **TensorFlow** — team prefers PyTorch ecosystem; **ONNX Runtime** — faster inference but harder to iterate on custom climbing-specific models; **Rust ML (burn)** — ecosystem too immature.                                                                                                                                                    |
-| **Trade-offs**            | Python is slower than Rust, but since workers are I/O-bound (reading video from S3) and CPU-bound in isolation, the GIL is not a bottleneck at our scale.                                                                                                                                                                                      |
+| **Alternatives rejected** | **TensorFlow** — team prefers PyTorch ecosystem; **ONNX Runtime** — faster inference but harder to iterate on custom climbing-specific models; **Rust ML (burn)** — ecosystem too immature.                                                                                                                                                  |
+| **Trade-offs**            | Python is slower than Rust, but since workers are I/O-bound (reading video from S3) and CPU-bound in isolation, the GIL is not a bottleneck at our scale.                                                                                                                                                                                    |
 
 ---
 
@@ -404,16 +403,16 @@ graph TB
 
 ### 2.3 Summary Table
 
-| Composant | Technologie | Raison principale |
-| :--- | :--- | :--- |
-| Application Mobile | **Flutter (Dart)** | Base de code unique iOS + Android, CustomPainter pour les superpositions |
-| Backend API | **Rust (Axum)** | Débit élevé, sécurité mémoire, faible coût par requête |
-| Workers IA | **Python (PyTorch / MediaPipe)** | Standard du secteur IA/ML, modèles de pose pré-entraînés, expertise équipe |
-| Base de données | **PostgreSQL 16** | Structure relationnelle + JSONB pour les résultats IA, cascades RGPD |
-| Message Broker | **RabbitMQ** | Tâches asynchrones persistantes, découplage, mise à l'échelle horizontale |
-| Stockage Objet | **MinIO → Hetzner S3** | Compatible S3, upload direct client, 4× moins cher qu'AWS |
-| Infrastructure | **Hetzner Cloud (DE)** | Rentable, énergie 100% verte, résidence des données en UE |
-| Outils Monorepo | **moonrepo** | Gestionnaire de tâches unifié pour les dépôts Rust / Flutter / Python |
+| Composant          | Technologie                      | Raison principale                                                          |
+| :----------------- | :------------------------------- | :------------------------------------------------------------------------- |
+| Application Mobile | **Flutter (Dart)**               | Base de code unique iOS + Android, CustomPainter pour les superpositions   |
+| Backend API        | **Rust (Axum)**                  | Débit élevé, sécurité mémoire, faible coût par requête                     |
+| Workers IA         | **Python (PyTorch / MediaPipe)** | Standard du secteur IA/ML, modèles de pose pré-entraînés, expertise équipe |
+| Base de données    | **PostgreSQL 16**                | Structure relationnelle + JSONB pour les résultats IA, cascades RGPD       |
+| Message Broker     | **RabbitMQ**                     | Tâches asynchrones persistantes, découplage, mise à l'échelle horizontale  |
+| Stockage Objet     | **MinIO → Hetzner S3**           | Compatible S3, upload direct client, 4× moins cher qu'AWS                  |
+| Infrastructure     | **Hetzner Cloud (DE)**           | Rentable, énergie 100% verte, résidence des données en UE                  |
+| Outils Monorepo    | **moonrepo**                     | Gestionnaire de tâches unifié pour les dépôts Rust / Flutter / Python      |
 
 ---
 
@@ -569,9 +568,9 @@ erDiagram
 
 |     Tier     |   Price    | Videos / Month | Ghost Mode | Deep Analysis | Server Priority | Ads |
 | :----------: | :--------: | :------------: | :--------: | :-----------: | :-------------: | :-: |
-| **Freemium** |    Free    |       10       |     ❌      |       ❌       |        ❌        |  ✅  |
-| **Premium**  | 20 €/month |       30       |     ✅      |       ❌       |        ❌        |  ❌  |
-| **Infinity** | 30 €/month |      100       |     ✅      |       ✅       |        ✅        |  ❌  |
+| **Freemium** |    Free    |       10       |     ❌     |      ❌       |       ❌        | ✅  |
+| **Premium**  | 20 €/month |       30       |     ✅     |      ❌       |       ❌        | ❌  |
+| **Infinity** | 30 €/month |      100       |     ✅     |      ✅       |       ✅        | ❌  |
 
 ---
 
@@ -629,6 +628,7 @@ App
 **Purpose:** Give the climber an at-a-glance summary of their recent performance and quick access to the most recent analysis.
 
 **Key components:**
+
 - App header with logo and tagline "Visualiser l'invisible"
 - 4-tile stats grid:
   - 🎬 Videos analysed (total count)
@@ -639,6 +639,7 @@ App
 - Individual performance metrics per session: power, technique, endurance (0–10 scale)
 
 **Accessibility:**
+
 - All stat tiles labelled with `Semantics` widget (screen reader)
 - Color is never the sole information carrier (text labels alongside color badges)
 
@@ -649,6 +650,7 @@ App
 **Purpose:** Allow a climber to submit a video for AI analysis in as few taps as possible.
 
 **Key components:**
+
 - Dashed upload zone with cyan gradient (tap to open file picker, MP4/MOV up to 500 MB)
 - Dashed record zone with purple gradient (opens native camera)
 - Selected file preview card showing filename, size and duration
@@ -657,6 +659,7 @@ App
 - Success confirmation badge before auto-reset
 
 **User flow:**
+
 ```
 Tap "Choisir une vidéo"
   → System file picker
@@ -678,6 +681,7 @@ Tap "Choisir une vidéo"
 **Purpose:** Deep-dive into biomechanical progression over time.
 
 **Key components:**
+
 - Monthly progress bar / line chart (technique, power, endurance over weeks)
 - Analysis history list: sortable by date, grade, score
 - Skeleton overlay viewer: tap any analysis → full-screen video player with drawn skeleton landmarks and joint angle values per frame
@@ -691,6 +695,7 @@ Tap "Choisir une vidéo"
 **Purpose:** Manage account, goals, and subscription tier.
 
 **Key components:**
+
 - Avatar + name + current subscription pill
 - Monthly quota usage bar (e.g. 12/30 videos used)
 - Goals section: current level → target level, weeks remaining, focus areas
@@ -755,12 +760,12 @@ Tap "Choisir une vidéo"
 
 ## Appendix — Cross-Reference with Functional Scope
 
-| User Story (Workshop 1)              | Technical Implementation                                                                  |
-| :----------------------------------- | :---------------------------------------------------------------------------------------- |
+| User Story (Workshop 1)             | Technical Implementation                                                                |
+| :---------------------------------- | :-------------------------------------------------------------------------------------- |
 | Record climb → see skeleton overlay | MediaPipe pose estimation (Python Worker) → JSONB → Flutter CustomPainter               |
-| Ghost Mode overlay                   | Route photo → Hold detection → Ghost path generation (Python Worker) → Flutter overlay |
-| Affordable coaching (free tier)      | Freemium: 10 analyses/month, no Ghost Mode; enforced by `quota_used` + Quota Middleware   |
-| Hold recognition                     | Python Worker: OpenCV + custom ML classifier → `HOLDS` table                             |
-| Personalized training routines       | `GOALS` + `TRAINING_SESSIONS` + `/coaching/goals` endpoint                                |
-| Social sharing (Ghost clip)          | Video export composited client-side in Flutter → share sheet                             |
-| Server Priority (Infinity tier)      | RabbitMQ priority queue: Infinity jobs routed to high-priority lane                       |
+| Ghost Mode overlay                  | Route photo → Hold detection → Ghost path generation (Python Worker) → Flutter overlay  |
+| Affordable coaching (free tier)     | Freemium: 10 analyses/month, no Ghost Mode; enforced by `quota_used` + Quota Middleware |
+| Hold recognition                    | Python Worker: OpenCV + custom ML classifier → `HOLDS` table                            |
+| Personalized training routines      | `GOALS` + `TRAINING_SESSIONS` + `/coaching/goals` endpoint                              |
+| Social sharing (Ghost clip)         | Video export composited client-side in Flutter → share sheet                            |
+| Server Priority (Infinity tier)     | RabbitMQ priority queue: Infinity jobs routed to high-priority lane                     |

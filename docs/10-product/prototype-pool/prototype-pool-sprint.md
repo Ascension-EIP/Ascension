@@ -1,7 +1,7 @@
 > **Last updated:** 16th March 2026
 > **Version:** 1.1
 > **Authors:** Nicolas TORO
-> **Status:** Done
+> **Status:** Final  
 > {.is-success}
 
 ---
@@ -146,15 +146,15 @@ All toolchain versions are pinned in `.moon/toolchain.yml` and must be used cons
 
 #### AI — Python
 
-| Tool / Package | Version   | Notes                             |
-| -------------- | --------- | --------------------------------- |
-| Python         | `3.11`    | Pinned via `.moon/toolchain.yml`  |
-| ruff           | `0.15.4`  | Linter & formatter                |
-| pytest         | `9.0.2`   | Test runner                       |
-| build          | `1.4.0`   | Package builder                   |
-| mediapipe      | TBD       | Pose estimation (33 keypoints)    |
-| opencv-python  | TBD       | Computer vision / video decoding  |
-| pika           | TBD       | RabbitMQ client (AMQP)            |
+| Tool / Package | Version  | Notes                            |
+| -------------- | -------- | -------------------------------- |
+| Python         | `3.11`   | Pinned via `.moon/toolchain.yml` |
+| ruff           | `0.15.4` | Linter & formatter               |
+| pytest         | `9.0.2`  | Test runner                      |
+| build          | `1.4.0`  | Package builder                  |
+| mediapipe      | TBD      | Pose estimation (33 keypoints)   |
+| opencv-python  | TBD      | Computer vision / video decoding |
+| pika           | TBD      | RabbitMQ client (AMQP)           |
 
 > **Note:** `mediapipe`, `opencv-python`, and `pika` are managed in the uv-based AI environment (`apps/ai/pyproject.toml`) via `apps/ai/moon.yml`.
 
@@ -228,7 +228,7 @@ moon run :test --affected
 | --------------- | --------- | -------------------------------------------------------------------------------------------------------------- |
 | Definition      | Tuesday   | GitHub Project up to date, milestone created, tasks assigned, environment defined, material requests submitted |
 | Sprint start    | Thursday  | User journey started — first integration between services demonstrable                                         |
-| Demo checkpoint | Monday    | End-to-end user journey demonstrable (upload → analysis → result display)                                    |
+| Demo checkpoint | Monday    | End-to-end user journey demonstrable (upload → analysis → result display)                                      |
 | Finalization    | Wednesday | Prototype finalized, edge cases handled, documentation updated                                                 |
 | Presentation    | Friday    | 15-minute public pitch with live demo                                                                          |
 
@@ -242,11 +242,11 @@ The following resources are required or desirable to carry out this prototype sp
 
 Our infrastructure is hosted on **Hetzner Cloud** (Germany), chosen for its price-to-performance ratio and GDPR compliance (biometric data stored in the EU). The following VPS instances are needed for the prototype environment:
 
-| Machine        | Role                              | Spec (Hetzner)        | Storage     | Est. Cost    |
-| -------------- | --------------------------------- | --------------------- | ----------- | ------------ |
-| **Srv-API**    | Rust/Axum API + Nginx             | CX31 — 4 vCPU / 8 GB  | 80 GB SSD   | ~€15/month   |
-| **Srv-DB**     | PostgreSQL + RabbitMQ + MinIO     | CX41 — 4 vCPU / 16 GB | 500 GB NVMe | ~€25/month   |
-| **Srv-ML**     | Python AI Workers (MediaPipe)     | CX51 — 8 vCPU / 16 GB | 100 GB SSD  | ~€40/month   |
+| Machine     | Role                          | Spec (Hetzner)        | Storage     | Est. Cost  |
+| ----------- | ----------------------------- | --------------------- | ----------- | ---------- |
+| **Srv-API** | Rust/Axum API + Nginx         | CX31 — 4 vCPU / 8 GB  | 80 GB SSD   | ~€15/month |
+| **Srv-DB**  | PostgreSQL + RabbitMQ + MinIO | CX41 — 4 vCPU / 16 GB | 500 GB NVMe | ~€25/month |
+| **Srv-ML**  | Python AI Workers (MediaPipe) | CX51 — 8 vCPU / 16 GB | 100 GB SSD  | ~€40/month |
 
 > **Total estimated:** ~€80/month for the prototype duration (2 weeks ≈ ~€40 prorated).
 
@@ -254,7 +254,7 @@ Our infrastructure is hosted on **Hetzner Cloud** (Germany), chosen for its pric
 
 ### 7.2 Physical Test Devices
 
-| Device                  | Quantity | Priority | Justification                                                                  |
-| ----------------------- | -------- | -------- | ------------------------------------------------------------------------------ |
-| Android device          | 1        | Medium   | Real hardware testing — emulator does not reflect real-world performance       |
-| iOS device              | 1        | Medium   | Real hardware testing — Simulator does not cover all edge cases (camera, etc.) |
+| Device         | Quantity | Priority | Justification                                                                  |
+| -------------- | -------- | -------- | ------------------------------------------------------------------------------ |
+| Android device | 1        | Medium   | Real hardware testing — emulator does not reflect real-world performance       |
+| iOS device     | 1        | Medium   | Real hardware testing — Simulator does not cover all edge cases (camera, etc.) |

@@ -1,10 +1,31 @@
+<!-- markdownlint-disable MD041 -->
+
+> **Last updated:** 17th September 2026  
+> **Version:** 1.0  
+> **Authors:** Darius (Docs), Nicolas TORO  
+> **Original language:** English  
+> **Status:** Final  
+> {.is-success}
+
+---
+
 # RNCP Block 1 — M1 Observables Evidence Matrix (C1→C5, O1→O11)
 
 > Scope: evidence inventory for oral prep (Block 1, M1).  
 > Audience: Darius (documentation lead) + candidate oral prep.
 
+---
+
+## Table of Contents
+
+- [RNCP Block 1 — M1 Observables Evidence Matrix (C1→C5, O1→O11)](#rncp-block-1--m1-observables-evidence-matrix-c1c5-o1o11)
+  - [Table of Contents](#table-of-contents)
+  - [Priority recommendations for Darius](#priority-recommendations-for-darius)
+
+---
+
 | Observable     | Required proof                                                                           | Existing repo evidence                                                                                                                                                                                                                                                                                                    | Missing evidence/doc to create                                                                                                                                      | Risk level      |
-|----------------|------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------|
+| -------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
 | **O1 [C1]**    | Needs analysis + stakeholder exchanges covering full functional scope                    | `docs/10-product/prototype-pool/workshop/client-needs-and-functional-scope.md` (personas, user stories, MoSCoW); `docs/10-product/prototype-pool/workshop/context-audit-compliance.md` (interviews at Arkose/Climb Up, §1.3)                                                                                              | Create `docs/30-compliance/rncp/block-1/evidence/o1-user-research-pack.md` with interview logs, questionnaire, sample size, synthesis and link to backlog items     | **Medium-High** |
 | **O2 [C1]**    | Needs include disability standards for PSH usages                                        | `docs/10-product/prototype-pool/workshop/tech-func-specs.md` (§4.5 WCAG 2.1 AA); `docs/10-product/prototype-pool/workshop/presentation/oral_25-02_ppt_content.md` (PSH constraints)                                                                                                                                       | Create `docs/30-compliance/rncp/block-1/evidence/o2-accessibility-needs-traceability.md` mapping WCAG/RGAA constraints to personas and user stories from need phase | **High**        |
 | **O3 [C2]**    | Technical + functional + security audit report with constraints/opportunities            | `docs/10-product/prototype-pool/workshop/context-audit-compliance.md`; `docs/30-compliance/rncp/block-1/audit/README.md`; runtime infra in `docker-compose.yml`; implementation anchors in `apps/server/src/main.rs`, `apps/ai/src/worker.py`                                                                             | Create `docs/30-compliance/rncp/block-1/evidence/o3-audit-evidence-index.md` linking audit claims to concrete config/code excerpts and dated captures               | **Low-Medium**  |

@@ -1,7 +1,7 @@
 > **Last updated:** 16th March 2026  
 > **Version:** 1.0  
 > **Authors:** Darius (Docs), Nicolas TORO  
-> **Status:** Done  
+> **Status:** Final  
 > {.is-success}
 
 ---
@@ -52,7 +52,7 @@ Références : `docker-compose.yml`, `apps/server/src/main.rs`, `apps/ai/src/wo
 ## Composants et responsabilités
 
 | Composant             | Responsabilité principale                                  | Référence                                                    |
-|:----------------------|:-----------------------------------------------------------|:-------------------------------------------------------------|
+| :-------------------- | :--------------------------------------------------------- | :----------------------------------------------------------- |
 | API Rust              | Exposer endpoints, orchestrer jobs, persister état         | `apps/server/src/inbound/http.rs`, `apps/server/src/main.rs` |
 | Worker IA             | Consommer job, analyser vidéo, publier fin de traitement   | `apps/ai/src/worker.py`                                      |
 | Publisher RabbitMQ    | Déclarer queue/exchange durables, publier jobs persistants | `apps/server/src/outbound/rabbitmq.rs`                       |
@@ -140,7 +140,7 @@ Pour être conformes au besoin Bloc 1, les specs techniques incluent :
 ## Découpage en livrables testables
 
 | Lot | Livrable             | Test d’acceptation                                   |
-|:----|:---------------------|:-----------------------------------------------------|
+| :-- | :------------------- | :--------------------------------------------------- |
 | L1  | Auth + session       | Login/logout fonctionnels                            |
 | L2  | Upload URL vidéo     | URL présignée valide                                 |
 | L3  | Création analyse     | Job créé + statut `pending`                          |
