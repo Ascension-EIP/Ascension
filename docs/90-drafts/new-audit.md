@@ -1,7 +1,7 @@
 > **Last updated:** 10th February 2026  
 > **Version:** 1.0  
 > **Authors:** Lou PELLEGRINO  
-> **Status:** In Progress (to finish and translate)  
+> **Status:** In progress  
 > {.is-warning}
 
 ---
@@ -27,7 +27,6 @@
   - [5.2 Gestion des accès](#52-gestion-des-accès)
   - [5.3 Sécurité applicative (niveau projet)](#53-sécurité-applicative-niveau-projet)
   - [5.4 Conformité](#54-conformité)
-
 
 ---
 

@@ -1,7 +1,7 @@
 > **Last updated:** 4th March 2026  
 > **Version:** 1.0  
 > **Authors:** Nicolas TORO  
-> **Status:** Done  
+> **Status:** Final  
 > {.is-success}
 
 ---
@@ -94,7 +94,7 @@ Chaque soutenance débute par une **présentation (10 à 20 min)** du projet par
 
 ### Modalité d'évaluation — M1
 
-**Mise en situation professionnelle : Cadrage du projet** *(projet de groupe suivi d'une soutenance orale)*
+**Mise en situation professionnelle : Cadrage du projet** _(projet de groupe suivi d'une soutenance orale)_
 
 Le candidat doit :
 
@@ -173,7 +173,7 @@ Le candidat doit :
 
 ### Modalité d'évaluation — M2
 
-**Mise en situation professionnelle : Conception du projet** *(projet de groupe suivi d'une soutenance orale)*
+**Mise en situation professionnelle : Conception du projet** _(projet de groupe suivi d'une soutenance orale)_
 
 Le candidat doit :
 
@@ -238,7 +238,7 @@ Le candidat doit :
 
 ### Modalité d'évaluation — M3
 
-**Mise en situation professionnelle : Mise en place d'une solution logicielle** *(projet de groupe suivi d'une soutenance orale)*
+**Mise en situation professionnelle : Mise en place d'une solution logicielle** _(projet de groupe suivi d'une soutenance orale)_
 
 Le candidat doit :
 
@@ -293,7 +293,7 @@ Le candidat doit :
 
 ### Modalité d'évaluation — M4
 
-**Mise en situation professionnelle : Mise en place d'une solution web** *(projet de groupe suivi d'une soutenance orale)*
+**Mise en situation professionnelle : Mise en place d'une solution web** _(projet de groupe suivi d'une soutenance orale)_
 
 Le candidat doit :
 
@@ -347,7 +347,7 @@ Le candidat doit :
 
 ### Modalité d'évaluation — M5
 
-**Mise en situation professionnelle : Définir et piloter la politique d'assurance qualité** *(projet de groupe suivi d'une soutenance orale)*
+**Mise en situation professionnelle : Définir et piloter la politique d'assurance qualité** _(projet de groupe suivi d'une soutenance orale)_
 
 Le candidat doit :
 
@@ -402,7 +402,7 @@ Le candidat doit :
 
 ### Modalité d'évaluation — M6
 
-**Mise en situation professionnelle : Mise en production du projet** *(projet de groupe suivi d'une soutenance orale)*
+**Mise en situation professionnelle : Mise en production du projet** _(projet de groupe suivi d'une soutenance orale)_
 
 Le candidat doit :
 
@@ -461,7 +461,7 @@ Le candidat doit :
 
 ### Modalité d'évaluation — M7
 
-**Mise en situation professionnelle : Pilotage du projet et de l'équipe** *(projet de groupe suivi d'une soutenance orale)*
+**Mise en situation professionnelle : Pilotage du projet et de l'équipe** _(projet de groupe suivi d'une soutenance orale)_
 
 Le candidat doit :
 

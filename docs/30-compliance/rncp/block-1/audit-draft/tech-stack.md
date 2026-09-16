@@ -1,8 +1,8 @@
 > **Last updated:** 16th February 2026  
 > **Version:** 1.0  
 > **Authors:** Gianni TUERO  
-> **Status:** Done  
-> {.is-success}  
+> **Status:** Final  
+> {.is-success}
 
 ---
 
@@ -59,6 +59,7 @@ This document explains the main technology choices for the Ascension platform an
 - **Hot reload**: Makes development much faster
 
 **Alternatives we considered**:
+
 - React Native: Popular but needs JavaScript bridge (slower)
 - Native (Swift/Kotlin): Best performance but would need two separate codebases
 
@@ -75,6 +76,7 @@ This document explains the main technology choices for the Ascension platform an
 - **Type safety**: Statically typed, compile-time checks.
 
 **Alternatives we considered**:
+
 - Rust: Exceptional performance and memory safety, but steeper learning curve (the initial prototype was built in Rust/Axum, then migrated to Go to increase onboarding speed and velocity).
 - Node.js: Easier to learn but slower and uses more memory.
 - Python: Too slow for high-traffic API.
@@ -93,6 +95,7 @@ This document explains the main technology choices for the Ascension platform an
 - **Two pipelines**: Vision pipeline (hold detection, skeleton extraction, advice, ghost mode) and Training pipeline (personalized programs)
 
 **Alternatives we considered**:
+
 - PyTorch: More flexibility for custom models, but MediaPipe covers our pose estimation needs out of the box
 - TensorFlow: Also popular, heavier setup
 - ONNX Runtime: Faster inference but harder to develop with
@@ -110,6 +113,7 @@ This document explains the main technology choices for the Ascension platform an
 - **Free and open-source**: No licensing costs
 
 **Alternatives we considered**:
+
 - MongoDB: Good for flexible data, but our data is mostly structured
 - MySQL: Similar to PostgreSQL but less features
 
@@ -125,6 +129,7 @@ This document explains the main technology choices for the Ascension platform an
 - **Decoupling**: Completely separates the API from the AI workers.
 
 **Alternatives we considered**:
+
 - Redis: Fast and simple, but message persistence and reliability are less robust than RabbitMQ.
 - Kafka: Too complex for our current throughput needs.
 
@@ -144,6 +149,7 @@ This document explains the main technology choices for the Ascension platform an
 - **Scalable**: Supports distributed mode for clustering when needed
 
 **Alternatives we considered**:
+
 - AWS S3: Industry standard but cloud-specific, adds cost and vendor lock-in
 - Hetzner Object Storage: S3-compatible managed option on Hetzner (possible future migration)
 
@@ -160,7 +166,7 @@ This document explains the main technology choices for the Ascension platform an
 | AI Workers     | Python (MediaPipe) | Pose estimation + vision pipelines       |
 | Database       | PostgreSQL         | Structured data + JSON support           |
 | Message Queue  | RabbitMQ           | Reliable message broker with persistence |
-| Object Storage | MinIO → S3        | S3-compatible, free dev → reliable prod |
+| Object Storage | MinIO → S3         | S3-compatible, free dev → reliable prod  |
 
 ---
 
@@ -169,12 +175,14 @@ This document explains the main technology choices for the Ascension platform an
 We'll review these decisions in 6 months (August 2026) to see if they still make sense as the project grows.
 
 **Possible future changes**:
+
 - Add CDN for faster video delivery
 - Separate AI workers onto dedicated Hetzner VPS with GPU
 - Use Kubernetes (K3s on Hetzner) for horizontal auto-scaling
 - Migrate MinIO to Hetzner Object Storage if managed solution is preferred
 
 **Related Documents**:
+
 - [System Overview](../system-overview.md)
 - [Database Schema](../specifications/database-schema.md)
 - [API Specification](../specifications/api-specification.md)

@@ -1,8 +1,8 @@
 > **Last updated:** 16th March 2026  
 > **Version:** 1.1  
 > **Authors:** Nicolas TORO  
-> **Status:** In Progress  
-> {.is-warning}
+> **Status:** Final  
+> {.is-success}
 
 ---
 
