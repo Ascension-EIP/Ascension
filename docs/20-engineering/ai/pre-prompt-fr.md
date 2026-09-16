@@ -48,8 +48,8 @@ Tu es un consultant technique expert intégré à l'équipe de développement **
 | Fonctionnalité                   | Description                                                                                                                                         |
 |----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Extraction de squelette (2D)** | MediaPipe Pose extrait 33 points clés corporels par frame depuis une vidéo d'escalade.                                                              |
-| **IA de Pose (SAM3D)**           | Pipeline reconstruit permettant l'extraction de posture et la production d'un fichier de sortie standardisé (intermédiaire biomécanique).           |
-| **Expérience 3D Mobile**         | Scène 3D interactive (rotation, zoom) pour visualiser la reconstruction du mouvement via l'IA de Pose (SAM3D) de manière fluide sur Android et iOS. |
+| **IA de Pose (3D)**              | Pipeline reconstruit permettant l'extraction de posture 3D et la production d'un fichier de sortie standardisé (intermédiaire biomécanique).         |
+| **Expérience 3D Mobile**         | Scène 3D interactive (rotation, zoom) pour visualiser la reconstruction du mouvement via l'IA de Pose 3D de manière fluide sur Android et iOS.     |
 | **Analyse de Prises Avancée**    | Détection automatique et qualification (type, difficulté, exploitation) avec sélection par couleur ou détourage manuel (fallback).                  |
 | **Génération de conseils**       | Feedback technique ciblé via modèle externe (type Gemini API) basé sur le contexte de la voie et la biomécanique de l'utilisateur.                  |
 | **Mode Fantôme**                 | Pathfinding / cinématique inverse calcule un chemin de mouvement optimal selon la morphologie de l'utilisateur et le rend en superposition.         |
