@@ -14,6 +14,7 @@ from pika import BlockingConnection
 from pika.adapters.blocking_connection import BlockingChannel
 
 from common.models.broker import BrokerModel
+from common.models.job import Job
 from common.utils.errors import throw_if_none
 from common.utils.logger import log
 
@@ -117,3 +118,14 @@ class Broker:
             log.info("Consuming jobs from %s...", bind.queue)
         self.channel.start_consuming()
         return self
+
+    def publish(self, routing_key: str, payload: Job) -> Self:
+        self.channel.basic_publish(
+            exchange=self.config.exchange,
+            routing_key=routing_key,
+            body=payload.model_dump_json().encode("utf-8"),
+            properties=pika.BasicProperties(content_type="application/json", delivery_mode=2),
+        )
+        log.info("Published to %s: %s", routing_key, payload)
+        return self
+        

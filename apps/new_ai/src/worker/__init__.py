@@ -20,14 +20,19 @@ from worker._1_mediapipe.pose_skeleton import PoseSkeleton
 load_dotenv()
 
 pose_skeleton = PoseSkeleton()
+broker = Broker()
+db = PostgreSQL()
+storage = MinIO()
+
 
 def main() -> None:
     try:
         load_dotenv()
-        db = PostgreSQL().connect()
-        storage = MinIO().connect()
+
         # start_consuming() est bloquant : il doit être appelé en dernier.
-        Broker().setup_config().connect().setup_channel().start_consuming()
+        broker.setup_config().connect().setup_channel().start_consuming()
+        db.connect()
+        storage.connect()
     except Exception:  # noqa: BLE001
         log.error(traceback.format_exc())
 
