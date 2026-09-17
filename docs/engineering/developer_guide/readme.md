@@ -136,7 +136,7 @@ We follow a dual-strategy for environment variables to balance local developer e
 
 ### AI Worker (Python / MediaPipe)
 
-- [Developer Guide](ai/readme.md) — setup, pipelines, RabbitMQ, pose analysis
+- [Developer Guide](ai.md) — setup, pipelines, RabbitMQ, pose analysis
 
 ### Mobile (Flutter / Dart)
 

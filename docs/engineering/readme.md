@@ -30,7 +30,7 @@ id: 9881e700-91b2-46fe-a7a0-1c2d1065308e
 - [Monorepo Guide](developer_guide/architecture/monorepo-guide.md)
 - [Server Guide](developer_guide/server/readme.md)
 - [Mobile Guide](developer_guide/mobile/readme.md)
-- [AI Guide](developer_guide/ai/readme.md)
+- [AI Guide](developer_guide/ai.md)
 
 ---
 
