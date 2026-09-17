@@ -8,7 +8,8 @@ CREATE TABLE users (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     CONSTRAINT chk_users_role CHECK (role IN ('user', 'admin')),
-    CONSTRAINT chk_users_email_lowercase CHECK (email = lower(email))
+    CONSTRAINT chk_users_email_lowercase CHECK (email = lower(email)),
+    CONSTRAINT chk_users_email_trimmed CHECK (email = btrim(email, E' \t\n\r\f\x0B'))
 );
 
 CREATE TRIGGER update_users_updated_at
