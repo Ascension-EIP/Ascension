@@ -1,7 +1,11 @@
+---
+id: ce8455bb-a167-4a33-a58e-1f2fb55b5627
+---
+
 :::success
-**Version:** 1.1  
-**Original language:** English  
-DON'T EDIT THIS FILE !  
+**Version:** 1.1
+**Original language:** English
+DON'T EDIT THIS FILE !
 :::
 
 ---
@@ -23,8 +27,7 @@ DON'T EDIT THIS FILE !
 
 ## Sprint Intent
 
-This draft captures the initial alignment notes for the prototyping pool sprint.
-The objective is to deliver a first end-to-end, functional slice using the core Ascension stack.
+This draft captures the initial alignment notes for the prototyping pool sprint. The objective is to deliver a first end-to-end, functional slice using the core Ascension stack.
 
 ---
 

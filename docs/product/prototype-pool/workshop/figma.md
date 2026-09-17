@@ -1,7 +1,11 @@
+---
+id: 395fd181-8aa5-458d-bd24-5f2162f0fa74
+---
+
 :::success
-**Version:** 1.0  
-**Original language:** English  
-DON'T EDIT THIS FILE !  
+**Version:** 1.0
+**Original language:** English
+DON'T EDIT THIS FILE !
 :::
 
 ---
@@ -30,4 +34,4 @@ The Figma prototype of the Ascension mobile application has been relocated from 
 
 You can access and clone the prototype project directly from the organization's dedicated repository:
 
-👉 **[Ascension-EIP/figma-prototype](https://github.com/Ascension-EIP/figma-prototype)**
+👉 [**Ascension-EIP/figma-prototype**](https://github.com/Ascension-EIP/figma-prototype)

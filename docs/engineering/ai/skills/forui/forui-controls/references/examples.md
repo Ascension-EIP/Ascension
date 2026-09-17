@@ -1,3 +1,7 @@
+---
+id: 3073f353-8465-44a2-8e27-435412dd792b
+---
+
 # Forui Controls Examples
 
 ## Decision Matrix

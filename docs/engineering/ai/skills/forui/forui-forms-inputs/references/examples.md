@@ -1,3 +1,7 @@
+---
+id: bd635501-aaa8-4c39-86c3-1234ba1762b4
+---
+
 # Forui Forms And Inputs Examples
 
 ## Field Selection Matrix

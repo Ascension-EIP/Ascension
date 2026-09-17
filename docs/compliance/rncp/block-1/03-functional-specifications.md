@@ -1,7 +1,11 @@
+---
+id: 07b7a3f5-2d59-4f1b-92f7-3024ff2a9ba1
+---
+
 :::success
-**Version:** 1.0  
-**Original language:** French  
-DON'T EDIT THIS FILE !  
+**Version:** 1.0
+**Original language:** French
+DON'T EDIT THIS FILE !
 :::
 
 ---
@@ -12,19 +16,19 @@ DON'T EDIT THIS FILE !
 
 ## Table des matières
 
-- [Bloc 1 — M1 — 03 Spécifications fonctionnelles](#bloc-1--m1--03-spécifications-fonctionnelles)
-  - [Table des matières](#table-des-matières)
+- [Bloc 1 — M1 — 03 Spécifications fonctionnelles](#bloc-1--m1--03-sp%C3%A9cifications-fonctionnelles)
+  - [Table des matières](#table-des-mati%C3%A8res)
   - [Objectif](#objectif)
-  - [Périmètre fonctionnel retenu](#périmètre-fonctionnel-retenu)
-    - [Fonctionnalités cœur (MVP soutenable)](#fonctionnalités-cœur-mvp-soutenable)
-    - [Fonctionnalités élargies (citées dans le dossier, hors preuve complète d’implémentation ici)](#fonctionnalités-élargies-citées-dans-le-dossier-hors-preuve-complète-dimplémentation-ici)
+  - [Périmètre fonctionnel retenu](#p%C3%A9rim%C3%A8tre-fonctionnel-retenu)
+    - [Fonctionnalités cœur (MVP soutenable)](#fonctionnalit%C3%A9s-c%C5%93ur-mvp-soutenable)
+    - [Fonctionnalités élargies (citées dans le dossier, hors preuve complète d’implémentation ici)](#fonctionnalit%C3%A9s-%C3%A9largies-cit%C3%A9es-dans-le-dossier-hors-preuve-compl%C3%A8te-dimpl%C3%A9mentation-ici)
   - [Acteurs et cas d’usage](#acteurs-et-cas-dusage)
-  - [Parcours utilisateur de référence](#parcours-utilisateur-de-référence)
-    - [Parcours “Analyse vidéo”](#parcours-analyse-vidéo)
-  - [Règles de gestion](#règles-de-gestion)
-  - [Critères d’acceptation fonctionnels](#critères-dacceptation-fonctionnels)
-  - [Exigences accessibilité (PSH)](#exigences-accessibilité-psh)
-  - [Traçabilité besoins -\> fonctions](#traçabilité-besoins---fonctions)
+  - [Parcours utilisateur de référence](#parcours-utilisateur-de-r%C3%A9f%C3%A9rence)
+    - [Parcours “Analyse vidéo”](#parcours-analyse-vid%C3%A9o)
+  - [Règles de gestion](#r%C3%A8gles-de-gestion)
+  - [Critères d’acceptation fonctionnels](#crit%C3%A8res-dacceptation-fonctionnels)
+  - [Exigences accessibilité (PSH)](#exigences-accessibilit%C3%A9-psh)
+  - [Traçabilité besoins -> fonctions](#tra%C3%A7abilit%C3%A9-besoins---fonctions)
 
 ---
 
@@ -63,12 +67,12 @@ Positionnement oral recommandé : distinguer explicitement **“implémenté et
 
 ## Acteurs et cas d’usage
 
-| Acteur                          | Objectif                       | Cas d’usage                                          |
-| :------------------------------ | :----------------------------- | :--------------------------------------------------- |
-| Grimpeur                        | Recevoir un feedback technique | Upload vidéo -> lancer analyse -> lire résultats     |
-| Backend API                     | Orchestrer le flux             | Générer URL présignée, créer analyse, exposer statut |
-| Worker IA                       | Produire l’analyse             | Consommer job, traiter vidéo, écrire résultat        |
-| Jury/évaluateur (contexte RNCP) | Vérifier la traçabilité        | Contrôler cohérence besoin/specs/audit/chiffrage     |
+| Acteur | Objectif | Cas d’usage |
+| --- | --- | --- |
+| Grimpeur | Recevoir un feedback technique | Upload vidéo -> lancer analyse -> lire résultats |
+| Backend API | Orchestrer le flux | Générer URL présignée, créer analyse, exposer statut |
+| Worker IA | Produire l’analyse | Consommer job, traiter vidéo, écrire résultat |
+| Jury/évaluateur (contexte RNCP) | Vérifier la traçabilité | Contrôler cohérence besoin/specs/audit/chiffrage |
 
 ---
 
@@ -97,13 +101,13 @@ Preuves de flux : `apps/server/src/inbound/http.rs`, `apps/server/src/inbound/h
 
 ## Critères d’acceptation fonctionnels
 
-| ID   | Critère                  | Résultat attendu                                      |
-| :--- | :----------------------- | :---------------------------------------------------- |
-| F-01 | Création d’URL d’upload  | Retourne `video_id` + `upload_url`                    |
-| F-02 | Création d’analyse       | Retourne `analysis_id`, `job_id`, `status=pending`    |
-| F-03 | Suivi d’analyse          | Endpoint de consultation renvoie statut + progression |
-| F-04 | Résultat final           | `result_json` disponible quand statut `completed`     |
-| F-05 | Résilience erreur worker | Statut passe à `failed` sans boucle infinie de retry  |
+| ID | Critère | Résultat attendu |
+| --- | --- | --- |
+| F-01 | Création d’URL d’upload | Retourne `video_id` + `upload_url` |
+| F-02 | Création d’analyse | Retourne `analysis_id`, `job_id`, `status=pending` |
+| F-03 | Suivi d’analyse | Endpoint de consultation renvoie statut + progression |
+| F-04 | Résultat final | `result_json` disponible quand statut `completed` |
+| F-05 | Résilience erreur worker | Statut passe à `failed` sans boucle infinie de retry |
 
 ---
 
@@ -122,9 +126,9 @@ Source d’alignement : `docs/product/prototype-pool/workshop/tech-func-specs.m
 
 ## Traçabilité besoins -> fonctions
 
-| Besoin                      | Fonction couverte                  | Preuve repo                                                      |
-| :-------------------------- | :--------------------------------- | :--------------------------------------------------------------- |
-| Feedback technique objectif | Analyse asynchrone vidéo           | `apps/ai/src/worker.py`                                          |
-| Fluidité d’usage            | Upload direct via URL présignée    | `apps/server/src/inbound/http/handlers/video/get_upload_url.rs`  |
-| Visibilité utilisateur      | Statut/progress/résultat d’analyse | `apps/server/src/inbound/http/handlers/analysis/get_analysis.rs` |
-| Inclusion PSH               | Critères WCAG déclarés dans specs  | `docs/product/prototype-pool/workshop/tech-func-specs.md`     |
+| Besoin | Fonction couverte | Preuve repo |
+| --- | --- | --- |
+| Feedback technique objectif | Analyse asynchrone vidéo | `apps/ai/src/worker.py` |
+| Fluidité d’usage | Upload direct via URL présignée | `apps/server/src/inbound/http/handlers/video/get_upload_url.rs` |
+| Visibilité utilisateur | Statut/progress/résultat d’analyse | `apps/server/src/inbound/http/handlers/analysis/get_analysis.rs` |
+| Inclusion PSH | Critères WCAG déclarés dans specs | `docs/product/prototype-pool/workshop/tech-func-specs.md` |

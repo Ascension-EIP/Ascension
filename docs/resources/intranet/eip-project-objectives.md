@@ -1,6 +1,10 @@
+---
+id: 5dbcaee3-a00b-4389-8320-866046792c20
+---
+
 :::success
-**Version:** 1.1  
-**Original language:** English  
+**Version:** 1.1
+**Original language:** English
 :::
 
 ---
@@ -15,27 +19,27 @@
   - [Table of Contents](#table-of-contents)
   - [Introduction](#introduction)
   - [Mandatory Objectives to Achieve](#mandatory-objectives-to-achieve)
-    - [1. Evaluating and Integrating New Technologies (Technology Watch)](#1-evaluating-and-integrating-new-technologies-technology-watch)
+    - [1\. Evaluating and Integrating New Technologies (Technology Watch)](#1-evaluating-and-integrating-new-technologies-technology-watch)
       - [Active Technology Watch](#active-technology-watch)
-      - [Documentation \& Analysis](#documentation--analysis)
+      - [Documentation & Analysis](#documentation--analysis)
       - [Concrete Application](#concrete-application)
-      - [Sharing \& Openness](#sharing--openness)
+      - [Sharing & Openness](#sharing--openness)
       - [Expected Deliverables for Technology Watch (Non-exhaustive)](#expected-deliverables-for-technology-watch-non-exhaustive)
       - [What Is Not Sufficient for Technology Watch](#what-is-not-sufficient-for-technology-watch)
-    - [2. Structure, Document, and Harden the Project’s Technical Architecture](#2-structure-document-and-harden-the-projects-technical-architecture)
+    - [2\. Structure, Document, and Harden the Project’s Technical Architecture](#2-structure-document-and-harden-the-projects-technical-architecture)
       - [Clear, Justified Architecture](#clear-justified-architecture)
       - [Complete Technical Documentation](#complete-technical-documentation)
-      - [Quality, Reliability \& Security](#quality-reliability--security)
+      - [Quality, Reliability & Security](#quality-reliability--security)
       - [Expected Deliverables for Architecture (Non-exhaustive)](#expected-deliverables-for-architecture-non-exhaustive)
       - [What Is Not Sufficient for Architecture](#what-is-not-sufficient-for-architecture)
   - [Complementary Objectives](#complementary-objectives)
-    - [1. Collaborate with Technical Experts](#1-collaborate-with-technical-experts)
-      - [Identify \& Approach Experts](#identify--approach-experts)
+    - [1\. Collaborate with Technical Experts](#1-collaborate-with-technical-experts)
+      - [Identify & Approach Experts](#identify--approach-experts)
       - [Structured Collaboration](#structured-collaboration)
       - [Capitalize on the Exchange](#capitalize-on-the-exchange)
       - [Expected Deliverables (Non-exhaustive)](#expected-deliverables-non-exhaustive)
       - [What Is Not Sufficient](#what-is-not-sufficient)
-    - [2. Measure, Test, and Optimize Technical Performance](#2-measure-test-and-optimize-technical-performance)
+    - [2\. Measure, Test, and Optimize Technical Performance](#2-measure-test-and-optimize-technical-performance)
       - [Define Key Technical Metrics](#define-key-technical-metrics)
       - [Set Up Automated or Manual Tests](#set-up-automated-or-manual-tests)
       - [Implement Optimizations](#implement-optimizations)
@@ -60,32 +64,32 @@ While pursuing these technical objectives, remember that you will continue devel
 
 ## Mandatory Objectives to Achieve
 
-### 1. Evaluating and Integrating New Technologies (Technology Watch)
+### 1\. Evaluating and Integrating New Technologies (Technology Watch)
 
-#### Active Technology Watch
+Active Technology Watch
 
 - Set up a regular watch on topics linked to the project: languages, frameworks, protocols, tools, standards, architectures, etc.
 - Use varied, credible sources: technical blogs, scientific publications, official documentation, GitHub repositories, newsletters, Discord, X, etc.
 - Identify emerging trends and solutions that are useful for the project (not merely curiosity).
 
-#### Documentation & Analysis
+Documentation & Analysis
 
 - Write comparative briefs or analysis notes on the explored technologies: advantages, drawbacks, learning curve, and project fit.
 - Produce one or more technical benchmarks between approaches and solutions (performance, scalability, maintainability, ecosystem, etc.).
 - Present a reasoned decision on choices made (or rejected).
 
-#### Concrete Application
+Concrete Application
 
 - Carry out one to two concrete experiments (POC, mini-project, or tested integration in the repository).
 - Integrate at least one new technology into the project with working proof and justification.
 - Update the project (documentation, architecture, code) to reflect adopted evolutions.
 
-#### Sharing & Openness
+Sharing & Openness
 
 - Participate actively in tech communities: exchanges on Discord, StackOverflow, GitHub, specialized forums, etc.
 - Document your progress (README, changelog, wiki, GitHub issues), and share learnings within the team.
 
-#### Expected Deliverables for Technology Watch (Non-exhaustive)
+Expected Deliverables for Technology Watch (Non-exhaustive)
 
 - Structured watch notes or technical briefs.
 - Captures or exports of bookmarks, RSS feeds, or newsletters followed.
@@ -96,7 +100,7 @@ While pursuing these technical objectives, remember that you will continue devel
 - Community contributions (links or captures to GitHub, forums, Discord, etc.).
 - Impact synthesis on the project (performance, security, quality, development time, etc.).
 
-#### What Is Not Sufficient for Technology Watch
+What Is Not Sufficient for Technology Watch
 
 - Reading a few articles with no testing or application.
 - Integrating a technology with no documentation or critical analysis.
@@ -104,14 +108,14 @@ While pursuing these technical objectives, remember that you will continue devel
 - Reusing a technology already mastered by the team with no new exploration.
 - Producing nothing concrete from the technology watch.
 
-### 2. Structure, Document, and Harden the Project’s Technical Architecture
+### 2\. Structure, Document, and Harden the Project’s Technical Architecture
 
-#### Clear, Justified Architecture
+Clear, Justified Architecture
 
 - Present the project’s architecture: components, services, dependencies, data flows, deployment, versioning, etc.
 - Justify structural choices: selected technologies, code organization, databases, APIs, frameworks, etc.
 
-#### Complete Technical Documentation
+Complete Technical Documentation
 
 - Provide a structured README including:
   - project purpose,
@@ -122,14 +126,14 @@ While pursuing these technical objectives, remember that you will continue devel
   - technical prerequisites.
 - Create at least one advanced document: architecture diagram, technical use case, business logic, technical roadmap, etc.
 
-#### Quality, Reliability & Security
+Quality, Reliability & Security
 
 - Enforce code standards (linting, conventions, naming, typing).
 - Run quality analysis tools (SonarQube, ESLint, Pylint, etc.).
 - Provide unit or validation tests on at least one critical module.
 - Implement initial error handling, logging, and minimal security (authentication, sanitization, backups, etc.).
 
-#### Expected Deliverables for Architecture (Non-exhaustive)
+Expected Deliverables for Architecture (Non-exhaustive)
 
 - Complete README.
 - Architecture and deployment diagram.
@@ -140,7 +144,7 @@ While pursuing these technical objectives, remember that you will continue devel
 - Technical wiki, Notion space, or annex documentation.
 - Install and deploy scripts (Dockerfile, bash script, etc.).
 
-#### What Is Not Sufficient for Architecture
+What Is Not Sufficient for Architecture
 
 - A project with no README or an empty one.
 - A monolithic, non-modular code structure.
@@ -152,27 +156,27 @@ While pursuing these technical objectives, remember that you will continue devel
 
 ## Complementary Objectives
 
-### 1. Collaborate with Technical Experts
+### 1\. Collaborate with Technical Experts
 
-#### Identify & Approach Experts
+Identify & Approach Experts
 
 - Clearly define the technical need or topic to challenge: architecture choice, framework, security, performance, scalability, AI, etc.
 - Proactively search for relevant experts: GitHub contributors, LinkedIn engineers, community leads, teachers, CTOs, alumni, etc.
 - Use professional outreach: clear message, precise question, and appropriate channel.
 
-#### Structured Collaboration
+Structured Collaboration
 
 - Run a documented exchange: meeting, written feedback, Discord or GitHub thread, code review, etc.
 - Optionally organize a review session with an external expert (pair programming, code review, light audit).
 - Implement concrete actions from the exchange: structure adjustment, technical plan change, new resources, tool adoption, process improvement.
 
-#### Capitalize on the Exchange
+Capitalize on the Exchange
 
 - Write a summary or memo: discussed points, advice received, decisions taken.
 - Add the collaboration to the roadmap or documentation.
 - Highlight outcomes when possible: testimonial, mention, quote, public thanks.
 
-#### Expected Deliverables (Non-exhaustive)
+Expected Deliverables (Non-exhaustive)
 
 - Expert sheet: name, profile, link, role.
 - Outreach message (copy, capture, or link).
@@ -181,7 +185,7 @@ While pursuing these technical objectives, remember that you will continue devel
 - Capture or list of changes implemented after the exchange.
 - Expert testimonial (optional but valuable).
 
-#### What Is Not Sufficient
+What Is Not Sufficient
 
 - Sending a vague message (“can you look at our project?”) without a clear ask.
 - Citing a verbal or informal chat without trace or application.
@@ -189,26 +193,26 @@ While pursuing these technical objectives, remember that you will continue devel
 - Taking no notes and making no change after the exchange.
 - Contacting only close network (classmates, former teammates, etc.).
 
-### 2. Measure, Test, and Optimize Technical Performance
+### 2\. Measure, Test, and Optimize Technical Performance
 
-#### Define Key Technical Metrics
+Define Key Technical Metrics
 
 - Choose two to three performance indicators relevant to the project (latency, response time, memory usage, load time, bundle size, CPU, API calls, etc.).
 - Integrate these metrics into the development cycle (dashboard, logs, third-party tools, tests, etc.).
 
-#### Set Up Automated or Manual Tests
+Set Up Automated or Manual Tests
 
 - Run load tests, stress tests, and/or simulation scenarios.
 - Run resilience tests: error handling, interruptions, unexpected behavior.
 - Run comparative efficiency tests: optimized version versus initial version.
 
-#### Implement Optimizations
+Implement Optimizations
 
 - Analyze bottlenecks and friction points.
 - Modify one or more technical bricks (queries, processing, cache, code, etc.).
 - Justify trade-offs (quality versus performance versus cost versus time).
 
-#### Expected Deliverables (Non-exhaustive)
+Expected Deliverables (Non-exhaustive)
 
 - Chosen indicators and tracking table.
 - Before and after test results (logs, charts, captures).
@@ -217,7 +221,7 @@ While pursuing these technical objectives, remember that you will continue devel
 - Analysis notes and applied optimization plan.
 - Technical rationale for improvements or encountered limits.
 
-#### What Is Not Sufficient
+What Is Not Sufficient
 
 - Claiming “it runs fast on our machines”.
 - Blind optimization with no metrics or tests.

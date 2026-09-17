@@ -1,6 +1,10 @@
+---
+id: 615b8876-93f2-4f9d-80db-7d3e8553fe8b
+---
+
 :::warning
-**Version:** 2.0  
-**Original language:** English  
+**Version:** 2.0
+**Original language:** English
 :::
 
 ---
@@ -24,15 +28,15 @@
     - [Cloudflare + Nginx](#cloudflare--nginx)
     - [Firewall Rules](#firewall-rules)
   - [Docker Compose Configuration](#docker-compose-configuration)
-    - [Production `docker-compose.yml`](#production-docker-composeyml)
+    - [Production](#production-docker-composeyml) `docker-compose.yml`
     - [Nginx Configuration](#nginx-configuration)
     - [MinIO Lifecycle Policy](#minio-lifecycle-policy)
     - [Environment Variables](#environment-variables)
   - [Deployment Process](#deployment-process)
-    - [1. Build Docker Images](#1-build-docker-images)
-    - [2. Push to Container Registry](#2-push-to-container-registry)
-    - [3. Deploy to Hetzner VPS](#3-deploy-to-hetzner-vps)
-    - [4. Run Database Migrations](#4-run-database-migrations)
+    - [1\. Build Docker Images](#1-build-docker-images)
+    - [2\. Push to Container Registry](#2-push-to-container-registry)
+    - [3\. Deploy to Hetzner VPS](#3-deploy-to-hetzner-vps)
+    - [4\. Run Database Migrations](#4-run-database-migrations)
   - [CI/CD Pipeline (GitHub Actions)](#cicd-pipeline-github-actions)
     - [Unified CI with moon](#unified-ci-with-moon)
     - [Production Deployment](#production-deployment)
@@ -47,7 +51,7 @@
     - [Key Metrics](#key-metrics)
     - [Alerting Rules (Grafana → Slack)](#alerting-rules-grafana--slack)
     - [Application Metrics (Go API)](#application-metrics-go-api)
-  - [Backup \& Disaster Recovery](#backup--disaster-recovery)
+  - [Backup & Disaster Recovery](#backup--disaster-recovery)
     - [PostgreSQL Backups](#postgresql-backups)
     - [MinIO Backups](#minio-backups)
     - [Recovery Procedures](#recovery-procedures)
@@ -163,29 +167,32 @@ graph TB
 
 ### Hetzner Machines
 
-| Machine        | Role                                   | Specs                               | Cost                |
-| -------------- | -------------------------------------- | ----------------------------------- | ------------------- |
-| **Srv-API**    | Nginx + Go API (×2) + Monitoring       | CX31: 4 vCPU, 8 GB RAM, 80 GB SSD   | 15€/month           |
-| **Srv-DB**     | PostgreSQL Master + Replica + RabbitMQ | CX41: 4 vCPU, 16 GB RAM, 160 GB SSD | 25€/month           |
-| **Srv-ML**     | Python AI Workers (×2-4)               | CX51: 8 vCPU, 16 GB RAM, 240 GB SSD | 45€/month           |
-| **Storage**    | MinIO S3-compatible                    | Hetzner Volume 1 TB                 | 10€/month           |
-| **Domain**     | DNS                                    | `.com` domain                       | 1€/month (12€/year) |
-| **SSL**        | TLS Certificates                       | Let's Encrypt via Cloudflare        | 0€                  |
-| **Monitoring** | Prometheus + Grafana + Loki            | Self-hosted on Srv-API              | 0€                  |
-|                |                                        | **Total (MVP)**                     | **96€/month**       |
+| Machine | Role | Specs | Cost |
+| --- | --- | --- | --- |
+| **Srv-API** | Nginx + Go API (×2) + Monitoring | CX31: 4 vCPU, 8 GB RAM, 80 GB SSD | 15€/month |
+| **Srv-DB** | PostgreSQL Master + Replica + RabbitMQ | CX41: 4 vCPU, 16 GB RAM, 160 GB SSD | 25€/month |
+| **Srv-ML** | Python AI Workers (×2-4) | CX51: 8 vCPU, 16 GB RAM, 240 GB SSD | 45€/month |
+| **Storage** | MinIO S3-compatible | Hetzner Volume 1 TB | 10€/month |
+| **Domain** | DNS | `.com` domain | 1€/month (12€/year) |
+| **SSL** | TLS Certificates | Let's Encrypt via Cloudflare | 0€ |
+| **Monitoring** | Prometheus + Grafana + Loki | Self-hosted on Srv-API | 0€ |
+|
+ |
+
+ | **Total (MVP)** | **96€/month** |
 
 ### GPU Machine (AI Workers — Optional Upgrade)
 
 For production performance, consider upgrading the ML server:
 
-#### Option A: Hetzner GPU Server
+Option A: Hetzner GPU Server
 
 - **Instance**: Hetzner CCX or dedicated GPU server
 - **GPU**: NVIDIA A4000 or equivalent
 - **Cost**: ~60-100€/month
 - **Benefit**: Same provider, low latency to other services
 
-#### Option B: On-Premise GPU Machine
+Option B: On-Premise GPU Machine
 
 - **Hardware**: Team member's GPU machine (RTX 3060+)
 - **Connection**: SSH tunnel to Hetzner VPS
@@ -549,7 +556,7 @@ ENVIRONMENT=production
 
 ## Deployment Process
 
-### 1. Build Docker Images
+### 1\. Build Docker Images
 
 From the monorepo root:
 
@@ -562,7 +569,7 @@ docker build -t ascension/api:v${VERSION} \
 docker build -t ascension/worker:v${VERSION} ./apps/ai
 ```
 
-### 2. Push to Container Registry
+### 2\. Push to Container Registry
 
 Using Docker Hub or a private registry:
 
@@ -574,7 +581,7 @@ docker tag ascension/worker:v${VERSION} your-registry/ascension-worker:v${VERSIO
 docker push your-registry/ascension-worker:v${VERSION}
 ```
 
-### 3. Deploy to Hetzner VPS
+### 3\. Deploy to Hetzner VPS
 
 ```bash
 # SSH into production server
@@ -592,7 +599,7 @@ docker tag your-registry/ascension-worker:v${VERSION} ascension/worker:latest
 docker-compose up -d --no-deps api worker
 ```
 
-### 4. Database Migrations
+### 4\. Database Migrations
 
 In Go, database migrations are automatically run by the server on startup when the container boots. No manual execution steps are required in production. You can simply verify the migration logs to confirm:
 
@@ -608,7 +615,7 @@ docker-compose logs api
 
 ### Unified CI with moon
 
-**`.github/workflows/ci.yml`**:
+`.github/workflows/ci.yml`:
 
 ```yaml
 name: CI
@@ -639,7 +646,7 @@ jobs:
 
 ### Production Deployment
 
-**`.github/workflows/deploy-production.yml`**:
+`.github/workflows/deploy-production.yml`:
 
 ```yaml
 name: Deploy to Production
@@ -794,24 +801,24 @@ scrape_configs:
 
 ### Key Metrics
 
-| Component      | Metrics                                                                                 |
-| -------------- | --------------------------------------------------------------------------------------- |
-| **API**        | Request rate, error rate (%), response time (p50/p95/p99), active WebSocket connections |
-| **AI Workers** | RabbitMQ queue depth, processing time per video, failed jobs count                      |
-| **Database**   | Query time (p50/p95), connection pool usage, cache hit rate                             |
-| **Storage**    | Upload success rate, storage used (GB), download bandwidth                              |
-| **System**     | CPU, RAM, disk usage per machine                                                        |
+| Component | Metrics |
+| --- | --- |
+| **API** | Request rate, error rate (%), response time (p50/p95/p99), active WebSocket connections |
+| **AI Workers** | RabbitMQ queue depth, processing time per video, failed jobs count |
+| **Database** | Query time (p50/p95), connection pool usage, cache hit rate |
+| **Storage** | Upload success rate, storage used (GB), download bandwidth |
+| **System** | CPU, RAM, disk usage per machine |
 
 ### Alerting Rules (Grafana → Slack)
 
-| Condition                       | Severity | Action              |
-| ------------------------------- | -------- | ------------------- |
-| API error rate > 5% for 5 min   | Critical | Page on-call        |
-| RabbitMQ queue depth > 200 jobs | Warning  | Scale workers       |
-| Database CPU > 80% for 10 min   | Warning  | Investigate         |
-| Disk usage > 90%                | Critical | Expand volume       |
-| API latency p95 > 500ms         | Warning  | Investigate         |
-| Worker processing > 5 min       | Warning  | Check worker health |
+| Condition | Severity | Action |
+| --- | --- | --- |
+| API error rate > 5% for 5 min | Critical | Page on-call |
+| RabbitMQ queue depth > 200 jobs | Warning | Scale workers |
+| Database CPU > 80% for 10 min | Warning | Investigate |
+| Disk usage > 90% | Critical | Expand volume |
+| API latency p95 > 500ms | Warning | Investigate |
+| Worker processing > 5 min | Warning | Check worker health |
 
 ### Application Metrics (Go API)
 
@@ -858,8 +865,7 @@ crontab -e
 # 0 3 * * * /opt/ascension/backup.sh
 ```
 
-**RPO (Recovery Point Objective)**: < 15 minutes (via WAL archiving)
-**RTO (Recovery Time Objective)**: < 2 hours (restore + restart services)
+**RPO (Recovery Point Objective)**: < 15 minutes (via WAL archiving) **RTO (Recovery Time Objective)**: < 2 hours (restore + restart services)
 
 ### MinIO Backups
 
@@ -947,21 +953,21 @@ Estimated cost: **€3,000-3,500/month (~€0.035/user)**
 
 ### Cost by Scale
 
-| Phase      | Users   | Infrastructure                  | Monthly Cost | Cost/User |
-| ---------- | ------- | ------------------------------- | ------------ | --------- |
-| MVP        | 100     | 3 VPS + Volume                  | 96€          | 0.96€     |
-| Scale      | 1,000   | Upgraded VPS + extra workers    | 231€         | 0.23€     |
-| Scale+     | 10,000  | Multi-VPS                       | 655€         | 0.07€     |
-| Production | 100,000 | K3s cluster + dedicated servers | ~3,500€      | 0.035€    |
+| Phase | Users | Infrastructure | Monthly Cost | Cost/User |
+| --- | --- | --- | --- | --- |
+| MVP | 100 | 3 VPS + Volume | 96€ | 0.96€ |
+| Scale | 1,000 | Upgraded VPS + extra workers | 231€ | 0.23€ |
+| Scale+ | 10,000 | Multi-VPS | 655€ | 0.07€ |
+| Production | 100,000 | K3s cluster + dedicated servers | ~3,500€ | 0.035€ |
 
 ### Comparison with Cloud Providers
 
-| Provider     | MVP Cost   | 100k Users     | Extra Cost vs Hetzner |
-| ------------ | ---------- | -------------- | --------------------- |
-| **Hetzner**  | 96€/month  | ~3,500€/month  | Reference             |
-| OVH          | 140€/month | ~5,000€/month  | +46%                  |
-| DigitalOcean | 207€/month | ~7,000€/month  | +116%                 |
-| AWS          | 312€/month | ~11,700€/month | +225%                 |
+| Provider | MVP Cost | 100k Users | Extra Cost vs Hetzner |
+| --- | --- | --- | --- |
+| **Hetzner** | 96€/month | ~3,500€/month | Reference |
+| OVH | 140€/month | ~5,000€/month | +46% |
+| DigitalOcean | 207€/month | ~7,000€/month | +116% |
+| AWS | 312€/month | ~11,700€/month | +225% |
 
 **Annual savings vs AWS**: 2,592€ (MVP) → 98,400€ (100k users)
 
@@ -998,5 +1004,4 @@ Estimated cost: **€3,000-3,500/month (~€0.035/user)**
 
 ---
 
-**Last Updated**: 2026-02-25
-**Maintainer**: Ascension DevOps Team
+**Last Updated**: 2026-02-25 **Maintainer**: Ascension DevOps Team

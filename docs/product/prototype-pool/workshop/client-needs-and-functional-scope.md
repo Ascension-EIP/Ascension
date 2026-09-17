@@ -1,7 +1,11 @@
+---
+id: 09b6aa81-f14d-46bc-8eec-5dac69f427bf
+---
+
 :::success
-**Version:** 1.0  
-**Original language:** English  
-DON'T EDIT THIS FILE !  
+**Version:** 1.0
+**Original language:** English
+DON'T EDIT THIS FILE !
 :::
 
 ---
@@ -13,33 +17,33 @@ DON'T EDIT THIS FILE !
 ## Table of Contents
 
 - [Client Needs & Functional Scope - Workshop Deliverable](#client-needs-functional-scope-workshop-deliverable)
-  - [1. User Personas](#1-user-personas)
-  - [2. User Stories](#2-user-stories)
+  - [1\. User Personas](#1-user-personas)
+  - [2\. User Stories](#2-user-stories)
     - [For Pierre (Intermediate)](#for-pierre-intermediate)
     - [For Tanya (Expert)](#for-tanya-expert)
-  - [3. Prioritized Backlog (MoSCoW Method)](#3-prioritized-backlog-moscow-method)
+  - [3\. Prioritized Backlog (MoSCoW Method)](#3-prioritized-backlog-moscow-method)
     - [M - Must Have (The MVP)](#m-must-have-the-mvp)
     - [S - Should Have](#s-should-have)
     - [C - Could Have](#c-could-have)
     - [W - Won't Have (This Scope)](#w-wont-have-this-scope)
-  - [4. Next Steps: Continuous Improvement Loop](#4-next-steps-continuous-improvement-loop)
+  - [4\. Next Steps: Continuous Improvement Loop](#4-next-steps-continuous-improvement-loop)
 
 ---
 
-## 1. User Personas
+## 1\. User Personas
 
 To define our users, we have created two distinct archetypes representing our target audience.
 
-|               Attribute                |        Name        |                                Biography                                |                           Pain Points                           |                              Needs                              |                            Goal                             |
-| :------------------------------------: | :----------------: | :---------------------------------------------------------------------: | :-------------------------------------------------------------: | :-------------------------------------------------------------: | :---------------------------------------------------------: |
-| Persona 1: The Stagnating Intermediate | Progressive Pierre | Climbing for 2 years, stuck at 6a+ grade. Can't afford a private coach. |   Struggles to see micro-errors in posture or mass transfer.    | Instant, affordable technical feedback at the foot of the wall. | Break through the "glass ceiling" and reach the next grade. |
-|   Persona 2: The Data-Driven Expert    |  Technical Tanya   |  High-level climber looking for marginal gains and energy efficiency.   | Hard to visualize the optimal "beta" (path) for complex routes. |   Deep biomechanical analysis and energy-saving pathfinding.    |      Optimize movement patterns using objective data.       |
+| Attribute | Name | Biography | Pain Points | Needs | Goal |
+| --- | --- | --- | --- | --- | --- |
+| Persona 1: The Stagnating Intermediate | Progressive Pierre | Climbing for 2 years, stuck at 6a+ grade. Can't afford a private coach. | Struggles to see micro-errors in posture or mass transfer. | Instant, affordable technical feedback at the foot of the wall. | Break through the "glass ceiling" and reach the next grade. |
+| Persona 2: The Data-Driven Expert | Technical Tanya | High-level climber looking for marginal gains and energy efficiency. | Hard to visualize the optimal "beta" (path) for complex routes. | Deep biomechanical analysis and energy-saving pathfinding. | Optimize movement patterns using objective data. |
 
 ---
 
-## 2. User Stories
+## 2\. User Stories
 
-Following the template: _As a `persona`, I want `feature` so that `benefit`_.
+Following the template: *As a* `persona`*, I want* `feature` *so that* `benefit`.
 
 ### For Pierre (Intermediate)
 
@@ -53,7 +57,7 @@ Following the template: _As a `persona`, I want `feature` so that `benefit`_.
 
 ---
 
-## 3. Prioritized Backlog (MoSCoW Method)
+## 3\. Prioritized Backlog (MoSCoW Method)
 
 We have prioritized our functional scope to define our **Minimum Viable Product (MVP)**.
 
@@ -82,7 +86,7 @@ We have prioritized our functional scope to define our **Minimum Viable Product 
 
 ---
 
-## 4. Next Steps: Continuous Improvement Loop
+## 4\. Next Steps: Continuous Improvement Loop
 
 To ensure project success, we will follow the iterative methodology:
 

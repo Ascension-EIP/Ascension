@@ -1,14 +1,17 @@
+---
+id: 42f46e9a-0ca5-4e39-b882-98520f4fea1e
+---
+
 :::success
-**Version:** 2.0  
-**Original language:** English  
+**Version:** 2.0
+**Original language:** English
 :::
 
 ---
 
 # How to Add a Route
 
-This guide walks you through adding a new HTTP route to the server from scratch.
-It assumes you have read the [architecture overview](./architecture.md) first.
+This guide walks you through adding a new HTTP route to the server from scratch. It assumes you have read the [architecture overview](architecture.md) first.
 
 We will use a concrete example: adding a `GET /v1/status/version` endpoint that returns the current API version.
 
@@ -33,10 +36,10 @@ We will use a concrete example: adding a `GET /v1/status/version` endpoint that 
 
 Adding a route always touches these files (at minimum):
 
-| What               | Where                                                           |
-|--------------------|-----------------------------------------------------------------|
-| The handler logic  | `internal/inbound/http/handler/<your_file>.go`                  |
-| Route registration | `internal/inbound/http/router/router.go`                        |
+| What | Where |
+| --- | --- |
+| The handler logic | `internal/inbound/http/handler/<your_file>.go` |
+| Route registration | `internal/inbound/http/router/router.go` |
 
 ---
 
@@ -76,7 +79,7 @@ func (h *StatusHandler) GetVersion(c *gin.Context) {
 
 ## Step 2 – Register the handler and route in the Router
 
-Open `internal/inbound/http/router/router.go`. 
+Open `internal/inbound/http/router/router.go`.
 
 1. Add your handler as a parameter to the `New` function:
 
@@ -130,7 +133,7 @@ Expected response:
 Gin router groups expose methods matching HTTP verbs:
 
 | Gin method | HTTP method | Typical use |
-|---|---|---|
+| --- | --- | --- |
 | `group.GET(path, handler)` | `GET` | Read / list a resource |
 | `group.POST(path, handler)` | `POST` | Create a new resource |
 | `group.PUT(path, handler)` | `PUT` | Replace a resource entirely |

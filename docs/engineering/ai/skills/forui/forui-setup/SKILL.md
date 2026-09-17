@@ -1,4 +1,5 @@
 ---
+id: cfc61d77-45de-400d-91f8-dd368e037400
 name: forui-setup
 description: Set up Forui in a Flutter app. Use when installing Forui, adding package:forui, wiring FTheme, FToaster, FTooltipGroup, FLocalizations, MaterialApp or CupertinoApp integration, FScaffold, or migrating an app root from Material/Cupertino to Forui.
 metadata:

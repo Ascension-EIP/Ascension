@@ -1,3 +1,7 @@
+---
+id: c7ea17c1-46cd-4f14-8232-894b71ebe0d1
+---
+
 # graphify reference: commit hook and native CLAUDE.md integration
 
 Load this when the user asked to install the post-commit hook or wire graphify into a project's CLAUDE.md.

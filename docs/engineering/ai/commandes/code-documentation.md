@@ -1,4 +1,5 @@
 ---
+id: fb7edaac-d2bf-4d43-b851-07233c1ac219
 name: code-documentation
 description: "AI Command: Code Documentation (/code-documentation)"
 globs: ["*.dart", "*.go", "*.py", "*.ts", "*.js"]
@@ -6,8 +7,8 @@ alwaysApply: false
 ---
 
 :::success
-**Version:** 1.0  
-**Original language:** English  
+**Version:** 1.0
+**Original language:** English
 :::
 
 ---
@@ -20,22 +21,22 @@ This document serves as an execution protocol for any AI model (Antigravity, Cop
 
 ## Table of Contents
 
-- [AI Command: Code Documentation (`/code-documentation`)](#ai-command-code-documentation-code-documentation)
+- [AI Command: Code Documentation (](#ai-command-code-documentation-code-documentation)`/code-documentation`[)](#ai-command-code-documentation-code-documentation)
   - [Table of Contents](#table-of-contents)
-  - [1. Command Objective](#1-command-objective)
-  - [2. File Headers](#2-file-headers)
-  - [3. Code Comments (DartDoc / GoDoc / Docstrings)](#3-code-comments-dartdoc--godoc--docstrings)
-  - [4. Formatting and Linting](#4-formatting-and-linting)
+  - [1\. Command Objective](#1-command-objective)
+  - [2\. File Headers](#2-file-headers)
+  - [3\. Code Comments (DartDoc / GoDoc / Docstrings)](#3-code-comments-dartdoc--godoc--docstrings)
+  - [4\. Formatting and Linting](#4-formatting-and-linting)
 
 ---
 
-## 1. Command Objective
+## 1\. Command Objective
 
 Standardize and update inline code documentation across the Ascension monorepo (Flutter/Dart in `apps/mobile`, Go in `apps/server`, Python in `apps/ai`).
 
 ---
 
-## 2. File Headers
+## 2\. File Headers
 
 Every newly created or substantially modified source file should include a clean header describing its role and scope.
 
@@ -48,17 +49,17 @@ Every newly created or substantially modified source file should include a clean
 
 ---
 
-## 3. Code Comments (DartDoc / GoDoc / Docstrings)
+## 3\. Code Comments (DartDoc / GoDoc / Docstrings)
 
 Every exported class, interface, method, and function must be documented in English using the idiomatic syntax of its language:
 
-- **Flutter / Dart (`apps/mobile`)**: Use triple-slash `///` DartDoc comments.
-- **Go (`apps/server`)**: Use GoDoc comments directly preceding declarations (`// FunctionName ...`).
-- **Python (`apps/ai`)**: Use Google-style docstrings (`"""..."""`).
+- **Flutter / Dart (**`apps/mobile`**)**: Use triple-slash `///` DartDoc comments.
+- **Go (**`apps/server`**)**: Use GoDoc comments directly preceding declarations (`// FunctionName ...`).
+- **Python (**`apps/ai`**)**: Use Google-style docstrings (`"""..."""`).
 
 ---
 
-## 4. Formatting and Linting
+## 4\. Formatting and Linting
 
 After completing code documentation updates:
 

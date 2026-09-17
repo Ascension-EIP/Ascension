@@ -1,4 +1,5 @@
 ---
+id: d51a6082-f99f-4b53-9a8c-ba5130c12b8f
 name: forui-best-practices
 description: Review or plan Forui best practices across a Flutter app. Use when the task asks for Forui best practices, architecture guidance, migration strategy, design-system structure, code review, risk assessment, or which focused Forui skill to use.
 metadata:

@@ -1,6 +1,10 @@
+---
+id: d274369c-06fe-41b3-9dfb-5657429abd0c
+---
+
 :::success
-**Version:** 1.2  
-**Original language:** English  
+**Version:** 1.2
+**Original language:** English
 :::
 
 ---
@@ -21,27 +25,27 @@
 
 ## Roadmaps
 
-- [Roadmap fonctionnelle](./roadmap-fonctionnelle.md)
-- [Ascension Action Plan](./ascension-action-plan.md)
-- [Ascension Beta Test Plan (BTP)](./ascension-beta-test-plan.md)
-- [Ascension Acceptance Test Plan (ATP)](./ascension-acceptance-test-plan.md)
+- [Roadmap fonctionnelle](roadmap-fonctionnelle.md)
+- [Ascension Action Plan](ascension-action-plan.md)
+- [Ascension Beta Test Plan (BTP)](ascension-beta-test-plan.md)
+- [Ascension Acceptance Test Plan (ATP)](ascension-acceptance-test-plan.md)
 
 ---
 
 ## Team Memos
 
-- [Memo — 26-02-10](./memo/26-02-10.md)
-- [Memo — 26-02-16](./memo/26-02-16.md)
-- [Memo — 26-03-02](./memo/26-03-02.md)
-- [Memo — 26-03-09](./memo/26-03-09.md)
-- [Memo — 26-03-16](./memo/26-03-16.md)
-- [Memo — 26-04-20](./memo/26-04-20.md)
-- [Memo — 26-05-04](./memo/26-05-04.md)
-- [Memo — 26-06-13](./memo/26-06-13.md)
-- [Memo — 26-06-20](./memo/26-06-20.md)
-- [Memo — 26-08-31](./memo/26-08-31.md)
-- [Memo — 26-09-07](./memo/26-09-07.md)
-- [Memo — 26-09-14](./memo/26-09-14.md)
+- [Memo — 26-02-10](memo/26-02-10.md)
+- [Memo — 26-02-16](memo/26-02-16.md)
+- [Memo — 26-03-02](memo/26-03-02.md)
+- [Memo — 26-03-09](memo/26-03-09.md)
+- [Memo — 26-03-16](memo/26-03-16.md)
+- [Memo — 26-04-20](memo/26-04-20.md)
+- [Memo — 26-05-04](memo/26-05-04.md)
+- [Memo — 26-06-13](memo/26-06-13.md)
+- [Memo — 26-06-20](memo/26-06-20.md)
+- [Memo — 26-08-31](memo/26-08-31.md)
+- [Memo — 26-09-07](memo/26-09-07.md)
+- [Memo — 26-09-14](memo/26-09-14.md)
 
 ---
 

@@ -1,6 +1,10 @@
+---
+id: 5d09b283-adb5-4bde-b3a4-5d9d79c195d2
+---
+
 :::success
-**Version:** 1.0  
-**Original language:** English  
+**Version:** 1.0
+**Original language:** English
 :::
 
 ---
@@ -16,23 +20,23 @@
   - [Register](#register)
   - [Login](#login)
 - [Video Analysis (Skeleton Detection)](#video-analysis-skeleton-detection)
-  - [1. Request Upload URL](#1-request-upload-url)
-  - [2. Start Video Analysis](#2-start-video-analysis)
-  - [3. Get Analysis Result](#3-get-analysis-result)
+  - [1\. Request Upload URL](#1-request-upload-url)
+  - [2\. Start Video Analysis](#2-start-video-analysis)
+  - [3\. Get Analysis Result](#3-get-analysis-result)
 - [Route Ghost (Optimal Path Generation)](#route-ghost-optimal-path-generation)
-  - [1. Upload Route Photo](#1-upload-route-photo)
-  - [2. Generate Ghost](#2-generate-ghost)
-  - [3. Get Ghost Result](#3-get-ghost-result)
+  - [1\. Upload Route Photo](#1-upload-route-photo)
+  - [2\. Generate Ghost](#2-generate-ghost)
+  - [3\. Get Ghost Result](#3-get-ghost-result)
 - [Ghost Overlay on Video](#ghost-overlay-on-video)
   - [Compare Video with Ghost](#compare-video-with-ghost)
 - [Hold Recognition](#hold-recognition)
-  - [1. Upload Hold Image](#1-upload-hold-image)
-  - [2. Detect Holds](#2-detect-holds)
-  - [3. Correct Hold Type](#3-correct-hold-type)
+  - [1\. Upload Hold Image](#1-upload-hold-image)
+  - [2\. Detect Holds](#2-detect-holds)
+  - [3\. Correct Hold Type](#3-correct-hold-type)
 - [Coaching & Goals](#coaching-goals)
-  - [1. Set Goals](#1-set-goals)
-  - [2. Get Routine](#2-get-routine)
-  - [3. Log Training Session](#3-log-training-session)
+  - [1\. Set Goals](#1-set-goals)
+  - [2\. Get Routine](#2-get-routine)
+  - [3\. Log Training Session](#3-log-training-session)
 - [User Profile & Subscription](#user-profile-subscription)
   - [Get Profile](#get-profile)
   - [Subscription Tiers](#subscription-tiers)
@@ -42,16 +46,13 @@
     - [Analysis Complete](#analysis-complete)
 - [Error Codes](#error-codes)
 
-
 ---
 
 ## Overview
 
 This document describes the Ascension REST API for video analysis, route visualization, and climbing coaching.
 
-**Base URL**: `https://api.ascension.app/v1`
-**Authentication**: JWT Bearer tokens
-**Format**: JSON
+**Base URL**: `https://api.ascension.app/v1` **Authentication**: JWT Bearer tokens **Format**: JSON
 
 ---
 
@@ -72,6 +73,7 @@ Content-Type: application/json
 ```
 
 **Response (201)**:
+
 ```json
 {
   "user": {
@@ -96,6 +98,7 @@ Content-Type: application/json
 ```
 
 **Response (200)**:
+
 ```json
 {
   "access_token": "jwt_token",
@@ -111,7 +114,7 @@ Content-Type: application/json
 
 ## Video Analysis (Skeleton Detection)
 
-### 1. Request Upload URL
+### 1\. Request Upload URL
 
 Get a presigned URL to upload a climbing video directly to storage.
 
@@ -127,6 +130,7 @@ Content-Type: application/json
 ```
 
 **Response (200)**:
+
 ```json
 {
   "video_id": "uuid",
@@ -135,7 +139,7 @@ Content-Type: application/json
 }
 ```
 
-### 2. Start Video Analysis
+### 2\. Start Video Analysis
 
 Analyze a video to extract skeleton keypoints and joint angles.
 
@@ -150,6 +154,7 @@ Content-Type: application/json
 ```
 
 **Response (202)**:
+
 ```json
 {
   "analysis_id": "uuid",
@@ -158,7 +163,7 @@ Content-Type: application/json
 }
 ```
 
-### 3. Get Analysis Result
+### 3\. Get Analysis Result
 
 ```http
 GET /analysis/video/{analysis_id}
@@ -166,6 +171,7 @@ Authorization: Bearer {token}
 ```
 
 **Response (200)**:
+
 ```json
 {
   "id": "uuid",
@@ -198,7 +204,7 @@ Authorization: Bearer {token}
 
 ## Route Ghost (Optimal Path Generation)
 
-### 1. Upload Route Photo
+### 1\. Upload Route Photo
 
 Upload a photo of a climbing route to generate the optimal path (ghost).
 
@@ -214,6 +220,7 @@ Content-Type: application/json
 ```
 
 **Response (200)**:
+
 ```json
 {
   "route_id": "uuid",
@@ -221,7 +228,7 @@ Content-Type: application/json
 }
 ```
 
-### 2. Generate Ghost
+### 2\. Generate Ghost
 
 Generate the optimal climbing path for the route.
 
@@ -236,6 +243,7 @@ Content-Type: application/json
 ```
 
 **Response (202)**:
+
 ```json
 {
   "ghost_id": "uuid",
@@ -243,7 +251,7 @@ Content-Type: application/json
 }
 ```
 
-### 3. Get Ghost Result
+### 3\. Get Ghost Result
 
 ```http
 GET /analysis/ghost/{ghost_id}
@@ -251,6 +259,7 @@ Authorization: Bearer {token}
 ```
 
 **Response (200)**:
+
 ```json
 {
   "id": "uuid",
@@ -287,6 +296,7 @@ Content-Type: application/json
 ```
 
 **Response (200)**:
+
 ```json
 {
   "comparison_id": "uuid",
@@ -308,7 +318,7 @@ Content-Type: application/json
 
 ## Hold Recognition
 
-### 1. Upload Hold Image
+### 1\. Upload Hold Image
 
 Upload a photo or video of the wall to detect holds.
 
@@ -324,6 +334,7 @@ Content-Type: application/json
 ```
 
 **Response (200)**:
+
 ```json
 {
   "image_id": "uuid",
@@ -331,7 +342,7 @@ Content-Type: application/json
 }
 ```
 
-### 2. Detect Holds
+### 2\. Detect Holds
 
 Detect and classify climbing holds in the image.
 
@@ -346,6 +357,7 @@ Content-Type: application/json
 ```
 
 **Response (200)**:
+
 ```json
 {
   "detection_id": "uuid",
@@ -366,7 +378,7 @@ Content-Type: application/json
 }
 ```
 
-### 3. Correct Hold Type
+### 3\. Correct Hold Type
 
 Manually correct a hold type if AI made a mistake.
 
@@ -381,6 +393,7 @@ Content-Type: application/json
 ```
 
 **Response (200)**:
+
 ```json
 {
   "id": 1,
@@ -391,6 +404,7 @@ Content-Type: application/json
 ```
 
 **Hold Types**:
+
 - `jug` - Easy to grip
 - `crimp` - Small edge
 - `sloper` - Rounded, requires friction
@@ -402,7 +416,7 @@ Content-Type: application/json
 
 ## Coaching & Goals
 
-### 1. Set Goals
+### 1\. Set Goals
 
 Define climbing goals and get personalized training recommendations.
 
@@ -421,6 +435,7 @@ Content-Type: application/json
 ```
 
 **Response (201)**:
+
 ```json
 {
   "goal_id": "uuid",
@@ -454,7 +469,7 @@ Content-Type: application/json
 }
 ```
 
-### 2. Get Routine
+### 2\. Get Routine
 
 Retrieve the current training routine.
 
@@ -464,6 +479,7 @@ Authorization: Bearer {token}
 ```
 
 **Response (200)**:
+
 ```json
 {
   "goal_id": "uuid",
@@ -481,7 +497,7 @@ Authorization: Bearer {token}
 }
 ```
 
-### 3. Log Training Session
+### 3\. Log Training Session
 
 Mark a training session as completed.
 
@@ -499,6 +515,7 @@ Content-Type: application/json
 ```
 
 **Response (201)**:
+
 ```json
 {
   "session_id": "uuid",
@@ -518,6 +535,7 @@ Authorization: Bearer {token}
 ```
 
 **Response (200)**:
+
 ```json
 {
   "id": "uuid",
@@ -534,7 +552,7 @@ Authorization: Bearer {token}
 ### Subscription Tiers
 
 | Tier | Price | Videos/Month | Ghost Mode | Server Priority | Deep Analysis | Ads |
-|------|-------|--------------|------------|-----------------|---------------|-----|
+| --- | --- | --- | --- | --- | --- | --- |
 | **Freemium** | Free | 10 | ❌ | ❌ | ❌ | ✅ |
 | **Premium** | 20€/month | 50 | ✅ | ❌ | ❌ | ❌ |
 | **Infinity** | 30€/month | Unlimited | ✅ | ✅ | ✅ | ❌ |
@@ -549,7 +567,8 @@ Connect to receive live updates on analysis progress.
 
 ### Messages from Server
 
-#### Analysis Progress
+Analysis Progress
+
 ```json
 {
   "event": "analysis:progress",
@@ -561,7 +580,8 @@ Connect to receive live updates on analysis progress.
 }
 ```
 
-#### Analysis Complete
+Analysis Complete
+
 ```json
 {
   "event": "analysis:completed",
@@ -577,7 +597,7 @@ Connect to receive live updates on analysis progress.
 ## Error Codes
 
 | Code | Meaning |
-|------|---------|
+| --- | --- |
 | 400 | Invalid request |
 | 401 | Unauthorized (invalid/missing token) |
 | 403 | Quota exceeded or feature not available in tier |
@@ -589,6 +609,7 @@ Connect to receive live updates on analysis progress.
 ---
 
 **Related Documentation**:
-- [Database Schema](./database-schema.md)
+
+- [Database Schema](database-schema.md)
 - [System Overview](../system-overview.md)
 - [Video Analysis Workflow](../workflows/video-analysis-flow.md)

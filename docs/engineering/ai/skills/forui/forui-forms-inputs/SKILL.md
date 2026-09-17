@@ -1,4 +1,5 @@
 ---
+id: 793709bd-580e-42a1-b6c9-5870a1e72953
 name: forui-forms-inputs
 description: Build Forui forms and input widgets. Use when implementing FTextField, FTextFormField, FCheckbox, FRadio, FSelect, FMultiSelect, FSelectGroup, FSlider, FSwitch, FDateField, FTimeField, FDateTimePicker, FTimePicker, FPicker, FOtpField, validation, clearable inputs, async options, or form integration.
 metadata:

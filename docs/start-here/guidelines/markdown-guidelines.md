@@ -1,6 +1,10 @@
+---
+id: 96dbe682-aa9e-4c8c-9113-c70112576d5e
+---
+
 :::success
-**Version:** 1.4  
-**Original language:** English  
+**Version:** 1.4
+**Original language:** English
 :::
 
 ---
@@ -13,22 +17,22 @@ This document defines the formatting standards for all Markdown files in this pr
 
 ## Table of Contents
 
-- [Markdown Style Guide \& Conventions](#markdown-style-guide--conventions)
+- [Markdown Style Guide & Conventions](#markdown-style-guide--conventions)
   - [Table of Contents](#table-of-contents)
-  - [1. General Principles](#1-general-principles)
-  - [2. File Naming Convention](#2-file-naming-convention)
-  - [3. Required Header](#3-required-header)
+  - [1\. General Principles](#1-general-principles)
+  - [2\. File Naming Convention](#2-file-naming-convention)
+  - [3\. Required Header](#3-required-header)
     - [3.1 Status Types](#31-status-types)
-  - [4. Structural Rules](#4-structural-rules)
+  - [4\. Structural Rules](#4-structural-rules)
     - [4.1 Headings and Separation](#41-headings-and-separation)
     - [4.2 Lists and Spacing](#42-lists-and-spacing)
     - [4.3 Table of Contents](#43-table-of-contents)
     - [4.4 Accessibility Rules](#44-accessibility-rules)
-  - [5. Tooling \& Automation](#5-tooling--automation)
+  - [5\. Tooling & Automation](#5-tooling--automation)
 
 ---
 
-## 1. General Principles
+## 1\. General Principles
 
 - **Language:** All content must be written **in English or in French**. Rare exceptions may be granted for specific technical terms or local names that lack a direct translation.
 - **Standardization:** All files must follow the **CommonMark** or **GitHub Flavored Markdown (GFM)** specifications.
@@ -36,7 +40,7 @@ This document defines the formatting standards for all Markdown files in this pr
 
 ---
 
-## 2. File Naming Convention
+## 2\. File Naming Convention
 
 All Markdown filenames must follow the **kebab-case** convention:
 
@@ -46,14 +50,14 @@ All Markdown filenames must follow the **kebab-case** convention:
 
 ---
 
-## 3. Required Header
+## 3\. Required Header
 
 Every single Markdown file must start with the following header block using Densho status container callouts:
 
 ```markdown
 :::status
-**Version:** [X.X]  
-**Original language:** [Language]  
+**Version:** [X.X]
+**Original language:** [Language]
 :::
 ```
 
@@ -62,49 +66,56 @@ Every single Markdown file must start with the following header block using Dens
 The container status must strictly use one of the authorized container types:
 
 | Status Container | Previous Status Equivalent | Description | Notes |
-| ---------------- | -------------------------- | ---------------- | ----- |
-| `:::success`     | `Done`, `Final`            | Completed and validated document. | If the document is frozen/final, append `DON'T EDIT THIS FILE !` on a new line after `Original language`. |
-| `:::warning`     | `In progress`, `Need update` | Work in progress or outdated document needing update. | |
-| `:::danger`      | `Todo`                     | Planned document not yet written. | |
+| --- | --- | --- | --- |
+| `:::success` | `Done`, `Final` | Completed and validated document. | If the document is frozen/final, append `DON'T EDIT THIS FILE !` on a new line after `Original language`. |
+| `:::warning` | `In progress`, `Need update` | Work in progress or outdated document needing update. |
+ |
+| `:::danger` | `Todo` | Planned document not yet written. |
 
-#### Examples
+ |
+
+Examples
 
 **Completed document:**
+
 ```markdown
 :::success
-**Version:** 1.0  
-**Original language:** English  
+**Version:** 1.0
+**Original language:** English
 :::
 ```
 
 **Final / Frozen document:**
+
 ```markdown
 :::success
-**Version:** 1.0  
-**Original language:** English  
-DON'T EDIT THIS FILE !  
+**Version:** 1.0
+**Original language:** English
+DON'T EDIT THIS FILE !
 :::
 ```
 
 **Work in progress or needing update:**
+
 ```markdown
 :::warning
-**Version:** 0.2  
-**Original language:** English  
+**Version:** 0.2
+**Original language:** English
 :::
 ```
 
 **To-do / stub document:**
+
 ```markdown
 :::danger
-**Version:** 0.1  
-**Original language:** English  
+**Version:** 0.1
+**Original language:** English
 :::
 ```
 
 ---
 
-## 4. Structural Rules
+## 4\. Structural Rules
 
 ### 4.1 Headings and Separation
 
@@ -137,7 +148,7 @@ All documentation must remain accessible on both **GitHub Wiki** and **Wiki.js**
 
 ---
 
-## 5. Tooling & Automation
+## 5\. Tooling & Automation
 
 To maintain these standards, it is highly recommended to use the following setup:
 

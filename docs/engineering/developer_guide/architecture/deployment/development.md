@@ -1,6 +1,10 @@
+---
+id: 8981c8bc-85fc-4a2b-9c89-5c38cf81b6d6
+---
+
 :::success
-**Version:** 2.2  
-**Original language:** English  
+**Version:** 2.2
+**Original language:** English
 :::
 
 ---
@@ -18,9 +22,8 @@
   - [Optional Tools](#optional-tools)
 - [Project Structure](#project-structure)
 - [Step-by-Step Setup](#step-by-step-setup)
-  - [1. Install moon](#1-install-moon)
-  - [2. Clone Repository](#2-clone-repository)
-
+  - [1\. Install moon](#1-install-moon)
+  - [2\. Clone Repository](#2-clone-repository)
 
 ---
 
@@ -77,11 +80,9 @@ graph TB
    curl -fsSL https://get.docker.com -o get-docker.sh
    sudo sh get-docker.sh
    ```
-
 2. **Docker Compose** (v2.0+)
    - Included with Docker Desktop on macOS/Windows
    - Linux: `sudo apt-get install docker-compose-plugin`
-
 3. **Go Toolchain** (1.26.0+)
 
    ```bash
@@ -91,7 +92,6 @@ graph TB
    sudo tar -C /usr/local -xzf go1.26.0.linux-amd64.tar.gz
    export PATH=$PATH:/usr/local/go/bin
    ```
-
 4. **Flutter SDK** (3.16+)
 
    ```bash
@@ -100,16 +100,17 @@ graph TB
 
    # Or download from https://docs.flutter.dev/get-started/install
    ```
-
 5. **uv** (Python package & environment manager)
 
-   ```bash
-  # Install uv
-  curl -LsSf https://astral.sh/uv/install.sh | sh
+# Install uv
 
-  # Verify installation
-  uv --version
-   ```
+curl -LsSf [https://astral.sh/uv/install.sh](https://astral.sh/uv/install.sh) | sh
+
+# Verify installation
+
+uv --version
+
+```
 
 ### Optional Tools
 
@@ -124,39 +125,10 @@ graph TB
 The project uses a **monorepo managed with [moonrepo](https://moonrepo.dev)**. All services are located under `apps/` in the main `Ascension` repository:
 
 ```
-Ascension/                      # Monorepo root
-├── .moon/
-│   ├── workspace.yml           # Projects: server, ai, mobile
-│   └── toolchain.yml           # Pinned toolchain versions
-├── docker-compose.yml          # Orchestration of all services
-├── .env.example                # Environment variables template
-├── README.md
-│
-└── apps/
-    ├── server/                 # Go API server
-    │   ├── moon.yml
-    │   ├── go.mod
-    │   ├── go.sum
-    │   ├── Dockerfile
-    │   └── internal/
-    │       └── cmd/
-    │           └── server/
-    │               └── main.go
-    │
-    ├── ai/                     # Python AI workers
-    │   ├── moon.yml
-    │   ├── environment.yml
-    │   ├── pyproject.toml
-    │   ├── Dockerfile
-    │   └── src/
-    │       └── worker.py
-    │
-    └── mobile/                 # Flutter mobile app
-        ├── moon.yml
-        ├── pubspec.yaml
-        └── lib/
-            ├── main.dart
-```
+
+Ascension/ # Monorepo root ├── .moon/ │ ├── workspace.yml # Projects: server, ai, mobile │ └── toolchain.yml # Pinned toolchain versions ├── docker-compose.yml # Orchestration of all services ├── .env.example # Environment variables template ├── README.md │ └── apps/ ├── server/ # Go API server │ ├── moon.yml │ ├── go.mod │ ├── go.sum │ ├── Dockerfile │ └── internal/ │ └── cmd/ │ └── server/ │ └── main.go │ ├── ai/ # Python AI workers │ ├── moon.yml │ ├── environment.yml │ ├── pyproject.toml │ ├── Dockerfile │ └── src/ │ └── worker.py │ └── mobile/ # Flutter mobile app ├── moon.yml ├── pubspec.yaml └── lib/ ├── main.dart
+
+````
 
 **Why moonrepo instead of submodules?**
 
@@ -180,9 +152,9 @@ export PATH="$HOME/.moon/bin:$PATH"
 
 # Verify
 moon --version
-```
+````
 
-### 2. Clone Repository
+### 2\. Clone Repository
 
 ```bash
 # Simple clone — no --recursive needed
@@ -192,7 +164,7 @@ cd Ascension
 
 **Verify the structure:**
 
-```bash
+````bash
 ls apps/
 # You should see: server/  ai/  mobile/
 
@@ -204,19 +176,20 @@ Create `.env` file from template:
 
 ```bash
 cp .env.example .env
-```
+````
 
-#### Environment Variable Strategy
+Environment Variable Strategy
 
 We follow a dual-strategy for environment variables to balance local developer experience with production security and reliability.
 
 | Feature | Local Development (Native) | Production / Docker (`--profile prod`) |
-| :--- | :--- | :--- |
+| --- | --- | --- |
 | **Source** | Root `.env` file | Hardcoded in `docker-compose.yml` |
 | **Hostnames** | `localhost` | Internal service names (`rabbitmq`, `postgresql`) |
 | **Ports** | Forwarded to host machine | Internal container ports |
 
 **Why this dual-approach?**
+
 - **Native Context:** Allows you to run `moon run ai:dev` or `go run ./cmd/server` directly on your host machine while connecting to Dockerized infra services.
 - **Docker Context:** Ensures that when the AI worker runs *inside* a container (production), it uses internal network hostnames and avoids `.env` host mismatches.
 
@@ -252,7 +225,7 @@ MODEL_CACHE_DIR=/tmp/models
 ENVIRONMENT=development
 ```
 
-### 4. Launch Infrastructure
+### 4\. Launch Infrastructure
 
 Start all services:
 
@@ -281,7 +254,7 @@ ascension-rabbitmq-1    rabbitmq            running
 ascension-minio-1       minio               running
 ```
 
-### 5. Initialize Database
+### 5\. Initialize Database
 
 In Go, database migrations are automatically run on startup by the server using `golang-migrate` when the `DB_MIGRATION` environment variable points to the `/app/migrations` or `./migrations` directory.
 
@@ -289,23 +262,23 @@ No external CLI installation is required for basic local runs. Simply booting th
 
 **Note**: Database migrations are located in `apps/server/migrations/`
 
-### 6. Build and Run API Server
+### 6\. Build and Run API Server
 
-#### Option A: Using Docker (Recommended)
+Option A: Using Docker (Recommended)
 
 ```bash
 # From Ascension root directory
 docker-compose up api -d
 ```
 
-#### Option B: Using moon (Faster Iteration)
+Option B: Using moon (Faster Iteration)
 
 ```bash
 # From anywhere in the repo
 moon run server:dev
 ```
 
-#### Option C: Direct go run
+Option C: Direct go run
 
 ```bash
 cd apps/server
@@ -319,16 +292,16 @@ curl http://localhost:8080/healthz
 # Expected: 204 No Content
 ```
 
-### 7. Set Up AI Workers
+### 7\. Set Up AI Workers
 
-#### Install Dependencies via moon
+Install Dependencies via moon
 
 ```bash
 moon run ai:setup
 moon run ai:install
 ```
 
-#### Common AI moon Tasks
+Common AI moon Tasks
 
 ```bash
 moon run ai:setup
@@ -347,7 +320,7 @@ cd apps/ai
 uv sync
 ```
 
-#### Download ML Models
+Download ML Models
 
 ```bash
 bash scripts/download-model.sh
@@ -357,7 +330,7 @@ This downloads:
 
 - MediaPipe Pose model (~25MB)
 
-#### Run Worker
+Run Worker
 
 ```bash
 # Via moon (recommended)
@@ -375,9 +348,9 @@ docker-compose up worker -d
 
 **Note**: For GPU support, see [GPU Setup](#gpu-setup-optional) below.
 
-### 8. Configure Flutter App
+### 8\. Configure Flutter App
 
-#### Update API Endpoint
+Update API Endpoint
 
 Edit `apps/mobile/lib/config/api_config.dart`:
 
@@ -394,7 +367,7 @@ class ApiConfig {
 }
 ```
 
-#### Install Dependencies
+Install Dependencies
 
 ```bash
 # Via moon
@@ -405,7 +378,7 @@ cd apps/mobile
 flutter pub get
 ```
 
-#### Run App
+Run App
 
 ```bash
 # iOS Simulator
@@ -636,14 +609,14 @@ docker-compose logs server
 
 ## Testing the Stack
 
-### 1. Health Check
+### 1\. Health Check
 
 ```bash
 curl -I http://localhost:8080/health
 # Expected: HTTP/1.1 204 No Content
 ```
 
-### 2. User Registration
+### 2\. User Registration
 
 ```bash
 curl -X POST http://localhost:8080/v1/auth/signup \
@@ -655,7 +628,7 @@ curl -X POST http://localhost:8080/v1/auth/signup \
   }'
 ```
 
-### 3. Login
+### 3\. Login
 
 ```bash
 curl -X POST http://localhost:8080/v1/auth/login \
@@ -668,14 +641,14 @@ curl -X POST http://localhost:8080/v1/auth/login \
 
 Save the returned `access_token` and `refresh_token` for subsequent requests.
 
-### 4. Request Upload URL
+### 4\. Request Upload URL
 
 ```bash
 curl -X GET "http://localhost:8080/v1/videos/upload-url?content_type=video/mp4&size=102400" \
   -H "Authorization: Bearer <your_token>"
 ```
 
-### 5. Upload Video (Direct to MinIO)
+### 5\. Upload Video (Direct to MinIO)
 
 Use the presigned `upload_url` from the previous step:
 
@@ -685,14 +658,14 @@ curl -X PUT "<upload_url>" \
   -H "Content-Type: video/mp4"
 ```
 
-### 6. Notify Upload Complete
+### 6\. Notify Upload Complete
 
 ```bash
 curl -X PUT http://localhost:8080/v1/videos/upload-done/<video_id> \
   -H "Authorization: Bearer <your_token>"
 ```
 
-### 7. Start Analysis
+### 7\. Start Analysis
 
 ```bash
 curl -X POST http://localhost:8080/v1/analysis \
@@ -703,7 +676,7 @@ curl -X POST http://localhost:8080/v1/analysis \
   }'
 ```
 
-### 8. Poll for Results
+### 8\. Poll for Results
 
 ```bash
 curl http://localhost:8080/v1/analysis/<analysis_id> \
@@ -754,7 +727,7 @@ SELECT * FROM analyses WHERE status = 'completed';
 
 ### Access RabbitMQ Management UI
 
-Open browser: http://localhost:15672
+Open browser: [http://localhost:15672](http://localhost:15672)
 
 Login:
 
@@ -769,7 +742,7 @@ Key views:
 
 ### Access MinIO UI
 
-Open browser: http://localhost:9001
+Open browser: [http://localhost:9001](http://localhost:9001)
 
 Login:
 
@@ -884,15 +857,13 @@ docker-compose exec minio mc ls myminio/
 
 For faster iteration during development:
 
-1. **Hot Reload for Go**:
-   You can run `moon run server:dev` which executes the Gin application natively, or use standard tools like compiledaemon or air if you choose to set them up.
+1. **Hot Reload for Go**: You can run `moon run server:dev` which executes the Gin application natively, or use standard tools like compiledaemon or air if you choose to set them up.
 
    Or via moon:
 
    ```bash
    moon run server:dev
    ```
-
 2. **Python Auto-reload**:
 
    ```bash
@@ -906,9 +877,7 @@ For faster iteration during development:
    ```bash
    moon run ai:dev
    ```
-
-3. **Reduce Model Size**:
-   Use quantized models for faster inference during development.
+3. **Reduce Model Size**: Use quantized models for faster inference during development.
 
 ---
 
@@ -920,5 +889,4 @@ For faster iteration during development:
 
 ---
 
-**Last Updated**: 2026-03-03
-**Maintainer**: Ascension Development Team
+**Last Updated**: 2026-03-03 **Maintainer**: Ascension Development Team

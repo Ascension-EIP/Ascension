@@ -1,4 +1,5 @@
 ---
+id: 512b05d5-9c46-49e1-b085-98544ff29ad1
 name: forui-widget-previews
 description: Add and validate Flutter Widget Previewer coverage for Forui UI. Use when creating @Preview annotations, previewing Forui widgets in Chrome, checking Windows/FVM preview support, wrapping previews with FTheme/FToaster/FTooltipGroup/FLocalizations/ProviderScope, or documenting preview limitations.
 metadata:

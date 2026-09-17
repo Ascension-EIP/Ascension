@@ -1,7 +1,11 @@
+---
+id: 55a5a66f-2d76-4469-ba7c-39250ccae4d0
+---
+
 :::success
-**Version:** 1.0  
-**Original language:** French  
-DON'T EDIT THIS FILE !  
+**Version:** 1.0
+**Original language:** French
+DON'T EDIT THIS FILE !
 :::
 
 ---
@@ -12,19 +16,19 @@ DON'T EDIT THIS FILE !
 
 ## Table des matières
 
-- [Bloc 1 — M1 — 05 Benchmark, budget et scénarios](#bloc-1--m1--05-benchmark-budget-et-scénarios)
-  - [Table des matières](#table-des-matières)
+- [Bloc 1 — M1 — 05 Benchmark, budget et scénarios](#bloc-1--m1--05-benchmark-budget-et-sc%C3%A9narios)
+  - [Table des matières](#table-des-mati%C3%A8res)
   - [Objectif](#objectif)
-  - [Sources et hypothèses](#sources-et-hypothèses)
+  - [Sources et hypothèses](#sources-et-hypoth%C3%A8ses)
   - [Benchmark des options techniques](#benchmark-des-options-techniques)
-  - [Structure des coûts](#structure-des-coûts)
+  - [Structure des coûts](#structure-des-co%C3%BBts)
     - [CAPEX (ponctuel)](#capex-ponctuel)
     - [OPEX (mensuel)](#opex-mensuel)
-  - [Scénarios budgétaires](#scénarios-budgétaires)
+  - [Scénarios budgétaires](#sc%C3%A9narios-budg%C3%A9taires)
   - [Leviers d’optimisation](#leviers-doptimisation)
-  - [Point accessibilité (PSH) dans le budget](#point-accessibilité-psh-dans-le-budget)
-  - [Traçabilité RNCP M1 (O8, O9)](#traçabilité-rncp-m1-o8-o9)
-  - [Calendrier de développement (Horizon 3 ans)](#calendrier-de-développement-horizon-3-ans)
+  - [Point accessibilité (PSH) dans le budget](#point-accessibilit%C3%A9-psh-dans-le-budget)
+  - [Traçabilité RNCP M1 (O8, O9)](#tra%C3%A7abilit%C3%A9-rncp-m1-o8-o9)
+  - [Calendrier de développement (Horizon 3 ans)](#calendrier-de-d%C3%A9veloppement-horizon-3-ans)
 
 ---
 
@@ -80,11 +84,11 @@ Justification repo : ce choix est cohérent avec l’implémentation actuelle (
 
 Valeurs reprises de `costs.md` (estimations atelier) :
 
-| Scénario           | CAPEX | OPEX mensuel | Coût par utilisateur (indiqué) |
-| :----------------- | ----: | -----------: | -----------------------------: |
-| MVP (100 users)    | 133 € |         96 € |                         0,96 € |
-| Scale (1k users)   |   0 € |        231 € |                         0,23 € |
-| Scale+ (10k users) |   0 € |        655 € |                         0,06 € |
+| Scénario | CAPEX | OPEX mensuel | Coût par utilisateur (indiqué) |
+| --- | --- | --- | --- |
+| MVP (100 users) | 133 € | 96 € | 0,96 € |
+| Scale (1k users) | 0 € | 231 € | 0,23 € |
+| Scale+ (10k users) | 0 € | 655 € | 0,06 € |
 
 Lecture recommandée à l’oral :
 
@@ -117,10 +121,10 @@ Sans ligne budgétaire dédiée, le risque est de traiter la conformité trop ta
 
 ## Traçabilité RNCP M1 (O8, O9)
 
-| Observable                           | Éléments de preuve                                           | Couverture                            |
-| :----------------------------------- | :----------------------------------------------------------- | :------------------------------------ |
-| **O8** — analyse financière          | `costs.md`, `costs.xlsx`, cohérence avec architecture réelle | **Forte**                             |
-| **O9** — scénarios appuyés benchmark | comparaison provider + 3 scénarios de charge                 | **Forte** (à revalider régulièrement) |
+| Observable | Éléments de preuve | Couverture |
+| --- | --- | --- |
+| **O8** — analyse financière | `costs.md`, `costs.xlsx`, cohérence avec architecture réelle | **Forte** |
+| **O9** — scénarios appuyés benchmark | comparaison provider + 3 scénarios de charge | **Forte** (à revalider régulièrement) |
 
 ---
 

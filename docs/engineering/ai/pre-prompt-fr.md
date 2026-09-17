@@ -1,18 +1,21 @@
+---
+id: 277eed31-195d-41d5-9a77-b0723e50fc8b
+---
+
 :::success
-**Version:** 1.3  
-**Original language:** French  
+**Version:** 1.3
+**Original language:** French
 :::
 
 ---
 
 # Instructions pour l'IA (Français)
 
-
 ---
 
 ## Table of Contents
 
-- [Instructions pour l'IA (Français)](#instructions-pour-lia-français)
+- [Instructions pour l'IA (Français)](#instructions-pour-lia-fran%C3%A7ais)
   - [Table of Contents](#table-of-contents)
 
 ---

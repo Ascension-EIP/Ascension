@@ -1,6 +1,10 @@
+---
+id: 8a956bac-e8d1-4850-84ee-685423f2e5b1
+---
+
 :::warning
-**Version:** 2.0  
-**Original language:** French  
+**Version:** 2.0
+**Original language:** French
 :::
 
 ---
@@ -84,7 +88,7 @@ Important:
     - [GO-15](#go-15)
   - [Definition of Done](#definition-of-done)
   - [5) Ordre d'execution recommande](#5-ordre-dexecution-recommande)
-  - [6) Commandes `gh` utiles (a executer manuellement)](#6-commandes-gh-utiles-a-executer-manuellement)
+  - [6) Commandes](#6-commandes-gh-utiles-a-executer-manuellement) `gh` [utiles (a executer manuellement)](#6-commandes-gh-utiles-a-executer-manuellement)
   - [7) Validation finale attendue](#7-validation-finale-attendue)
 
 ---
@@ -113,17 +117,16 @@ Constats majeurs:
 
 ## 2.1 A fermer rapidement
 
-1. `#31` - `SETUP: local development infrastructure with Docker Compose`  
+1. `#31` - `SETUP: local development infrastructure with Docker Compose`
    Action: close (DoD completement coche)
-
-2. `#142` - `MOBILE: Settings page`  
+2. `#142` - `MOBILE: Settings page`
    Action: close (DoD completement coche)
 
 ---
 
 ## 2.2 A corriger avant fermeture
 
-1. `#62` - `AUTH: basic JWT authentication`  
+1. `#62` - `AUTH: basic JWT authentication`
    Problemes:
 
 - corps obsolete (`/api/auth/...` au lieu de `/v1/auth/...`);
@@ -136,28 +139,27 @@ Action:
 - ajouter une note "partially done";
 - lier avec les nouvelles issues `SECURITY: mobile token secure storage` et `SERVER: enforce auth middleware on protected routes`.
 
-2. `#33` - `SETUP: PostgreSQL with initial database schema`  
+2. `#33` - `SETUP: PostgreSQL with initial database schema`
    Action: garder ouverte mais clarifier le critere "idempotent migration script" en "migrations are replay-safe via migration table".
-
-3. `#60` - `MOBILE: analysis result display screen`  
+3. `#60` - `MOBILE: analysis result display screen`
    Action: garder ouverte pour finaliser les items UI encore non coches (angles lisibles, feedback, empty states, navigation "Analyze again").
 
 ---
 
 ## 2.3 A re-scoper (contenu obsolete)
 
-1. `#34` - `SETUP: configure RabbitMQ`  
+1. `#34` - `SETUP: configure RabbitMQ`
    A changer:
 
 - remplacer references `analysis_jobs` / `analysis_results` par les objets effectivement utilises (`vision.skeleton`, `ascension.events`) ou clarifier la strategy cible.
 
-2. `#40` - `SETUP: RabbitMQ message flow between server and AI worker`  
+2. `#40` - `SETUP: RabbitMQ message flow between server and AI worker`
    A changer:
 
 - mettre a jour le schema de message reel (`job_id`, `analysis_id`, `video_url`);
 - documenter explicitement le mode actuel: AI ecrit en DB + event de completion.
 
-3. `#44` - `SERVER: presigned upload URL route`  
+3. `#44` - `SERVER: presigned upload URL route`
    Probleme critique:
 
 - corps manifestement tronque (fence JSON non fermee);
@@ -167,20 +169,20 @@ Action:
 
 - reecrire completement avec endpoint actuel `POST /v1/videos/upload-url` et payload reel.
 
-4. `#45` - `SERVER: analysis trigger route`  
+4. `#45` - `SERVER: analysis trigger route`
    A changer:
 
 - endpoint `POST /v1/analyses`;
 - queue/schema reels;
 - statuts reels (`pending`, `processing`, `generating_hints`, `completed`, `failed`).
 
-5. `#46` - `SERVER: analysis result fetch route`  
+5. `#46` - `SERVER: analysis result fetch route`
    A changer:
 
 - endpoint `GET /v1/analyses/{id}`;
 - structure reelle de reponse (`result_json`, `hints`, `progress`, `processing_time_ms`).
 
-6. `#58`, `#59` - mobile upload + polling  
+6. `#58`, `#59` - mobile upload + polling
    A changer:
 
 - references endpoints legacy `/api/...` -> `/v1/...`;
@@ -190,14 +192,14 @@ Action:
 
 ## 2.4 A fusionner / fermer comme obsolete
 
-1. `#35` et `#42` (double intention "initialize Rust/Axum backend")  
+1. `#35` et `#42` (double intention "initialize Rust/Axum backend")
    Action recommandee:
 
 - fermer `#35` (obsolete);
 - fermer `#42` (obsolete);
 - ouvrir un epic de migration Go (ci-dessous) qui remplace ces sujets.
 
-2. `#47` - `SERVER: RabbitMQ result consumer to store AI results`  
+2. `#47` - `SERVER: RabbitMQ result consumer to store AI results`
    Action recommandee:
 
 - fermer en l'etat (obsolete par l'implementation actuelle ou a convertir en "event consumer/projection").
@@ -210,7 +212,7 @@ Format: titre + labels + corps en anglais, directement reutilisable.
 
 ### NEW-01
 
-**Title:** `SECURITY: use secure storage for mobile auth tokens`  
+**Title:** `SECURITY: use secure storage for mobile auth tokens`
 **Suggested labels:** `Mobile`, `type:feature`, `priority:p1`
 
 **Description (EN):**
@@ -239,7 +241,7 @@ Replace token persistence in mobile authentication from SharedPreferences to a s
 
 ### NEW-02
 
-**Title:** `SERVER: enforce auth middleware on protected routes`  
+**Title:** `SERVER: enforce auth middleware on protected routes`
 **Suggested labels:** `Server`, `type:feature`, `priority:p1`
 
 **Description (EN):**
@@ -267,7 +269,7 @@ Wire JWT authentication middleware to all protected API routes and ensure role-b
 
 ### NEW-03
 
-**Title:** `SERVER: add integration tests for upload-to-analysis API flow`  
+**Title:** `SERVER: add integration tests for upload-to-analysis API flow`
 **Suggested labels:** `Server`, `Tests`, `type:feature`, `priority:p1`
 
 **Description (EN):**
@@ -287,7 +289,7 @@ Add backend integration tests validating the critical API workflow: request uplo
 
 ### NEW-04
 
-**Title:** `AI: add unit tests for result serialization and angle computation`  
+**Title:** `AI: add unit tests for result serialization and angle computation`
 **Suggested labels:** `AI`, `Tests`, `type:feature`, `priority:p2`
 
 **Description (EN):**
@@ -307,7 +309,7 @@ Introduce unit tests for AI analysis output serialization and angle computation 
 
 ### NEW-05
 
-**Title:** `CONTRACT: publish and version API schema for mobile-backend compatibility`  
+**Title:** `CONTRACT: publish and version API schema for mobile-backend compatibility`
 **Suggested labels:** `Server`, `Documentation`, `type:feature`, `priority:p1`
 
 **Description (EN):**
@@ -327,7 +329,7 @@ Version the backend API contract and publish a canonical schema artifact used by
 
 ### NEW-06
 
-**Title:** `OBSERVABILITY: add correlation IDs across mobile, server and AI pipeline`  
+**Title:** `OBSERVABILITY: add correlation IDs across mobile, server and AI pipeline`
 **Suggested labels:** `Server`, `AI`, `CI/CD`, `type:feature`, `priority:p2`
 
 **Description (EN):**
@@ -355,7 +357,7 @@ Principe:
 
 ### GO-EPIC-00
 
-**Title:** `EPIC: backend migration from Rust to Go with zero feature regression`  
+**Title:** `EPIC: backend migration from Rust to Go with zero feature regression`
 **Suggested labels:** `Server`, `Setup`, `type:epic`, `priority:p0`
 
 **Description (EN):**
@@ -375,7 +377,7 @@ Plan and execute the migration of Ascension backend from Rust/Axum to Go while k
 
 ### GO-01
 
-**Title:** `SERVER-GO: define target architecture and technical decisions`  
+**Title:** `SERVER-GO: define target architecture and technical decisions`
 **Suggested labels:** `Server`, `Documentation`, `type:spike`, `priority:p0`
 
 **Description (EN):**
@@ -395,7 +397,7 @@ Produce an ADR package for Go backend choices (router/framework, DB access strat
 
 ### GO-02
 
-**Title:** `SERVER-GO: bootstrap new Go service with project skeleton`  
+**Title:** `SERVER-GO: bootstrap new Go service with project skeleton`
 **Suggested labels:** `Server`, `Setup`, `type:feature`, `priority:p0`
 
 **Description (EN):**
@@ -415,7 +417,7 @@ Create the initial Go backend workspace (`apps/server-go` or replacement strateg
 
 ### GO-03
 
-**Title:** `SERVER-GO: implement database connectivity and migration compatibility`  
+**Title:** `SERVER-GO: implement database connectivity and migration compatibility`
 **Suggested labels:** `Server`, `Setup`, `Build`, `type:feature`, `priority:p0`
 
 **Description (EN):**
@@ -435,7 +437,7 @@ Connect Go backend to PostgreSQL and ensure compatibility with existing schema a
 
 ### GO-04
 
-**Title:** `SERVER-GO: implement auth endpoints parity (register/login/logout)`  
+**Title:** `SERVER-GO: implement auth endpoints parity (register/login/logout)`
 **Suggested labels:** `Server`, `type:feature`, `priority:p0`
 
 **Description (EN):**
@@ -455,7 +457,7 @@ Implement `/v1/auth/register`, `/v1/auth/login`, `/v1/auth/logout` with parity t
 
 ### GO-05
 
-**Title:** `SERVER-GO: implement users CRUD parity`  
+**Title:** `SERVER-GO: implement users CRUD parity`
 **Suggested labels:** `Server`, `type:feature`, `priority:p0`
 
 **Description (EN):**
@@ -475,7 +477,7 @@ Implement users CRUD endpoints with pagination and role constraints equivalent t
 
 ### GO-06
 
-**Title:** `SERVER-GO: implement video upload URL endpoint parity`  
+**Title:** `SERVER-GO: implement video upload URL endpoint parity`
 **Suggested labels:** `Server`, `type:feature`, `priority:p0`
 
 **Description (EN):**
@@ -495,7 +497,7 @@ Implement `POST /v1/videos/upload-url` with MinIO/S3 presign behavior compatible
 
 ### GO-07
 
-**Title:** `SERVER-GO: implement analysis trigger endpoint parity`  
+**Title:** `SERVER-GO: implement analysis trigger endpoint parity`
 **Suggested labels:** `Server`, `AI`, `type:feature`, `priority:p0`
 
 **Description (EN):**
@@ -515,7 +517,7 @@ Implement `POST /v1/analyses` to create analysis records and publish analysis jo
 
 ### GO-08
 
-**Title:** `SERVER-GO: implement analysis fetch endpoint parity`  
+**Title:** `SERVER-GO: implement analysis fetch endpoint parity`
 **Suggested labels:** `Server`, `type:feature`, `priority:p0`
 
 **Description (EN):**
@@ -535,7 +537,7 @@ Implement `GET /v1/analyses/{id}` with status/progress/result payload parity and
 
 ### GO-09
 
-**Title:** `SERVER-GO: define and implement completion event strategy`  
+**Title:** `SERVER-GO: define and implement completion event strategy`
 **Suggested labels:** `Server`, `AI`, `Documentation`, `type:feature`, `priority:p1`
 
 **Description (EN):**
@@ -555,7 +557,7 @@ Formalize whether the AI worker writes directly to DB, publishes completion even
 
 ### GO-10
 
-**Title:** `SERVER-GO: add structured logging, metrics, and trace hooks`  
+**Title:** `SERVER-GO: add structured logging, metrics, and trace hooks`
 **Suggested labels:** `Server`, `CI/CD`, `type:feature`, `priority:p1`
 
 **Description (EN):**
@@ -575,7 +577,7 @@ Introduce observability primitives (structured logs, metrics export, trace conte
 
 ### GO-11
 
-**Title:** `SERVER-GO: implement test pyramid (unit, integration, contract)`  
+**Title:** `SERVER-GO: implement test pyramid (unit, integration, contract)`
 **Suggested labels:** `Server`, `Tests`, `type:feature`, `priority:p0`
 
 **Description (EN):**
@@ -595,7 +597,7 @@ Set up a complete automated test strategy for Go backend including unit tests, i
 
 ### GO-12
 
-**Title:** `SERVER-GO: CI/CD integration and release pipeline for Go backend`  
+**Title:** `SERVER-GO: CI/CD integration and release pipeline for Go backend`
 **Suggested labels:** `CI/CD`, `Server`, `Build`, `type:feature`, `priority:p0`
 
 **Description (EN):**
@@ -615,7 +617,7 @@ Integrate Go backend into monorepo CI/CD workflows (lint, build, test, Docker im
 
 ### GO-13
 
-**Title:** `SERVER-GO: perform shadow traffic and parity validation`  
+**Title:** `SERVER-GO: perform shadow traffic and parity validation`
 **Suggested labels:** `Server`, `Tests`, `type:feature`, `priority:p1`
 
 **Description (EN):**
@@ -635,7 +637,7 @@ Run Rust and Go backends in parallel for parity checks on real/synthetic traffic
 
 ### GO-14
 
-**Title:** `SERVER-GO: execute production cutover and rollback plan`  
+**Title:** `SERVER-GO: execute production cutover and rollback plan`
 **Suggested labels:** `Server`, `Setup`, `type:feature`, `priority:p0`
 
 **Description (EN):**
@@ -655,7 +657,7 @@ Execute controlled switch from Rust backend to Go backend with rollback safety a
 
 ### GO-15
 
-**Title:** `SERVER: decommission Rust backend and update technical documentation`  
+**Title:** `SERVER: decommission Rust backend and update technical documentation`
 **Suggested labels:** `Server`, `Documentation`, `type:chore`, `priority:p1`
 
 **Description (EN):**

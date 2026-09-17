@@ -1,3 +1,7 @@
+---
+id: 6c6125c9-d25d-415a-9d24-9c824887d579
+---
+
 # Forui Content Components Examples
 
 ## Display Component Matrix

@@ -1,6 +1,10 @@
+---
+id: 7a707c09-90d2-4066-8648-3b86c3fb4c73
+---
+
 :::success
-**Version:** 1.3  
-**Original language:** French  
+**Version:** 1.3
+**Original language:** French
 :::
 
 ---
@@ -13,40 +17,40 @@
 
 - [Roadmap fonctionnelle](#roadmap-fonctionnelle)
   - [Table of Contents](#table-of-contents)
-  - [Règle importante sur les noms](#règle-importante-sur-les-noms)
-  - [1. Livraison initiale (septembre 2026): Action Plan + BTP](#1-livraison-initiale-septembre-2026-action-plan--btp)
-    - [Objectif de l'étape](#objectif-de-létape)
-    - [Période et jalon](#période-et-jalon)
+  - [Règle importante sur les noms](#r%C3%A8gle-importante-sur-les-noms)
+  - [1\. Livraison initiale (septembre 2026): Action Plan + BTP](#1-livraison-initiale-septembre-2026-action-plan--btp)
+    - [Objectif de l'étape](#objectif-de-l%C3%A9tape)
+    - [Période et jalon](#p%C3%A9riode-et-jalon)
     - [Cadence de travail](#cadence-de-travail)
-    - [Priorités de travail](#priorités-de-travail)
+    - [Priorités de travail](#priorit%C3%A9s-de-travail)
     - [Livrables attendus](#livrables-attendus)
-    - [Critères de validation](#critères-de-validation)
-  - [2. Exécution du BTP (septembre 2026 → juillet 2027)](#2-exécution-du-btp-septembre-2026--juillet-2027)
-    - [Objectif de l'étape](#objectif-de-létape-1)
-    - [Période et jalon](#période-et-jalon-1)
+    - [Critères de validation](#crit%C3%A8res-de-validation)
+  - [2\. Exécution du BTP (septembre 2026 → juillet 2027)](#2-ex%C3%A9cution-du-btp-septembre-2026--juillet-2027)
+    - [Objectif de l'étape](#objectif-de-l%C3%A9tape-1)
+    - [Période et jalon](#p%C3%A9riode-et-jalon-1)
     - [Cadence de travail](#cadence-de-travail-1)
-    - [Priorités de travail](#priorités-de-travail-1)
+    - [Priorités de travail](#priorit%C3%A9s-de-travail-1)
     - [Livrables attendus](#livrables-attendus-1)
-    - [Critères de validation](#critères-de-validation-1)
-  - [3. Passage GreenLight + livraison ATP (juillet 2027)](#3-passage-greenlight--livraison-atp-juillet-2027)
-    - [Objectif de l'étape](#objectif-de-létape-2)
-    - [Période et jalon](#période-et-jalon-2)
+    - [Critères de validation](#crit%C3%A8res-de-validation-1)
+  - [3\. Passage GreenLight + livraison ATP (juillet 2027)](#3-passage-greenlight--livraison-atp-juillet-2027)
+    - [Objectif de l'étape](#objectif-de-l%C3%A9tape-2)
+    - [Période et jalon](#p%C3%A9riode-et-jalon-2)
     - [Cadence de travail](#cadence-de-travail-2)
-    - [Priorités de travail](#priorités-de-travail-2)
+    - [Priorités de travail](#priorit%C3%A9s-de-travail-2)
     - [Livrables attendus](#livrables-attendus-2)
-    - [Critères de validation](#critères-de-validation-2)
-  - [4. Exécution de l'ATP (août 2027 → mars 2028)](#4-exécution-de-latp-août-2027--mars-2028)
-    - [Objectif de l'étape](#objectif-de-létape-3)
-    - [Période et jalon](#période-et-jalon-3)
+    - [Critères de validation](#crit%C3%A8res-de-validation-2)
+  - [4\. Exécution de l'ATP (août 2027 → mars 2028)](#4-ex%C3%A9cution-de-latp-ao%C3%BBt-2027--mars-2028)
+    - [Objectif de l'étape](#objectif-de-l%C3%A9tape-3)
+    - [Période et jalon](#p%C3%A9riode-et-jalon-3)
     - [Cadence de travail](#cadence-de-travail-3)
-    - [Priorités de travail](#priorités-de-travail-3)
+    - [Priorités de travail](#priorit%C3%A9s-de-travail-3)
     - [Livrables attendus](#livrables-attendus-3)
-    - [Critères de validation](#critères-de-validation-3)
-  - [5. Après l'EIP (à partir de mars 2028)](#5-après-leip-à-partir-de-mars-2028)
-    - [Date de départ](#date-de-départ)
-    - [Décisions structurantes](#décisions-structurantes)
-    - [Axes d'évolution possibles](#axes-dévolution-possibles)
-    - [Recommandation de clôture EIP](#recommandation-de-clôture-eip)
+    - [Critères de validation](#crit%C3%A8res-de-validation-3)
+  - [5\. Après l'EIP (à partir de mars 2028)](#5-apr%C3%A8s-leip-%C3%A0-partir-de-mars-2028)
+    - [Date de départ](#date-de-d%C3%A9part)
+    - [Décisions structurantes](#d%C3%A9cisions-structurantes)
+    - [Axes d'évolution possibles](#axes-d%C3%A9volution-possibles)
+    - [Recommandation de clôture EIP](#recommandation-de-cl%C3%B4ture-eip)
 
 ---
 
@@ -58,7 +62,7 @@
 
 ---
 
-## 1. Livraison initiale (septembre 2026): Action Plan + BTP
+## 1\. Livraison initiale (septembre 2026): Action Plan + BTP
 
 ### Objectif de l'étape
 
@@ -100,7 +104,7 @@ Poser une base très propre dès septembre 2026 pour démarrer le travail produi
 
 ---
 
-## 2. Exécution du BTP (septembre 2026 → juillet 2027)
+## 2\. Exécution du BTP (septembre 2026 → juillet 2027)
 
 ### Objectif de l'étape
 
@@ -146,7 +150,7 @@ Construire et livrer tout ce qui est attendu par le BTP pour arriver au GreenLig
 
 ---
 
-## 3. Passage GreenLight + livraison ATP (juillet 2027)
+## 3\. Passage GreenLight + livraison ATP (juillet 2027)
 
 ### Objectif de l'étape
 
@@ -185,7 +189,7 @@ Passer le GreenLight avec un dossier BTP propre, puis livrer l'ATP pour lancer l
 
 ---
 
-## 4. Exécution de l'ATP (août 2027 → mars 2028)
+## 4\. Exécution de l'ATP (août 2027 → mars 2028)
 
 ### Objectif de l'étape
 
@@ -228,7 +232,7 @@ Transformer le MVP en version alpha solide et testable à plus grande échelle, 
 
 ---
 
-## 5. Après l'EIP (à partir de mars 2028)
+## 5\. Après l'EIP (à partir de mars 2028)
 
 ### Date de départ
 

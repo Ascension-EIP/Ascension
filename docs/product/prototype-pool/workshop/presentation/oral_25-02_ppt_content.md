@@ -1,7 +1,11 @@
+---
+id: 0c250627-d052-4a31-a23a-ed5cbe98e840
+---
+
 :::success
-**Version:** 1.0  
-**Original language:** French  
-DON'T EDIT THIS FILE !  
+**Version:** 1.0
+**Original language:** French
+DON'T EDIT THIS FILE !
 :::
 
 ---
@@ -12,91 +16,91 @@ DON'T EDIT THIS FILE !
 
 ## Table of Contents
 
-- [Ascension - Analyse biomécanique pour l'escalade](#ascension---analyse-biomécanique-pour-lescalade)
+- [Ascension - Analyse biomécanique pour l'escalade](#ascension---analyse-biom%C3%A9canique-pour-lescalade)
   - [Table of Contents](#table-of-contents)
-  - [Workshop Costing \& Technical Sizing - PowerPoint Structure](#workshop-costing--technical-sizing---powerpoint-structure)
+  - [Workshop Costing & Technical Sizing - PowerPoint Structure](#workshop-costing--technical-sizing---powerpoint-structure)
   - [**Slide 1 : Page de garde**](#slide-1--page-de-garde)
-- [PARTIE 1 : NEEDS \& SCOPE](#partie-1--needs--scope)
-  - [**Slide 2 : Needs Validation \& Inclusion**](#slide-2--needs-validation--inclusion)
-    - [Problématique identifiée](#problématique-identifiée)
-    - [Données externes validant le besoin](#données-externes-validant-le-besoin)
+- [PARTIE 1 : NEEDS & SCOPE](#partie-1--needs--scope)
+  - [**Slide 2 : Needs Validation & Inclusion**](#slide-2--needs-validation--inclusion)
+    - [Problématique identifiée](#probl%C3%A9matique-identifi%C3%A9e)
+    - [Données externes validant le besoin](#donn%C3%A9es-externes-validant-le-besoin)
     - [Personas cibles](#personas-cibles)
-    - [Contraintes handicap identifiées dès cette phase](#contraintes-handicap-identifiées-dès-cette-phase)
+    - [Contraintes handicap identifiées dès cette phase](#contraintes-handicap-identifi%C3%A9es-d%C3%A8s-cette-phase)
   - [**Slide 3 : Scope Formalization (Backlog)**](#slide-3--scope-formalization-backlog)
     - [User Stories principales](#user-stories-principales)
   - [**Slide 4 : Prioritization Strategy (MVP)**](#slide-4--prioritization-strategy-mvp)
     - [Distinction Must Have vs Future Evolutions](#distinction-must-have-vs-future-evolutions)
-    - [Scope MVP réaliste pour deadline](#scope-mvp-réaliste-pour-deadline)
-- [PARTIE 2 : CONTEXT \& AUDIT](#partie-2--context--audit)
-  - [**Slide 5 : Existing Audit \& Benchmark**](#slide-5--existing-audit--benchmark)
+    - [Scope MVP réaliste pour deadline](#scope-mvp-r%C3%A9aliste-pour-deadline)
+- [PARTIE 2 : CONTEXT & AUDIT](#partie-2--context--audit)
+  - [**Slide 5 : Existing Audit & Benchmark**](#slide-5--existing-audit--benchmark)
     - [Comparaison solutions existantes](#comparaison-solutions-existantes)
     - [State of the art technique - Technologies open-source disponibles](#state-of-the-art-technique---technologies-open-source-disponibles)
-  - [**Slide 6 : Legal Constraints \& Security Analysis**](#slide-6--legal-constraints--security-analysis)
-    - [Conformité RGPD - Données sensibles](#conformité-rgpd---données-sensibles)
-    - [Menaces de sécurité identifiées \& contre-mesures](#menaces-de-sécurité-identifiées--contre-mesures)
+  - [**Slide 6 : Legal Constraints & Security Analysis**](#slide-6--legal-constraints--security-analysis)
+    - [Conformité RGPD - Données sensibles](#conformit%C3%A9-rgpd---donn%C3%A9es-sensibles)
+    - [Menaces de sécurité identifiées & contre-mesures](#menaces-de-s%C3%A9curit%C3%A9-identifi%C3%A9es--contre-mesures)
   - [**Slide 7 : Resources / Skills Adequacy**](#slide-7--resources--skills-adequacy)
-    - [Matrice compétences équipe vs besoins projet](#matrice-compétences-équipe-vs-besoins-projet)
-    - [Plan de montée en compétences](#plan-de-montée-en-compétences)
+    - [Matrice compétences équipe vs besoins projet](#matrice-comp%C3%A9tences-%C3%A9quipe-vs-besoins-projet)
+    - [Plan de montée en compétences](#plan-de-mont%C3%A9e-en-comp%C3%A9tences)
     - [Identification besoins externes](#identification-besoins-externes)
-- [PARTIE 3 : ARCHITECTURE \& SPECS](#partie-3--architecture--specs)
+- [PARTIE 3 : ARCHITECTURE & SPECS](#partie-3--architecture--specs)
   - [**Slide 8 : Global System Architecture**](#slide-8--global-system-architecture)
     - [Diagramme C4 - Niveau contexte](#diagramme-c4---niveau-contexte)
     - [Annotations architecture](#annotations-architecture)
   - [**Slide 9 : Justification of Technical Choices**](#slide-9--justification-of-technical-choices)
-    - [Choix techniques basés sur critères objectifs (audit benchmark)](#choix-techniques-basés-sur-critères-objectifs-audit-benchmark)
-    - [Lien avec l'audit (pas de préférence subjective)](#lien-avec-laudit-pas-de-préférence-subjective)
+    - [Choix techniques basés sur critères objectifs (audit benchmark)](#choix-techniques-bas%C3%A9s-sur-crit%C3%A8res-objectifs-audit-benchmark)
+    - [Lien avec l'audit (pas de préférence subjective)](#lien-avec-laudit-pas-de-pr%C3%A9f%C3%A9rence-subjective)
   - [**Slide 10 : Data Modeling**](#slide-10--data-modeling)
-    - [Schéma entité-relation (ERD)](#schéma-entité-relation-erd)
-    - [Cohérence avec backlog](#cohérence-avec-backlog)
+    - [Schéma entité-relation (ERD)](#sch%C3%A9ma-entit%C3%A9-relation-erd)
+    - [Cohérence avec backlog](#coh%C3%A9rence-avec-backlog)
     - [Optimisations](#optimisations)
   - [**Slide 11 : Interface Design (UI/UX)**](#slide-11--interface-design-uiux)
     - [Mockups Figma - Flows critiques](#mockups-figma---flows-critiques)
-    - [Conformité accessibilité validée](#conformité-accessibilité-validée)
-  - [**Slide 12 : Technical Flows \& API**](#slide-12--technical-flows--api)
-    - [Séquence complète Upload → Analyse → Notification](#séquence-complète-upload--analyse--notification)
+    - [Conformité accessibilité validée](#conformit%C3%A9-accessibilit%C3%A9-valid%C3%A9e)
+  - [**Slide 12 : Technical Flows & API**](#slide-12--technical-flows--api)
+    - [Séquence complète Upload → Analyse → Notification](#s%C3%A9quence-compl%C3%A8te-upload--analyse--notification)
     - [API Endpoints principaux](#api-endpoints-principaux)
-- [PARTIE 4 : COSTING \& SIZING](#partie-4--costing--sizing)
-  - [**Slide 13 : Resource Inventory (Infra \& Hardware)**](#slide-13--resource-inventory-infra--hardware)
+- [PARTIE 4 : COSTING & SIZING](#partie-4--costing--sizing)
+  - [**Slide 13 : Resource Inventory (Infra & Hardware)**](#slide-13--resource-inventory-infra--hardware)
     - [Inventaire exhaustif - Infrastructure cloud](#inventaire-exhaustif---infrastructure-cloud)
-    - [CAPEX - Coûts uniques lancement](#capex---coûts-uniques-lancement)
-      - [Coûts cachés explicitement inclus](#coûts-cachés-explicitement-inclus)
+    - [CAPEX - Coûts uniques lancement](#capex---co%C3%BBts-uniques-lancement)
+      - [Coûts cachés explicitement inclus](#co%C3%BBts-cach%C3%A9s-explicitement-inclus)
   - [**Slide 14 : Financial Benchmark**](#slide-14--financial-benchmark)
-    - [Comparaison providers - Infrastructure MVP équivalente](#comparaison-providers---infrastructure-mvp-équivalente)
+    - [Comparaison providers - Infrastructure MVP équivalente](#comparaison-providers---infrastructure-mvp-%C3%A9quivalente)
     - [Graphique visuel](#graphique-visuel)
     - [Justification choix Hetzner](#justification-choix-hetzner)
   - [**Slide 15 : Forecast Budget (CAPEX/OPEX)**](#slide-15--forecast-budget-capexopex)
-    - [Budget prévisionnel - 3 scénarii de croissance](#budget-prévisionnel---3-scénarii-de-croissance)
-    - [Détail évolution infrastructure Scale (1000 users)](#détail-évolution-infrastructure-scale-1000-users)
-    - [Projection financière 3 ans](#projection-financière-3-ans)
-- [PARTIE 5 : IMPACTS \& RISKS](#partie-5--impacts--risks)
+    - [Budget prévisionnel - 3 scénarii de croissance](#budget-pr%C3%A9visionnel---3-sc%C3%A9narii-de-croissance)
+    - [Détail évolution infrastructure Scale (1000 users)](#d%C3%A9tail-%C3%A9volution-infrastructure-scale-1000-users)
+    - [Projection financière 3 ans](#projection-financi%C3%A8re-3-ans)
+- [PARTIE 5 : IMPACTS & RISKS](#partie-5--impacts--risks)
   - [**Slide 16 : Risk Analysis (Matrix)**](#slide-16--risk-analysis-matrix)
-    - [Matrice Probabilité × Impact](#matrice-probabilité--impact)
-    - [Top 10 risques identifiés](#top-10-risques-identifiés)
+    - [Matrice Probabilité × Impact](#matrice-probabilit%C3%A9--impact)
+    - [Top 10 risques identifiés](#top-10-risques-identifi%C3%A9s)
   - [**Slide 17 : Mitigation Strategy**](#slide-17--mitigation-strategy)
-  - [**Slide 18 : GreenIT \& Societal Impact**](#slide-18--greenit--societal-impact)
-    - [Empreinte environnementale - Évaluation \& optimisations](#empreinte-environnementale---évaluation--optimisations)
-    - [Actions éco-conception mises en œuvre](#actions-éco-conception-mises-en-œuvre)
+  - [**Slide 18 : GreenIT & Societal Impact**](#slide-18--greenit--societal-impact)
+    - [Empreinte environnementale - Évaluation & optimisations](#empreinte-environnementale---%C3%A9valuation--optimisations)
+    - [Actions éco-conception mises en œuvre](#actions-%C3%A9co-conception-mises-en-%C5%93uvre)
     - [Eco-score global : **B+**](#eco-score-global--b)
-    - [Impact sociétal positif](#impact-sociétal-positif)
-  - [**Slide 19 : Resilience \& Continuity**](#slide-19--resilience--continuity)
-    - [Stratégie backup \& disaster recovery](#stratégie-backup--disaster-recovery)
-    - [Haute disponibilité - Élimination SPOF](#haute-disponibilité---élimination-spof)
-    - [Plan de maintenance \& updates](#plan-de-maintenance--updates)
+    - [Impact sociétal positif](#impact-soci%C3%A9tal-positif)
+  - [**Slide 19 : Resilience & Continuity**](#slide-19--resilience--continuity)
+    - [Stratégie backup & disaster recovery](#strat%C3%A9gie-backup--disaster-recovery)
+    - [Haute disponibilité - Élimination SPOF](#haute-disponibilit%C3%A9---%C3%A9limination-spof)
+    - [Plan de maintenance & updates](#plan-de-maintenance--updates)
 - [CONCLUSION](#conclusion)
-  - [**Slide 20 : Synthèse \& Next Steps**](#slide-20--synthèse--next-steps)
-    - [Synthèse - Validation des attendus workshop](#synthèse---validation-des-attendus-workshop)
-    - [Indicateurs clés projet](#indicateurs-clés-projet)
-    - [Prochaines étapes - Roadmap 6 mois](#prochaines-étapes---roadmap-6-mois)
+  - [**Slide 20 : Synthèse & Next Steps**](#slide-20--synth%C3%A8se--next-steps)
+    - [Synthèse - Validation des attendus workshop](#synth%C3%A8se---validation-des-attendus-workshop)
+    - [Indicateurs clés projet](#indicateurs-cl%C3%A9s-projet)
+    - [Prochaines étapes - Roadmap 6 mois](#prochaines-%C3%A9tapes---roadmap-6-mois)
     - [Vision long terme](#vision-long-terme)
-  - [**Slide 21 : Questions \& Démo**](#slide-21--questions--démo)
-    - [Démo live (2 minutes)](#démo-live-2-minutes)
-    - [Contact \& Ressources](#contact--ressources)
-  - [Notes de présentation](#notes-de-présentation)
-    - [Timing recommandé (20 min total)](#timing-recommandé-20-min-total)
-    - [Conseils présentation orale](#conseils-présentation-orale)
-  - [Benchmark Hébergement Cloud : Hetzner vs OVH vs AWS](#benchmark-hébergement-cloud--hetzner-vs-ovh-vs-aws)
+  - [**Slide 21 : Questions & Démo**](#slide-21--questions--d%C3%A9mo)
+    - [Démo live (2 minutes)](#d%C3%A9mo-live-2-minutes)
+    - [Contact & Ressources](#contact--ressources)
+  - [Notes de présentation](#notes-de-pr%C3%A9sentation)
+    - [Timing recommandé (20 min total)](#timing-recommand%C3%A9-20-min-total)
+    - [Conseils présentation orale](#conseils-pr%C3%A9sentation-orale)
+  - [Benchmark Hébergement Cloud : Hetzner vs OVH vs AWS](#benchmark-h%C3%A9bergement-cloud--hetzner-vs-ovh-vs-aws)
   - [Benchmark Backend : Rust vs Go vs Node.js](#benchmark-backend--rust-vs-go-vs-nodejs)
-  - [Benchmark Base de données : PostgreSQL vs MongoDB vs MySQL](#benchmark-base-de-données--postgresql-vs-mongodb-vs-mysql)
+  - [Benchmark Base de données : PostgreSQL vs MongoDB vs MySQL](#benchmark-base-de-donn%C3%A9es--postgresql-vs-mongodb-vs-mysql)
 
 ---
 
@@ -104,19 +108,15 @@ DON'T EDIT THIS FILE !
 
 ## Workshop Costing & Technical Sizing - PowerPoint Structure
 
-Le lien pour le ppt :
-[https://www.canva.com/design/DAHCPBR7SCQ/oUQjUlCNf2DCIJmU\_TBaVA/edit?utm\_content=DAHCPBR7SCQ&utm\_campaign=designshare&utm\_medium=link2&utm\_source=sharebutton](https://www.canva.com/design/DAHCPBR7SCQ/oUQjUlCNf2DCIJmU_TBaVA/edit?utm_content=DAHCPBR7SCQ&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
+Le lien pour le ppt : [https://www.canva.com/design/DAHCPBR7SCQ/oUQjUlCNf2DCIJmU\_TBaVA/edit?utm\_content=DAHCPBR7SCQ&utm\_campaign=designshare&utm\_medium=link2&utm\_source=sharebutton](https://www.canva.com/design/DAHCPBR7SCQ/oUQjUlCNf2DCIJmU_TBaVA/edit?utm_content=DAHCPBR7SCQ&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
 
 ---
 
 ## **Slide 1 : Page de garde**
 
-**ASCENSION**
-_Application d'analyse biomécanique pour l'escalade_
+**ASCENSION** *Application d'analyse biomécanique pour l'escalade*
 
-Workshop Costing & Technical Sizing
-Epitech Innovation Track
-Février 2026
+Workshop Costing & Technical Sizing Epitech Innovation Track Février 2026
 
 Équipe : \[Noms des 5 membres\]
 
@@ -174,39 +174,39 @@ Février 2026
 
 **US-001 : Enregistrement vidéo**
 
-- _En tant que_ grimpeur
-- _Je veux_ filmer ma grimpe (max 30 secondes)
-- _Afin de_ l'analyser techniquement
+- *En tant que* grimpeur
+- *Je veux* filmer ma grimpe (max 30 secondes)
+- *Afin de* l'analyser techniquement
 
 **US-002 : Analyse biomécanique**
 
-- _En tant que_ utilisateur
-- _Je veux_ que l'IA détecte ma posture et mes points de force
-- _Afin de_ comprendre mes erreurs techniques
+- *En tant que* utilisateur
+- *Je veux* que l'IA détecte ma posture et mes points de force
+- *Afin de* comprendre mes erreurs techniques
 
 **US-003 : Consultation feedback**
 
-- _En tant que_ grimpeur
-- _Je veux_ consulter les recommandations personnalisées
-- _Afin de_ m'améliorer
+- *En tant que* grimpeur
+- *Je veux* consulter les recommandations personnalisées
+- *Afin de* m'améliorer
 
 **US-004 : Suivi progression**
 
-- _En tant que_ utilisateur régulier
-- _Je veux_ voir mes progrès dans le temps
-- _Afin de_ rester motivé
+- *En tant que* utilisateur régulier
+- *Je veux* voir mes progrès dans le temps
+- *Afin de* rester motivé
 
 **US-005 : Partage avec coach**
 
-- _En tant que_ grimpeur coaché
-- _Je veux_ partager mon analyse avec mon entraîneur
-- _Afin de_ préparer ma prochaine session
+- *En tant que* grimpeur coaché
+- *Je veux* partager mon analyse avec mon entraîneur
+- *Afin de* préparer ma prochaine session
 
 **US-ACC-01 : Navigation vocale complète**
 
-- _En tant qu'_ utilisateur malvoyant
-- _Je veux_ naviguer uniquement au lecteur d'écran
-- _Afin de_ consulter mes analyses en autonomie
+- *En tant qu'* utilisateur malvoyant
+- *Je veux* naviguer uniquement au lecteur d'écran
+- *Afin de* consulter mes analyses en autonomie
 
 ---
 
@@ -214,14 +214,14 @@ Février 2026
 
 ### Distinction Must Have vs Future Evolutions
 
-| **Must Have (MVP - 6 mois)**                                                              | **Future Evolutions (Post-launch)**                              |
-| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| Enregistrement vidéo 30s                                                                  | Mode coach multi-athlètes                                        |
-| Analyse pose MediaPipe                                                                    | Comparaison avec d’autres grimpeurs (amateurs ou professionnels) |
-| Feedback technique basique (équilibre)                                                    | Programmes d'entraînement personnalisés                          |
-| Consultation historique analyses                                                          | Analyse en temps réel (streaming)                                |
-| Mode fantôme superposable à la vidéo (fantôme qui montre la meilleure manière de grimper) | Navigation accessible WCAG AA                                    |
-| Upload asynchrone                                                                         | Détection automatique type de prise                              |
+| **Must Have (MVP - 6 mois)** | **Future Evolutions (Post-launch)** |
+| --- | --- |
+| Enregistrement vidéo 30s | Mode coach multi-athlètes |
+| Analyse pose MediaPipe | Comparaison avec d’autres grimpeurs (amateurs ou professionnels) |
+| Feedback technique basique (équilibre) | Programmes d'entraînement personnalisés |
+| Consultation historique analyses | Analyse en temps réel (streaming) |
+| Mode fantôme superposable à la vidéo (fantôme qui montre la meilleure manière de grimper) | Navigation accessible WCAG AA |
+| Upload asynchrone | Détection automatique type de prise |
 
 ### Scope MVP réaliste pour deadline
 
@@ -238,12 +238,12 @@ Février 2026
 
 ### Comparaison solutions existantes
 
-| Solution                                | Forces                                                         | Faiblesses                                                 | Prix         |
-| --------------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------- | ------------ |
-| **Coach physique**                      | Expertise humaine pointue, feedback personnalisé               | 50-100€/heure, pas scalable, disponibilité limitée         | Élevé        |
-| **MyClimb /** [**8a.nu**](http://8a.nu) | Suivi statistiques, logbook, communauté                        | Pas d'analyse technique biomécanique                       | 0-4,99€/mois |
-| **Lattice Training**                    | Tests force standardisés, programmes                           | Pas d'analyse vidéo, focus force pure                      | 15€/mois     |
-| **Ascension (nous)**                    | IA analyse biomécanique automatisée, accessible, personnalisée | Version 1.0 limitée (temps d'attente élevé pour l'analyse) | 20€/mois     |
+| Solution | Forces | Faiblesses | Prix |
+| --- | --- | --- | --- |
+| **Coach physique** | Expertise humaine pointue, feedback personnalisé | 50-100€/heure, pas scalable, disponibilité limitée | Élevé |
+| **MyClimb /** [**8a.nu**](http://8a.nu) | Suivi statistiques, logbook, communauté | Pas d'analyse technique biomécanique | 0-4,99€/mois |
+| **Lattice Training** | Tests force standardisés, programmes | Pas d'analyse vidéo, focus force pure | 15€/mois |
+| **Ascension (nous)** | IA analyse biomécanique automatisée, accessible, personnalisée | Version 1.0 limitée (temps d'attente élevé pour l'analyse) | 20€/mois |
 
 ### State of the art technique - Technologies open-source disponibles
 
@@ -274,13 +274,13 @@ Obligations légales :
 
 ### Menaces de sécurité identifiées & contre-mesures
 
-| Menace                           | Impact                  | Contre-mesure technique                               |
-| -------------------------------- | ----------------------- | ----------------------------------------------------- |
-| **Injection SQL**                | Vol données users       | SQLx Rust compile-time queries (injection impossible) |
-| **Fuite données**                | Amende CNIL 4% CA       | Chiffrement AES-256 au repos, TLS 1.3 en transit      |
-| **DDoS API**                     | Indisponibilité service | Rate limiting Nginx 100 req/min par IP                |
-| **Vol sessions**                 | Usurpation identité     | JWT avec expiration 1h, refresh tokens sécurisés      |
-| **Upload fichiers malveillants** | Compromission serveur   | Validation MIME type, scan antivirus, sandboxing      |
+| Menace | Impact | Contre-mesure technique |
+| --- | --- | --- |
+| **Injection SQL** | Vol données users | SQLx Rust compile-time queries (injection impossible) |
+| **Fuite données** | Amende CNIL 4% CA | Chiffrement AES-256 au repos, TLS 1.3 en transit |
+| **DDoS API** | Indisponibilité service | Rate limiting Nginx 100 req/min par IP |
+| **Vol sessions** | Usurpation identité | JWT avec expiration 1h, refresh tokens sécurisés |
+| **Upload fichiers malveillants** | Compromission serveur | Validation MIME type, scan antivirus, sandboxing |
 
 **Attack surface minimale :**
 
@@ -294,14 +294,14 @@ Obligations légales :
 
 ### Matrice compétences équipe vs besoins projet
 
-| Compétence technique   | Niveau requis | Niveau actuel équipe | Gap    | Action plan                               |
-| ---------------------- | ------------- | -------------------- | ------ | ----------------------------------------- |
-| **Flutter mobile**     | Expert        | Intermédiaire        | Moyen  | Apprentissage par fonctionnalité demandée |
-| **Rust backend**       | Expert        | Intermédiaire        | Élevé  | Pair Programming  + Rustlings             |
-| **ML/Computer Vision** | Intermédiaire | Débutant             | Élevé  | Formation + mentorat par Quentin Briand   |
-| **PostgreSQL**         | Intermédiaire | Bon                  | Faible | Documentation officielle suffisante       |
-| **DevOps Docker**      | Intermédiaire | Bon                  | Aucun  | Compétence maîtrisée                      |
-| **UX/UI Design**       | Intermédiaire | Faible               | Moyen  | Workshop Figma + audit ergonome externe   |
+| Compétence technique | Niveau requis | Niveau actuel équipe | Gap | Action plan |
+| --- | --- | --- | --- | --- |
+| **Flutter mobile** | Expert | Intermédiaire | Moyen | Apprentissage par fonctionnalité demandée |
+| **Rust backend** | Expert | Intermédiaire | Élevé | Pair Programming  + Rustlings |
+| **ML/Computer Vision** | Intermédiaire | Débutant | Élevé | Formation + mentorat par Quentin Briand |
+| **PostgreSQL** | Intermédiaire | Bon | Faible | Documentation officielle suffisante |
+| **DevOps Docker** | Intermédiaire | Bon | Aucun | Compétence maîtrisée |
+| **UX/UI Design** | Intermédiaire | Faible | Moyen | Workshop Figma + audit ergonome externe |
 
 ### Plan de montée en compétences
 
@@ -407,14 +407,14 @@ graph TB
 
 ### Choix techniques basés sur critères objectifs (audit benchmark)
 
-| Choix retenu    | Alternative évaluée     | Critère décisif  | Justification chiffrée                     |
-| --------------- | ----------------------- | ---------------- | ------------------------------------------ |
-| **Flutter**     | React Native            | Taille APK       | 15-30 MB vs 50-80 MB (÷2.5)                |
-| **Rust (Axum)** | Go, Node.js, Python     | RAM idle         | 50-100 MB vs 300-500 MB Node (÷5)          |
-| **PostgreSQL**  | MongoDB Atlas           | Coût             | 6€/mois vs 57€/mois (÷9.5)                 |
-| **Hetzner**     | AWS, OVH                | Prix global      | 96€/mois vs 312€ AWS (÷3.25)               |
-| **RabbitMQ**    | Redis, PostgreSQL queue | Persistance jobs | DLQ natif, dashboard monitoring            |
-| **MediaPipe**   | TensorFlow custom       | Time-to-market   | Détection pose SOTA gratuite vs 6 mois dev |
+| Choix retenu | Alternative évaluée | Critère décisif | Justification chiffrée |
+| --- | --- | --- | --- |
+| **Flutter** | React Native | Taille APK | 15-30 MB vs 50-80 MB (÷2.5) |
+| **Rust (Axum)** | Go, Node.js, Python | RAM idle | 50-100 MB vs 300-500 MB Node (÷5) |
+| **PostgreSQL** | MongoDB Atlas | Coût | 6€/mois vs 57€/mois (÷9.5) |
+| **Hetzner** | AWS, OVH | Prix global | 96€/mois vs 312€ AWS (÷3.25) |
+| **RabbitMQ** | Redis, PostgreSQL queue | Persistance jobs | DLQ natif, dashboard monitoring |
+| **MediaPipe** | TensorFlow custom | Time-to-market | Détection pose SOTA gratuite vs 6 mois dev |
 
 ### Lien avec l'audit (pas de préférence subjective)
 
@@ -515,13 +515,13 @@ Chaque choix découle directement du benchmark réalisé :
 
 ### Conformité accessibilité validée
 
-| Critère WCAG 2.1 AA     | Statut | Vérification             |
-| ----------------------- | ------ | ------------------------ |
-| Contraste 4.5:1 minimum | ✓      | Color Contrast Analyzer  |
-| Boutons 44×44px minimum | ✓      | 48×56px sur tous boutons |
-| Labels lecteur écran    | ✓      | Test VoiceOver complet   |
-| Navigation clavier      | ✓      | Tab order logique        |
-| Zoom 200% sans perte    | ✓      | Test iOS Dynamic Type    |
+| Critère WCAG 2.1 AA | Statut | Vérification |
+| --- | --- | --- |
+| Contraste 4.5:1 minimum | ✓ | Color Contrast Analyzer |
+| Boutons 44×44px minimum | ✓ | 48×56px sur tous boutons |
+| Labels lecteur écran | ✓ | Test VoiceOver complet |
+| Navigation clavier | ✓ | Tab order logique |
+| Zoom 200% sans perte | ✓ | Test iOS Dynamic Type |
 
 ---
 
@@ -574,16 +574,16 @@ sequenceDiagram
 - Headers : `Authorization: Bearer {token}`
 - Body : `{filename, content_type}`
 - Response : `{video_id, upload_url, job_id}`
-- _Note :_ `*upload_url*` _est l'URI signée pour le PUT vers MinIO._
+- *Note :* `*upload_url*` *est l'URI signée pour le PUT vers MinIO.*
 
 **POST /analysis/video/start**
 
 - Headers : `Authorization: Bearer {token}`
 - Body : `{video_id}`
 - Response : `{status: "queued"}`
-- _Note : Déclenche l'envoi du message dans RabbitMQ pour le Python Worker._
+- *Note : Déclenche l'envoi du message dans RabbitMQ pour le Python Worker.*
 
-**GET /analysis/video/{analysis_id}**
+**GET /analysis/video/{analysis\_id}**
 
 - Headers : `Authorization: Bearer {token}`
 - Response : `{landmarks, force_score, balance_score, recommendations}`
@@ -603,31 +603,36 @@ sequenceDiagram
 
 ### Inventaire exhaustif - Infrastructure cloud
 
-| Ressource                  | Rôle                        | Specs                          | Provider            | Coût mensuel         |
-| -------------------------- | --------------------------- | ------------------------------ | ------------------- | -------------------- |
-| **Machine 1 - API Server** | Nginx + Rust API + RabbitMQ | 4 vCPU, 8 GB RAM, 80 GB SSD    | Hetzner CX31        | 15€                  |
-| **Machine 2 - Database**   | PostgreSQL Master + Backup  | 4 vCPU, 16 GB RAM, 500 GB NVMe | Hetzner CX41        | 25€                  |
-| **Machine 3 - ML Workers** | Python pika (×2 workers)    | 8 vCPU, 16 GB RAM, 100 GB SSD  | Hetzner CX51        | 45€                  |
-| **Object Storage**         | Vidéos S3-compatible        | 1 TB extensible                | Hetzner Storage Box | 10€                  |
-| **SSL Certificate**        | HTTPS wildcard              | Let's Encrypt                  | Gratuit             | 0€                   |
-| **CI/CD**                  | GitHub Actions              | Hosted runners                 | GitHub              | 0€ (< 2000 min/mois) |
-|                            |                             |                                | **TOTAL OPEX MVP**  | **96€/mois**         |
+| Ressource | Rôle | Specs | Provider | Coût mensuel |
+| --- | --- | --- | --- | --- |
+| **Machine 1 - API Server** | Nginx + Rust API + RabbitMQ | 4 vCPU, 8 GB RAM, 80 GB SSD | Hetzner CX31 | 15€ |
+| **Machine 2 - Database** | PostgreSQL Master + Backup | 4 vCPU, 16 GB RAM, 500 GB NVMe | Hetzner CX41 | 25€ |
+| **Machine 3 - ML Workers** | Python pika (×2 workers) | 8 vCPU, 16 GB RAM, 100 GB SSD | Hetzner CX51 | 45€ |
+| **Object Storage** | Vidéos S3-compatible | 1 TB extensible | Hetzner Storage Box | 10€ |
+| **SSL Certificate** | HTTPS wildcard | Let's Encrypt | Gratuit | 0€ |
+| **CI/CD** | GitHub Actions | Hosted runners | GitHub | 0€ (< 2000 min/mois) |
+|
+ |
+
+ |
+
+ | **TOTAL OPEX MVP** | **96€/mois** |
 
 ### CAPEX - Coûts uniques lancement
 
-| Item                     | Description                              | Fréquence       | Coût     |
-| ------------------------ | ---------------------------------------- | --------------- | -------- |
-| Apple Developer Account  | Publication App Store iOS                | Annuel          | 99€      |
-| Google Play Developer    | Publication Play Store Android           | One-time        | 22€      |
-| Nom de domaine (année 1) | [ascension.com](http://escalade-app.com) | Annuel          | 12€      |
-|                          |                                          | **TOTAL CAPEX** | **133€** |
+| Item | Description | Fréquence | Coût |
+| --- | --- | --- | --- |
+| Apple Developer Account | Publication App Store iOS | Annuel | 99€ |
+| Google Play Developer | Publication Play Store Android | One-time | 22€ |
+| Nom de domaine (année 1) | [ascension.com](http://escalade-app.com) | Annuel | 12€ |
+|
+ |
+
+ | **TOTAL CAPEX** | **133€** |
 
 ### Coûts cachés explicitement inclus
 
-✓ **Backups quotidiens PostgreSQL** : Inclus dans Storage Box (pg\_dump + WAL archiving)
-✓ **TVA 20%** : Applicable sur factures cloud (Hetzner = HT pour B2B EU)
-✓ **Data Egress** : 1 TB/mois inclus Hetzner (largement suffisant MVP)
-✓ **SSL renouvellement** : Automatique Let's Encrypt (gratuit à vie)
+✓ **Backups quotidiens PostgreSQL** : Inclus dans Storage Box (pg\_dump + WAL archiving) ✓ **TVA 20%** : Applicable sur factures cloud (Hetzner = HT pour B2B EU) ✓ **Data Egress** : 1 TB/mois inclus Hetzner (largement suffisant MVP) ✓ **SSL renouvellement** : Automatique Let's Encrypt (gratuit à vie)
 
 **Aucun coût caché oublié.**
 
@@ -637,12 +642,12 @@ sequenceDiagram
 
 ### Comparaison providers - Infrastructure MVP équivalente
 
-| Provider     | Machine API | Machine DB | Machine ML | Storage 1TB | **TOTAL/mois** | Économie vs Hetzner |
-| ------------ | ----------- | ---------- | ---------- | ----------- | -------------- | ------------------- |
-| **Hetzner**  | 15€         | 25€        | 45€        | 10€         | **96€**        | Référence           |
-| OVH          | 22€         | 38€        | 65€        | 12€         | **140€**       | +46%                |
-| AWS          | 60€         | 95€        | 180€       | 23€         | **312€**       | +225%               |
-| DigitalOcean | 32€         | 55€        | 110€       | 10€         | **207€**       | +116%               |
+| Provider | Machine API | Machine DB | Machine ML | Storage 1TB | **TOTAL/mois** | Économie vs Hetzner |
+| --- | --- | --- | --- | --- | --- | --- |
+| **Hetzner** | 15€ | 25€ | 45€ | 10€ | **96€** | Référence |
+| OVH | 22€ | 38€ | 65€ | 12€ | **140€** | +46% |
+| AWS | 60€ | 95€ | 180€ | 23€ | **312€** | +225% |
+| DigitalOcean | 32€ | 55€ | 110€ | 10€ | **207€** | +116% |
 
 ### Graphique visuel
 
@@ -657,8 +662,7 @@ AWS        ███████████████████████
 
 ### Justification choix Hetzner
 
-**Économie annuelle vs AWS : 2 592€**
-**Économie cumulée 3 ans : 7 776€**
+**Économie annuelle vs AWS : 2 592€** **Économie cumulée 3 ans : 7 776€**
 
 Critères objectifs justifiant le choix :
 
@@ -676,11 +680,11 @@ Critères objectifs justifiant le choix :
 
 ### Budget prévisionnel - 3 scénarii de croissance
 
-| Scenario                | Users actifs | CAPEX | OPEX mensuel | Coût par user | Revenu (10% conv. à ~20€) | Marge brute   |
-| ----------------------- | ------------ | ----- | ------------ | ------------- | ------------------------- | ------------- |
-| **MVP (Alpha/Beta)**    | 100          | 133€  | 96€          | 0,96€         | 200€                      | +104€/mois    |
-| **Scale (Lancement)**   | 1 000        | 0€    | 231€         | 0,23€         | 2 000€                    | +1 769€/mois  |
-| **Scale+ (Croissance)** | 10 000       | 0€    | 655€         | 0,07€         | 20 000€                   | +19 345€/mois |
+| Scenario | Users actifs | CAPEX | OPEX mensuel | Coût par user | Revenu (10% conv. à ~20€) | Marge brute |
+| --- | --- | --- | --- | --- | --- | --- |
+| **MVP (Alpha/Beta)** | 100 | 133€ | 96€ | 0,96€ | 200€ | +104€/mois |
+| **Scale (Lancement)** | 1 000 | 0€ | 231€ | 0,23€ | 2 000€ | +1 769€/mois |
+| **Scale+ (Croissance)** | 10 000 | 0€ | 655€ | 0,07€ | 20 000€ | +19 345€/mois |
 
 ### Détail évolution infrastructure Scale (1000 users)
 
@@ -755,30 +759,41 @@ Légende :
 
 ### Top 10 risques identifiés
 
-| #      | Risque                                          | Catégorie    | Prob. | Impact | Criticité | Couleur |
-| ------ | ----------------------------------------------- | ------------ | ----- | ------ | --------- | ------- |
-| **1**  | Précision ML insuffisante (MediaPipe générique) | Technique    | 4     | 5      | **20**    | 🔴      |
-| **12** | RGPD - Données biométriques (vidéos corpo)      | Légal        | 3     | 5      | **15**    | 🔴      |
-| **3**  | Départ membre clé équipe (stage/abandon)        | Opérationnel | 3     | 5      | **15**    | 🔴      |
-| **2**  | Panne serveurs ML (saturation workers)          | Opérationnel | 3     | 4      | **12**    | 🟠      |
-| **4**  | Fuite données utilisateurs (hack)               | Sécurité     | 2     | 5      | **10**    | 🟠      |
-| **6**  | Upload vidéo échoue (réseau instable)           | Technique    | 4     | 3      | **12**    | 🟠      |
-| **11** | Latence analyse > 10 min (inacceptable UX)      | Technique    | 3     | 3      | **9**     | 🟡      |
-| **8**  | Dépassement budget cloud (croissance rapide)    | Financier    | 2     | 3      | **6**     | 🟡      |
-| **5**  | Corruption base données PostgreSQL              | Technique    | 1     | 5      | **5**     | 🟢      |
-| **7**  | Panne datacenter Hetzner                        | Opérationnel | 1     | 5      | **5**     | 🟢      |
+| # | Risque | Catégorie | Prob. | Impact | Criticité | Couleur |
+| --- | --- | --- | --- | --- | --- | --- |
+| **1** | Précision ML insuffisante (MediaPipe générique) | Technique | 4 | 5 | **20** | 🔴 |
+| **12** | RGPD - Données biométriques (vidéos corpo) | Légal | 3 | 5 | **15** | 🔴 |
+| **3** | Départ membre clé équipe (stage/abandon) | Opérationnel | 3 | 5 | **15** | 🔴 |
+| **2** | Panne serveurs ML (saturation workers) | Opérationnel | 3 | 4 | **12** | 🟠 |
+| **4** | Fuite données utilisateurs (hack) | Sécurité | 2 | 5 | **10** | 🟠 |
+| **6** | Upload vidéo échoue (réseau instable) | Technique | 4 | 3 | **12** | 🟠 |
+| **11** | Latence analyse > 10 min (inacceptable UX) | Technique | 3 | 3 | **9** | 🟡 |
+| **8** | Dépassement budget cloud (croissance rapide) | Financier | 2 | 3 | **6** | 🟡 |
+| **5** | Corruption base données PostgreSQL | Technique | 1 | 5 | **5** | 🟢 |
+| **7** | Panne datacenter Hetzner | Opérationnel | 1 | 5 | **5** | 🟢 |
 
 ---
 
 ## **Slide 17 : Mitigation Strategy**
 
-|                                   |           |                                                                      |               |                                                                                                                                                                                            |              |
-| --------------------------------- | --------- | -------------------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ |
-| **Risque (ID & Nom)**             | **Crit.** | **Cause & Impact**                                                   | **Stratégie** | **Actions Concrètes**                                                                                                                                                                      | **Échéance** |
-| #1 - Précision ML insuffisante    | 20        | Cause : Modèle générique. Impact : Blessures, perte de confiance.    | RÉDUIRE       | • Dataset propriétaire (500 vidéos labellisées)<br><br>• Fine-tuning TFLite (2 sem.)<br><br>• Seuil confiance < $70\\%$ (masquage)<br><br>• Beta test experts                              | Sprint 4     |
-| #12 - RGPD & Données biométriques | 15        | Cause : Art. 9 (sensible).<br><br>Impact : Amende 4% CA, réputation. | ÉVITER        | • Consentement granulaire (3 types)<br><br>• Hébergement EU (Hetzner)<br><br>• Chiffrement AES-256 & Droit effacement<br><br>• Audit avocat spécialisé                                     | Avant Beta   |
-| #2 - Panne serveurs ML            | 12        | Cause : Saturation/OOM. Impact : SLA non respecté, frustration.      | RÉDUIRE       | • Queue RabbitMQ persistante + retries automatiques (pika)<br><br>• Alerting Grafana / Slack<br><br>• Auto-scaling horizontal automatique<br><br>• Circuit breaker (dégradation gracieuse) | Sprint 5     |
-| #4 - Fuite de données             | 10        | Cause : Hack / Breach S3. Impact : Exposition vidéos, plainte CNIL.  | RÉDUIRE       | • Chiffrement E2E (Repos/Transit)<br><br>• Hachage Argon2 (pas de MD5/SHA1)<br><br>• S3 Signed URLs (validité 1h)<br><br>• Pentest externe avant lancement                                 | Sprint 6     |
+|
+ |
+
+ |
+
+ |
+
+ |
+
+ |
+
+ |
+| --- | --- | --- | --- | --- | --- |
+| **Risque (ID & Nom)** | **Crit.** | **Cause & Impact** | **Stratégie** | **Actions Concrètes** | **Échéance** |
+| #1 - Précision ML insuffisante | 20 | Cause : Modèle générique. Impact : Blessures, perte de confiance. | RÉDUIRE | • Dataset propriétaire (500 vidéos labellisées)<br><br>• Fine-tuning TFLite (2 sem.)<br><br>• Seuil confiance < $70\\%$ (masquage)<br><br>• Beta test experts | Sprint 4 |
+| #12 - RGPD & Données biométriques | 15 | Cause : Art. 9 (sensible).<br><br>Impact : Amende 4% CA, réputation. | ÉVITER | • Consentement granulaire (3 types)<br><br>• Hébergement EU (Hetzner)<br><br>• Chiffrement AES-256 & Droit effacement<br><br>• Audit avocat spécialisé | Avant Beta |
+| #2 - Panne serveurs ML | 12 | Cause : Saturation/OOM. Impact : SLA non respecté, frustration. | RÉDUIRE | • Queue RabbitMQ persistante + retries automatiques (pika)<br><br>• Alerting Grafana / Slack<br><br>• Auto-scaling horizontal automatique<br><br>• Circuit breaker (dégradation gracieuse) | Sprint 5 |
+| #4 - Fuite de données | 10 | Cause : Hack / Breach S3. Impact : Exposition vidéos, plainte CNIL. | RÉDUIRE | • Chiffrement E2E (Repos/Transit)<br><br>• Hachage Argon2 (pas de MD5/SHA1)<br><br>• S3 Signed URLs (validité 1h)<br><br>• Pentest externe avant lancement | Sprint 6 |
 
 ---
 
@@ -794,8 +809,7 @@ Légende :
 - Réseau + Storage : ~5 kWh/mois
 - **Total : ~83 kWh/mois = 29 kg CO2/mois** (avec mix électrique allemand 350 gCO2/kWh)
 
-**Mais : Hetzner = 100% énergie renouvelable certifiée**
-→ Impact réel : **~8 kg CO2/mois** (-70% vs calcul théorique)
+**Mais : Hetzner = 100% énergie renouvelable certifiée** → Impact réel : **~8 kg CO2/mois** (-70% vs calcul théorique)
 
 **Mise en perspective :**
 
@@ -804,13 +818,13 @@ Légende :
 
 ### Actions éco-conception mises en œuvre
 
-| Optimisation                                       | Impact environnemental     | Économie CO2 estimée |
-| -------------------------------------------------- | -------------------------- | -------------------- |
-| **Compression vidéo mobile** (720p vs 4K)          | \-70% data transfer        | \-12 kg CO2/mois     |
-| **Rust backend** (vs Node.js)                      | \-60% consommation RAM     | \-5 kg CO2/mois      |
-| **Lifecycle S3** (suppression auto > 7j)           | \-40% stockage actif       | \-3 kg CO2/mois      |
-| **Async workers** (pas de compute idle)            | Serveurs éteints hors pics | \-8 kg CO2/mois      |
-| **Query caching PostgreSQL** (prepared statements) | \-30% requêtes DB          | \-2 kg CO2/mois      |
+| Optimisation | Impact environnemental | Économie CO2 estimée |
+| --- | --- | --- |
+| **Compression vidéo mobile** (720p vs 4K) | \-70% data transfer | \-12 kg CO2/mois |
+| **Rust backend** (vs Node.js) | \-60% consommation RAM | \-5 kg CO2/mois |
+| **Lifecycle S3** (suppression auto > 7j) | \-40% stockage actif | \-3 kg CO2/mois |
+| **Async workers** (pas de compute idle) | Serveurs éteints hors pics | \-8 kg CO2/mois |
+| **Query caching PostgreSQL** (prepared statements) | \-30% requêtes DB | \-2 kg CO2/mois |
 
 **Impact cumulé : -30 kg CO2/mois vs architecture non-optimisée**
 
@@ -878,14 +892,14 @@ Justification note :
 
 **Single Points of Failure identifiés & mitigations :**
 
-| Composant      | SPOF actuel (MVP)  | Mitigation Scale                         | Disponibilité cible |
-| -------------- | ------------------ | ---------------------------------------- | ------------------- |
-| **API Rust**   | 1 instance         | 3 instances + load balancer              | 99,9%               |
-| **PostgreSQL** | Master seul        | Master + 2 Read Replicas + failover auto | 99,5%               |
-| **Workers ML** | 2 workers          | 5 workers (scale horizontal facile)      | 99%                 |
-| **RabbitMQ**   | 1 instance         | Cluster RabbitMQ (3 nodes)               | 99,5%               |
-| **MinIO S3**   | 3 nodes distribués | Mode distribué natif                     | 99,9%               |
-| **Nginx**      | 1 instance         | 2 instances + Keepalived (VIP failover)  | 99,9%               |
+| Composant | SPOF actuel (MVP) | Mitigation Scale | Disponibilité cible |
+| --- | --- | --- | --- |
+| **API Rust** | 1 instance | 3 instances + load balancer | 99,9% |
+| **PostgreSQL** | Master seul | Master + 2 Read Replicas + failover auto | 99,5% |
+| **Workers ML** | 2 workers | 5 workers (scale horizontal facile) | 99% |
+| **RabbitMQ** | 1 instance | Cluster RabbitMQ (3 nodes) | 99,5% |
+| **MinIO S3** | 3 nodes distribués | Mode distribué natif | 99,9% |
+| **Nginx** | 1 instance | 2 instances + Keepalived (VIP failover) | 99,9% |
 
 **Dégradation gracieuse :**
 
@@ -905,10 +919,10 @@ Justification note :
 
 - **Outil :** SQLx migrations (versionnées, testées)
 - **Process :**
-  1.  Test migration sur staging
-  2.  Backup production avant migration
-  3.  Exécution migration en maintenance window (dimanche 3h-4h)
-  4.  Rollback automatique si erreur
+  1. Test migration sur staging
+  2. Backup production avant migration
+  3. Exécution migration en maintenance window (dimanche 3h-4h)
+  4. Rollback automatique si erreur
 
 **Monitoring proactif :**
 
@@ -969,16 +983,16 @@ Justification note :
 
 ### Indicateurs clés projet
 
-| Métrique                     | Valeur                                    |
-| ---------------------------- | ----------------------------------------- |
-| **Budget CAPEX**             | 133€ (one-time)                           |
-| **Budget OPEX MVP**          | 96€/mois                                  |
-| **Coût par user**            | 0,96€/mois (MVP) → 0,07€/mois (10k users) |
-| **Seuil rentabilité**        | 10 users payants (10% conversion)         |
-| **Économie vs AWS**          | 2 592€/an                                 |
-| **Empreinte carbone**        | 8 kg CO2/mois (100% énergie verte)        |
-| **Conformité accessibilité** | WCAG 2.1 AA (96% critères)                |
-| **Disponibilité cible**      | 99% MVP → 99,5% Scale                     |
+| Métrique | Valeur |
+| --- | --- |
+| **Budget CAPEX** | 133€ (one-time) |
+| **Budget OPEX MVP** | 96€/mois |
+| **Coût par user** | 0,96€/mois (MVP) → 0,07€/mois (10k users) |
+| **Seuil rentabilité** | 10 users payants (10% conversion) |
+| **Économie vs AWS** | 2 592€/an |
+| **Empreinte carbone** | 8 kg CO2/mois (100% énergie verte) |
+| **Conformité accessibilité** | WCAG 2.1 AA (96% critères) |
+| **Disponibilité cible** | 99% MVP → 99,5% Scale |
 
 ### Prochaines étapes - Roadmap 6 mois
 
@@ -1014,9 +1028,7 @@ Justification note :
 
 ### Vision long terme
 
-**An 1 :** Validation product-market fit (1000 users, 12% conversion)
-**An 2 :** Expansion B2B2C (partenariats 50 salles d'escalade)
-**An 3 :** Internationalisation (US, UK) + features avancées (mode coach, programmes personnalisés)
+**An 1 :** Validation product-market fit (1000 users, 12% conversion) **An 2 :** Expansion B2B2C (partenariats 50 salles d'escalade) **An 3 :** Internationalisation (US, UK) + features avancées (mode coach, programmes personnalisés)
 
 ---
 
@@ -1026,25 +1038,22 @@ Justification note :
 
 **Scénario montré :**
 
-1.  Lancement app mobile (onboarding accessible)
-2.  Enregistrement vidéo grimpe 15 secondes
-3.  Upload asynchrone (barre progression)
-4.  Notification push "Analyse prête" (après 30s en mode accéléré)
-5.  Consultation résultats : heatmap force + feedback textuel + graphique progression
-6.  Navigation vocale démo (VoiceOver activé)
+1. Lancement app mobile (onboarding accessible)
+2. Enregistrement vidéo grimpe 15 secondes
+3. Upload asynchrone (barre progression)
+4. Notification push "Analyse prête" (après 30s en mode accéléré)
+5. Consultation résultats : heatmap force + feedback textuel + graphique progression
+6. Navigation vocale démo (VoiceOver activé)
 
 ### Contact & Ressources
 
-**Email équipe :** [equipe@ascension-eip.com](mailto:equipe@ascension-eip.com)
-**Repo GitHub :** [github.com/Ascension-EIP](http://github.com/Ascension-EIP)
-**Maquettes Figma :** \[lien Figma partagé\]
-**Documentation technique :** \[lien Notion/Confluence\]
+**Email équipe :** [equipe@ascension-eip.com](mailto:equipe@ascension-eip.com) **Repo GitHub :** [github.com/Ascension-EIP](http://github.com/Ascension-EIP) **Maquettes Figma :** \[lien Figma partagé\] **Documentation technique :** \[lien Notion/Confluence\]
 
 ---
 
 **Questions ?**
 
-_Merci de votre attention !_
+*Merci de votre attention !*
 
 ---
 
@@ -1086,44 +1095,44 @@ _Merci de votre attention !_
 
 ## Benchmark Hébergement Cloud : Hetzner vs OVH vs AWS
 
-| Critère                     | Hetzner (DE)            | OVH (FR)             | AWS (US/EU)            | Gagnant     | Importance     |
-| :-------------------------- | :---------------------- | :------------------- | :--------------------- | :---------- | :------------- |
-| Prix VM 4vCPU/8GB RAM/mois  | 15€                     | 22€                  | 60€                    | Hetzner     | Très important |
-| Prix VM 8vCPU/16GB RAM/mois | 45€                     | 65€                  | 180€                   | Hetzner     | Très important |
-| Object Storage 1 TB/mois    | 10€                     | 12€                  | 23€                    | Hetzner     | Important      |
-| Localisation datacenter     | Allemagne/Finlande (EU) | France (EU)          | Ireland/Frankfurt (EU) | Tous RGPD   | Important      |
-| Conformité RGPD             | Oui - GDPR compliant    | Oui - GDPR compliant | Oui - GDPR compliant   | Egalité     | Critique       |
-| Bandwidth incluse/mois      | 1 TB/mois               | 100 MB/s unlimited   | 100 GB only            | Hetzner/OVH | Moyen          |
-| Facilité scaling            | Dashboard simple        | Manager simple       | Auto-scaling complet   | AWS         | Moyen          |
-| Support                     | Communauté + tickets    | Support téléphonique | 24/7 Enterprise        | AWS         | Faible         |
-| API / CLI                   | Hetzner Cloud API       | OVH API              | AWS CLI complet        | AWS         | Faible         |
-| Coût total 3 machines/mois  | -                       | -                    | -                      | Hetzner     | Critique       |
+| Critère | Hetzner (DE) | OVH (FR) | AWS (US/EU) | Gagnant | Importance |
+| --- | --- | --- | --- | --- | --- |
+| Prix VM 4vCPU/8GB RAM/mois | 15€ | 22€ | 60€ | Hetzner | Très important |
+| Prix VM 8vCPU/16GB RAM/mois | 45€ | 65€ | 180€ | Hetzner | Très important |
+| Object Storage 1 TB/mois | 10€ | 12€ | 23€ | Hetzner | Important |
+| Localisation datacenter | Allemagne/Finlande (EU) | France (EU) | Ireland/Frankfurt (EU) | Tous RGPD | Important |
+| Conformité RGPD | Oui - GDPR compliant | Oui - GDPR compliant | Oui - GDPR compliant | Egalité | Critique |
+| Bandwidth incluse/mois | 1 TB/mois | 100 MB/s unlimited | 100 GB only | Hetzner/OVH | Moyen |
+| Facilité scaling | Dashboard simple | Manager simple | Auto-scaling complet | AWS | Moyen |
+| Support | Communauté + tickets | Support téléphonique | 24/7 Enterprise | AWS | Faible |
+| API / CLI | Hetzner Cloud API | OVH API | AWS CLI complet | AWS | Faible |
+| Coût total 3 machines/mois | \- | \- | \- | Hetzner | Critique |
 
 ---
 
 ## Benchmark Backend : Rust vs Go vs Node.js
 
-| Critère               | Rust (Axum)           | Go (Gin/Fiber)         | Node.js (Fastify) | Gagnant | Importance     |
-| :-------------------- | :-------------------- | :--------------------- | :---------------- | :------ | :------------- |
-| Upload vidéos 200 MB  | Zero-copy streaming   | io.Reader (copie)      | Multer (overhead) | Rust    | Critique       |
-| RAM serveur idle      | 50-100 MB             | 150-300 MB             | 300-500 MB        | Rust    | Très important |
-| Req/s (benchmark)     | 100k+                 | 50k+                   | 20-40k            | Rust    | Important      |
-| Memory safety         | Garantie compile-time | Nil pointers possibles | Runtime errors    | Rust    | Très important |
-| GC Pauses (latence)   | Aucune (no GC)        | 10-50ms                | 10-50ms           | Rust    | Important      |
-| Dev speed initial     | Lent (learning curve) | Rapide                 | Très rapide       | Node    | Moyen          |
-| Coût serveur 1k users | 24€/mois              | 45€/mois               | 70€/mois          | Rust    | Très important |
-| Argument RNCP/CV      | Expert (rare)         | Intermédiaire          | Standard          | Rust    | Important      |
+| Critère | Rust (Axum) | Go (Gin/Fiber) | Node.js (Fastify) | Gagnant | Importance |
+| --- | --- | --- | --- | --- | --- |
+| Upload vidéos 200 MB | Zero-copy streaming | io.Reader (copie) | Multer (overhead) | Rust | Critique |
+| RAM serveur idle | 50-100 MB | 150-300 MB | 300-500 MB | Rust | Très important |
+| Req/s (benchmark) | 100k+ | 50k+ | 20-40k | Rust | Important |
+| Memory safety | Garantie compile-time | Nil pointers possibles | Runtime errors | Rust | Très important |
+| GC Pauses (latence) | Aucune (no GC) | 10-50ms | 10-50ms | Rust | Important |
+| Dev speed initial | Lent (learning curve) | Rapide | Très rapide | Node | Moyen |
+| Coût serveur 1k users | 24€/mois | 45€/mois | 70€/mois | Rust | Très important |
+| Argument RNCP/CV | Expert (rare) | Intermédiaire | Standard | Rust | Important |
 
 ---
 
 ## Benchmark Base de données : PostgreSQL vs MongoDB vs MySQL
 
-| Critère                   | PostgreSQL            | MongoDB               | MySQL        | Gagnant    | Importance     |
-| :------------------------ | :-------------------- | :-------------------- | :----------- | :--------- | :------------- |
-| Requêtes complexes (JOIN) | Excellent (SQL natif) | Difficile (aggregate) | Bon          | PostgreSQL | Critique       |
-| Intégrité données (ACID)  | Excellent             | Partielle             | Bon          | PostgreSQL | Critique       |
-| JSON/JSONB (landmarks ML) | JSONB indexé natif    | JSON natif            | JSON limité  | PostgreSQL | Important      |
-| Coût managed/mois (50GB)  | 6€ (Hetzner)          | 57€ (Atlas)           | 8€ (Hetzner) | PostgreSQL | Très important |
-| Intégration Rust (SQLx)   | SQLx compile-time     | mongod-rs OK          | sqlx OK      | PostgreSQL | Important      |
-| Full-text search          | Intégré (tsvector)    | Index basique         | Intégré      | PostgreSQL | Moyen          |
-| Extensions futures        | pgvector, TimescaleDB | Limité                | Limité       | PostgreSQL | Moyen          |
+| Critère | PostgreSQL | MongoDB | MySQL | Gagnant | Importance |
+| --- | --- | --- | --- | --- | --- |
+| Requêtes complexes (JOIN) | Excellent (SQL natif) | Difficile (aggregate) | Bon | PostgreSQL | Critique |
+| Intégrité données (ACID) | Excellent | Partielle | Bon | PostgreSQL | Critique |
+| JSON/JSONB (landmarks ML) | JSONB indexé natif | JSON natif | JSON limité | PostgreSQL | Important |
+| Coût managed/mois (50GB) | 6€ (Hetzner) | 57€ (Atlas) | 8€ (Hetzner) | PostgreSQL | Très important |
+| Intégration Rust (SQLx) | SQLx compile-time | mongod-rs OK | sqlx OK | PostgreSQL | Important |
+| Full-text search | Intégré (tsvector) | Index basique | Intégré | PostgreSQL | Moyen |
+| Extensions futures | pgvector, TimescaleDB | Limité | Limité | PostgreSQL | Moyen |

@@ -1,4 +1,5 @@
 ---
+id: 76af1511-ddd5-4fdc-b2be-09027d03cb2a
 name: forui-cli
 description: Use the Forui CLI in Flutter projects. Use when running or explaining dart run forui init, snippet create/list, style create/list, theme create/list, generated main.dart, generated theme/style files, or CLI-driven Forui customization.
 metadata:

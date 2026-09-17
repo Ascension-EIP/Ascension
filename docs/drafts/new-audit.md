@@ -1,6 +1,10 @@
+---
+id: b76d808f-6123-4def-9e88-5326822d276c
+---
+
 :::warning
-**Version:** 1.0  
-**Original language:** French  
+**Version:** 1.0
+**Original language:** French
 :::
 
 ---
@@ -11,38 +15,37 @@
 
 ## Table of Contents
 
-- [Environnement d'exécution du projet](#environnement-dexécution-du-projet)
-- [3. Audit technique](#3-audit-technique)
-  - [3.1 Environnement d’exécution](#31-environnement-dexécution)
+- [Environnement d'exécution du projet](#environnement-dex%C3%A9cution-du-projet)
+- [3\. Audit technique](#3-audit-technique)
+  - [3.1 Environnement d’exécution](#31-environnement-dex%C3%A9cution)
   - [3.2 Stack technique](#32-stack-technique)
   - [3.3 Architecture](#33-architecture)
-  - [3.4 Exploitabilité](#34-exploitabilité)
-- [4. Audit fonctionnel](#4-audit-fonctionnel)
-  - [4.1 Compréhension du besoin](#41-compréhension-du-besoin)
-  - [4.2 Adéquation solution / besoin](#42-adéquation-solution-besoin)
+  - [3.4 Exploitabilité](#34-exploitabilit%C3%A9)
+- [4\. Audit fonctionnel](#4-audit-fonctionnel)
+  - [4.1 Compréhension du besoin](#41-compr%C3%A9hension-du-besoin)
+  - [4.2 Adéquation solution / besoin](#42-ad%C3%A9quation-solution-besoin)
   - [4.3 Parcours utilisateurs](#43-parcours-utilisateurs)
-- [5. Audit sécurité](#5-audit-sécurité)
-  - [5.1 Sécurité de l’infrastructure](#51-sécurité-de-linfrastructure)
-  - [5.2 Gestion des accès](#52-gestion-des-accès)
-  - [5.3 Sécurité applicative (niveau projet)](#53-sécurité-applicative-niveau-projet)
-  - [5.4 Conformité](#54-conformité)
+- [5\. Audit sécurité](#5-audit-s%C3%A9curit%C3%A9)
+  - [5.1 Sécurité de l’infrastructure](#51-s%C3%A9curit%C3%A9-de-linfrastructure)
+  - [5.2 Gestion des accès](#52-gestion-des-acc%C3%A8s)
+  - [5.3 Sécurité applicative (niveau projet)](#53-s%C3%A9curit%C3%A9-applicative-niveau-projet)
+  - [5.4 Conformité](#54-conformit%C3%A9)
 
 ---
 
 ## Environnement d'exécution du projet
 
-Le dossier du candidat contient un **compte-rendu d'audit technique, fonctionnel et de sécurité** de l'environnement d'exécution du projet, mettant en lumière les **contraintes et opportunités du contexte opérationnel**. [C2]
+Le dossier du candidat contient un **compte-rendu d'audit technique, fonctionnel et de sécurité** de l'environnement d'exécution du projet, mettant en lumière les **contraintes et opportunités du contexte opérationnel**. \[C2\]
 
 Le candidat est en mesure d'expliquer **l'approche méthodologique** mise en œuvre pour réaliser l'audit :
 
 - moyens d'investigation
 - collecte de retours utilisateurs
-- analyse documentaire
-  […] [C2]
+- analyse documentaire \[…\] \[C2\]
 
 ---
 
-## 3. Audit technique
+## 3\. Audit technique
 
 ### 3.1 Environnement d’exécution
 
@@ -65,7 +68,6 @@ Le candidat est en mesure d'expliquer **l'approche méthodologique** mise en œu
   - Broker : RabbitMQ
   - Reverse proxy : Nginx
   - Object Storage : MinIO (self-hosted)
-
 - **Dépendances critiques** : ??
 
 ---
@@ -83,13 +85,12 @@ Le candidat est en mesure d'expliquer **l'approche méthodologique** mise en œu
 
 - **Déploiement (CI/CD)** : ??
 - **Monitoring (logs, métriques, alertes)** : Prometheus (métriques) + Grafana (dashboards & alertes) + Loki (logs centralisés)
-
 - **Sauvegardes et restauration** : ??
 - **Stratégie de montée de version** : ??
 
 ---
 
-## 4. Audit fonctionnel
+## 4\. Audit fonctionnel
 
 ### 4.1 Compréhension du besoin
 
@@ -98,7 +99,6 @@ Le candidat est en mesure d'expliquer **l'approche méthodologique** mise en œu
   - Analyse du mouvement et des erreurs de l’utilisateur
   - Mode Fantôme basé sur la morphologie de l’utilisateur
   - Génération de routines basée sur la data
-
 - **Contraintes réglementaires ou métier** : ??
 
 ---
@@ -108,7 +108,6 @@ Le candidat est en mesure d'expliquer **l'approche méthodologique** mise en œu
 - Les fonctionnalités prévues couvrent-elles les besoins ?
 - **Dépendances critiques externes** :
   - Librairies Python pour le scan vidéo
-
 - **Performances attendues** :
   - Reconnaissance des prises (le plus jouable)
   - Mode Fantôme (mise en situation de notre IA personnelle)
@@ -129,17 +128,15 @@ Le candidat est en mesure d'expliquer **l'approche méthodologique** mise en œu
 
 ---
 
-## 5. Audit sécurité
+## 5\. Audit sécurité
 
 ### 5.1 Sécurité de l’infrastructure
 
 - **Segmentation réseau** : ??
 - **Pare-feu / security groups** :
   - iptables (SSH, HTTPS uniquement)
-
 - **Exposition Internet** :
   - Cloudflared tunnel
-
 - **Chiffrement des données** :
   - TLS (repos / transit)
   - Chiffrement inter-microservices ?? (paraît inutile)
@@ -159,13 +156,10 @@ Le candidat est en mesure d'expliquer **l'approche méthodologique** mise en œu
 
 - **Gestion des secrets** :
   - ?? (service dédié ? Signal ?)
-
 - **Protection API** :
   - Middleware avec authentification
-
 - **Journalisation des actions sensibles** :
   - Logs
-
 - **Prévention OWASP Top 10** :
   - Au moins au niveau design ??
 

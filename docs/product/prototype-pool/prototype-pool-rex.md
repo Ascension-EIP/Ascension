@@ -1,7 +1,11 @@
+---
+id: ea19f6e9-0ee4-4c28-915c-24bd795db95d
+---
+
 :::success
-**Version:** 1.0  
-**Original language:** French  
-DON'T EDIT THIS FILE !  
+**Version:** 1.0
+**Original language:** French
+DON'T EDIT THIS FILE !
 :::
 
 ---
@@ -14,40 +18,38 @@ Ce document dresse le bilan de notre expérience durant la "Prototyping Pool". E
 
 ## Table of Contents
 
-- [Retour d'Expérience (REX): Piscine de Prototypage](#retour-dexpérience-rex-piscine-de-prototypage)
+- [Retour d'Expérience (REX): Piscine de Prototypage](#retour-dexp%C3%A9rience-rex-piscine-de-prototypage)
   - [Table of Contents](#table-of-contents)
-  - [1. Contexte](#1-contexte)
-  - [2. Ce qui nous a plu (Points Positifs)](#2-ce-qui-nous-a-plu-points-positifs)
-    - [Évolution de la vision produit](#évolution-de-la-vision-produit)
+  - [1\. Contexte](#1-contexte)
+  - [2\. Ce qui nous a plu (Points Positifs)](#2-ce-qui-nous-a-plu-points-positifs)
+    - [Évolution de la vision produit](#%C3%A9volution-de-la-vision-produit)
     - [Validation et pivot technique](#validation-et-pivot-technique)
-    - [Découverte de nouvelles technologies](#découverte-de-nouvelles-technologies)
-    - [Accompagnement pédagogique](#accompagnement-pédagogique)
-    - [IA \& Prompt Engineering](#ia--prompt-engineering)
-  - [3. Ce qui nous a moins plu (Points Négatifs)](#3-ce-qui-nous-a-moins-plu-points-négatifs)
+    - [Découverte de nouvelles technologies](#d%C3%A9couverte-de-nouvelles-technologies)
+    - [Accompagnement pédagogique](#accompagnement-p%C3%A9dagogique)
+    - [IA & Prompt Engineering](#ia--prompt-engineering)
+  - [3\. Ce qui nous a moins plu (Points Négatifs)](#3-ce-qui-nous-a-moins-plu-points-n%C3%A9gatifs)
     - [La course contre la montre et la "contrainte" de l'IA](#la-course-contre-la-montre-et-la-contrainte-de-lia)
     - [Une organisation parfois floue](#une-organisation-parfois-floue)
     - [La lourdeur administrative](#la-lourdeur-administrative)
-  - [4. Notre ressenti (Comment on l'a vécu)](#4-notre-ressenti-comment-on-la-vécu)
+  - [4\. Notre ressenti (Comment on l'a vécu)](#4-notre-ressenti-comment-on-la-v%C3%A9cu)
     - [Entre stress et satisfaction](#entre-stress-et-satisfaction)
     - [Le sentiment d'un changement de paradigme](#le-sentiment-dun-changement-de-paradigme)
-    - [Le besoin de décompression](#le-besoin-de-décompression)
+    - [Le besoin de décompression](#le-besoin-de-d%C3%A9compression)
   - [Conclusion](#conclusion)
 
 ---
 
-## 1. Contexte
+## 1\. Contexte
 
 La piscine s'est déroulée en deux phases distinctes :
 
-1.  **Phase de cadrage (3 semaines) :** Focus total sur l'administratif, les benchmarks, la documentation stratégique et la définition de la stack technique.
-
-2.  **Phase de POC (2 semaines) :** Développement d'un prototype fonctionnel de bout en bout pour valider notre flux de données.
-
-3.  **Finalisation :** Soutenance du bloc RNCP 1 une semaine après la fin de la piscine.
+1. **Phase de cadrage (3 semaines) :** Focus total sur l'administratif, les benchmarks, la documentation stratégique et la définition de la stack technique.
+2. **Phase de POC (2 semaines) :** Développement d'un prototype fonctionnel de bout en bout pour valider notre flux de données.
+3. **Finalisation :** Soutenance du bloc RNCP 1 une semaine après la fin de la piscine.
 
 ---
 
-## 2. Ce qui nous a plu (Points Positifs)
+## 2\. Ce qui nous a plu (Points Positifs)
 
 ### Évolution de la vision produit
 
@@ -71,7 +73,7 @@ Les objectifs nous ont poussés à intégrer l'IA au cœur de notre architecture
 
 ---
 
-## 3. Ce qui nous a moins plu (Points Négatifs)
+## 3\. Ce qui nous a moins plu (Points Négatifs)
 
 ### La course contre la montre et la "contrainte" de l'IA
 
@@ -91,7 +93,7 @@ On ne va pas se mentir : passer trois semaines sur de la doc et de la paperasse 
 
 ---
 
-## 4. Notre ressenti (Comment on l'a vécu)
+## 4\. Notre ressenti (Comment on l'a vécu)
 
 ### Entre stress et satisfaction
 

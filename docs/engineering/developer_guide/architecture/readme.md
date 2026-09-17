@@ -1,6 +1,10 @@
+---
+id: dedaae6f-40e8-4ba6-9251-a36656a0b048
+---
+
 :::success
-**Version:** 1.5  
-**Original language:** English  
+**Version:** 1.5
+**Original language:** English
 :::
 
 ---
@@ -51,7 +55,6 @@
 - [Contributing](#contributing)
 - [References](#references)
 
-
 ---
 
 ## Overview
@@ -76,31 +79,29 @@ Before diving into implementation, review these key documents:
 
 ### 📋 Part 1: System Architecture
 
-1. **[Architecture Decision Record (ADR)](./adr/tech-stack-decision.md)** - Technology stack justifications
+1. [**Architecture Decision Record (ADR)**](./adr/tech-stack-decision.md) - Technology stack justifications
    - Why Go for API, Flutter for mobile, Python for AI
    - Performance benchmarks and cost analysis
    - Decision framework and evaluation criteria
-
-2. **[System Overview](./system-overview.md)** - High-level design philosophy
+2. **[System Overview](system-overview.md)** - High-level design philosophy
    - Event-driven architecture patterns
    - CQRS implementation
    - Scaling strategy and performance targets
 
 ### 📊 Part 2: Data & API Modeling
 
-3. **[Database Schema & ERD](./specifications/database-schema.md)** - Complete data model
+3. **[Database Schema & ERD](specifications/database-schema.md)** - Complete data model
    - Entity-Relationship Diagram (Mermaid)
    - PostgreSQL schema with triggers and indexes
    - Sample queries and migration strategy
-
-4. **[API Specification](./specifications/api-specification.md)** - OpenAPI 3.0 documentation
+4. **[API Specification](specifications/api-specification.md)** - OpenAPI 3.0 documentation
    - REST endpoints with request/response examples
    - WebSocket protocol for real-time updates
    - Authentication flows and error codes
 
 ### 🔄 Workflows
 
-5. **[Video Analysis Flow](./workflows/video-analysis-flow.md)** - End-to-end feature flow
+5. [**Video Analysis Flow**](./workflows/video-analysis-flow.md) - End-to-end feature flow
    - Complete sequence diagrams
    - Implementation code examples
    - Phase-by-phase breakdown
@@ -223,7 +224,7 @@ architecture/
 
 ## Repository Structure
 
-Ascension uses a **monorepo managed with [moonrepo](https://moonrepo.dev)**. All services live in the same repository under `apps/`:
+Ascension uses a **monorepo managed with** [**moonrepo**](https://moonrepo.dev). All services live in the same repository under `apps/`:
 
 ```
 Ascension/                      # Monorepo root
@@ -329,29 +330,29 @@ Ascension/                      # Monorepo root
 
 **Recommended Reading Order**:
 
-1. **[Architecture Decision Record](./adr/tech-stack-decision.md)** - Understand WHY we chose each technology
-2. **[System Overview](./system-overview.md)** - Understand HOW the system works
-3. **[Database Schema](./specifications/database-schema.md)** - Understand WHAT data we store
-4. **[API Specification](./specifications/api-specification.md)** - Understand the API CONTRACT
-5. **[Video Analysis Flow](./workflows/video-analysis-flow.md)** - Understand the CORE FEATURE
-6. **[Development Deployment](./deployment/development.md)** - SET UP your local environment
+1. [**Architecture Decision Record**](./adr/tech-stack-decision.md) - Understand WHY we chose each technology
+2. **[System Overview](system-overview.md)** - Understand HOW the system works
+3. **[Database Schema](specifications/database-schema.md)** - Understand WHAT data we store
+4. **[API Specification](specifications/api-specification.md)** - Understand the API CONTRACT
+5. [**Video Analysis Flow**](./workflows/video-analysis-flow.md) - Understand the CORE FEATURE
+6. **[Development Deployment](deployment/development.md)** - SET UP your local environment
 
 ### For Architects & Tech Leads
 
 **Quick Reference**:
 
 - 📐 **C4 Model Diagram**: See "Architecture Components" section above
-- 🗄️ **ERD Diagram**: [Database Schema](./specifications/database-schema.md#entity-relationship-diagram-erd)
-- 📡 **API Contract**: [OpenAPI 3.0 Spec](./specifications/api-specification.md#openapi-30-specification)
+- 🗄️ **ERD Diagram**: [Database Schema](specifications/database-schema.md)
+- 📡 **API Contract**: [OpenAPI 3.0 Spec](specifications/api-specification.md)
 - 🎯 **Tech Justifications**: [ADR](./adr/tech-stack-decision.md#technology-decisions)
-- 📊 **Performance Targets**: [System Overview - SLAs](./system-overview.md#target-slas)
+- 📊 **Performance Targets**: [System Overview - SLAs](system-overview.md)
 
 ### Quick Links
 
 - **Architecture Questions?** → [Tech Stack Decision Record](./adr/tech-stack-decision.md)
-- **Need API docs?** → [API Specification](./specifications/api-specification.md)
-- **Database queries?** → [Database Schema](./specifications/database-schema.md)
-- **Setup local env?** → [Development Deployment](./deployment/development.md)
+- **Need API docs?** → [API Specification](specifications/api-specification.md)
+- **Database queries?** → [Database Schema](specifications/database-schema.md)
+- **Setup local env?** → [Development Deployment](deployment/development.md)
 
 ---
 
@@ -360,6 +361,7 @@ Ascension/                      # Monorepo root
 ### Why Go for API? (Migrated from Rust)
 
 Initially, Rust was chosen for its memory safety, high performance, and zero-overhead abstractions. However, as the project evolved:
+
 - The team migrated to Go (Gin framework) to accelerate development velocity and simplify the onboarding of new developers.
 - Go's simplicity, built-in concurrency with goroutines, and fast compile times provided a better balance for our startup context.
 - Performance remains exceptionally high and more than sufficient for acting as the system coordinator and gateway.
@@ -456,4 +458,3 @@ When modifying the architecture:
 - [MinIO Presigned URLs](https://min.io/docs/minio/linux/integrations/presigned-put-upload-via-browser.html)
 
 ---
-

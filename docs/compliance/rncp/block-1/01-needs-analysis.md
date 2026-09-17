@@ -1,7 +1,11 @@
+---
+id: adc9e53d-256a-4f03-81f1-ef2f09c1955c
+---
+
 :::success
-**Version:** 1.0  
-**Original language:** French  
-DON'T EDIT THIS FILE !  
+**Version:** 1.0
+**Original language:** French
+DON'T EDIT THIS FILE !
 :::
 
 ---
@@ -13,21 +17,21 @@ DON'T EDIT THIS FILE !
 ## Table des matières
 
 - [Bloc 1 — M1 — 01 Analyse des besoins](#bloc-1--m1--01-analyse-des-besoins)
-  - [Table des matières](#table-des-matières)
+  - [Table des matières](#table-des-mati%C3%A8res)
   - [Objectif du document](#objectif-du-document)
-  - [Périmètre et sources](#périmètre-et-sources)
-  - [Méthodologie de recueil](#méthodologie-de-recueil)
-  - [Parties prenantes et besoins exprimés](#parties-prenantes-et-besoins-exprimés)
-    - [1. Parties prenantes identifiées](#1-parties-prenantes-identifiées)
-    - [2. Besoins utilisateurs consolidés](#2-besoins-utilisateurs-consolidés)
-    - [3. Besoin business](#3-besoin-business)
-  - [Périmètre fonctionnel consolidé](#périmètre-fonctionnel-consolidé)
+  - [Périmètre et sources](#p%C3%A9rim%C3%A8tre-et-sources)
+  - [Méthodologie de recueil](#m%C3%A9thodologie-de-recueil)
+  - [Parties prenantes et besoins exprimés](#parties-prenantes-et-besoins-exprim%C3%A9s)
+    - [1\. Parties prenantes identifiées](#1-parties-prenantes-identifi%C3%A9es)
+    - [2\. Besoins utilisateurs consolidés](#2-besoins-utilisateurs-consolid%C3%A9s)
+    - [3\. Besoin business](#3-besoin-business)
+  - [Périmètre fonctionnel consolidé](#p%C3%A9rim%C3%A8tre-fonctionnel-consolid%C3%A9)
     - [Must Have (MVP Bloc 1)](#must-have-mvp-bloc-1)
     - [Should / Could (hors MVP strict)](#should--could-hors-mvp-strict)
     - [Out of scope explicite (version actuelle)](#out-of-scope-explicite-version-actuelle)
-  - [Exigences accessibilité (PSH)](#exigences-accessibilité-psh)
-  - [Traçabilité RNCP M1 (O1, O2)](#traçabilité-rncp-m1-o1-o2)
-  - [Points ouverts à sécuriser avant oral](#points-ouverts-à-sécuriser-avant-oral)
+  - [Exigences accessibilité (PSH)](#exigences-accessibilit%C3%A9-psh)
+  - [Traçabilité RNCP M1 (O1, O2)](#tra%C3%A7abilit%C3%A9-rncp-m1-o1-o2)
+  - [Points ouverts à sécuriser avant oral](#points-ouverts-%C3%A0-s%C3%A9curiser-avant-oral)
 
 ---
 
@@ -67,22 +71,22 @@ Limite assumée : les comptes-rendus d’entretiens terrain sont mentionnés da
 
 ## Parties prenantes et besoins exprimés
 
-### 1. Parties prenantes identifiées
+### 1\. Parties prenantes identifiées
 
 - **Utilisateurs finaux grimpeurs** (intermédiaires, experts) : progression technique, feedback objectif.
 - **Équipe produit/tech Ascension** : faisabilité MVP à budget contraint.
 - **Contexte réglementaire** : données vidéo corporelles, conformité RGPD.
 - **Jury RNCP** : traçabilité de bout en bout entre besoin, spécification, et chiffrage.
 
-### 2. Besoins utilisateurs consolidés
+### 2\. Besoins utilisateurs consolidés
 
-| Segment                                    | Besoin principal                    | Douleur actuelle                                  | Réponse Ascension (cible)                          |
-| :----------------------------------------- | :---------------------------------- | :------------------------------------------------ | :------------------------------------------------- |
-| Grimpeur intermédiaire                     | Comprendre ses erreurs de posture   | Feedback humain coûteux et irrégulier             | Analyse vidéo asynchrone + restitution exploitable |
-| Grimpeur expert                            | Optimiser la séquence de mouvements | Difficulté à objectiver les micro-ajustements     | Comparaison trajectoire + métriques biomécaniques  |
-| Utilisateur PSH (ex. malvoyance partielle) | Accéder aux résultats sans friction | Interfaces non vocalisées / contraste insuffisant | Contraintes WCAG 2.1 AA intégrées aux specs        |
+| Segment | Besoin principal | Douleur actuelle | Réponse Ascension (cible) |
+| --- | --- | --- | --- |
+| Grimpeur intermédiaire | Comprendre ses erreurs de posture | Feedback humain coûteux et irrégulier | Analyse vidéo asynchrone + restitution exploitable |
+| Grimpeur expert | Optimiser la séquence de mouvements | Difficulté à objectiver les micro-ajustements | Comparaison trajectoire + métriques biomécaniques |
+| Utilisateur PSH (ex. malvoyance partielle) | Accéder aux résultats sans friction | Interfaces non vocalisées / contraste insuffisant | Contraintes WCAG 2.1 AA intégrées aux specs |
 
-### 3. Besoin business
+### 3\. Besoin business
 
 - Délivrer un coaching technique à faible coût unitaire.
 - Prioriser un **MVP réaliste** avant extensions avancées (ghost enrichi, routines personnalisées, etc.).
@@ -126,10 +130,10 @@ Décision de cadrage : l’accessibilité n’est pas un add-on de fin de proje
 
 ## Traçabilité RNCP M1 (O1, O2)
 
-| Observable                              | Éléments de preuve                                                                                                                          | Couverture                                                         |
-| :-------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------- |
-| **O1** — analyse des besoins + échanges | Personas, user stories, backlog priorisé dans `client-needs-and-functional-scope.md` + méthode d’enquête dans `context-audit-compliance.md` | **Partielle à forte** (verbatim d’entretiens à mieux formaliser)   |
-| **O2** — prise en compte PSH            | Exigences WCAG et contraintes PSH dans `tech-func-specs.md` + support oral atelier                                                          | **Partielle** (à renforcer par une matrice de conformité testable) |
+| Observable | Éléments de preuve | Couverture |
+| --- | --- | --- |
+| **O1** — analyse des besoins + échanges | Personas, user stories, backlog priorisé dans `client-needs-and-functional-scope.md` + méthode d’enquête dans `context-audit-compliance.md` | **Partielle à forte** (verbatim d’entretiens à mieux formaliser) |
+| **O2** — prise en compte PSH | Exigences WCAG et contraintes PSH dans `tech-func-specs.md` + support oral atelier | **Partielle** (à renforcer par une matrice de conformité testable) |
 
 ---
 

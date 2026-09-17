@@ -1,6 +1,10 @@
+---
+id: ad5d8dc0-4b6d-4b0f-a538-c7796f3dca32
+---
+
 :::success
-**Version:** 1.2  
-**Original language:** English  
+**Version:** 1.2
+**Original language:** English
 :::
 
 ---
@@ -18,5 +22,5 @@
 
 ## Core References
 
-- [Project Glossary](./glossary.md)
-- [Markdown Guidelines](./guidelines/markdown-guidelines.md)
+- [Project Glossary](glossary.md)
+- [Markdown Guidelines](guidelines/markdown-guidelines.md)

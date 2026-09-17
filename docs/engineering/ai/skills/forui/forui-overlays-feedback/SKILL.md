@@ -1,4 +1,5 @@
 ---
+id: 23270e83-870d-4623-9a13-ca5db3db5110
 name: forui-overlays-feedback
 description: Implement Forui overlays and feedback. Use when working with showFDialog, FDialog, showFSheet, FModalSheetRoute, showFPersistentSheet, FSheets, FPopover, FPopoverMenu, FTooltip, showFToast, showRawFToast, FToast, FToaster, FOverlay, FPortal, modal barriers, or dismiss behavior.
 metadata:

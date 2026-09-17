@@ -1,6 +1,10 @@
+---
+id: 12faa954-739f-489a-acdb-919a1c0b6151
+---
+
 :::warning
-**Version:** 1.0  
-**Original language:** French  
+**Version:** 1.0
+**Original language:** French
 :::
 
 ---
@@ -13,37 +17,37 @@ Ce document rassemble l'ensemble des constats, anomalies identifiées, fonctionn
 
 ## Table of Contents
 
-- [Plan d'Action Technique : Audit, Harmonisation d'Architecture \& Refonte Mobile](#plan-daction-technique--audit-harmonisation-darchitecture--refonte-mobile)
+- [Plan d'Action Technique : Audit, Harmonisation d'Architecture & Refonte Mobile](#plan-daction-technique--audit-harmonisation-darchitecture--refonte-mobile)
   - [Table of Contents](#table-of-contents)
-  - [1. Contexte \& Synthèse Globale](#1-contexte--synthèse-globale)
+  - [1\. Contexte & Synthèse Globale](#1-contexte--synth%C3%A8se-globale)
     - [1.1 Postulat de travail retenu](#11-postulat-de-travail-retenu)
     - [1.2 Les grands axes de travail](#12-les-grands-axes-de-travail)
-  - [2. Chantier 1 : Cadrage \& Harmonisation des Contrats d'API](#2-chantier-1--cadrage--harmonisation-des-contrats-dapi)
+  - [2\. Chantier 1 : Cadrage & Harmonisation des Contrats d'API](#2-chantier-1--cadrage--harmonisation-des-contrats-dapi)
     - [2.1 Divergences actuelles entre Mobile et Backend](#21-divergences-actuelles-entre-mobile-et-backend)
-    - [2.2 Cadrage futur \& Spécification OpenAPI](#22-cadrage-futur--spécification-openapi)
-  - [3. Chantier 2 : Backend Go (Parité Fonctionnelle \& Corrections)](#3-chantier-2--backend-go-parité-fonctionnelle--corrections)
-    - [3.1 Fonctionnalités perdues lors de la migration Rust vers Go](#31-fonctionnalités-perdues-lors-de-la-migration-rust-vers-go)
-    - [3.2 Bugs techniques \& Anomalies SQL identifiés](#32-bugs-techniques--anomalies-sql-identifiés)
+    - [2.2 Cadrage futur & Spécification OpenAPI](#22-cadrage-futur--sp%C3%A9cification-openapi)
+  - [3\. Chantier 2 : Backend Go (Parité Fonctionnelle & Corrections)](#3-chantier-2--backend-go-parit%C3%A9-fonctionnelle--corrections)
+    - [3.1 Fonctionnalités perdues lors de la migration Rust vers Go](#31-fonctionnalit%C3%A9s-perdues-lors-de-la-migration-rust-vers-go)
+    - [3.2 Bugs techniques & Anomalies SQL identifiés](#32-bugs-techniques--anomalies-sql-identifi%C3%A9s)
     - [3.3 Travaux prioritaires sur le Backend](#33-travaux-prioritaires-sur-le-backend)
-  - [4. Chantier 3 : Worker IA (Stabilisation, Environnement \& SAM 3D)](#4-chantier-3--worker-ia-stabilisation-environnement--sam-3d)
-    - [4.1 État actuel des pipelines d'analyse](#41-état-actuel-des-pipelines-danalyse)
-    - [4.2 Focus sur SAM 3D (`ai_sam3d.py`)](#42-focus-sur-sam-3d-ai_sam3dpy)
-    - [4.3 Anomalies de configuration \& Déploiement Docker](#43-anomalies-de-configuration--déploiement-docker)
+  - [4\. Chantier 3 : Worker IA (Stabilisation, Environnement & SAM 3D)](#4-chantier-3--worker-ia-stabilisation-environnement--sam-3d)
+    - [4.1 État actuel des pipelines d'analyse](#41-%C3%A9tat-actuel-des-pipelines-danalyse)
+    - [4.2 Focus sur SAM 3D (](#42-focus-sur-sam-3d-ai_sam3dpy)`ai_sam3d.py`[)](#42-focus-sur-sam-3d-ai_sam3dpy)
+    - [4.3 Anomalies de configuration & Déploiement Docker](#43-anomalies-de-configuration--d%C3%A9ploiement-docker)
     - [4.4 Travaux prioritaires sur l'IA](#44-travaux-prioritaires-sur-lia)
-  - [5. Chantier 4 : Application Mobile Flutter (Refonte Graphique \& Réseau)](#5-chantier-4--application-mobile-flutter-refonte-graphique--réseau)
-    - [5.1 Refonte UI / UX Complète (Design Moderne Grimpeur)](#51-refonte-ui--ux-complète-design-moderne-grimpeur)
-    - [5.2 Intégration Réseau \& Gestion de Session](#52-intégration-réseau--gestion-de-session)
+  - [5\. Chantier 4 : Application Mobile Flutter (Refonte Graphique & Réseau)](#5-chantier-4--application-mobile-flutter-refonte-graphique--r%C3%A9seau)
+    - [5.1 Refonte UI / UX Complète (Design Moderne Grimpeur)](#51-refonte-ui--ux-compl%C3%A8te-design-moderne-grimpeur)
+    - [5.2 Intégration Réseau & Gestion de Session](#52-int%C3%A9gration-r%C3%A9seau--gestion-de-session)
     - [5.3 Travaux prioritaires sur le Mobile](#53-travaux-prioritaires-sur-le-mobile)
-  - [6. Matrice des Priorités \& Roadmap d'Exécution](#6-matrice-des-priorités--roadmap-dexécution)
-    - [Phase 1 : Rétablissement du Flux de Bout en Bout (Court Terme)](#phase-1--rétablissement-du-flux-de-bout-en-bout-court-terme)
-    - [Phase 2 : Cadrage Formel \& Standardisation OpenAPI (Moyen Terme)](#phase-2--cadrage-formel--standardisation-openapi-moyen-terme)
-    - [Phase 3 : Parité Fonctionnelle Backend \& Données d'Analyse (Moyen Terme)](#phase-3--parité-fonctionnelle-backend--données-danalyse-moyen-terme)
-    - [Phase 4 : Refonte Graphique Complète du Mobile Flutter (Moyen/Long Terme)](#phase-4--refonte-graphique-complète-du-mobile-flutter-moyenlong-terme)
-    - [Phase 5 : Tests d'Intégration End-to-End \& Monitoring (Long Terme)](#phase-5--tests-dintégration-end-to-end--monitoring-long-terme)
+  - [6\. Matrice des Priorités & Roadmap d'Exécution](#6-matrice-des-priorit%C3%A9s--roadmap-dex%C3%A9cution)
+    - [Phase 1 : Rétablissement du Flux de Bout en Bout (Court Terme)](#phase-1--r%C3%A9tablissement-du-flux-de-bout-en-bout-court-terme)
+    - [Phase 2 : Cadrage Formel & Standardisation OpenAPI (Moyen Terme)](#phase-2--cadrage-formel--standardisation-openapi-moyen-terme)
+    - [Phase 3 : Parité Fonctionnelle Backend & Données d'Analyse (Moyen Terme)](#phase-3--parit%C3%A9-fonctionnelle-backend--donn%C3%A9es-danalyse-moyen-terme)
+    - [Phase 4 : Refonte Graphique Complète du Mobile Flutter (Moyen/Long Terme)](#phase-4--refonte-graphique-compl%C3%A8te-du-mobile-flutter-moyenlong-terme)
+    - [Phase 5 : Tests d'Intégration End-to-End & Monitoring (Long Terme)](#phase-5--tests-dint%C3%A9gration-end-to-end--monitoring-long-terme)
 
 ---
 
-## 1. Contexte & Synthèse Globale
+## 1\. Contexte & Synthèse Globale
 
 Le projet **Ascension** repose sur une architecture événementielle distribuée :
 
@@ -77,21 +81,21 @@ Par conséquent :
 
 ---
 
-## 2. Chantier 1 : Cadrage & Harmonisation des Contrats d'API
+## 2\. Chantier 1 : Cadrage & Harmonisation des Contrats d'API
 
 ### 2.1 Divergences actuelles entre Mobile et Backend
 
 L'analyse comparative révèle des ruptures de contrat bloquantes entre le client mobile (`ApiService`) et l'API Gateway Go :
 
-| Domaine               | Implémentation Mobile (`api_service.dart`)                        | Implémentation Backend Go (`router.go`)                                                         | Statut / Conséquence                                                             |
-| :-------------------- | :---------------------------------------------------------------- | :---------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------- |
-| **Inscription**       | `POST /v1/auth/register`<br>Body: `{username, email, password}`   | `POST /v1/auth/signup`<br>Body: `{name, email, password}`                                       | **404 Not Found** (Route inexistante sur le serveur)                             |
-| **Headers d'Auth**    | Aucun en-tête `Authorization` transmis sur les requêtes protégées | `authMW` vérifie `Authorization: Bearer <token>` sur `/users`, `/videos`, `/analysis`           | **401 Unauthorized** systématique sur toutes les routes métier                   |
-| **Demande d'Upload**  | `POST /v1/videos/upload-url`<br>Body: `{"filename", "user_id"}`   | `GET /v1/videos/upload-url?content_type=...&size=...`                                           | **405 Method Not Allowed** (Méthode POST refusée)                                |
-| **Validation Upload** | Étape non appelée par le Mobile                                   | `PUT /v1/videos/upload-done/:id`<br>Vérifie l'objet dans MinIO et passe le statut à `completed` | **Blocage analyse** : la vidéo reste `pending`, le backend refuse de lancer l'IA |
-| **Déclenchement IA**  | `POST /v1/analyses`<br>Attend `analysis_id` dans la réponse       | `POST /v1/analysis/`<br>Retourne `{id, status}`                                                 | **404 Not Found** (Pluriel vs singulier) + champ d'ID divergent                  |
-| **Lecture Analyse**   | `GET /v1/analyses/:id`                                            | `GET /v1/analysis/:id`                                                                          | **404 Not Found** (Pluriel vs singulier)                                         |
-| **Host MinIO**        | Upload direct sur l'URL présignée MinIO (`http://minio:9000/...`) | URL présignée construite avec l'endpoint interne Docker                                         | **Échec réseau mobile** : un smartphone ou émulateur ne résout pas `minio`       |
+| Domaine | Implémentation Mobile (`api_service.dart`) | Implémentation Backend Go (`router.go`) | Statut / Conséquence |
+| --- | --- | --- | --- |
+| **Inscription** | `POST /v1/auth/register`<br>Body: `{username, email, password}` | `POST /v1/auth/signup`<br>Body: `{name, email, password}` | **404 Not Found** (Route inexistante sur le serveur) |
+| **Headers d'Auth** | Aucun en-tête `Authorization` transmis sur les requêtes protégées | `authMW` vérifie `Authorization: Bearer <token>` sur `/users`, `/videos`, `/analysis` | **401 Unauthorized** systématique sur toutes les routes métier |
+| **Demande d'Upload** | `POST /v1/videos/upload-url`<br>Body: `{"filename", "user_id"}` | `GET /v1/videos/upload-url?content_type=...&size=...` | **405 Method Not Allowed** (Méthode POST refusée) |
+| **Validation Upload** | Étape non appelée par le Mobile | `PUT /v1/videos/upload-done/:id`<br>Vérifie l'objet dans MinIO et passe le statut à `completed` | **Blocage analyse** : la vidéo reste `pending`, le backend refuse de lancer l'IA |
+| **Déclenchement IA** | `POST /v1/analyses`<br>Attend `analysis_id` dans la réponse | `POST /v1/analysis/`<br>Retourne `{id, status}` | **404 Not Found** (Pluriel vs singulier) + champ d'ID divergent |
+| **Lecture Analyse** | `GET /v1/analyses/:id` | `GET /v1/analysis/:id` | **404 Not Found** (Pluriel vs singulier) |
+| **Host MinIO** | Upload direct sur l'URL présignée MinIO (`http://minio:9000/...`) | URL présignée construite avec l'endpoint interne Docker | **Échec réseau mobile** : un smartphone ou émulateur ne résout pas `minio` |
 
 ### 2.2 Cadrage futur & Spécification OpenAPI
 
@@ -105,16 +109,16 @@ Une session de cadrage d'équipe doit formaliser les points suivants :
 
 ---
 
-## 3. Chantier 2 : Backend Go (Parité Fonctionnelle & Corrections)
+## 3\. Chantier 2 : Backend Go (Parité Fonctionnelle & Corrections)
 
 ### 3.1 Fonctionnalités perdues lors de la migration Rust vers Go
 
 Lors du passage de l'ancien serveur Rust (Axum) au serveur Go (Gin), plusieurs fonctionnalités clés documentées dans `docs/developer_guide/server/go-vs-rust-functional-gap.md` n'ont pas encore été réintégrées dans le serveur Go :
 
-1. **Richesse des réponses d'analyse (`GET /v1/analysis/:id`)** :
-   - _Ancien état (Rust)_ : renvoyait `job_id`, `progress` (0–100), `hints` (conseils textuels Gemini), `result_json` (coordonnées des 33 keypoints par frame), et `processing_time_ms`.
-   - _État actuel (Go)_ : renvoie uniquement `id` et `status` (`pending` / `completed`). Les données brutes et les conseils sont inaccessibles par l'API REST.
-2. **Accès au profil personnel (`GET /v1/users/:id`)** :
+1. **Richesse des réponses d'analyse (**`GET /v1/analysis/:id`**)** :
+   - *Ancien état (Rust)* : renvoyait `job_id`, `progress` (0–100), `hints` (conseils textuels Gemini), `result_json` (coordonnées des 33 keypoints par frame), et `processing_time_ms`.
+   - *État actuel (Go)* : renvoie uniquement `id` et `status` (`pending` / `completed`). Les données brutes et les conseils sont inaccessibles par l'API REST.
+2. **Accès au profil personnel (**`GET /v1/users/:id`**)** :
    - La route est protégée par `adminMW`, interdisant à un utilisateur authentifié de consulter ou mettre à jour son propre profil.
 3. **Historique des analyses et des vidéos** :
    - Aucun endpoint pour lister les analyses d'un utilisateur (`GET /v1/users/me/analyses` ou `GET /v1/analysis?user_id=...`).
@@ -128,39 +132,40 @@ Lors du passage de l'ancien serveur Rust (Axum) au serveur Go (Gin), plusieurs f
 1. **Incompatibilité du nom de table SQL entre Go et l'IA** :
    - Le Backend Go insère dans la table `analysis` (singulier) : `INSERT INTO analysis (video_id) ...`
    - Le Worker IA met à jour la table `analyses` (pluriel) : `UPDATE analyses SET status = ...`
-   - _Impact_ : Les deux services pointent sur des tables différentes. L'analyse ne passe jamais à `completed` aux yeux du backend.
+   - *Impact* : Les deux services pointent sur des tables différentes. L'analyse ne passe jamais à `completed` aux yeux du backend.
 2. **Migrations orphelines et conflictuelles** :
    - Deux jeux de migrations coexistent dans `apps/server/migrations/` :
      - Format officiel `golang-migrate` : `000001_...up.sql` à `000009_...up.sql` (crée la table `analysis` sans les colonnes `progress` et `hints`).
      - Fichiers par date : `20260307...`, `20260311...`, `20260312...` (non exécutés par `golang-migrate` car dépourvus de `.up.sql`).
 3. **Erreur de cible sur le trigger SQL des vidéos** :
    - Dans `000004_create_videos_table.up.sql` :
+
      ```sql
      CREATE TRIGGER update_videos_updated_at BEFORE UPDATE ON users FOR EACH ROW ...
      ```
+
      Le trigger s'attache à la table `users` au lieu de `videos`.
 4. **Syntaxe MySQL dans une requête PostgreSQL** :
-   - Dans `internal/outbound/postgres/auth.go` (`DeleteExpiredSessions`) :
-     Utilisation du marqueur `?` au lieu de `$1` pour le paramètre de date.
+   - Dans `internal/outbound/postgres/auth.go` (`DeleteExpiredSessions`) : Utilisation du marqueur `?` au lieu de `$1` pour le paramètre de date.
 5. **Faille de sécurité & Bug sur la mise à jour utilisateur** :
    - Dans `internal/inbound/http/dto/request/user.go` : Si le mot de passe est omis dans l'update, le pointeur pointe vers un slice vide, écrasant le mot de passe en base avec une chaîne vide (`""`).
    - Si un mot de passe est fourni lors de l'update, il est sauvegardé en texte clair (pas de hash bcrypt appliqué dans `UpdateUser`).
-6. **Payload RabbitMQ partiel (`job_id` manquant)** :
+6. **Payload RabbitMQ partiel (**`job_id` **manquant)** :
    - Le service Go publie `{"analysis_id": "...", "video_url": "..."}` sans générer de `job_id`. L'IA publie donc l'événement de fin sous `skeleton.completed.unknown`.
 
 ### 3.3 Travaux prioritaires sur le Backend
 
 - [ ] **Uniformiser la table SQL d'analyse** : Basculer définitivement sur le nom standard `analyses` (au pluriel), intégrer les colonnes `job_id`, `progress`, `hints`, `result_json`, `processing_time_ms`.
-- [ ] **Nettoyer le dossier `migrations/`** : Supprimer les fichiers timestamp orphelins et consolider la séquence numérotée `000001` à `000010_...up.sql`. Corriger le trigger `videos` et la requête de suppression de session.
-- [ ] **Enrichir le DTO de retour `AnalysisInfoResponse`** : Renvoyer l'intégralité des métriques et des conseils IA sur `GET /v1/analysis/:id`.
-- [ ] **Générer et transmettre un `job_id` (UUID)** dans le payload RabbitMQ publié vers `vision.skeleton`.
+- [ ] **Nettoyer le dossier** `migrations/` : Supprimer les fichiers timestamp orphelins et consolider la séquence numérotée `000001` à `000010_...up.sql`. Corriger le trigger `videos` et la requête de suppression de session.
+- [ ] **Enrichir le DTO de retour** `AnalysisInfoResponse` : Renvoyer l'intégralité des métriques et des conseils IA sur `GET /v1/analysis/:id`.
+- [ ] **Générer et transmettre un** `job_id` **(UUID)** dans le payload RabbitMQ publié vers `vision.skeleton`.
 - [ ] **Débloquer la consultation du profil utilisateur** : Autoriser l'accès à son propre profil sans exiger le rôle `admin`.
 - [ ] **Sécuriser la mise à jour de profil** : Hasher systématiquement le mot de passe avec bcrypt s'il est renseigné, et ignorer le champ s'il est nul.
 - [ ] **Intégrer Swagger/OpenAPI** : Ajouter `swaggo/gin-swagger` et configurer la route `GET /swagger/*any`.
 
 ---
 
-## 4. Chantier 3 : Worker IA (Stabilisation, Environnement & SAM 3D)
+## 4\. Chantier 3 : Worker IA (Stabilisation, Environnement & SAM 3D)
 
 ### 4.1 État actuel des pipelines d'analyse
 
@@ -173,7 +178,7 @@ apps/ai/src/
 └── ai_sam3d.py        # [SOMMEIL] Pipeline SAM 3D Body + MHR-70 (554 lignes)
 ```
 
-- **Pipeline MediaPipe (`ai_mediapipe.py`) - Opérationnel** :
+- **Pipeline MediaPipe (**`ai_mediapipe.py`**) - Opérationnel** :
   - Extraction de 33 points clés squelettiques 3D normalisés par frame.
   - Calcul trigonométrique des angles articulaires clés (épaules, coudes, hanches, genoux).
   - Échantillonnage intelligent des données pour générer un prompt compact.
@@ -197,7 +202,7 @@ Le pipeline **SAM 3D Body** vise à reconstruire un modèle corporel complet en 
 
 ### 4.3 Anomalies de configuration & Déploiement Docker
 
-1. **Hôte RabbitMQ incorrect dans `docker-compose.yml`** :
+1. **Hôte RabbitMQ incorrect dans** `docker-compose.yml` :
    - Le service `ai-worker` a `RABBITMQ_URL=amqp://ascension:ascension@localhost:5672`.
    - Dans Docker, `localhost` isole le conteneur du conteneur `rabbitmq`. L'URL doit être `amqp://ascension:ascension@rabbitmq:5672`.
 2. **Clé API Gemini absente du conteneur** :
@@ -205,20 +210,20 @@ Le pipeline **SAM 3D Body** vise à reconstruire un modèle corporel complet en 
 3. **Divergence de modèle MediaPipe** :
    - `Dockerfile` télécharge `pose_landmarker_lite.task`.
    - `scripts/download-model.sh` télécharge `pose_landmarker_heavy.task`.
-4. **Fichier `requirements.txt` invalide** :
+4. **Fichier** `requirements.txt` **invalide** :
    - Fait référence à des sous-dossiers `-r requirements/base.txt` inexistants. Le projet utilise désormais `uv` et `pyproject.toml`.
 
 ### 4.4 Travaux prioritaires sur l'IA
 
-- [x] **Corriger `docker-compose.yml`** : Remplacer `localhost` par `rabbitmq` et injecter `GEMINI_API_KEY: ${GEMINI_API_KEY}`.
+- [x] **Corriger** `docker-compose.yml` : Remplacer `localhost` par `rabbitmq` et injecter `GEMINI_API_KEY: ${GEMINI_API_KEY}`.
 - [ ] **Harmoniser le nom de la table SQL** : S'assurer que `worker.py` met à jour la même table que celle requêtée par le Backend Go (`analyses`).
-- [ ] **Prendre en compte le `job_id`** envoyé par RabbitMQ pour router correctement les événements de sortie `skeleton.completed.<job_id>`.
+- [ ] **Prendre en compte le** `job_id` envoyé par RabbitMQ pour router correctement les événements de sortie `skeleton.completed.<job_id>`.
 - [ ] **Harmoniser la version du modèle MediaPipe** (`pose_landmarker_heavy.task` pour la précision de pose).
-- [ ] **Nettoyer `requirements.txt`** pour refléter la configuration `uv` / `pyproject.toml`.
+- [ ] **Nettoyer** `requirements.txt` pour refléter la configuration `uv` / `pyproject.toml`.
 
 ---
 
-## 5. Chantier 4 : Application Mobile Flutter (Refonte Graphique & Réseau)
+## 5\. Chantier 4 : Application Mobile Flutter (Refonte Graphique & Réseau)
 
 ### 5.1 Refonte UI / UX Complète (Design Moderne Grimpeur)
 
@@ -237,34 +242,35 @@ L'interface actuelle est jugée **austère, peu attrayante et datée** ("moche")
 └───────────────────────┴───────────────────────┴─────────────────────────────┘
 ```
 
-#### Écrans cibles de la refonte graphique :
+Écrans cibles de la refonte graphique :
 
-1. **`HomePage` (Actuellement placeholder)** :
-   - _Actuel_ : Simple texte "Accueil bientôt disponible !".
-   - _Cible_ : Dashboard grimpeur moderne :
+1. `HomePage` **(Actuellement placeholder)** :
+   - *Actuel* : Simple texte "Accueil bientôt disponible !".
+   - *Cible* : Dashboard grimpeur moderne :
      - Widget "Dernière ascension" avec snapshot du squelette et note technique.
      - Raccourci central "Nouvelle Analyse" proéminent (bouton flottant / hero banner).
      - Carte "Conseil d'entraînement du jour" propulsée par l'IA.
      - Résumé rapide des statistiques hebdomadaires (voies grimpées, temps sous tension).
-2. **`UploadPage` & Lecteur de Sélection Vidéo** :
+2. `UploadPage` **& Lecteur de Sélection Vidéo** :
    - Zone de drop/sélection modernisée avec animations d'onde lors de l'enregistrement.
    - Lecteur de prévisualisation plein écran avec recadrage dynamique et slider de rognage de vidéo (pour ne garder que la section grimpée).
    - Écran d'attente d'analyse dynamique : remplacer les slides statiques par une animation 3D ou un skeleton animé montrant l'IA en train de "scanner" la vidéo, avec barre de progression temps réel (0–100%).
-3. **`AnalysisViewPage` (Visualiseur de Performance)** :
+3. `AnalysisViewPage` **(Visualiseur de Performance)** :
    - **Onglet Squelette** : Superposition vidéo transparente, tracés néon des segments corporels, affichage des angles critiques en surbrillance (vert = optimal, rouge = angle sous tension/fermé).
    - **Onglet Angles & Biomécanique** : Graphiques temporels interactifs (`fl_chart`) modernes, synchronisés au millimètre près avec la tête de lecture vidéo.
    - **Onglet Conseils IA** : Cartes de conseils ergonomiques avec badges temporels cliquables (`[02:14]`) qui recalent directement la vidéo à l'instant du mouvement fautif.
-4. **`StatsPage` (Historique & Statistiques)** :
+4. `StatsPage` **(Historique & Statistiques)** :
    - Graphiques d'évolution dans le temps, heatmap des prises sollicitées, jauge de symétrie corporelle (bras gauche vs bras droit).
    - Filtres par date, cotation ou type de bloc.
-5. **`ProfilePage`** :
+5. `ProfilePage` :
    - Fiche morphologique visuelle (taille, envergure / ape index, poids).
    - Mannequin corporel interactif pour indiquer les zones de blessures ou faiblesses.
 
 ### 5.2 Intégration Réseau & Gestion de Session
 
 - **Authentification & Headers JWT** :
-  - Modifier [`api_service.dart`](file:///home/toronicolas/Epitech/EIP/Ascension/apps/mobile/lib/core/network/api_service.dart) pour injecter systématiquement l'en-tête :
+  - Modifier \[`api_service.dart`\](file:///home/toronicolas/Epitech/EIP/Ascension/apps/mobile/lib/core/network/api\_service.dart) pour injecter systématiquement l'en-tête :
+
     ```dart
     'Authorization': 'Bearer $token'
     ```
@@ -279,16 +285,16 @@ L'interface actuelle est jugée **austère, peu attrayante et datée** ("moche")
 
 ### 5.3 Travaux prioritaires sur le Mobile
 
-- [ ] **Mettre à jour `ApiService`** : Aligner les routes, méthodes et paramètres sur le serveur Go (`/v1/auth/signup`, `/v1/analysis`, `GET upload-url`).
+- [ ] **Mettre à jour** `ApiService` : Aligner les routes, méthodes et paramètres sur le serveur Go (`/v1/auth/signup`, `/v1/analysis`, `GET upload-url`).
 - [ ] **Injecter le Bearer Token JWT** dans toutes les requêtes HTTP nécessitant une authentification.
-- [ ] **Implémenter l'appel à `/v1/videos/upload-done/:id`** dans la séquence de `VideoUpload`.
+- [ ] **Implémenter l'appel à** `/v1/videos/upload-done/:id` dans la séquence de `VideoUpload`.
 - [ ] **Concevoir la nouvelle charte graphique** (Maquettes / composants UI Flutter réutilisables).
-- [ ] **Implémenter le nouveau dashboard `HomePage`**.
-- [ ] **Moderniser l'interface de visualisation d'analyse (`AnalysisViewPage`)**.
+- [ ] **Implémenter le nouveau dashboard** `HomePage`.
+- [ ] **Moderniser l'interface de visualisation d'analyse (**`AnalysisViewPage`**)**.
 
 ---
 
-## 6. Matrice des Priorités & Roadmap d'Exécution
+## 6\. Matrice des Priorités & Roadmap d'Exécution
 
 ```mermaid
 flowchart TD
@@ -322,15 +328,15 @@ flowchart TD
 
 ### Phase 1 : Rétablissement du Flux de Bout en Bout (Court Terme)
 
-_Objectif : Pouvoir uploader une vidéo depuis le téléphone, la faire traiter par MediaPipe et Gemini, et afficher le résultat sans crash._
+*Objectif : Pouvoir uploader une vidéo depuis le téléphone, la faire traiter par MediaPipe et Gemini, et afficher le résultat sans crash.*
 
-1. **Docker / IA** : Corriger `RABBITMQ_URL` et transmettre `GEMINI_API_KEY` dans [`docker-compose.yml`](file:///home/toronicolas/Epitech/EIP/Ascension/docker-compose.yml).
+1. **Docker / IA** : Corriger `RABBITMQ_URL` et transmettre `GEMINI_API_KEY` dans \[`docker-compose.yml`\](file:///home/toronicolas/Epitech/EIP/Ascension/docker-compose.yml).
 2. **Base de données** : Aligner le Backend et l'IA sur la table `analyses` (au pluriel) avec les colonnes `progress` et `hints`.
-3. **Mobile** : Corriger [`api_service.dart`](file:///home/toronicolas/Epitech/EIP/Ascension/apps/mobile/lib/core/network/api_service.dart) pour envoyer le token JWT Bearer, utiliser la route `GET /v1/videos/upload-url`, exécuter l'étape `upload-done`, et corriger les routes `/v1/auth/signup` et `/v1/analysis`.
+3. **Mobile** : Corriger \[`api_service.dart`\](file:///home/toronicolas/Epitech/EIP/Ascension/apps/mobile/lib/core/network/api\_service.dart) pour envoyer le token JWT Bearer, utiliser la route `GET /v1/videos/upload-url`, exécuter l'étape `upload-done`, et corriger les routes `/v1/auth/signup` et `/v1/analysis`.
 
 ### Phase 2 : Cadrage Formel & Standardisation OpenAPI (Moyen Terme)
 
-_Objectif : Définir une fois pour toutes les contrats d'API pour que toute l'équipe travaille sur le même référentiel._
+*Objectif : Définir une fois pour toutes les contrats d'API pour que toute l'équipe travaille sur le même référentiel.*
 
 1. **Atelier technique** : Valider définitivement le nom des routes (singulier vs pluriel) et la forme des DTOs.
 2. **Swagger Backend** : Mettre en place `swaggo` sur l'API Go pour générer une doc interactive et la spec `swagger.json`.
@@ -338,24 +344,24 @@ _Objectif : Définir une fois pour toutes les contrats d'API pour que toute l'é
 
 ### Phase 3 : Parité Fonctionnelle Backend & Données d'Analyse (Moyen Terme)
 
-_Objectif : Rattraper les fonctionnalités de l'ancien serveur Rust._
+*Objectif : Rattraper les fonctionnalités de l'ancien serveur Rust.*
 
-1. **Enrichissement de `GET /v1/analysis/:id`** : Transmettre l'intégralité des données d'analyse (`result_json`, `hints`, `progress`, `job_id`).
+1. **Enrichissement de** `GET /v1/analysis/:id` : Transmettre l'intégralité des données d'analyse (`result_json`, `hints`, `progress`, `job_id`).
 2. **Gestion de profil** : Débloquer la consultation et la mise à jour de son profil pour chaque utilisateur connecté.
 3. **Historique & Statistiques** : Créer les endpoints d'historique utilisateur pour ne plus dépendre du cache local du téléphone.
 
 ### Phase 4 : Refonte Graphique Complète du Mobile Flutter (Moyen/Long Terme)
 
-_Objectif : Transformer l'application en une expérience utilisateur moderne, dynamique et valorisante._
+*Objectif : Transformer l'application en une expérience utilisateur moderne, dynamique et valorisante.*
 
 1. **Création de la nouvelle identité visuelle** : Palette sombre, accents sportifs, typographie nette, composants néomorphiques légers.
-2. **Développement du nouveau dashboard `HomePage`** : Remplacer l'écran vide par un tableau de bord complet avec métriques et actions rapides.
-3. **Modernisation du visualiseur `AnalysisViewPage`** : Superposition vidéo haute performance, timecodes interactifs sur les conseils d'entraînement Gemini.
-4. **Refonte des statistiques `StatsPage`** : Visualisation de l'évolution de la technique et des volumes de grimpe.
+2. **Développement du nouveau dashboard** `HomePage` : Remplacer l'écran vide par un tableau de bord complet avec métriques et actions rapides.
+3. **Modernisation du visualiseur** `AnalysisViewPage` : Superposition vidéo haute performance, timecodes interactifs sur les conseils d'entraînement Gemini.
+4. **Refonte des statistiques** `StatsPage` : Visualisation de l'évolution de la technique et des volumes de grimpe.
 
 ### Phase 5 : Tests d'Intégration End-to-End & Monitoring (Long Terme)
 
-_Objectif : Garantir la non-régression de l'architecture._
+*Objectif : Garantir la non-régression de l'architecture.*
 
 1. **Pipeline de test E2E** : Automatiser un test simulant l'envoi d'une vidéo test jusqu'à la vérification du résultat en BDD.
 2. **Monitoring** : Instrumentation Prometheus / Grafana / Loki pour surveiller la latence des analyses IA et le débit de traitement.

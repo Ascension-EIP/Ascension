@@ -1,4 +1,5 @@
 ---
+id: 51c1ef29-cb8c-4795-a617-885f815633b9
 name: forui-hooks-icons-localization
 description: Use Forui hooks, icons, and localization. Use when adding flutter_hooks integration for Forui controllers, FLucideIcons, FIcons, custom icon widgets, forui_assets icon-only usage, FLocalizations, supportedLocales, localizationsDelegates, or localized Forui widgets.
 metadata:

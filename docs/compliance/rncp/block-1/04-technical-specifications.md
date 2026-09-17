@@ -1,7 +1,11 @@
+---
+id: 1db6a57f-7f90-4b01-a7aa-13c2942e601c
+---
+
 :::success
-**Version:** 1.0  
-**Original language:** French  
-DON'T EDIT THIS FILE !  
+**Version:** 1.0
+**Original language:** French
+DON'T EDIT THIS FILE !
 :::
 
 ---
@@ -12,19 +16,19 @@ DON'T EDIT THIS FILE !
 
 ## Table des matières
 
-- [Bloc 1 — M1 — 04 Spécifications techniques](#bloc-1--m1--04-spécifications-techniques)
-  - [Table des matières](#table-des-matières)
+- [Bloc 1 — M1 — 04 Spécifications techniques](#bloc-1--m1--04-sp%C3%A9cifications-techniques)
+  - [Table des matières](#table-des-mati%C3%A8res)
   - [Objectif](#objectif)
   - [Architecture technique retenue](#architecture-technique-retenue)
-  - [Composants et responsabilités](#composants-et-responsabilités)
-  - [Contrat API réellement exposé](#contrat-api-réellement-exposé)
-  - [Données et persistance](#données-et-persistance)
-  - [Chaîne opérationnelle et points de rupture](#chaîne-opérationnelle-et-points-de-rupture)
-    - [Chaîne nominale](#chaîne-nominale)
-    - [Ruptures potentielles identifiées](#ruptures-potentielles-identifiées)
+  - [Composants et responsabilités](#composants-et-responsabilit%C3%A9s)
+  - [Contrat API réellement exposé](#contrat-api-r%C3%A9ellement-expos%C3%A9)
+  - [Données et persistance](#donn%C3%A9es-et-persistance)
+  - [Chaîne opérationnelle et points de rupture](#cha%C3%AEne-op%C3%A9rationnelle-et-points-de-rupture)
+    - [Chaîne nominale](#cha%C3%AEne-nominale)
+    - [Ruptures potentielles identifiées](#ruptures-potentielles-identifi%C3%A9es)
   - [Exigences non fonctionnelles](#exigences-non-fonctionnelles)
-  - [Exigences accessibilité techniques (PSH)](#exigences-accessibilité-techniques-psh)
-  - [Découpage en livrables testables](#découpage-en-livrables-testables)
+  - [Exigences accessibilité techniques (PSH)](#exigences-accessibilit%C3%A9-techniques-psh)
+  - [Découpage en livrables testables](#d%C3%A9coupage-en-livrables-testables)
 
 ---
 
@@ -51,13 +55,13 @@ Références : `docker-compose.yml`, `apps/server/src/main.rs`, `apps/ai/src/wo
 
 ## Composants et responsabilités
 
-| Composant             | Responsabilité principale                                  | Référence                                                    |
-| :-------------------- | :--------------------------------------------------------- | :----------------------------------------------------------- |
-| API Rust              | Exposer endpoints, orchestrer jobs, persister état         | `apps/server/src/inbound/http.rs`, `apps/server/src/main.rs` |
-| Worker IA             | Consommer job, analyser vidéo, publier fin de traitement   | `apps/ai/src/worker.py`                                      |
-| Publisher RabbitMQ    | Déclarer queue/exchange durables, publier jobs persistants | `apps/server/src/outbound/rabbitmq.rs`                       |
-| Repository PostgreSQL | Requêtes SQL paramétrées et mapping domaine                | `apps/server/src/outbound/postgresql.rs`                     |
-| Config runtime        | Charger variables d’environnement critiques                | `apps/server/src/config.rs`                                  |
+| Composant | Responsabilité principale | Référence |
+| --- | --- | --- |
+| API Rust | Exposer endpoints, orchestrer jobs, persister état | `apps/server/src/inbound/http.rs`, `apps/server/src/main.rs` |
+| Worker IA | Consommer job, analyser vidéo, publier fin de traitement | `apps/ai/src/worker.py` |
+| Publisher RabbitMQ | Déclarer queue/exchange durables, publier jobs persistants | `apps/server/src/outbound/rabbitmq.rs` |
+| Repository PostgreSQL | Requêtes SQL paramétrées et mapping domaine | `apps/server/src/outbound/postgresql.rs` |
+| Config runtime | Charger variables d’environnement critiques | `apps/server/src/config.rs` |
 
 ---
 
@@ -139,10 +143,10 @@ Pour être conformes au besoin Bloc 1, les specs techniques incluent :
 
 ## Découpage en livrables testables
 
-| Lot | Livrable             | Test d’acceptation                                   |
-| :-- | :------------------- | :--------------------------------------------------- |
-| L1  | Auth + session       | Login/logout fonctionnels                            |
-| L2  | Upload URL vidéo     | URL présignée valide                                 |
-| L3  | Création analyse     | Job créé + statut `pending`                          |
-| L4  | Pipeline worker      | `completed`/`failed` cohérent + `progress`           |
-| L5  | Restitution résultat | `GET /v1/analyses/{id}` renvoie données exploitables |
+| Lot | Livrable | Test d’acceptation |
+| --- | --- | --- |
+| L1 | Auth + session | Login/logout fonctionnels |
+| L2 | Upload URL vidéo | URL présignée valide |
+| L3 | Création analyse | Job créé + statut `pending` |
+| L4 | Pipeline worker | `completed`/`failed` cohérent + `progress` |
+| L5 | Restitution résultat | `GET /v1/analyses/{id}` renvoie données exploitables |

@@ -1,7 +1,11 @@
+---
+id: 626320d5-faec-4110-b269-1eb5d3458721
+---
+
 :::success
-**Version:** 1.0  
-**Original language:** English  
-DON'T EDIT THIS FILE !  
+**Version:** 1.0
+**Original language:** English
+DON'T EDIT THIS FILE !
 :::
 
 ---
@@ -17,12 +21,12 @@ DON'T EDIT THIS FILE !
   - [Project Context](#project-context)
     - [What We Need](#what-we-need)
   - [Technology Decisions](#technology-decisions)
-    - [1. Mobile Framework: Flutter](#1-mobile-framework-flutter)
-    - [2. API Backend: Go](#2-api-backend-go)
-    - [3. AI/ML Stack: Python + MediaPipe](#3-aiml-stack-python-mediapipe)
-    - [4. Database: PostgreSQL](#4-database-postgresql)
-    - [5. Message Queue: RabbitMQ](#5-message-queue-rabbitmq)
-    - [6. Object Storage: MinIO (Self-Hosted)](#6-object-storage-minio-self-hosted)
+    - [1\. Mobile Framework: Flutter](#1-mobile-framework-flutter)
+    - [2\. API Backend: Go](#2-api-backend-go)
+    - [3\. AI/ML Stack: Python + MediaPipe](#3-aiml-stack-python-mediapipe)
+    - [4\. Database: PostgreSQL](#4-database-postgresql)
+    - [5\. Message Queue: RabbitMQ](#5-message-queue-rabbitmq)
+    - [6\. Object Storage: MinIO (Self-Hosted)](#6-object-storage-minio-self-hosted)
   - [Summary](#summary)
   - [Future Considerations](#future-considerations)
 
@@ -48,7 +52,7 @@ This document explains the main technology choices for the Ascension platform an
 
 ## Technology Decisions
 
-### 1. Mobile Framework: Flutter
+### 1\. Mobile Framework: Flutter
 
 **Why Flutter?**
 
@@ -65,7 +69,7 @@ This document explains the main technology choices for the Ascension platform an
 
 **Trade-offs**: App will be slightly larger, but the time saved is worth it.
 
-### 2. API Backend: Go
+### 2\. API Backend: Go
 
 **Why Go?**
 
@@ -83,7 +87,7 @@ This document explains the main technology choices for the Ascension platform an
 
 **Trade-offs**: Go's garbage collector introduces a tiny runtime overhead compared to Rust, but Go provides much faster development velocity and easier onboarding for the team.
 
-### 3. AI/ML Stack: Python + MediaPipe
+### 3\. AI/ML Stack: Python + MediaPipe
 
 **Why Python & MediaPipe?**
 
@@ -102,7 +106,7 @@ This document explains the main technology choices for the Ascension platform an
 
 **Why it works**: AI processing happens separately from the API in async workers, so Python's speed is not a bottleneck. MediaPipe handles the heavy lifting for skeleton extraction.
 
-### 4. Database: PostgreSQL
+### 4\. Database: PostgreSQL
 
 **Why PostgreSQL?**
 
@@ -119,7 +123,7 @@ This document explains the main technology choices for the Ascension platform an
 
 **Trade-offs**: None significant for our use case.
 
-### 5. Message Queue: RabbitMQ
+### 5\. Message Queue: RabbitMQ
 
 **Why RabbitMQ?**
 
@@ -137,7 +141,7 @@ This document explains the main technology choices for the Ascension platform an
 
 ---
 
-### 6. Object Storage: MinIO (Self-Hosted)
+### 6\. Object Storage: MinIO (Self-Hosted)
 
 **Why MinIO?**
 
@@ -159,14 +163,14 @@ This document explains the main technology choices for the Ascension platform an
 
 ## Summary
 
-| Component      | Technology         | Main Reason                              |
-| -------------- | ------------------ | ---------------------------------------- |
-| Mobile App     | Flutter            | One codebase for iOS & Android           |
-| API Backend    | Go (Gin)           | Fast & simple                            |
-| AI Workers     | Python (MediaPipe) | Pose estimation + vision pipelines       |
-| Database       | PostgreSQL         | Structured data + JSON support           |
-| Message Queue  | RabbitMQ           | Reliable message broker with persistence |
-| Object Storage | MinIO → S3         | S3-compatible, free dev → reliable prod  |
+| Component | Technology | Main Reason |
+| --- | --- | --- |
+| Mobile App | Flutter | One codebase for iOS & Android |
+| API Backend | Go (Gin) | Fast & simple |
+| AI Workers | Python (MediaPipe) | Pose estimation + vision pipelines |
+| Database | PostgreSQL | Structured data + JSON support |
+| Message Queue | RabbitMQ | Reliable message broker with persistence |
+| Object Storage | MinIO → S3 | S3-compatible, free dev → reliable prod |
 
 ---
 

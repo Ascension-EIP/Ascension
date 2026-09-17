@@ -1,7 +1,11 @@
+---
+id: 11afcc2c-a31e-4786-ae0d-5503ed4262f5
+---
+
 :::success
-**Version:** 1.0  
-**Original language:** French  
-DON'T EDIT THIS FILE !  
+**Version:** 1.0
+**Original language:** French
+DON'T EDIT THIS FILE !
 :::
 
 ---
@@ -12,21 +16,21 @@ DON'T EDIT THIS FILE !
 
 ## Table des matières
 
-- [Bloc 1 — M1 — 02 Audit de l’existant (technique, fonctionnel, sécurité)](#bloc-1--m1--02-audit-de-lexistant-technique-fonctionnel-sécurité)
-  - [Table des matières](#table-des-matières)
-  - [Objectif et périmètre](#objectif-et-périmètre)
-  - [Méthodologie d’audit](#méthodologie-daudit)
+- [Bloc 1 — M1 — 02 Audit de l’existant (technique, fonctionnel, sécurité)](#bloc-1--m1--02-audit-de-lexistant-technique-fonctionnel-s%C3%A9curit%C3%A9)
+  - [Table des matières](#table-des-mati%C3%A8res)
+  - [Objectif et périmètre](#objectif-et-p%C3%A9rim%C3%A8tre)
+  - [Méthodologie d’audit](#m%C3%A9thodologie-daudit)
   - [Audit technique](#audit-technique)
-    - [1) Architecture exécutable observée](#1-architecture-exécutable-observée)
-    - [2) Flux technique principal vérifié](#2-flux-technique-principal-vérifié)
-    - [3) Modèle de données observé (implémenté)](#3-modèle-de-données-observé-implémenté)
+    - [1) Architecture exécutable observée](#1-architecture-ex%C3%A9cutable-observ%C3%A9e)
+    - [2) Flux technique principal vérifié](#2-flux-technique-principal-v%C3%A9rifi%C3%A9)
+    - [3) Modèle de données observé (implémenté)](#3-mod%C3%A8le-de-donn%C3%A9es-observ%C3%A9-impl%C3%A9ment%C3%A9)
   - [Audit fonctionnel](#audit-fonctionnel)
-  - [Audit sécurité](#audit-sécurité)
-  - [Audit accessibilité (PSH)](#audit-accessibilité-psh)
-  - [Contraintes et opportunités](#contraintes-et-opportunités)
+  - [Audit sécurité](#audit-s%C3%A9curit%C3%A9)
+  - [Audit accessibilité (PSH)](#audit-accessibilit%C3%A9-psh)
+  - [Contraintes et opportunités](#contraintes-et-opportunit%C3%A9s)
     - [Contraintes](#contraintes)
-    - [Opportunités](#opportunités)
-  - [Traçabilité RNCP M1 (O3, O4)](#traçabilité-rncp-m1-o3-o4)
+    - [Opportunités](#opportunit%C3%A9s)
+  - [Traçabilité RNCP M1 (O3, O4)](#tra%C3%A7abilit%C3%A9-rncp-m1-o3-o4)
 
 ---
 
@@ -144,7 +148,7 @@ Conclusion PSH audit :
 
 ## Traçabilité RNCP M1 (O3, O4)
 
-| Observable                                    | Éléments de preuve                                                                                                   | Couverture |
-| :-------------------------------------------- | :------------------------------------------------------------------------------------------------------------------- | :--------- |
-| **O3** — audit technique/fonctionnel/sécurité | `docker-compose.yml`, `apps/server/src/inbound/http.rs`, `apps/ai/src/worker.py`, migrations SQL, docs atelier audit | **Forte**  |
-| **O4** — méthode d’audit explicitée           | Démarche en 4 étapes + sources et limites documentées ici                                                            | **Forte**  |
+| Observable | Éléments de preuve | Couverture |
+| --- | --- | --- |
+| **O3** — audit technique/fonctionnel/sécurité | `docker-compose.yml`, `apps/server/src/inbound/http.rs`, `apps/ai/src/worker.py`, migrations SQL, docs atelier audit | **Forte** |
+| **O4** — méthode d’audit explicitée | Démarche en 4 étapes + sources et limites documentées ici | **Forte** |

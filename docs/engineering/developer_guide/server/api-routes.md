@@ -1,15 +1,17 @@
+---
+id: bfb575e1-a621-48a9-8452-4d113ee0e10e
+---
+
 :::success
-**Version:** 1.2  
-**Original language:** English  
+**Version:** 1.2
+**Original language:** English
 :::
 
 ---
 
 # Server API Routes Reference
 
-This document lists every HTTP route exposed by the Ascension backend server,
-with request/response examples and notes on authentication requirements.
-No prior Go knowledge is needed to use this reference.
+This document lists every HTTP route exposed by the Ascension backend server, with request/response examples and notes on authentication requirements. No prior Go knowledge is needed to use this reference.
 
 ---
 
@@ -47,11 +49,11 @@ No prior Go knowledge is needed to use this reference.
 
 ## Base URL
 
-| Environment               | URL                                  |
-|---------------------------|--------------------------------------|
-| Local development         | `http://localhost:8080`              |
-| Docker (Android emulator) | `http://10.0.2.2:8080`               |
-| Production                | Configured via `SERVER_PORT` env var |
+| Environment | URL |
+| --- | --- |
+| Local development | `http://localhost:8080` |
+| Docker (Android emulator) | `http://10.0.2.2:8080` |
+| Production | Configured via `SERVER_PORT` env var |
 
 All routes are prefixed with `/v1` except `/healthz`.
 
@@ -59,8 +61,7 @@ All routes are prefixed with `/v1` except `/healthz`.
 
 ## Response Format
 
-Successful responses return the data directly as a JSON object (no wrapper envelope
-for most routes). Errors return a plain text message with the relevant HTTP status code.
+Successful responses return the data directly as a JSON object (no wrapper envelope for most routes). Errors return a plain text message with the relevant HTTP status code.
 
 Some routes use the `ApiSuccess<T>` envelope:
 
@@ -78,8 +79,7 @@ Error responses are plain strings, e.g.:
 
 ## Authentication
 
-> **Authentication:** Protected endpoints require a valid JWT bearer token.
-> Public endpoints such as `/healthz` and `/v1/auth/*` do not require authentication.
+> **Authentication:** Protected endpoints require a valid JWT bearer token. Public endpoints such as `/healthz` and `/v1/auth/*` do not require authentication.
 
 When authentication is enabled, the expected header is:
 
@@ -89,10 +89,10 @@ Authorization: Bearer <jwt_token>
 
 Two middleware functions exist in `internal/inbound/http/middleware/auth.go`:
 
-| Middleware | What it does                                                                             |
-|------------|------------------------------------------------------------------------------------------|
-| `auth`     | Validates the `Authorization: Bearer` header; injects the `User` into request extensions |
-| `admin`    | Requires `auth` to have run first; rejects non-admin users with `403 Forbidden`          |
+| Middleware | What it does |
+| --- | --- |
+| `auth` | Validates the `Authorization: Bearer` header; injects the `User` into request extensions |
+| `admin` | Requires `auth` to have run first; rejects non-admin users with `403 Forbidden` |
 
 ---
 
@@ -126,19 +126,19 @@ Creates a new user account with the `user` role, hashes the password with bcrypt
 }
 ```
 
-| Field      | Type   | Rules                                |
-|------------|--------|--------------------------------------|
-| `username` | string | Required                             |
-| `email`    | string | Required, valid email format         |
-| `password` | string | Required, minimum 8 characters       |
+| Field | Type | Rules |
+| --- | --- | --- |
+| `username` | string | Required |
+| `email` | string | Required, valid email format |
+| `password` | string | Required, minimum 8 characters |
 
 **Responses:**
 
-| Status                     | Meaning                       | Body                                              |
-|----------------------------|-------------------------------|---------------------------------------------------|
-| `200 OK`                   | Account created, token issued | Login Response JSON                               |
-| `400 Bad Request`          | Validation failed             | Plain text error                                  |
-| `409 Conflict`             | Email/Username already exists | Plain text error                                  |
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `200 OK` | Account created, token issued | Login Response JSON |
+| `400 Bad Request` | Validation failed | Plain text error |
+| `409 Conflict` | Email/Username already exists | Plain text error |
 
 **Example response (200):**
 
@@ -174,11 +174,11 @@ Authenticates a user with email and password.
 
 **Responses:**
 
-| Status                     | Meaning                          | Body                                              |
-|----------------------------|----------------------------------|---------------------------------------------------|
-| `200 OK`                   | Authenticated                    | Login Response JSON                               |
-| `400 Bad Request`          | Validation failed             | Plain text error                                  |
-| `401 Unauthorized`          | Incorrect credentials            | Plain text error                                  |
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `200 OK` | Authenticated | Login Response JSON |
+| `400 Bad Request` | Validation failed | Plain text error |
+| `401 Unauthorized` | Incorrect credentials | Plain text error |
 
 ---
 
@@ -188,9 +188,9 @@ Logs out the user and invalidates the session token.
 
 **Responses:**
 
-| Status          | Meaning          |
-|-----------------|------------------|
-| `200 OK`        | Logged out       |
+| Status | Meaning |
+| --- | --- |
+| `200 OK` | Logged out |
 
 ---
 
@@ -208,12 +208,12 @@ Refreshes the access token using the refresh token.
 
 **Responses:**
 
-| Status          | Meaning          | Body                |
-|-----------------|------------------|---------------------|
-| `200 OK`        | Token refreshed  | Access Token Response|
-| `200 OK`                   | Valid credentials, token returned | `{ "access_token": "<jwt>", "user_id": "<uuid>" }` |
-| `401 Unauthorized`         | Wrong email or password          | Plain text error                                  |
-| `422 Unprocessable Entity` | Malformed request fields         | Plain text error                                  |
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `200 OK` | Token refreshed | Access Token Response |
+| `200 OK` | Valid credentials, token returned | `{ "access_token": "<jwt>", "user_id": "<uuid>" }` |
+| `401 Unauthorized` | Wrong email or password | Plain text error |
+| `422 Unprocessable Entity` | Malformed request fields | Plain text error |
 
 **Example response (200):**
 
@@ -234,9 +234,9 @@ Clears the `session_token` cookie. Safe to call even when not logged in.
 
 **Responses:**
 
-| Status           | Meaning        | Body |
-|------------------|----------------|------|
-| `204 No Content` | Cookie cleared | —    |
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `204 No Content` | Cookie cleared | — |
 
 ---
 
@@ -257,19 +257,19 @@ Creates a new user account.
 }
 ```
 
-| Field      | Type   | Rules                                |
-|------------|--------|--------------------------------------|
+| Field | Type | Rules |
+| --- | --- | --- |
 | `username` | string | 8–24 characters, `[a-zA-Z0-9_]` only |
-| `email`    | string | Must be a valid email address        |
-| `password` | string | Minimum 8 characters                 |
-| `role`     | string | `"user"` or `"admin"`                |
+| `email` | string | Must be a valid email address |
+| `password` | string | Minimum 8 characters |
+| `role` | string | `"user"` or `"admin"` |
 
 **Responses:**
 
-| Status                     | Meaning                                   | Body                 |
-|----------------------------|-------------------------------------------|----------------------|
-| `201 Created`              | User created successfully                 | `{ "id": "<uuid>" }` |
-| `422 Unprocessable Entity` | Validation failed or email already exists | Plain text error     |
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `201 Created` | User created successfully | `{ "id": "<uuid>" }` |
+| `422 Unprocessable Entity` | Validation failed or email already exists | Plain text error |
 
 **Example response (201):**
 
@@ -287,8 +287,8 @@ Returns a list of all registered users.
 
 **Responses:**
 
-| Status   | Meaning | Body                       |
-|----------|---------|----------------------------|
+| Status | Meaning | Body |
+| --- | --- | --- |
 | `200 OK` | Success | JSON array of user objects |
 
 **Example response (200):**
@@ -312,16 +312,16 @@ Returns a single user by their UUID.
 
 **Path parameter:**
 
-| Parameter | Type        | Description                  |
-|-----------|-------------|------------------------------|
-| `id`      | UUID string | The user's unique identifier |
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `id` | UUID string | The user's unique identifier |
 
 **Responses:**
 
-| Status                     | Meaning                  | Body             |
-|----------------------------|--------------------------|------------------|
-| `200 OK`                   | User found               | User object      |
-| `404 Not Found`            | No user with this ID     | Plain text error |
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `200 OK` | User found | User object |
+| `404 Not Found` | No user with this ID | Plain text error |
 | `422 Unprocessable Entity` | `id` is not a valid UUID | Plain text error |
 
 **Example response (200):**
@@ -343,9 +343,9 @@ Replaces all fields of an existing user. All fields are required.
 
 **Path parameter:**
 
-| Parameter | Type        | Description                  |
-|-----------|-------------|------------------------------|
-| `id`      | UUID string | The user's unique identifier |
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `id` | UUID string | The user's unique identifier |
 
 **Request body:**
 
@@ -360,11 +360,11 @@ Replaces all fields of an existing user. All fields are required.
 
 **Responses:**
 
-| Status                     | Meaning                   | Body                 |
-|----------------------------|---------------------------|----------------------|
-| `200 OK`                   | User updated successfully | `{ "id": "<uuid>" }` |
-| `404 Not Found`            | No user with this ID      | Plain text error     |
-| `422 Unprocessable Entity` | Validation failed         | Plain text error     |
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `200 OK` | User updated successfully | `{ "id": "<uuid>" }` |
+| `404 Not Found` | No user with this ID | Plain text error |
+| `422 Unprocessable Entity` | Validation failed | Plain text error |
 
 ---
 
@@ -374,16 +374,16 @@ Permanently deletes a user.
 
 **Path parameter:**
 
-| Parameter | Type        | Description                  |
-|-----------|-------------|------------------------------|
-| `id`      | UUID string | The user's unique identifier |
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `id` | UUID string | The user's unique identifier |
 
 **Responses:**
 
-| Status          | Meaning              | Body                  |
-|-----------------|----------------------|-----------------------|
-| `200 OK`        | User deleted         | Empty or confirmation |
-| `404 Not Found` | No user with this ID | Plain text error      |
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `200 OK` | User deleted | Empty or confirmation |
+| `404 Not Found` | No user with this ID | Plain text error |
 
 ---
 
@@ -396,17 +396,17 @@ Generates a presigned URL that the client uses to upload the video file **direct
 **Query Parameters:**
 
 | Parameter | Type | Description |
-|-----------|------|-------------|
-| `content_type`| string| Allowed: `video/mp4`, `video/webm`, `video/quicktime`, `video/x-msvideo` |
+| --- | --- | --- |
+| `content_type` | string | Allowed: `video/mp4`, `video/webm`, `video/quicktime`, `video/x-msvideo` |
 | `size` | int | Size in bytes (max 1GB) |
 
 **Responses:**
 
-| Status                      | Meaning              | Body                                                                        |
-|-----------------------------|----------------------|-----------------------------------------------------------------------------|
-| `200 OK`                    | URL generated        | `{ "video_id": "<uuid>", "upload_url": "<presigned-url>", "expires_at": "<time>" }` |
-| `400 Bad Request`           | Missing or invalid params | Plain text error                                                       |
-| `500 Internal Server Error` | MinIO presign failed | Plain text error                                                            |
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `200 OK` | URL generated | `{ "video_id": "<uuid>", "upload_url": "<presigned-url>", "expires_at": "<time>" }` |
+| `400 Bad Request` | Missing or invalid params | Plain text error |
+| `500 Internal Server Error` | MinIO presign failed | Plain text error |
 
 ---
 
@@ -416,9 +416,9 @@ Signals that the video upload has been completed by the client.
 
 **Responses:**
 
-| Status                      | Meaning              |
-|-----------------------------|----------------------|
-| `204 No Content`            | Upload completed     |
+| Status | Meaning |
+| --- | --- |
+| `204 No Content` | Upload completed |
 
 ---
 
@@ -428,9 +428,9 @@ Generates a presigned GET URL to watch or download the video.
 
 **Responses:**
 
-| Status                      | Meaning              | Body |
-|-----------------------------|----------------------|------|
-| `200 OK`                    | Download URL ready   | `{ "download_url": "<url>", "expires_at": "<time>" }` |
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `200 OK` | Download URL ready | `{ "download_url": "<url>", "expires_at": "<time>" }` |
 
 **Upload flow:**
 
@@ -457,10 +457,10 @@ Creates an analysis record and publishes a job message to the `vision.skeleton` 
 
 **Responses:**
 
-| Status                      | Meaning                   | Body                                                                   |
-|-----------------------------|---------------------------|------------------------------------------------------------------------|
-| `202 Accepted`              | Job queued                | `{ "id": "<uuid>", "status": "pending" }` |
-| `404 Not Found`             | `video_id` does not exist | Plain text error                                                       |
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `202 Accepted` | Job queued | `{ "id": "<uuid>", "status": "pending" }` |
+| `404 Not Found` | `video_id` does not exist | Plain text error |
 
 ---
 
@@ -470,9 +470,9 @@ Returns the current state of an analysis.
 
 **Responses:**
 
-| Status          | Meaning                  | Body             |
-|-----------------|--------------------------|------------------|
-| `200 OK`        | Analysis found           | `{ "id": "<uuid>", "status": "<status>" }` |
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `200 OK` | Analysis found | `{ "id": "<uuid>", "status": "<status>" }` |
 
 **Analysis status lifecycle:**
 
@@ -491,23 +491,23 @@ A simple public liveness probe.
 
 **Responses:**
 
-| Status             | Meaning                             |
-|--------------------|-------------------------------------|
-| `204 No Content`   | Server is healthy                   |
+| Status | Meaning |
+| --- | --- |
+| `204 No Content` | Server is healthy |
 
 ---
 
 ## Error Codes Reference
 
-| HTTP Status                 | Meaning in Ascension                             |
-|-----------------------------|--------------------------------------------------|
-| `201 Created`               | Resource successfully created                    |
-| `202 Accepted`              | Async job successfully queued                    |
-| `204 No Content`            | Success with no body                             |
-| `400 Bad Request`           | Malformed request                                |
-| `401 Unauthorized`          | Missing or invalid JWT token                     |
-| `403 Forbidden`             | Valid token but insufficient role                |
-| `404 Not Found`             | Resource does not exist                          |
-| `422 Unprocessable Entity`  | Validation error (bad UUID, invalid field, etc.) |
-| `429 Too Many Requests`     | Rate limit exceeded (10 req/s per IP)            |
-| `500 Internal Server Error` | Unexpected server-side failure                   |
+| HTTP Status | Meaning in Ascension |
+| --- | --- |
+| `201 Created` | Resource successfully created |
+| `202 Accepted` | Async job successfully queued |
+| `204 No Content` | Success with no body |
+| `400 Bad Request` | Malformed request |
+| `401 Unauthorized` | Missing or invalid JWT token |
+| `403 Forbidden` | Valid token but insufficient role |
+| `404 Not Found` | Resource does not exist |
+| `422 Unprocessable Entity` | Validation error (bad UUID, invalid field, etc.) |
+| `429 Too Many Requests` | Rate limit exceeded (10 req/s per IP) |
+| `500 Internal Server Error` | Unexpected server-side failure |

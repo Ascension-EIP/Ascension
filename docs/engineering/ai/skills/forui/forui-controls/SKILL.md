@@ -1,4 +1,5 @@
 ---
+id: bdb640cd-9d2f-4cae-b64a-e6d907c2ad0d
 name: forui-controls
 description: Choose and wire Forui controls and controller ownership. Use when working with lifted controls, managed controls, internal controllers, external controllers, programmatic popovers or fields, state synchronization, lifecycle ownership, or Flutter Hooks with Forui controls.
 metadata:

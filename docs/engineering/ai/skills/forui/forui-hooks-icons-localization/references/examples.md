@@ -1,3 +1,7 @@
+---
+id: 7048043d-30e2-41a4-94ac-fbe8219e156b
+---
+
 # Forui Hooks, Icons, And Localization Examples
 
 ## Dependency Choices

@@ -1,3 +1,7 @@
+---
+id: ae639253-ce52-4ebf-ac86-c80f039d62a7
+---
+
 # graphify reference: transcribe video and audio
 
 Load this only when `detect` reported one or more `video` files. A corpus with no video never reads this.
@@ -44,6 +48,7 @@ print(f'Transcribed {len(transcript_paths)} file(s)', file=sys.stderr)
 ```
 
 After transcription:
+
 - Read the transcript paths from `graphify-out/.graphify_transcripts.json`
 - Add them to the docs list before dispatching semantic subagents in Step 3B
 - Print how many transcripts were created: `Transcribed N video file(s) -> treating as docs`

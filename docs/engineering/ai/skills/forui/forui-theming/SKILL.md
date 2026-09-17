@@ -1,4 +1,5 @@
 ---
+id: a0ca0da1-8688-410c-96b7-567e1e39cb20
 name: forui-theming
 description: Work with Forui themes in Flutter. Use when choosing FThemes, FThemeData, FColors, FTypography, FIcons, FStyle, touch/desktop theme variants, breakpoints, context.theme, ThemeExtension, or Material theme interoperability.
 metadata:

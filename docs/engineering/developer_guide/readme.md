@@ -1,14 +1,17 @@
+---
+id: 70bac601-6a07-45fa-9e3e-02ce2ec53ef1
+---
+
 :::success
-**Version:** 1.2  
-**Original language:** English  
+**Version:** 1.2
+**Original language:** English
 :::
 
 ---
 
 # Developer Quickstart
 
-Welcome to the Ascension developer guide. This document provides a quick reference
-for setting up your development environment and links to all domain-specific guides.
+Welcome to the Ascension developer guide. This document provides a quick reference for setting up your development environment and links to all domain-specific guides.
 
 ---
 
@@ -23,7 +26,7 @@ for setting up your development environment and links to all domain-specific gui
 
 ## Prerequisites & Installation
 
-### 1. Moonrepo
+### 1\. Moonrepo
 
 Ascension uses [moonrepo](https://moonrepo.dev) as a monorepo management tool and task runner. It is recommended to install it via [proto](https://moonrepo.dev/proto), moonrepo's toolchain manager.
 
@@ -37,7 +40,7 @@ curl -fsSL https://moonrepo.dev/install/proto.sh | bash
 proto install moon
 ```
 
-### 2. uv (Python package & environment manager)
+### 2\. uv (Python package & environment manager)
 
 The AI services use [uv](https://docs.astral.sh/uv/) to manage Python dependencies and the virtual environment.
 
@@ -49,7 +52,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 # brew install uv
 ```
 
-### 3. Flutter
+### 3\. Flutter
 
 The mobile application is built with Flutter.
 
@@ -70,20 +73,17 @@ The mobile application is built with Flutter.
    git clone https://github.com/Ascension-EIP/Ascension.git
    cd Ascension
    ```
-
 2. **Configure Environment:**
 
    ```bash
    cp .env.example .env
    # Edit .env if needed
    ```
-
 3. **Start Infrastructure (databases, message broker, object storage):**
 
    ```bash
    docker compose up -d
    ```
-
 4. **Initialize AI Environment and download the MediaPipe model:**
 
    ```bash
@@ -92,8 +92,8 @@ The mobile application is built with Flutter.
    ```
 
    `ai:setup` runs `uv sync` to create the virtual environment and install all dependencies.
-
 5. **Install sqlx-cli and run database migrations (server):**
+
    ```bash
    moon run server:install-sqlx
    moon run server:migrate
@@ -123,21 +123,21 @@ We follow a dual-strategy for environment variables to balance local developer e
 
 ### Architecture & Roadmap
 
-- [System Overview](./architecture/system-overview.md) — global architecture, data flows, scaling
-- [Plan d'Action Technique](./plan-d-action-technique.md) — audit global, alignement des contrats API, parité backend et roadmap de refonte mobile
+- [System Overview](architecture/system-overview.md) — global architecture, data flows, scaling
+- [Plan d'Action Technique](plan-d-action-technique.md) — audit global, alignement des contrats API, parité backend et roadmap de refonte mobile
 
 ### Server (Go / Gin)
 
-- [Developer Guide](./server/readme.md) — setup, env vars, moon tasks, Docker
-- [Architecture](./server/architecture.md) — hexagonal architecture, layers, request flow
-- [API Routes Reference](./server/api-routes.md) — all HTTP routes with examples
-- [How to Add a Route](./server/adding-a-route.md) — step-by-step guide
-- [How to Implement a CRUD](./server/implementing-a-crud.md) — full domain-to-HTTP walkthrough
+- [Developer Guide](server/readme.md) — setup, env vars, moon tasks, Docker
+- [Architecture](server/architecture.md) — hexagonal architecture, layers, request flow
+- [API Routes Reference](server/api-routes.md) — all HTTP routes with examples
+- [How to Add a Route](server/adding-a-route.md) — step-by-step guide
+- [How to Implement a CRUD](server/implementing-a-crud.md) — full domain-to-HTTP walkthrough
 
 ### AI Worker (Python / MediaPipe)
 
-- [Developer Guide](./ai/readme.md) — setup, pipelines, RabbitMQ, pose analysis
+- [Developer Guide](ai/readme.md) — setup, pipelines, RabbitMQ, pose analysis
 
 ### Mobile (Flutter / Dart)
 
-- [Developer Guide](./mobile/readme.md) — setup, screens, navigation, API integration
+- [Developer Guide](mobile/readme.md) — setup, screens, navigation, API integration

@@ -1,3 +1,7 @@
+---
+id: a0cdb9d5-9e34-448e-b2e9-89ecebff3638
+---
+
 # Forui Widget Preview Examples
 
 ## Full App Preview

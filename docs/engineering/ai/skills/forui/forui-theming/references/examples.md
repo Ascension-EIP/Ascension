@@ -1,3 +1,7 @@
+---
+id: 17b680cb-2a69-4e2d-a16f-89ba0d6d0a34
+---
+
 # Forui Theming Examples
 
 ## Theme Selector

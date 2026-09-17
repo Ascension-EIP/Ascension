@@ -1,14 +1,17 @@
+---
+id: 8a400878-485e-480a-b6c4-a7bc4cd0e4be
+---
+
 :::success
-**Version:** 1.1  
-**Original language:** English  
+**Version:** 1.1
+**Original language:** English
 :::
 
 ---
 
 # Server Architecture
 
-This document explains how the Ascension backend server is structured and why it is built that way.
-No prior Go or architecture knowledge is required to read this.
+This document explains how the Ascension backend server is structured and why it is built that way. No prior Go or architecture knowledge is required to read this.
 
 ---
 
@@ -24,15 +27,15 @@ No prior Go or architecture knowledge is required to read this.
     - [Outbound (database layer)](#outbound-database-layer)
   - [How a request flows through the server](#how-a-request-flows-through-the-server)
   - [File structure map](#file-structure-map)
-  - [The entry point: `main.go`](#the-entry-point-maingo)
-  - [Configuration: `config.go`](#configuration-configgo)
+  - [The entry point:](#the-entry-point-maingo) `main.go`
+  - [Configuration:](#configuration-configgo) `config.go`
 
 ---
 
 ## Tech stack
 
 | Technology | Role |
-|---|---|
+| --- | --- |
 | **Go** | Programming language |
 | **Gin** | HTTP web framework |
 | **pgx/v5** | Database driver/pool to talk to PostgreSQL |
@@ -66,9 +69,7 @@ Think of it like this:
 └──────────────────────────────────────┘
 ```
 
-**The key rule:** the Domain never imports anything from Inbound or Outbound.
-It only defines *what* it needs through **traits** (called "ports").
-The Inbound and Outbound layers implement those traits ("adapters").
+**The key rule:** the Domain never imports anything from Inbound or Outbound. It only defines *what* it needs through **traits** (called "ports"). The Inbound and Outbound layers implement those traits ("adapters").
 
 **Why?**
 
@@ -108,7 +109,7 @@ This layer is responsible for:
 Key folders/files:
 
 | Path | Role |
-|---|---|
+| --- | --- |
 | `internal/inbound/http/router/router.go` | Wires up the Gin router, middleware, and routes |
 | `internal/inbound/http/handler/` | Controllers/handlers for each resource (e.g. `user.go`, `auth.go`) |
 | `internal/inbound/http/middleware/` | Rate limiters, JWT authorization, recovery, and logging middleware |
@@ -122,7 +123,7 @@ Key folders/files:
 This layer is responsible for persisting data and communicating with external systems. It contains:
 
 | Path | Role |
-|---|---|
+| --- | --- |
 | `internal/outbound/postgres/` | Implements database repositories using pgx |
 | `internal/outbound/rabbitmq/` | Client for publishing and consuming queue events |
 | `internal/outbound/minio/` | Client for generating presigned upload/download URLs |
@@ -168,9 +169,7 @@ Handler  (back in user.go)
 Client
 ```
 
-> **Notice** that each layer only knows about the *next* layer's **trait** (interface), not its concrete type.
-> The handler knows about `UserService` (a trait). The service knows about `UserRepository` (a trait).
-> This is the "ports & adapters" pattern in action.
+> **Notice** that each layer only knows about the *next* layer's **trait** (interface), not its concrete type. The handler knows about `UserService` (a trait). The service knows about `UserRepository` (a trait). This is the "ports & adapters" pattern in action.
 
 ---
 
@@ -227,7 +226,7 @@ apps/server/
 The server reads its configuration from environment variables.
 
 | Variable | Required | Default | Description |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `DB_NAME` | ✅ Yes | — | Database name |
 | `DB_USER` | ✅ Yes | — | Database user |
 | `DB_PASS` | ✅ Yes | — | Database password |

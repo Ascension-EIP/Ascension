@@ -1,3 +1,7 @@
+---
+id: a35ea2db-d281-4b7f-bb86-e344fbbb06b6
+---
+
 # Forui Styling Examples
 
 ## Local Delta

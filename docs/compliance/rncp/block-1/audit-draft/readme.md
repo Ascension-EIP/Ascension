@@ -1,7 +1,11 @@
+---
+id: 6ae0802b-e8d8-4a0b-bbd1-87c73bb55e40
+---
+
 :::success
-**Version:** 1.1  
-**Original language:** French  
-DON'T EDIT THIS FILE !  
+**Version:** 1.1
+**Original language:** French
+DON'T EDIT THIS FILE !
 :::
 
 ---
@@ -13,24 +17,24 @@ DON'T EDIT THIS FILE !
 ## Table of Contents
 
 - [RNCP Audit - Overview](#rncp-audit-overview)
-  - [Compte-rendu d'audit technique, fonctionnel et de sécurité](#compte-rendu-daudit-technique-fonctionnel-et-de-sécurité)
-  - [Environnement d'exécution du projet](#environnement-dexécution-du-projet)
-  - [3. Audit technique](#3-audit-technique)
+  - [Compte-rendu d'audit technique, fonctionnel et de sécurité](#compte-rendu-daudit-technique-fonctionnel-et-de-s%C3%A9curit%C3%A9)
+  - [Environnement d'exécution du projet](#environnement-dex%C3%A9cution-du-projet)
+  - [3\. Audit technique](#3-audit-technique)
     - [Architecture Cible (Kubernetes)](#architecture-cible-kubernetes)
-    - [3.1 Environnement d’exécution](#31-environnement-d’exécution)
+    - [3.1 Environnement d’exécution](#31-environnement-d%E2%80%99ex%C3%A9cution)
     - [3.2 Stack technique](#32-stack-technique)
     - [3.3 Architecture](#33-architecture)
-    - [3.4 Exploitabilité](#34-exploitabilité)
-  - [4. Audit fonctionnel](#4-audit-fonctionnel)
-    - [4.1 Compréhension du besoin](#41-compréhension-du-besoin)
-    - [4.2 Adéquation solution / besoin](#42-adéquation-solution-besoin)
+    - [3.4 Exploitabilité](#34-exploitabilit%C3%A9)
+  - [4\. Audit fonctionnel](#4-audit-fonctionnel)
+    - [4.1 Compréhension du besoin](#41-compr%C3%A9hension-du-besoin)
+    - [4.2 Adéquation solution / besoin](#42-ad%C3%A9quation-solution-besoin)
     - [4.3 Parcours utilisateurs](#43-parcours-utilisateurs)
-  - [5. Audit sécurité](#5-audit-sécurité)
-    - [5.1 Sécurité de l’infrastructure](#51-sécurité-de-l’infrastructure)
-    - [5.2 Gestion des accès](#52-gestion-des-accès)
-    - [5.3 Sécurité applicative (niveau projet)](#53-sécurité-applicative-niveau-projet)
-    - [5.4 Conformité](#54-conformité)
-  - [6. Annexes](#6-annexes)
+  - [5\. Audit sécurité](#5-audit-s%C3%A9curit%C3%A9)
+    - [5.1 Sécurité de l’infrastructure](#51-s%C3%A9curit%C3%A9-de-l%E2%80%99infrastructure)
+    - [5.2 Gestion des accès](#52-gestion-des-acc%C3%A8s)
+    - [5.3 Sécurité applicative (niveau projet)](#53-s%C3%A9curit%C3%A9-applicative-niveau-projet)
+    - [5.4 Conformité](#54-conformit%C3%A9)
+  - [6\. Annexes](#6-annexes)
 
 ---
 
@@ -40,18 +44,17 @@ DON'T EDIT THIS FILE !
 
 ## Environnement d'exécution du projet
 
-Le dossier du candidat contient un **compte-rendu d'audit technique, fonctionnel et de sécurité** de l'environnement d'exécution du projet, mettant en lumière les **contraintes et opportunités du contexte opérationnel**. [C2]
+Le dossier du candidat contient un **compte-rendu d'audit technique, fonctionnel et de sécurité** de l'environnement d'exécution du projet, mettant en lumière les **contraintes et opportunités du contexte opérationnel**. \[C2\]
 
 Le candidat est en mesure d'expliquer **l'approche méthodologique** mise en œuvre pour réaliser l'audit :
 
 - moyens d'investigation
 - collecte de retours utilisateurs
-- analyse documentaire
-  […] [C2]
+- analyse documentaire \[…\] \[C2\]
 
 ---
 
-## 3. Audit technique
+## 3\. Audit technique
 
 ### Architecture Cible (Kubernetes)
 
@@ -114,7 +117,6 @@ graph TB
   - **API Gateway/Load Balancer** : Nginx Reverse Proxy (+ Kubernetes Ingress en cible)
   - **Message Broker** : RabbitMQ
   - **Object Storage** : MinIO (Compatible S3)
-
 - **Dépendances critiques** :
   - MediaPipe pour la squelettisation et la détection de poses
   - OpenCV pour le traitement d'images (détection de prises)
@@ -143,13 +145,13 @@ graph TB
 - **Monitoring (logs, métriques, alertes)** :
   - Grafana + Prometheus + Loki (Métriques infrastructure & Logs centralisés)
 - **Sauvegardes et restauration** :
-  - pg_dump automatisé + WAL archiving continu (Rétention configurable)
+  - pg\_dump automatisé + WAL archiving continu (Rétention configurable)
   - MinIO Lifecycle Policies & Versioning
 - **Stratégie de montée de version** : Rolling Updates (Zéro downtime)
 
 ---
 
-## 4. Audit fonctionnel
+## 4\. Audit fonctionnel
 
 ### 4.1 Compréhension du besoin
 
@@ -160,7 +162,6 @@ graph TB
   - **Mode Fantôme** : Superposition d'un grimpeur idéal ("Ghost") morphologiquement adapté sur la vidéo de l'utilisateur. Réutilise les données de squelettisation.
   - **Programmes d'entraînement** : Plans personnalisés basés sur les objectifs, blessures et historique d'analyses (Pipeline 2 — CPU uniquement).
   - **Comparaison** : Métriques de similarité entre l'utilisateur et le modèle optimal.
-
 - **Contraintes réglementaires ou métier** :
   - Précision et crédibilité de l'analyse technique (exigence forte des grimpeurs confirmés).
   - Latence de traitement (UX fluide attendue malgré la lourdeur du calcul vidéo).
@@ -172,7 +173,6 @@ graph TB
 - **Les fonctionnalités prévues couvrent-elles les besoins ?** : Oui. L'architecture supporte le traitement asynchrone lourd nécessaire à l'IA.
 - **Approche technique spécifique** : "Maths over Video". Au lieu de renvoyer une vidéo lourde traitée, le système renvoie des données mathématiques (JSON) que le client Flutter utilise pour dessiner l'overlay en local.
   - Élimine le temps d'encodage vidéo serveur.
-
 - **Performances attendues** :
   - **Détection des prises** : < 10s de traitement (photo uniquement).
   - **Squelettisation + Conseils** : < 20s de traitement vidéo (skeleton JSON par frame + conseils ciblés).
@@ -197,7 +197,7 @@ graph TB
 
 ---
 
-## 5. Audit sécurité
+## 5\. Audit sécurité
 
 ### 5.1 Sécurité de l’infrastructure
 
@@ -231,10 +231,8 @@ graph TB
   - Rate Limiting (via API Gateway ou RabbitMQ QoS) pour prévenir les abus.
   - Rust type system prévient de nombreuses classes de vulnérabilités (memory safety).
   - Validation stricte des entrées API.
-
 - **Journalisation des actions sensibles** :
   - Logs structurés
-
 - **Prévention OWASP Top 10** :
   - Injection SQL : Impossible grâce à l'usage de requêtes paramétrées.
   - XSS : Moins risqué avec Flutter (pas de DOM HTML classique), mais inputs sanitisés.
@@ -252,7 +250,7 @@ graph TB
 
 ---
 
-## 6. Annexes
+## 6\. Annexes
 
 Les documents suivants complètent cet audit :
 

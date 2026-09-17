@@ -1,3 +1,7 @@
+---
+id: d23695fa-e15c-4f57-a492-587ce1b3f678
+---
+
 # Forui CLI Examples
 
 ## Safe Generation Plan

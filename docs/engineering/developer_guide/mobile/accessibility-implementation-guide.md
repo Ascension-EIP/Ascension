@@ -1,6 +1,10 @@
+---
+id: e25c1ea5-d219-41fd-ab79-cb99b8bcd2f6
+---
+
 :::success
-**Version:** 1.0  
-**Original language:** English  
+**Version:** 1.0
+**Original language:** English
 :::
 
 ---
@@ -86,7 +90,7 @@ Accessibility must be designed at specification time, not added after implementa
 
 ### Blindness and Low Vision
 
-#### Required Features
+Required Features
 
 - Full compatibility with screen readers (`VoiceOver`, `TalkBack`).
 - Semantic labels for every interactive element (name, role, value, state, hint).
@@ -96,7 +100,7 @@ Accessibility must be designed at specification time, not added after implementa
 - Alternative text for all meaningful images, icons, and charts.
 - Non-visual status messages for loading, success, warning, and error states.
 
-#### Acceptance Criteria
+Acceptance Criteria
 
 - Critical journeys are fully operable without sight.
 - No unlabeled action exists in production screens.
@@ -104,7 +108,7 @@ Accessibility must be designed at specification time, not added after implementa
 
 ### Color Vision Deficiency
 
-#### Required Features
+Required Features
 
 - Color is never the only channel for meaning.
 - Use iconography, text, and shape in addition to color.
@@ -112,13 +116,13 @@ Accessibility must be designed at specification time, not added after implementa
 - Error/success/warning states include explicit textual labels.
 - Palette is validated against common color blindness simulations.
 
-#### Acceptance Criteria
+Acceptance Criteria
 
 - Users can complete form and status-based tasks without relying on color interpretation.
 
 ### Deafness and Hard of Hearing
 
-#### Required Features
+Required Features
 
 - Captions for all instructional and functional videos.
 - Transcript for long-form audio content.
@@ -126,14 +130,14 @@ Accessibility must be designed at specification time, not added after implementa
 - Optional haptic feedback for critical notifications.
 - Text-first alternatives for voice guidance.
 
-#### Acceptance Criteria
+Acceptance Criteria
 
 - No critical flow depends on hearing.
 - All guidance used in app experiences exists in text form.
 
 ### Motor and Dexterity Impairments
 
-#### Required Features
+Required Features
 
 - Minimum touch targets of 44x44 pt (iOS) and 48x48 dp (Android).
 - Avoid mandatory complex gestures (multi-finger, long hold, fast swipes).
@@ -142,25 +146,25 @@ Accessibility must be designed at specification time, not added after implementa
 - Full operation with one hand where possible.
 - Compatibility with switch access and external keyboards where supported.
 
-#### Acceptance Criteria
+Acceptance Criteria
 
 - Core actions can be completed with limited precision and limited range of motion.
 
 ### Speech Impairments
 
-#### Required Features
+Required Features
 
 - No critical feature requires voice input.
 - Every voice interaction has typed and touch alternatives.
 - Voice transcription fields remain editable before submission.
 
-#### Acceptance Criteria
+Acceptance Criteria
 
 - Speech is optional, never mandatory.
 
 ### Cognitive Disabilities
 
-#### Required Features
+Required Features
 
 - Plain language and short sentences.
 - One clear objective per screen.
@@ -170,14 +174,14 @@ Accessibility must be designed at specification time, not added after implementa
 - Draft autosave and task resumption after interruption.
 - Progress indicators for multi-step workflows.
 
-#### Acceptance Criteria
+Acceptance Criteria
 
 - Users can recover from errors without external support.
 - Users can pause and resume without losing context.
 
 ### Neurodivergence and Sensory Processing
 
-#### Required Features
+Required Features
 
 - Reduced distraction mode (fewer simultaneous elements).
 - Optional focus mode for task-centered screens.
@@ -185,26 +189,26 @@ Accessibility must be designed at specification time, not added after implementa
 - Notification bundling and interruption reduction.
 - Stable and predictable screen transitions.
 
-#### Acceptance Criteria
+Acceptance Criteria
 
 - Users can tune visual and cognitive load to their comfort level.
 
 ### Vestibular Disorders and Photosensitivity
 
-#### Required Features
+Required Features
 
 - Respect OS-level reduced motion settings.
 - Avoid flicker, flashing, and parallax-heavy transitions.
 - Disable autoplay animations where possible.
 - Keep motion effects subtle and optional.
 
-#### Acceptance Criteria
+Acceptance Criteria
 
 - App remains fully usable when motion is reduced to near zero.
 
 ### Temporary and Situational Limitations
 
-#### Required Features
+Required Features
 
 - Usable in bright light and low light conditions.
 - Usable in noisy environments without audio dependency.
@@ -212,7 +216,7 @@ Accessibility must be designed at specification time, not added after implementa
 - Session recovery after network loss or interruption.
 - Short, resumable interactions for on-the-go use.
 
-#### Acceptance Criteria
+Acceptance Criteria
 
 - Critical journeys remain operable under poor connectivity and noisy surroundings.
 

@@ -1,6 +1,10 @@
+---
+id: f1d0195a-2bc8-4cf6-a6c2-f215f94e82c6
+---
+
 :::success
-**Version:** 1.2  
-**Original language:** English  
+**Version:** 1.2
+**Original language:** English
 :::
 
 ---
@@ -13,9 +17,9 @@
 
 - [Philosophy](#philosophy)
 - [Core Design Patterns](#core-design-patterns)
-  - [1. Event-Driven Architecture](#1-event-driven-architecture)
-  - [2. CQRS (Command Query Responsibility Segregation)](#2-cqrs-command-query-responsibility-segregation)
-  - [3. Client-Side Rendering](#3-client-side-rendering)
+  - [1\. Event-Driven Architecture](#1-event-driven-architecture)
+  - [2\. CQRS (Command Query Responsibility Segregation)](#2-cqrs-command-query-responsibility-segregation)
+  - [3\. Client-Side Rendering](#3-client-side-rendering)
 - [System Layers](#system-layers)
   - [Layer 1: Client (Flutter Mobile App)](#layer-1-client-flutter-mobile-app)
   - [Layer 2: API Gateway (Go)](#layer-2-api-gateway-go)
@@ -61,7 +65,6 @@
   - [Why MinIO for Development?](#why-minio-for-development)
 - [Next Steps](#next-steps)
 
-
 ---
 
 ## Philosophy
@@ -72,7 +75,7 @@ Ascension's architecture is built on the principle of **separation of concerns**
 
 ## Core Design Patterns
 
-### 1. Event-Driven Architecture
+### 1\. Event-Driven Architecture
 
 The system uses an event-driven pattern where:
 
@@ -89,7 +92,7 @@ The system uses an event-driven pattern where:
 - Easy to add new event handlers
 - Fault tolerance (retry failed events)
 
-### 2. CQRS (Command Query Responsibility Segregation)
+### 2\. CQRS (Command Query Responsibility Segregation)
 
 Commands (write operations) and Queries (read operations) follow different paths:
 
@@ -106,7 +109,7 @@ Commands (write operations) and Queries (read operations) follow different paths
 - Response cached for frequent queries
 - Direct to client
 
-### 3. Client-Side Rendering
+### 3\. Client-Side Rendering
 
 Instead of server-side video encoding, we return mathematical data:
 
@@ -250,35 +253,32 @@ Example message (vision.skeleton):
 
 A single Python service (`apps/ai/`) handles all AI tasks, routed through RabbitMQ into **two distinct pipelines**.
 
-#### Pipeline 1: Vision Pipeline (GPU-intensive)
+Pipeline 1: Vision Pipeline (GPU-intensive)
 
 All computer-vision tasks that rely on MediaPipe Pose and image processing:
 
 | Step | Queue | Input | Output | Description |
-|------|-------|-------|--------|-------------|
-| 1. Hold Detection | `vision.hold_detection` | Photo of the route | JSON hold map (positions + types) | User photographs the wall, AI detects and classifies holds (crimp, sloper, jug…). User can manually correct misclassified holds before proceeding. |
-| 2. Skeleton Extraction | `vision.skeleton` | Video + hold map | JSON per-frame skeleton data | MediaPipe Pose extracts 33 keypoints per frame → computes joint angles, center of gravity, weight distribution, segment tensions. Returns the full skeleton timeline as JSON to the Rust API. |
-| 3. Analysis & Advice | `vision.advice` | Skeleton JSON + hold map | JSON advice payload | Combines skeleton data with hold context to generate targeted coaching advice (e.g., "hip too far from wall on move 3", "match hands before flagging"). |
-| 4. Ghost Mode | `vision.ghost` | Skeleton JSON + hold map + user morphology | JSON ghost overlay data | Computes an optimal movement path (pathfinding / inverse kinematics) for the user's body proportions. Output is a frame-by-frame ghost skeleton that the Flutter client renders as an overlay. |
+| --- | --- | --- | --- | --- |
+| 1\. Hold Detection | `vision.hold_detection` | Photo of the route | JSON hold map (positions + types) | User photographs the wall, AI detects and classifies holds (crimp, sloper, jug…). User can manually correct misclassified holds before proceeding. |
+| 2\. Skeleton Extraction | `vision.skeleton` | Video + hold map | JSON per-frame skeleton data | MediaPipe Pose extracts 33 keypoints per frame → computes joint angles, center of gravity, weight distribution, segment tensions. Returns the full skeleton timeline as JSON to the Rust API. |
+| 3\. Analysis & Advice | `vision.advice` | Skeleton JSON + hold map | JSON advice payload | Combines skeleton data with hold context to generate targeted coaching advice (e.g., "hip too far from wall on move 3", "match hands before flagging"). |
+| 4\. Ghost Mode | `vision.ghost` | Skeleton JSON + hold map + user morphology | JSON ghost overlay data | Computes an optimal movement path (pathfinding / inverse kinematics) for the user's body proportions. Output is a frame-by-frame ghost skeleton that the Flutter client renders as an overlay. |
 
 **Key design**: Steps 2–4 share the same skeleton extraction output, so a single video is only processed once. The ghost mode and advice generation reuse the skeleton JSON.
 
-#### Pipeline 2: Training Pipeline (CPU-only)
+Pipeline 2: Training Pipeline (CPU-only)
 
 | Step | Queue | Input | Output | Description |
-|------|-------|-------|--------|-------------|
-| 1. Program Generation | `training.program` | User profile (goals, injuries, level, analysis history) | JSON training program | Algorithm selects and personalizes training routines based on the user's objectives, injury history, and past performance data from analyses. |
+| --- | --- | --- | --- | --- |
+| 1\. Program Generation | `training.program` | User profile (goals, injuries, level, analysis history) | JSON training program | Algorithm selects and personalizes training routines based on the user's objectives, injury history, and past performance data from analyses. |
 
 This pipeline does **not** require GPU or video processing. It runs as a lightweight algorithm (rule-based + optional LLM for textual personalization in the future).
 
-#### Worker Architecture
+Worker Architecture
 
-Each pipeline is implemented as a **dedicated worker module** — one process per queue.
-This contrasts with a monolithic router approach and allows independent scaling and
-deployment of each pipeline.
+Each pipeline is implemented as a **dedicated worker module** — one process per queue. This contrasts with a monolithic router approach and allows independent scaling and deployment of each pipeline.
 
-The canonical pipeline pattern (as implemented in `apps/ai/src/worker.py` for
-`vision.skeleton`) is:
+The canonical pipeline pattern (as implemented in `apps/ai/src/worker.py` for `vision.skeleton`) is:
 
 ```
 1. DOWNLOAD  — fetch asset from MinIO/S3 via boto3
@@ -293,13 +293,12 @@ Each worker module:
 - Declares its queue as **durable** at startup.
 - Declares `ascension.events` as a **topic + durable** exchange at startup.
 - Sets `prefetch_count=1` (one job at a time per worker instance).
-- Retries the initial RabbitMQ connection up to **12 × 5 s** to handle Docker Compose
-  startup race conditions.
+- Retries the initial RabbitMQ connection up to **12 × 5 s** to handle Docker Compose startup race conditions.
 
 **Implementation status:**
 
 | Queue | Module | Status |
-|---|---|---|
+| --- | --- | --- |
 | `vision.skeleton` | `apps/ai/src/worker.py` | ✅ Implemented |
 | `vision.hold_detection` | — | Planned |
 | `vision.advice` | — | Planned |
@@ -308,7 +307,7 @@ Each worker module:
 
 See `docs/engineering/developer_guide/ai/readme.md` for the full AI layer documentation.
 
-#### Typical Vision Pipeline Flow
+Typical Vision Pipeline Flow
 
 ```
 1. User photos the route → hold_detection job → AI classifies holds → user validates
@@ -319,7 +318,7 @@ See `docs/engineering/developer_guide/ai/readme.md` for the full AI layer docume
 
 ### Layer 5: Data Persistence
 
-#### PostgreSQL (Structured Data)
+PostgreSQL (Structured Data)
 
 **Schema Design**:
 
@@ -376,7 +375,7 @@ CREATE INDEX idx_analyses_video_id ON analyses(video_id);
 CREATE INDEX idx_analyses_status ON analyses(status);
 ```
 
-#### MinIO/S3 (Object Storage)
+MinIO/S3 (Object Storage)
 
 **Bucket Structure**:
 
@@ -708,11 +707,10 @@ We migrated the API Gateway server from Rust (Axum) to Go (Gin) for several reas
 
 ## Next Steps
 
-1. Read [Development Deployment](./deployment/development.md) to set up local environment
+1. Read [Development Deployment](deployment/development.md) to set up local environment
 2. Review [API Gateway Documentation](./components/api-gateway.md) for implementation details
 3. Understand [Video Analysis Workflow](./workflows/video-analysis-flow.md) for the complete flow
 
 ---
 
-**Last Updated**: 2026-02-12
-**Maintainer**: Ascension Development Team
+**Last Updated**: 2026-02-12 **Maintainer**: Ascension Development Team

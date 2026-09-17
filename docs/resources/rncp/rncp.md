@@ -1,7 +1,11 @@
+---
+id: ea5b3117-e545-448f-b4d7-eb138a7bf4be
+---
+
 :::success
-**Version:** 1.0  
-**Original language:** French  
-DON'T EDIT THIS FILE !  
+**Version:** 1.0
+**Original language:** French
+DON'T EDIT THIS FILE !
 :::
 
 ---
@@ -13,12 +17,12 @@ DON'T EDIT THIS FILE !
 ## Table of Contents
 
 - [Vue d'ensemble](#vue-densemble)
-- [Modalités d'évaluation](#modalités-dévaluation)
+- [Modalités d'évaluation](#modalit%C3%A9s-d%C3%A9valuation)
 - [Bloc 1 — Cadrer un projet logiciel](#bloc-1--cadrer-un-projet-logiciel)
 - [Bloc 2 — Concevoir une architecture logicielle](#bloc-2--concevoir-une-architecture-logicielle)
 - [Bloc 3 — Architecture pour applications lourdes](#bloc-3--architecture-pour-applications-lourdes)
 - [Bloc 4 — Architecture pour applications web](#bloc-4--architecture-pour-applications-web)
-- [Bloc 5 — Assurance qualité](#bloc-5--assurance-qualité)
+- [Bloc 5 — Assurance qualité](#bloc-5--assurance-qualit%C3%A9)
 - [Bloc 6 — Mise en production](#bloc-6--mise-en-production)
 - [Bloc 7 — Pilotage de projet](#bloc-7--pilotage-de-projet)
 
@@ -28,27 +32,27 @@ DON'T EDIT THIS FILE !
 
 ### Référentiel des blocs de compétences
 
-| Bloc de compétences | Référentiel d'activités | Référentiel de compétences                                             |
-| :------------------ | :---------------------- | :--------------------------------------------------------------------- |
-| Bloc 1              | A1, A2                  | A1 → `C1, C2` — A2 → `C3, C4, C5`                                      |
-| Bloc 2              | A3, A4, A5, A6          | A3 → `C6, C7` — A4 → `C8, C9` — A5 → `C10, C11, C12` — A6 → `C13, C14` |
-| Bloc 3              | A7, A8                  | A7 → `C15, C16, C17` — A8 → `C18, C19`                                 |
-| Bloc 4              | A9, A10                 | A9 → `C20, C21, C22` — A10 → `C23, C24`                                |
-| Bloc 5              | A11, A12                | A11 → `C25, C26, C27` — A12 → `C28, C29`                               |
-| Bloc 6              | A13, A14                | A13 → `C30, C31, C32` — A14 → `C33, C34`                               |
-| Bloc 7              | A15, A16                | A15 → `C35, C36` — A16 → `C37, C38, C39, C40`                          |
+| Bloc de compétences | Référentiel d'activités | Référentiel de compétences |
+| --- | --- | --- |
+| Bloc 1 | A1, A2 | A1 → `C1, C2` — A2 → `C3, C4, C5` |
+| Bloc 2 | A3, A4, A5, A6 | A3 → `C6, C7` — A4 → `C8, C9` — A5 → `C10, C11, C12` — A6 → `C13, C14` |
+| Bloc 3 | A7, A8 | A7 → `C15, C16, C17` — A8 → `C18, C19` |
+| Bloc 4 | A9, A10 | A9 → `C20, C21, C22` — A10 → `C23, C24` |
+| Bloc 5 | A11, A12 | A11 → `C25, C26, C27` — A12 → `C28, C29` |
+| Bloc 6 | A13, A14 | A13 → `C30, C31, C32` — A14 → `C33, C34` |
+| Bloc 7 | A15, A16 | A15 → `C35, C36` — A16 → `C37, C38, C39, C40` |
 
 ### Correspondance modalités / observables
 
 | Modalité d'évaluation | Critères d'évaluation / Observables |
-| :-------------------- | :---------------------------------- |
-| M1                    | O1 à O11                            |
-| M2                    | O12 à O29                           |
-| M3                    | O30 à O51                           |
-| M4                    | O40 à O59                           |
-| M5                    | O52 à O69                           |
-| M6                    | O63 à O71                           |
-| M7                    | O72 à O79                           |
+| --- | --- |
+| M1 | O1 à O11 |
+| M2 | O12 à O29 |
+| M3 | O30 à O51 |
+| M4 | O40 à O59 |
+| M5 | O52 à O69 |
+| M6 | O63 à O71 |
+| M7 | O72 à O79 |
 
 ---
 
@@ -66,7 +70,7 @@ Chaque soutenance débute par une **présentation (10 à 20 min)** du projet par
 
 ## Bloc 1 — Cadrer un projet logiciel
 
-**1. Cadrer un projet de conception et développement d'une solution logicielle**
+**1\. Cadrer un projet de conception et développement d'une solution logicielle**
 
 ### Activités
 
@@ -94,7 +98,7 @@ Chaque soutenance débute par une **présentation (10 à 20 min)** du projet par
 
 ### Modalité d'évaluation — M1
 
-**Mise en situation professionnelle : Cadrage du projet** _(projet de groupe suivi d'une soutenance orale)_
+**Mise en situation professionnelle : Cadrage du projet** *(projet de groupe suivi d'une soutenance orale)*
 
 Le candidat doit :
 
@@ -124,7 +128,7 @@ Le candidat doit :
 
 ## Bloc 2 — Concevoir une architecture logicielle
 
-**2. Concevoir une architecture logicielle**
+**2\. Concevoir une architecture logicielle**
 
 ### Activités
 
@@ -173,7 +177,7 @@ Le candidat doit :
 
 ### Modalité d'évaluation — M2
 
-**Mise en situation professionnelle : Conception du projet** _(projet de groupe suivi d'une soutenance orale)_
+**Mise en situation professionnelle : Conception du projet** *(projet de groupe suivi d'une soutenance orale)*
 
 Le candidat doit :
 
@@ -209,7 +213,7 @@ Le candidat doit :
 
 ## Bloc 3 — Architecture pour applications lourdes
 
-**3. Créer une architecture logicielle pour des applications "lourdes"**
+**3\. Créer une architecture logicielle pour des applications "lourdes"**
 
 ### Activités
 
@@ -238,7 +242,7 @@ Le candidat doit :
 
 ### Modalité d'évaluation — M3
 
-**Mise en situation professionnelle : Mise en place d'une solution logicielle** _(projet de groupe suivi d'une soutenance orale)_
+**Mise en situation professionnelle : Mise en place d'une solution logicielle** *(projet de groupe suivi d'une soutenance orale)*
 
 Le candidat doit :
 
@@ -262,7 +266,7 @@ Le candidat doit :
 
 ## Bloc 4 — Architecture pour applications web
 
-**4. Créer une architecture logicielle pour des applications web**
+**4\. Créer une architecture logicielle pour des applications web**
 
 ### Activités
 
@@ -293,7 +297,7 @@ Le candidat doit :
 
 ### Modalité d'évaluation — M4
 
-**Mise en situation professionnelle : Mise en place d'une solution web** _(projet de groupe suivi d'une soutenance orale)_
+**Mise en situation professionnelle : Mise en place d'une solution web** *(projet de groupe suivi d'une soutenance orale)*
 
 Le candidat doit :
 
@@ -319,7 +323,7 @@ Le candidat doit :
 
 ## Bloc 5 — Assurance qualité
 
-**5. Définir et piloter la politique d'assurance qualité d'un projet de développement d'une solution logicielle**
+**5\. Définir et piloter la politique d'assurance qualité d'un projet de développement d'une solution logicielle**
 
 ### Activités
 
@@ -347,7 +351,7 @@ Le candidat doit :
 
 ### Modalité d'évaluation — M5
 
-**Mise en situation professionnelle : Définir et piloter la politique d'assurance qualité** _(projet de groupe suivi d'une soutenance orale)_
+**Mise en situation professionnelle : Définir et piloter la politique d'assurance qualité** *(projet de groupe suivi d'une soutenance orale)*
 
 Le candidat doit :
 
@@ -374,7 +378,7 @@ Le candidat doit :
 
 ## Bloc 6 — Mise en production
 
-**6. Piloter la mise en production d'un projet de développement d'une solution logicielle**
+**6\. Piloter la mise en production d'un projet de développement d'une solution logicielle**
 
 ### Activités
 
@@ -402,7 +406,7 @@ Le candidat doit :
 
 ### Modalité d'évaluation — M6
 
-**Mise en situation professionnelle : Mise en production du projet** _(projet de groupe suivi d'une soutenance orale)_
+**Mise en situation professionnelle : Mise en production du projet** *(projet de groupe suivi d'une soutenance orale)*
 
 Le candidat doit :
 
@@ -430,7 +434,7 @@ Le candidat doit :
 
 ## Bloc 7 — Pilotage de projet
 
-**7. Piloter un projet de conception et développement d'une solution logicielle**
+**7\. Piloter un projet de conception et développement d'une solution logicielle**
 
 ### Activités
 
@@ -461,7 +465,7 @@ Le candidat doit :
 
 ### Modalité d'évaluation — M7
 
-**Mise en situation professionnelle : Pilotage du projet et de l'équipe** _(projet de groupe suivi d'une soutenance orale)_
+**Mise en situation professionnelle : Pilotage du projet et de l'équipe** *(projet de groupe suivi d'une soutenance orale)*
 
 Le candidat doit :
 

@@ -1,3 +1,7 @@
+---
+id: 9d8758fe-e9c2-4623-8698-dbd1cc5b6386
+---
+
 # graphify reference: add a URL and watch a folder
 
 Load this when the user ran `/graphify add <url>` or passed `--watch`. Neither is part of the default build.
@@ -27,6 +31,7 @@ except RuntimeError as e:
 Replace `URL` with the actual URL, `AUTHOR` with the user's name if provided, `CONTRIBUTOR` likewise. If the command exits with an error, tell the user what went wrong - do not silently continue. After a successful save, automatically run the `--update` pipeline on `./raw` to merge the new file into the existing graph.
 
 Supported URL types (auto-detected):
+
 - YouTube / any video URL → audio downloaded via yt-dlp, transcribed to `.txt` on next run (requires `pip install 'graphifyy[video]'`)
 - Twitter/X → fetched via oEmbed, saved as `.md` with tweet text and author
 - arXiv → abstract + metadata saved as `.md`
@@ -44,7 +49,7 @@ Start a background watcher that monitors a folder and auto-updates the graph whe
 $(cat graphify-out/.graphify_python) -m graphify.watch INPUT_PATH --debounce 3
 ```
 
-Replace INPUT_PATH with the folder to watch. Behavior depends on what changed:
+Replace INPUT\_PATH with the folder to watch. Behavior depends on what changed:
 
 - **Code files only (.py, .ts, .go, etc.):** re-runs AST extraction + rebuild + cluster immediately, no LLM needed. `graph.json` and `GRAPH_REPORT.md` are updated automatically.
 - **Docs, papers, or images:** writes a `graphify-out/needs_update` flag and prints a notification to run `/graphify --update` (LLM semantic re-extraction required).

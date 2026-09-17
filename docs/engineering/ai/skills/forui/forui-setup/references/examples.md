@@ -1,3 +1,7 @@
+---
+id: dcb8e86b-dc86-4a26-b004-733e52e0e005
+---
+
 # Forui Setup Examples
 
 ## Existing MaterialApp With Router

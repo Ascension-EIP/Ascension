@@ -1,4 +1,5 @@
 ---
+id: a42a5e89-c08e-43f6-a425-ae109603c61f
 name: forui-layout-navigation
 description: Build Forui app layout and navigation. Use when implementing FScaffold, FHeader, FBottomNavigationBar, FSidebar, FBreadcrumb, FPagination, FTabs, FResizable, FDivider, FTileGroup, FItemGroup, responsive shells, or navigation layout migration.
 metadata:

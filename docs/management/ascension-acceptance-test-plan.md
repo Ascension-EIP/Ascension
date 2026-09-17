@@ -1,6 +1,10 @@
+---
+id: 5a77e108-21d3-4916-8298-d97e6ac230f9
+---
+
 :::success
-**Version:** 1.0  
-**Original language:** French  
+**Version:** 1.0
+**Original language:** French
 :::
 
 ---
@@ -13,15 +17,15 @@
 
 - [Ascension Acceptance Test Plan (ATP)](#ascension-acceptance-test-plan-atp)
   - [Table of Contents](#table-of-contents)
-  - [1. Project context, objectives and workflow](#1-project-context-objectives-and-workflow)
-  - [2. User roles](#2-user-roles)
-  - [3. Feature table (organized by user flow)](#3-feature-table-organized-by-user-flow)
-  - [4. Success criteria table](#4-success-criteria-table)
-  - [5. Out of alpha scope](#5-out-of-alpha-scope)
+  - [1\. Project context, objectives and workflow](#1-project-context-objectives-and-workflow)
+  - [2\. User roles](#2-user-roles)
+  - [3\. Feature table (organized by user flow)](#3-feature-table-organized-by-user-flow)
+  - [4\. Success criteria table](#4-success-criteria-table)
+  - [5\. Out of alpha scope](#5-out-of-alpha-scope)
 
 ---
 
-## 1. Project context, objectives and workflow
+## 1\. Project context, objectives and workflow
 
 Ce document décrit le périmètre ATP d’Ascension, c’est-à-dire la phase qui suit le GreenLight et qui mène au jury final de mars 2028.
 
@@ -45,22 +49,22 @@ Flux utilisateur de référence dans l’alpha :
 
 ---
 
-## 2. User roles
+## 2\. User roles
 
 | Role name | Description |
-| :-- | :-- |
+| --- | --- |
 | Grimpeur alpha | Utilisateur principal avec accès au parcours avancé (analyse, fantôme complet, coaching). |
 | Ami / membre communauté | Utilisateur qui interagit via comparaison, partage et feedback social. |
 | Admin produit & technique | Suit la qualité, la sécurité, la performance, et valide l’état de préparation jury ATP. |
 
 ---
 
-## 3. Feature table (organized by user flow)
+## 3\. Feature table (organized by user flow)
 
 Toutes les fonctionnalités listées ci-dessous font partie du scope ATP à démontrer.
 
 | Feature ID | User role | Feature name | Short description |
-| :-- | :-- | :-- | :-- |
+| --- | --- | --- | --- |
 | ATP-F01 | Grimpeur alpha | Se connecter | Accéder au compte et aux données avancées du profil. |
 | ATP-F02 | Grimpeur alpha | Détecter automatiquement les prises | Identifier les prises sur photo de voie avec pré-annotation. |
 | ATP-F03 | Grimpeur alpha | Corriger manuellement les prises | Ajuster les prises non détectées ou mal classées. |
@@ -80,12 +84,12 @@ Toutes les fonctionnalités listées ci-dessous font partie du scope ATP à dém
 
 ---
 
-## 4. Success criteria table
+## 4\. Success criteria table
 
 Période de validation ATP : août 2027 -> mars 2028.
 
 | Feature ID | Key success criteria | Indicator/metric | Result achieved |
-| :-- | :-- | :-- | :-- |
+| --- | --- | --- | --- |
 | ATP-F01 | La connexion donne accès au parcours alpha sans rupture. | 40 essais, 0 blocage critique. | Achieved (40/40). |
 | ATP-F02 | La détection automatique propose une base exploitable. | 30 photos, précision macro >= 80%. | Partially achieved (82% global, variabilité forte selon éclairage). |
 | ATP-F03 | La correction manuelle permet de finaliser la voie rapidement. | 30 corrections, temps médian <= 90 s. | Achieved (temps médian 74 s). |
@@ -105,7 +109,7 @@ Période de validation ATP : août 2027 -> mars 2028.
 
 ---
 
-## 5. Out of alpha scope
+## 5\. Out of alpha scope
 
 Pour garder un ATP réaliste, les points ci-dessous restent hors scope du jury final :
 

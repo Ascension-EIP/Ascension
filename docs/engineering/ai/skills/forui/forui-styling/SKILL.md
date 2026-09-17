@@ -1,4 +1,5 @@
 ---
+id: b3dba54f-a5b1-4297-842b-c4eb9e8214f0
 name: forui-styling
 description: Customize Forui widget styles. Use when applying style deltas, FVariants, variant constraints, generated style files, FStyle, border radius, icon size, per-widget styles, custom icons in theme data, or shadcn-like unpacking decisions.
 metadata:

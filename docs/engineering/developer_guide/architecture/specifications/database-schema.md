@@ -1,6 +1,10 @@
+---
+id: 2f73e756-4920-4208-ae1e-6928976f81ec
+---
+
 :::success
-**Version:** 1.0  
-**Original language:** English  
+**Version:** 1.0
+**Original language:** English
 :::
 
 ---
@@ -27,7 +31,6 @@
   - [Get user's recent analyses](#get-users-recent-analyses)
   - [Check user quota](#check-user-quota)
   - [Get route with ghost and holds](#get-route-with-ghost-and-holds)
-
 
 ---
 
@@ -173,6 +176,7 @@ CREATE INDEX idx_users_created_at ON users(created_at DESC);
 ```
 
 **Business Rules**:
+
 - Freemium tier: 10 videos/month (with ads)
 - Premium tier: 50 videos/month (20€/month, ghost mode enabled)
 - Infinity tier: Unlimited videos/month (30€/month, all features + server priority)
@@ -216,7 +220,8 @@ CREATE TABLE analyses (
 CREATE INDEX idx_analyses_video_id ON analyses(video_id);
 ```
 
-**result_json example**:
+**result\_json example**:
+
 ```json
 {
   "frames": [
@@ -272,7 +277,8 @@ CREATE TABLE ghosts (
 CREATE INDEX idx_ghosts_route_id ON ghosts(route_id);
 ```
 
-**ghost_path example**:
+**ghost\_path example**:
+
 ```json
 {
   "steps": [
@@ -305,6 +311,7 @@ CREATE INDEX idx_holds_route_id ON holds(route_id);
 ```
 
 **Hold types**:
+
 - `jug` - Easy to grip
 - `crimp` - Small edge
 - `sloper` - Rounded
@@ -331,6 +338,7 @@ CREATE INDEX idx_comparisons_analysis_id ON comparisons(analysis_id);
 ```
 
 **metrics example**:
+
 ```json
 {
   "path_similarity": 0.78,
@@ -438,5 +446,6 @@ GROUP BY r.id, g.ghost_path;
 ---
 
 **Related**:
-- [API Specification](./api-specification.md)
+
+- [API Specification](api-specification.md)
 - [System Overview](../system-overview.md)

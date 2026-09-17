@@ -1,3 +1,7 @@
+---
+id: 944ae9a1-b80c-4a31-83a1-af89c9dfea47
+---
+
 # Forui Layout And Navigation Examples
 
 ## Navigation Layering

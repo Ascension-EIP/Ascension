@@ -1,6 +1,10 @@
+---
+id: bd2ea160-3265-4ad1-8b98-fe85d1de9243
+---
+
 :::success
-**Version:** 1.2  
-**Original language:** English  
+**Version:** 1.2
+**Original language:** English
 :::
 
 ---
@@ -20,7 +24,7 @@
 ## Shared Assets
 
 - [Excalidraw Source](./ascension.excalidraw)
-- [RNCP Resource Pack](./rncp/rncp.md)
+- [RNCP Resource Pack](rncp/rncp.md)
 - [Audio Assets](./audio/)
 - [Deck Assets](./deck/)
 - [Image Assets](./images/)

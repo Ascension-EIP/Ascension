@@ -1,4 +1,5 @@
 ---
+id: 450e97a6-05f4-4c55-aeb2-ac7ac2c8648a
 name: documentation
 description: "Create or update all Markdown documentation files following the project's style guide"
 globs: ["*.md"]
@@ -25,33 +26,24 @@ After reading the guidelines, verify every point below before outputting a file:
 
   ```markdown
   :::status
-  **Version:** [X.X]  
-  **Original language:** [Language]  
+  **Version:** [X.X]
+  **Original language:** [Language]
   :::
   ```
 
-  Each line ends with **two trailing spaces** to produce a Markdown line break.  
+  Each line ends with **two trailing spaces** to produce a Markdown line break.
   Authorized container statuses:
   - `:::success` for completed (`Done`) documents, and frozen (`Final`) documents with `DON'T EDIT THIS FILE !` added after original language.
   - `:::warning` for `In progress` or `Need update` documents.
   - `:::danger` for `Todo` (planned) documents.
-
 - [ ] **Horizontal rule after header** — a `---` separator immediately follows the header block.
-
 - [ ] **Top-level heading** — a single `# Title` heading comes right after the separator.
-
 - [ ] **Table of Contents** — every file with headings must include a TOC after the title, listing all `##` and `###` sections.
-
-- [ ] **Horizontal rule before every `##` heading** — a `---` separator is placed before each major section.
-
+- [ ] **Horizontal rule before every** `##` **heading** — a `---` separator is placed before each major section.
 - [ ] **Heading levels are not skipped** — no jumping from `##` to `####`.
-
-- [ ] **Unordered lists use `-`**, not `*` or `+`.
-
+- [ ] **Unordered lists use** `-`, not `*` or `+`.
 - [ ] **Empty line** before and after every code block and between paragraphs.
-
 - [ ] **Filename is kebab-case** — all lowercase, words separated by hyphens.
-
 - [ ] **Language is English or French** — as declared in **Original language**.
 
 ---

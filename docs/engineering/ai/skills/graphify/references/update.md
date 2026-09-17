@@ -1,3 +1,7 @@
+---
+id: 3d4042ce-907d-4e1a-a5cb-b67a5dd4e84d
+---
+
 # graphify reference: incremental update and cluster-only
 
 Load this only when the user passed `--update` or `--cluster-only`. A first-time full build never reads this file.
@@ -63,8 +67,7 @@ print('code_only:', code_only)
 
 If `code_only` is True: print `[graphify update] Code-only changes detected - skipping semantic extraction (no LLM needed)`, run only Step 3A (AST) on the changed files, skip Step 3B entirely (no subagents), then go straight to merge and Steps 4–8.
 
-If `code_only` is False (any changed file is a doc/paper/image/video): **first, if any changed file is in `new_files['video']`, run `references/transcribe.md` (Step 2.5) on those files, then rewrite `.graphify_detect.json` to move the resulting transcript paths into `files['document']` and drop `files['video']`** — otherwise raw `.mp4/.mp3` paths are fed to semantic subagents as unreadable media (#1392). Then run the full Steps 3A–3C pipeline as normal.
-
+If `code_only` is False (any changed file is a doc/paper/image/video): **first, if any changed file is in** `new_files['video']`**, run** `references/transcribe.md` **(Step 2.5) on those files, then rewrite** `.graphify_detect.json` **to move the resulting transcript paths into** `files['document']` **and drop** `files['video']` — otherwise raw `.mp4/.mp3` paths are fed to semantic subagents as unreadable media (#1392). Then run the full Steps 3A–3C pipeline as normal.
 
 If no new files exist (only deletions), create an empty extraction so the merge step can prune:
 
@@ -78,7 +81,6 @@ Path('graphify-out/.graphify_extract.json').write_text(json.dumps({'nodes':[],'e
 "
 fi
 ```
-
 
 Then:
 
@@ -194,8 +196,7 @@ if old_data:
 "
 ```
 
-Before the merge step, save the old graph: `cp graphify-out/graph.json graphify-out/.graphify_old.json`
-Clean up after: `rm -f graphify-out/.graphify_old.json`
+Before the merge step, save the old graph: `cp graphify-out/graph.json graphify-out/.graphify_old.json` Clean up after: `rm -f graphify-out/.graphify_old.json`
 
 ---
 

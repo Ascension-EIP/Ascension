@@ -1,7 +1,11 @@
+---
+id: 2b45a7f5-ebfc-4b20-b12b-e74f6ad72462
+---
+
 :::success
-**Version:** 1.1  
-**Original language:** English  
-DON'T EDIT THIS FILE !  
+**Version:** 1.1
+**Original language:** English
+DON'T EDIT THIS FILE !
 :::
 
 ---
@@ -14,32 +18,32 @@ DON'T EDIT THIS FILE !
 
 - [Prototype Pool — 2-Week Prototyping Sprint](#prototype-pool--2-week-prototyping-sprint)
   - [Table of Contents](#table-of-contents)
-  - [1. Objectives](#1-objectives)
-  - [2. Scope](#2-scope)
+  - [1\. Objectives](#1-objectives)
+  - [2\. Scope](#2-scope)
     - [2.1 AI Service](#21-ai-service)
     - [2.2 Backend Server](#22-backend-server)
     - [2.3 Mobile Application](#23-mobile-application)
     - [2.4 Infrastructure](#24-infrastructure)
-  - [3. User Flow](#3-user-flow)
-  - [4. Development Environment](#4-development-environment)
+  - [3\. User Flow](#3-user-flow)
+  - [4\. Development Environment](#4-development-environment)
     - [4.1 Global Environment](#41-global-environment)
     - [4.2 Team Setup](#42-team-setup)
-    - [4.3 Toolchain \& Versions](#43-toolchain--versions)
+    - [4.3 Toolchain & Versions](#43-toolchain--versions)
       - [Task Runner — moon](#task-runner--moon)
       - [Backend — Rust](#backend--rust)
       - [AI — Python](#ai--python)
       - [Mobile — Flutter / Dart](#mobile--flutter--dart)
-      - [Infrastructure — Docker \& Services](#infrastructure--docker--services)
+      - [Infrastructure — Docker & Services](#infrastructure--docker--services)
     - [4.4 Development Workflow](#44-development-workflow)
-  - [5. Task Assignment](#5-task-assignment)
-  - [6. Key Milestones](#6-key-milestones)
-  - [7. Material Request](#7-material-request)
+  - [5\. Task Assignment](#5-task-assignment)
+  - [6\. Key Milestones](#6-key-milestones)
+  - [7\. Material Request](#7-material-request)
     - [7.1 Cloud Infrastructure (Hetzner)](#71-cloud-infrastructure-hetzner)
     - [7.2 Physical Test Devices](#72-physical-test-devices)
 
 ---
 
-## 1. Objectives
+## 1\. Objectives
 
 The goal of this 2-week prototyping sprint is to build a **functional end-to-end prototype** that validates the feasibility of the entire Ascension technical stack.
 
@@ -56,7 +60,7 @@ This prototype is **not a production-ready deliverable** — it is a technical p
 
 ---
 
-## 2. Scope
+## 2\. Scope
 
 ### 2.1 AI Service
 
@@ -91,7 +95,7 @@ This prototype is **not a production-ready deliverable** — it is a technical p
 
 ---
 
-## 3. User Flow
+## 3\. User Flow
 
 The following describes the core user journey that the prototype must be able to demonstrate end-to-end:
 
@@ -106,78 +110,78 @@ The following describes the core user journey that the prototype must be able to
 
 ---
 
-## 4. Development Environment
+## 4\. Development Environment
 
 ### 4.1 Global Environment
 
-All development happens in a **UNIX-based environment**. Windows is not supported. The monorepo is managed with **[moonrepo](https://moonrepo.dev)**, which centralizes task execution, toolchain version pinning, and CI pipelines across all services.
+All development happens in a **UNIX-based environment**. Windows is not supported. The monorepo is managed with [**moonrepo**](https://moonrepo.dev), which centralizes task execution, toolchain version pinning, and CI pipelines across all services.
 
 Infrastructure services (PostgreSQL, RabbitMQ, MinIO) are orchestrated locally via **Docker Compose**.
 
 ### 4.2 Team Setup
 
-| Developer            | OS         | Target Platforms | Role                       |
-| -------------------- | ---------- | ---------------- | -------------------------- |
-| Christophe VANDEVOIR | MacOS      | iOS              | Mobile (Flutter)           |
-| Gianni TUERO         | Arch Linux | Android          | RabbitMQ integration       |
-| Lou PELLEGRINO       | NixOS      | iOS              | Backend (Rust/Axum, init)  |
-| Nicolas TORO         | Arch Linux | Android          | Project, then Rust support |
-| Olivier POUECH       | Arch Linux | iOS              | AI (MediaPipe pipeline)    |
+| Developer | OS | Target Platforms | Role |
+| --- | --- | --- | --- |
+| Christophe VANDEVOIR | MacOS | iOS | Mobile (Flutter) |
+| Gianni TUERO | Arch Linux | Android | RabbitMQ integration |
+| Lou PELLEGRINO | NixOS | iOS | Backend (Rust/Axum, init) |
+| Nicolas TORO | Arch Linux | Android | Project, then Rust support |
+| Olivier POUECH | Arch Linux | iOS | AI (MediaPipe pipeline) |
 
 ### 4.3 Toolchain & Versions
 
 All toolchain versions are pinned in `.moon/toolchain.yml` and must be used consistently across all machines.
 
-#### Task Runner — moon
+Task Runner — moon
 
-| Tool     | Version | Install                                                   |
-| -------- | ------- | --------------------------------------------------------- |
-| moonrepo | `2.0.3` | `curl -fsSL https://moonrepo.dev/install/moon.sh \| bash` |
+| Tool | Version | Install |
+| --- | --- | --- |
+| moonrepo | `2.0.3` | `curl -fsSL https://moonrepo.dev/install/moon.sh | bash` |
 
-#### Backend — Rust
+Backend — Rust
 
-| Tool / Crate   | Version  | Notes                             |
-| -------------- | -------- | --------------------------------- |
-| Rust toolchain | `1.93.1` | Pinned via `.moon/toolchain.yml`  |
-| Edition        | `2024`   | `Cargo.toml`                      |
-| axum           | `0.8.8`  | HTTP framework                    |
-| tokio          | `1.49.0` | Async runtime (`features = full`) |
-| dotenv         | `0.15.0` | Environment variable loading      |
+| Tool / Crate | Version | Notes |
+| --- | --- | --- |
+| Rust toolchain | `1.93.1` | Pinned via `.moon/toolchain.yml` |
+| Edition | `2024` | `Cargo.toml` |
+| axum | `0.8.8` | HTTP framework |
+| tokio | `1.49.0` | Async runtime (`features = full`) |
+| dotenv | `0.15.0` | Environment variable loading |
 
-#### AI — Python
+AI — Python
 
-| Tool / Package | Version  | Notes                            |
-| -------------- | -------- | -------------------------------- |
-| Python         | `3.11`   | Pinned via `.moon/toolchain.yml` |
-| ruff           | `0.15.4` | Linter & formatter               |
-| pytest         | `9.0.2`  | Test runner                      |
-| build          | `1.4.0`  | Package builder                  |
-| mediapipe      | TBD      | Pose estimation (33 keypoints)   |
-| opencv-python  | TBD      | Computer vision / video decoding |
-| pika           | TBD      | RabbitMQ client (AMQP)           |
+| Tool / Package | Version | Notes |
+| --- | --- | --- |
+| Python | `3.11` | Pinned via `.moon/toolchain.yml` |
+| ruff | `0.15.4` | Linter & formatter |
+| pytest | `9.0.2` | Test runner |
+| build | `1.4.0` | Package builder |
+| mediapipe | TBD | Pose estimation (33 keypoints) |
+| opencv-python | TBD | Computer vision / video decoding |
+| pika | TBD | RabbitMQ client (AMQP) |
 
 > **Note:** `mediapipe`, `opencv-python`, and `pika` are managed in the uv-based AI environment (`apps/ai/pyproject.toml`) via `apps/ai/moon.yml`.
 
-#### Mobile — Flutter / Dart
+Mobile — Flutter / Dart
 
-| Tool            | Version   | Notes                     |
-| --------------- | --------- | ------------------------- |
-| Flutter SDK     | `≥ 3.x`   | Channel: stable           |
-| Dart SDK        | `^3.11.0` | Defined in `pubspec.yaml` |
-| cupertino_icons | `^1.0.8`  | iOS-style icons           |
-| flutter_lints   | `^6.0.0`  | Lint rules                |
+| Tool | Version | Notes |
+| --- | --- | --- |
+| Flutter SDK | `≥ 3.x` | Channel: stable |
+| Dart SDK | `^3.11.0` | Defined in `pubspec.yaml` |
+| cupertino\_icons | `^1.0.8` | iOS-style icons |
+| flutter\_lints | `^6.0.0` | Lint rules |
 
 > **Note:** Additional packages (HTTP client, video picker, etc.) will be added to `pubspec.yaml` during the sprint.
 
-#### Infrastructure — Docker & Services
+Infrastructure — Docker & Services
 
-| Service        | Image          | Version                        | Ports            |
-| -------------- | -------------- | ------------------------------ | ---------------- |
-| Docker         | Docker Engine  | ≥ 24.x                         | —                |
-| Docker Compose | Compose plugin | ≥ 2.x                          | —                |
-| PostgreSQL     | `postgres`     | `18`                           | `5432`           |
-| RabbitMQ       | `rabbitmq`     | `4.2.4`                        | `5672` / `15672` |
-| MinIO          | `minio/minio`  | `RELEASE.2025-09-07T16-13-09Z` | `9000` / `9001`  |
+| Service | Image | Version | Ports |
+| --- | --- | --- | --- |
+| Docker | Docker Engine | ≥ 24.x | — |
+| Docker Compose | Compose plugin | ≥ 2.x | — |
+| PostgreSQL | `postgres` | `18` | `5432` |
+| RabbitMQ | `rabbitmq` | `4.2.4` | `5672` / `15672` |
+| MinIO | `minio/minio` | `RELEASE.2025-09-07T16-13-09Z` | `9000` / `9001` |
 
 ### 4.4 Development Workflow
 
@@ -210,31 +214,31 @@ moon run :test --affected
 
 ---
 
-## 5. Task Assignment
+## 5\. Task Assignment
 
-| Developer            | Task                                                                               |
-| -------------------- | ---------------------------------------------------------------------------------- |
-| Olivier POUECH       | AI pipeline using MediaPipe — skeleton extraction from video                       |
-| Christophe VANDEVOIR | Mobile Flutter UI — video upload + analysis trigger                                |
-| Gianni TUERO         | RabbitMQ link between backend and AI worker                                        |
-| Lou PELLEGRINO       | Backend init (Rust/Axum) — first routes + PostgreSQL schema                        |
-| Nicolas TORO         | Project management (GitHub Projects, milestones, tasks), then joins Lou on Backend |
-
----
-
-## 6. Key Milestones
-
-| Milestone       | Day       | Deliverable                                                                                                    |
-| --------------- | --------- | -------------------------------------------------------------------------------------------------------------- |
-| Definition      | Tuesday   | GitHub Project up to date, milestone created, tasks assigned, environment defined, material requests submitted |
-| Sprint start    | Thursday  | User journey started — first integration between services demonstrable                                         |
-| Demo checkpoint | Monday    | End-to-end user journey demonstrable (upload → analysis → result display)                                      |
-| Finalization    | Wednesday | Prototype finalized, edge cases handled, documentation updated                                                 |
-| Presentation    | Friday    | 15-minute public pitch with live demo                                                                          |
+| Developer | Task |
+| --- | --- |
+| Olivier POUECH | AI pipeline using MediaPipe — skeleton extraction from video |
+| Christophe VANDEVOIR | Mobile Flutter UI — video upload + analysis trigger |
+| Gianni TUERO | RabbitMQ link between backend and AI worker |
+| Lou PELLEGRINO | Backend init (Rust/Axum) — first routes + PostgreSQL schema |
+| Nicolas TORO | Project management (GitHub Projects, milestones, tasks), then joins Lou on Backend |
 
 ---
 
-## 7. Material Request
+## 6\. Key Milestones
+
+| Milestone | Day | Deliverable |
+| --- | --- | --- |
+| Definition | Tuesday | GitHub Project up to date, milestone created, tasks assigned, environment defined, material requests submitted |
+| Sprint start | Thursday | User journey started — first integration between services demonstrable |
+| Demo checkpoint | Monday | End-to-end user journey demonstrable (upload → analysis → result display) |
+| Finalization | Wednesday | Prototype finalized, edge cases handled, documentation updated |
+| Presentation | Friday | 15-minute public pitch with live demo |
+
+---
+
+## 7\. Material Request
 
 The following resources are required or desirable to carry out this prototype sprint in optimal conditions.
 
@@ -242,11 +246,11 @@ The following resources are required or desirable to carry out this prototype sp
 
 Our infrastructure is hosted on **Hetzner Cloud** (Germany), chosen for its price-to-performance ratio and GDPR compliance (biometric data stored in the EU). The following VPS instances are needed for the prototype environment:
 
-| Machine     | Role                          | Spec (Hetzner)        | Storage     | Est. Cost  |
-| ----------- | ----------------------------- | --------------------- | ----------- | ---------- |
-| **Srv-API** | Rust/Axum API + Nginx         | CX31 — 4 vCPU / 8 GB  | 80 GB SSD   | ~€15/month |
-| **Srv-DB**  | PostgreSQL + RabbitMQ + MinIO | CX41 — 4 vCPU / 16 GB | 500 GB NVMe | ~€25/month |
-| **Srv-ML**  | Python AI Workers (MediaPipe) | CX51 — 8 vCPU / 16 GB | 100 GB SSD  | ~€40/month |
+| Machine | Role | Spec (Hetzner) | Storage | Est. Cost |
+| --- | --- | --- | --- | --- |
+| **Srv-API** | Rust/Axum API + Nginx | CX31 — 4 vCPU / 8 GB | 80 GB SSD | ~€15/month |
+| **Srv-DB** | PostgreSQL + RabbitMQ + MinIO | CX41 — 4 vCPU / 16 GB | 500 GB NVMe | ~€25/month |
+| **Srv-ML** | Python AI Workers (MediaPipe) | CX51 — 8 vCPU / 16 GB | 100 GB SSD | ~€40/month |
 
 > **Total estimated:** ~€80/month for the prototype duration (2 weeks ≈ ~€40 prorated).
 
@@ -254,7 +258,7 @@ Our infrastructure is hosted on **Hetzner Cloud** (Germany), chosen for its pric
 
 ### 7.2 Physical Test Devices
 
-| Device         | Quantity | Priority | Justification                                                                  |
-| -------------- | -------- | -------- | ------------------------------------------------------------------------------ |
-| Android device | 1        | Medium   | Real hardware testing — emulator does not reflect real-world performance       |
-| iOS device     | 1        | Medium   | Real hardware testing — Simulator does not cover all edge cases (camera, etc.) |
+| Device | Quantity | Priority | Justification |
+| --- | --- | --- | --- |
+| Android device | 1 | Medium | Real hardware testing — emulator does not reflect real-world performance |
+| iOS device | 1 | Medium | Real hardware testing — Simulator does not cover all edge cases (camera, etc.) |

@@ -1,4 +1,5 @@
 ---
+id: 38f45693-669d-4f84-a34a-c981c3a89660
 name: commit
 description: "Generate a commit message following project standards"
 globs: ["*"]

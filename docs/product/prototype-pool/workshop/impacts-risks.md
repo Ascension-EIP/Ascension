@@ -1,7 +1,11 @@
+---
+id: f4a935cc-e183-4ec2-b621-bd5b905669b2
+---
+
 :::success
-**Version:** 1.2  
-**Original language:** French  
-DON'T EDIT THIS FILE !  
+**Version:** 1.2
+**Original language:** French
+DON'T EDIT THIS FILE !
 :::
 
 ---
@@ -13,41 +17,41 @@ DON'T EDIT THIS FILE !
 ## Table of Contents
 
 - [Impacts, Risks & Mitigation - Workshop Deliverable](#impacts-risks-mitigation-workshop-deliverable)
-  - [1. Risk Management](#1-risk-management)
+  - [1\. Risk Management](#1-risk-management)
     - [Matrice des risques](#matrice-des-risques)
-    - [Visualisation Matrice (Impact vs Probabilité)](#visualisation-matrice-impact-vs-probabilité)
-    - [Détail des risques critiques (criticité >= 10)](#détail-des-risques-critiques-criticité-10)
-  - [2. Environmental Impact (GreenIT)](#2-environmental-impact-greenit)
-    - [Choix d'hébergement - Empreinte carbone datacenter](#choix-dhébergement-empreinte-carbone-datacenter)
-    - [Principes d'éco-conception appliqués](#principes-déco-conception-appliqués)
+    - [Visualisation Matrice (Impact vs Probabilité)](#visualisation-matrice-impact-vs-probabilit%C3%A9)
+    - [Détail des risques critiques (criticité >= 10)](#d%C3%A9tail-des-risques-critiques-criticit%C3%A9-10)
+  - [2\. Environmental Impact (GreenIT)](#2-environmental-impact-greenit)
+    - [Choix d'hébergement - Empreinte carbone datacenter](#choix-dh%C3%A9bergement-empreinte-carbone-datacenter)
+    - [Principes d'éco-conception appliqués](#principes-d%C3%A9co-conception-appliqu%C3%A9s)
     - [Estimation empreinte carbone infrastructure](#estimation-empreinte-carbone-infrastructure)
-  - [3. Deployment & Resilience](#3-deployment-resilience)
-    - [CI/CD — Automatisation des tests et déploiements](#cicd-automatisation-des-tests-et-déploiements)
-    - [Stratégie de migration (schema évolutif)](#stratégie-de-migration-schema-évolutif)
-    - [SPOF — Single Points of Failure identifiés](#spof-single-points-of-failure-identifiés)
+  - [3\. Deployment & Resilience](#3-deployment-resilience)
+    - [CI/CD — Automatisation des tests et déploiements](#cicd-automatisation-des-tests-et-d%C3%A9ploiements)
+    - [Stratégie de migration (schema évolutif)](#strat%C3%A9gie-de-migration-schema-%C3%A9volutif)
+    - [SPOF — Single Points of Failure identifiés](#spof-single-points-of-failure-identifi%C3%A9s)
     - [Politique de sauvegarde (Backup Policy)](#politique-de-sauvegarde-backup-policy)
-    - [Plan de scalabilité (Roadmap Infrastructure)](#plan-de-scalabilité-roadmap-infrastructure)
+    - [Plan de scalabilité (Roadmap Infrastructure)](#plan-de-scalabilit%C3%A9-roadmap-infrastructure)
 
 ---
 
-## 1. Risk Management
+## 1\. Risk Management
 
 ### Matrice des risques
 
-| #   | Risque                                                                                           | Catégorie    | Probabilité (1-5) | Impact (1-5) | Criticité (P×I) | Stratégie | Plan de mitigation                                                                                              |
-| --- | ------------------------------------------------------------------------------------------------ | ------------ | :---------------: | :----------: | :-------------: | --------- | --------------------------------------------------------------------------------------------------------------- |
-| 1   | Précision insuffisante du modèle ML (MediaPipe ne détecte pas correctement les poses d'escalade) | Technique    |         4         |      5       |     **20**      | Réduire   | Dataset d'entraînement spécifique escalade, validation par grimpeurs experts, fallback sur détection simplifiée |
-| 2   | Panne du serveur ML (Machine 3 - Workers Python)                                                 | Opérationnel |         3         |      4       |     **12**      | Réduire   | Queue RabbitMQ persistante (jobs pas perdus), retry automatique, alerting Grafana immédiat                      |
-| 3   | Départ d'un membre clé de l'équipe                                                               | Opérationnel |         3         |      5       |     **15**      | Réduire   | Documentation technique obligatoire, code reviews croisées, pas de knowledge siloing                            |
-| 4   | Fuite de données utilisateurs (vidéos + données biométriques)                                    | Sécurité     |         2         |      5       |     **10**      | Réduire   | Chiffrement AES-256 au repos, TLS 1.3 en transit, accès S3 privé signé, audit RGPD                              |
-| 5   | Corruption ou perte de la base de données PostgreSQL                                             | Technique    |         1         |      5       |      **5**      | Réduire   | Backup quotidien pg_dump + WAL archiving continu, RPO < 15 min, test restore mensuel                            |
-| 6   | Upload vidéo échoue (fichier > 200 MB, réseau instable)                                          | Technique    |         4         |      3       |     **12**      | Réduire   | Upload chunked (5 MB par chunk), reprise sur erreur, compression vidéo côté mobile avant upload                 |
-| 7   | Hetzner datacenter indisponible (panne provider)                                                 | Opérationnel |         1         |      5       |      **5**      | Accepter  | SLA Hetzner 99.9%, monitoring uptime, procédure de bascule documentée                                           |
-| 8   | Dépassement budget cloud (croissance inattendue)                                                 | Financier    |         2         |      3       |      **6**      | Réduire   | Billing alerts Hetzner à 80% budget, rate limiting API, compression vidéos auto                                 |
-| 9   | Refus App Store / Play Store (politique Apple/Google)                                            | Opérationnel |         2         |      4       |      **8**      | Réduire   | Respect guidelines dès le début, review interne avant soumission, délai buffer 2 semaines                       |
-| 10  | Injection SQL / attaque API                                                                      | Sécurité     |         2         |      5       |     **10**      | Réduire   | SQLx compile-time queries (pas d'injection possible), rate limiting Nginx, input validation                     |
-| 11  | Latence analyse trop élevée (> 10 min)                                                           | Technique    |         3         |      3       |      **9**      | Réduire   | Optimisation algorithme OpenCV, processing asynchrone avec notification push, progress bar                      |
-| 12  | RGPD - Consentement vidéos / données biométriques                                                | Légal        |         3         |      5       |     **15**      | Éviter    | Consentement explicite obligatoire à l'onboarding, droit à l'effacement implémenté, DPO désigné                 |
+| # | Risque | Catégorie | Probabilité (1-5) | Impact (1-5) | Criticité (P×I) | Stratégie | Plan de mitigation |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Précision insuffisante du modèle ML (MediaPipe ne détecte pas correctement les poses d'escalade) | Technique | 4 | 5 | **20** | Réduire | Dataset d'entraînement spécifique escalade, validation par grimpeurs experts, fallback sur détection simplifiée |
+| 2 | Panne du serveur ML (Machine 3 - Workers Python) | Opérationnel | 3 | 4 | **12** | Réduire | Queue RabbitMQ persistante (jobs pas perdus), retry automatique, alerting Grafana immédiat |
+| 3 | Départ d'un membre clé de l'équipe | Opérationnel | 3 | 5 | **15** | Réduire | Documentation technique obligatoire, code reviews croisées, pas de knowledge siloing |
+| 4 | Fuite de données utilisateurs (vidéos + données biométriques) | Sécurité | 2 | 5 | **10** | Réduire | Chiffrement AES-256 au repos, TLS 1.3 en transit, accès S3 privé signé, audit RGPD |
+| 5 | Corruption ou perte de la base de données PostgreSQL | Technique | 1 | 5 | **5** | Réduire | Backup quotidien pg\_dump + WAL archiving continu, RPO < 15 min, test restore mensuel |
+| 6 | Upload vidéo échoue (fichier > 200 MB, réseau instable) | Technique | 4 | 3 | **12** | Réduire | Upload chunked (5 MB par chunk), reprise sur erreur, compression vidéo côté mobile avant upload |
+| 7 | Hetzner datacenter indisponible (panne provider) | Opérationnel | 1 | 5 | **5** | Accepter | SLA Hetzner 99.9%, monitoring uptime, procédure de bascule documentée |
+| 8 | Dépassement budget cloud (croissance inattendue) | Financier | 2 | 3 | **6** | Réduire | Billing alerts Hetzner à 80% budget, rate limiting API, compression vidéos auto |
+| 9 | Refus App Store / Play Store (politique Apple/Google) | Opérationnel | 2 | 4 | **8** | Réduire | Respect guidelines dès le début, review interne avant soumission, délai buffer 2 semaines |
+| 10 | Injection SQL / attaque API | Sécurité | 2 | 5 | **10** | Réduire | SQLx compile-time queries (pas d'injection possible), rate limiting Nginx, input validation |
+| 11 | Latence analyse trop élevée (> 10 min) | Technique | 3 | 3 | **9** | Réduire | Optimisation algorithme OpenCV, processing asynchrone avec notification push, progress bar |
+| 12 | RGPD - Consentement vidéos / données biométriques | Légal | 3 | 5 | **15** | Éviter | Consentement explicite obligatoire à l'onboarding, droit à l'effacement implémenté, DPO désigné |
 
 ---
 
@@ -111,19 +115,19 @@ Légende :
 
 ---
 
-## 2. Environmental Impact (GreenIT)
+## 2\. Environmental Impact (GreenIT)
 
 ### Choix d'hébergement - Empreinte carbone datacenter
 
 **Hetzner Falkenstein (Allemagne) - Datacenter retenu**
 
-| Critère                         | Valeur                                 | Source                             |
-| ------------------------------- | -------------------------------------- | ---------------------------------- |
-| PUE (Power Usage Effectiveness) | 1.3                                    | Hetzner transparency report        |
-| Énergie renouvelable            | 100% (énergie verte certifiée)         | Hetzner Green Energy               |
-| Localisation                    | Falkenstein, Allemagne                 | Zone EU à faible intensité carbone |
-| Intensité carbone réseau DE     | ~350 gCO2/kWh                          | Our World in Data 2024             |
-| Certification                   | ISO 14001 (management environnemental) | Hetzner                            |
+| Critère | Valeur | Source |
+| --- | --- | --- |
+| PUE (Power Usage Effectiveness) | 1.3 | Hetzner transparency report |
+| Énergie renouvelable | 100% (énergie verte certifiée) | Hetzner Green Energy |
+| Localisation | Falkenstein, Allemagne | Zone EU à faible intensité carbone |
+| Intensité carbone réseau DE | ~350 gCO2/kWh | Our World in Data 2024 |
+| Certification | ISO 14001 (management environnemental) | Hetzner |
 
 **Pourquoi Hetzner > AWS pour le GreenIT :**
 
@@ -134,15 +138,15 @@ Légende :
 
 ### Principes d'éco-conception appliqués
 
-| Principe                  | Choix technique                                                                                                   | Impact estimé                                      |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| **Client-side rendering** | L'overlay squelette est rendu localement sur Flutter (CustomPainter), aucune vidéo re-encodée côté serveur        | -50 MB bande passante + 30s CPU par vidéo          |
-| **Transfert de données**  | Retour JSON (~50 KB) au lieu d'une vidéo traitée (~50 MB)                                                         | Réduction de 99.9% du poids de la réponse          |
-| **Compression vidéo**     | Compression vidéo côté mobile avant upload (H.264, CRF 28), chunks de 5 MB                                        | Réduction ~60% du poids moyen des fichiers         |
-| **Lifecycle S3**          | Suppression automatique des vidéos non sauvegardées après 7 jours (MinIO policy)                                  | Réduction du stockage inutile                      |
-| **Asynchronisme**         | Traitement IA différé via RabbitMQ : les workers s'arrêtent si la queue est vide                                  | Pas de CPU gaspillé en attente active              |
-| **Algorithme optimisé**   | Résultats JSON réutilisés entre les étapes (skeleton → advice → ghost) : la vidéo n'est traitée qu'une seule fois | -2 passes GPU par analyse                          |
-| **Données en EU**         | Serveurs Hetzner Allemagne uniquement → pas de transfert transatlantique                                          | Latence réseau réduite + empreinte transit réduite |
+| Principe | Choix technique | Impact estimé |
+| --- | --- | --- |
+| **Client-side rendering** | L'overlay squelette est rendu localement sur Flutter (CustomPainter), aucune vidéo re-encodée côté serveur | \-50 MB bande passante + 30s CPU par vidéo |
+| **Transfert de données** | Retour JSON (~50 KB) au lieu d'une vidéo traitée (~50 MB) | Réduction de 99.9% du poids de la réponse |
+| **Compression vidéo** | Compression vidéo côté mobile avant upload (H.264, CRF 28), chunks de 5 MB | Réduction ~60% du poids moyen des fichiers |
+| **Lifecycle S3** | Suppression automatique des vidéos non sauvegardées après 7 jours (MinIO policy) | Réduction du stockage inutile |
+| **Asynchronisme** | Traitement IA différé via RabbitMQ : les workers s'arrêtent si la queue est vide | Pas de CPU gaspillé en attente active |
+| **Algorithme optimisé** | Résultats JSON réutilisés entre les étapes (skeleton → advice → ghost) : la vidéo n'est traitée qu'une seule fois | \-2 passes GPU par analyse |
+| **Données en EU** | Serveurs Hetzner Allemagne uniquement → pas de transfert transatlantique | Latence réseau réduite + empreinte transit réduite |
 
 ---
 
@@ -150,12 +154,15 @@ Légende :
 
 **Hypothèses** : 3 VPS Hetzner (Srv-API CX31 + Srv-DB CX41 + Srv-ML CX51) — mix 100% renouvelable
 
-| Serveur        | Puissance estimée | Heures/an |  kWh/an   | gCO2eq/an (350g/kWh DE) |
-| -------------- | :---------------: | :-------: | :-------: | :---------------------: |
-| Srv-API (CX31) |       ~30 W       |   8 760   |    263    |         ~92 kg          |
-| Srv-DB (CX41)  |       ~50 W       |   8 760   |    438    |         ~153 kg         |
-| Srv-ML (CX51)  |       ~80 W       |   8 760   |    701    |         ~245 kg         |
-| **Total**      |                   |           | **1 402** |  **~490 kg CO2eq/an**   |
+| Serveur | Puissance estimée | Heures/an | kWh/an | gCO2eq/an (350g/kWh DE) |
+| --- | --- | --- | --- | --- |
+| Srv-API (CX31) | ~30 W | 8 760 | 263 | ~92 kg |
+| Srv-DB (CX41) | ~50 W | 8 760 | 438 | ~153 kg |
+| Srv-ML (CX51) | ~80 W | 8 760 | 701 | ~245 kg |
+| **Total** |
+ |
+
+ | **1 402** | **~490 kg CO2eq/an** |
 
 > ⚠️ Avec 100% énergie renouvelable Hetzner, l'intensité carbone effective tend vers 0 gCO2/kWh. L'estimation ci-dessus représente le **pire cas** (mix réseau DE résiduel).
 
@@ -163,7 +170,7 @@ Légende :
 
 ---
 
-## 3. Deployment & Resilience
+## 3\. Deployment & Resilience
 
 ### CI/CD — Automatisation des tests et déploiements
 
@@ -174,7 +181,7 @@ main branch ──► Tag v* ──► GitHub Actions: build + push Docker image
 dev branch  ──► PR     ──► GitHub Actions: tests + lint (affected only)
 ```
 
-**CI — `.github/workflows/ci.yml`** (déclenché sur chaque PR) :
+**CI —** `.github/workflows/ci.yml` (déclenché sur chaque PR) :
 
 ```yaml
 jobs:
@@ -188,7 +195,7 @@ jobs:
         run: moon run :lint --affected
 ```
 
-**CD — `.github/workflows/deploy-production.yml`** (déclenché sur tag `v*`) :
+**CD —** `.github/workflows/deploy-production.yml` (déclenché sur tag `v*`) :
 
 ```yaml
 jobs:
@@ -212,12 +219,12 @@ jobs:
 
 Les migrations de base de données sont gérées via **SQLx migrate** (fichiers `.sql` versionnés dans `migrations/`). Le déploiement applique automatiquement les migrations avant de redémarrer les services.
 
-| Version | Action                                   | Stratégie                                               |
-| ------- | ---------------------------------------- | ------------------------------------------------------- |
-| V1.0    | Schéma initial                           | `CREATE TABLE` initial                                  |
-| V1.1    | Ajout colonne `subscription_tier`        | `ALTER TABLE users ADD COLUMN` avec valeur par défaut   |
-| V1.2    | Changement type JSONB → table normalisée | Migration additive : nouvelle table + backfill + switch |
-| V2.0    | Breaking change                          | Feature flag + double écriture pendant transition       |
+| Version | Action | Stratégie |
+| --- | --- | --- |
+| V1.0 | Schéma initial | `CREATE TABLE` initial |
+| V1.1 | Ajout colonne `subscription_tier` | `ALTER TABLE users ADD COLUMN` avec valeur par défaut |
+| V1.2 | Changement type JSONB → table normalisée | Migration additive : nouvelle table + backfill + switch |
+| V2.0 | Breaking change | Feature flag + double écriture pendant transition |
 
 **Principe** : toutes les migrations sont **rétrocompatibles** (additive-first). Un rollback de l'API ne casse jamais le schéma DB.
 
@@ -225,15 +232,15 @@ Les migrations de base de données sont gérées via **SQLx migrate** (fichiers 
 
 ### SPOF — Single Points of Failure identifiés
 
-| Composant                     |   SPOF ?   | Mitigation                                                                                      |
-| ----------------------------- | :--------: | ----------------------------------------------------------------------------------------------- |
-| **Rust API** (Srv-API)        | ⚠️ Partiel | 2 instances derrière Nginx load balancer (`least_conn`) — si les 2 tombent : KO                 |
-| **PostgreSQL** (Srv-DB)       | ⚠️ Partiel | Read replica + failover manuel (promotion replica) ; WAL archiving RPO < 15 min                 |
-| **RabbitMQ** (Srv-DB)         | ⚠️ Partiel | Queue durable persistante : les messages survivent au redémarrage ; clustering prévu en phase 2 |
-| **AI Workers** (Srv-ML)       |   ✅ Non   | 2 workers actifs ; si 1 tombe, le job reste en queue et est consommé par l'autre                |
-| **MinIO / Object Storage**    |   ✅ Non   | Hetzner Volume redondant ; données sauvegardées sur Hetzner Storage Box                         |
-| **Cloudflare**                |   ✅ Non   | SLA 100% uptime ; multi-PoP mondial                                                             |
-| **Hetzner datacenter entier** |  ⚠️ Rare   | SLA 99.9% ; procédure de bascule documentée (nouveau VPS + restore backup < 2h)                 |
+| Composant | SPOF ? | Mitigation |
+| --- | --- | --- |
+| **Rust API** (Srv-API) | ⚠️ Partiel | 2 instances derrière Nginx load balancer (`least_conn`) — si les 2 tombent : KO |
+| **PostgreSQL** (Srv-DB) | ⚠️ Partiel | Read replica + failover manuel (promotion replica) ; WAL archiving RPO < 15 min |
+| **RabbitMQ** (Srv-DB) | ⚠️ Partiel | Queue durable persistante : les messages survivent au redémarrage ; clustering prévu en phase 2 |
+| **AI Workers** (Srv-ML) | ✅ Non | 2 workers actifs ; si 1 tombe, le job reste en queue et est consommé par l'autre |
+| **MinIO / Object Storage** | ✅ Non | Hetzner Volume redondant ; données sauvegardées sur Hetzner Storage Box |
+| **Cloudflare** | ✅ Non | SLA 100% uptime ; multi-PoP mondial |
+| **Hetzner datacenter entier** | ⚠️ Rare | SLA 99.9% ; procédure de bascule documentée (nouveau VPS + restore backup < 2h) |
 
 > **Mode dégradé** : si les workers ML tombent complètement, l'upload vidéo reste fonctionnel. L'utilisateur voit un statut "En cours d'analyse" et reçoit une notification push dès que les workers sont de retour. Le reste de l'app (profil, historique, routines d'entraînement) fonctionne normalement.
 
@@ -241,25 +248,25 @@ Les migrations de base de données sont gérées via **SQLx migrate** (fichiers 
 
 ### Politique de sauvegarde (Backup Policy)
 
-#### PostgreSQL
+PostgreSQL
 
-| Type                 |   Fréquence    | Rétention | Outil                        |
-| -------------------- | :------------: | :-------: | ---------------------------- |
-| Dump complet         | Quotidien (3h) |  7 jours  | `pg_dump` + gzip + cron      |
-| WAL archiving        |    Continu     |  7 jours  | `pg_receivewal` / pgBackRest |
-| Test de restauration |    Mensuel     |     —     | Restore sur VPS de staging   |
+| Type | Fréquence | Rétention | Outil |
+| --- | --- | --- | --- |
+| Dump complet | Quotidien (3h) | 7 jours | `pg_dump` + gzip + cron |
+| WAL archiving | Continu | 7 jours | `pg_receivewal` / pgBackRest |
+| Test de restauration | Mensuel | — | Restore sur VPS de staging |
 
 - **RPO** (Recovery Point Objective) : < 15 minutes
 - **RTO** (Recovery Time Objective) : < 2 heures
 
-#### MinIO / Vidéos
+MinIO / Vidéos
 
-| Type             | Fréquence | Rétention | Outil                                        |
-| ---------------- | :-------: | :-------: | -------------------------------------------- |
-| Sync bucket      | Quotidien | 30 jours  | `mc mirror` → Hetzner Storage Box            |
-| Lifecycle policy |   Auto    |  7 jours  | Suppression auto des uploads non sauvegardés |
+| Type | Fréquence | Rétention | Outil |
+| --- | --- | --- | --- |
+| Sync bucket | Quotidien | 30 jours | `mc mirror` → Hetzner Storage Box |
+| Lifecycle policy | Auto | 7 jours | Suppression auto des uploads non sauvegardés |
 
-#### Procédure de restauration (Full Server Failure)
+Procédure de restauration (Full Server Failure)
 
 ```
 1. Provisionner nouveau VPS Hetzner (~5 min)
@@ -278,12 +285,12 @@ Total RTO estimé : < 1 heure
 
 ### Plan de scalabilité (Roadmap Infrastructure)
 
-| Phase       |   Utilisateurs   | Infrastructure                            | Coût estimé/mois |
-| ----------- | :--------------: | ----------------------------------------- | :--------------: |
-| **Phase 1** |    0 – 5 000     | 3 VPS Hetzner + Docker Compose            |      ~60 €       |
-| **Phase 2** |  5 000 – 20 000  | Multi-VPS + Nginx LB + PG Read Replica    |      ~200 €      |
-| **Phase 3** | 20 000 – 100 000 | K3s Kubernetes + HPA workers              |      ~600 €      |
-| **Phase 4** |     100 000+     | Full K8s + CDN + auto-scaling GPU workers |    ~2 000 €+     |
+| Phase | Utilisateurs | Infrastructure | Coût estimé/mois |
+| --- | --- | --- | --- |
+| **Phase 1** | 0 – 5 000 | 3 VPS Hetzner + Docker Compose | ~60 € |
+| **Phase 2** | 5 000 – 20 000 | Multi-VPS + Nginx LB + PG Read Replica | ~200 € |
+| **Phase 3** | 20 000 – 100 000 | K3s Kubernetes + HPA workers | ~600 € |
+| **Phase 4** | 100 000+ | Full K8s + CDN + auto-scaling GPU workers | ~2 000 €+ |
 
 **Déclencheurs de scaling automatique** :
 

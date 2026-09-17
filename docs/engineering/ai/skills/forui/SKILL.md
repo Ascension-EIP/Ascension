@@ -1,4 +1,5 @@
 ---
+id: 29954769-86bc-4288-a96b-6d4939c6b4d6
 name: forui
 description: A comprehensive Flutter UI library inspired by shadcn/ui. Provides over 40+ minimal, highly customizable, and accessible widgets (FButton, FCard, FAvatar, FBadge, FTextField, FDialog, FSheet, FTile, etc.) following the Forui design system. Use this skill when building or styling Flutter UIs with Forui.
 ---
@@ -35,6 +36,7 @@ FTheme(
 ```
 
 Access theme tokens with `context.theme`:
+
 ```dart
 final colors = context.theme.colors;
 final typography = context.theme.typography;
@@ -47,7 +49,7 @@ Available color palettes: `FColors.neutralLight`, `FColors.neutralDark`, `FColor
 ## Core Components Reference
 
 | Component | Description | Reference |
-| :--- | :--- | :--- |
+| --- | --- | --- |
 | **FButton** | Minimalist buttons with variants (`.primary`, `.secondary`, `.outline`, `.destructive`, `.ghost`) | [forui-controls](forui-controls/SKILL.md) |
 | **FCard** | Elevated container for grouped information | [forui-content-components](forui-content-components/SKILL.md) |
 | **FAvatar** | User profile image with initials fallback | [forui-content-components](forui-content-components/SKILL.md) |
@@ -62,14 +64,14 @@ Available color palettes: `FColors.neutralLight`, `FColors.neutralDark`, `FColor
 
 Pour garantir une expérience visuelle moderne et fluide digne des meilleures applications :
 
-1. **Iconographie exclusive `FLucideIcons`** :
+1. **Iconographie exclusive** `FLucideIcons` :
    - ❌ **Ne jamais utiliser** `Icons.*` (Material Design standard).
    - ✅ Utiliser `FLucideIcons.<name>` directement exporté par `package:forui/forui.dart`.
-2. **Transitions & Micro-animations (`flutter_animate`)** :
+2. **Transitions & Micro-animations (**`flutter_animate`**)** :
    - Éviter les interfaces statiques et rigides.
    - Appliquer des apparitions déclaratives subtiles (`child.animate().fadeIn(duration: 250.ms).slideY(begin: 0.05)`).
    - Préférer les cascades échelonnées (*staggered*) sur les listes et grilles de statistiques (`delay: (40 * index).ms`).
-3. **États de chargement avec `Skeletonizer`** :
+3. **États de chargement avec** `Skeletonizer` :
    - ❌ **Ne jamais bloquer l'écran** avec un simple `CircularProgressIndicator` au centre.
    - ✅ Encapsuler les cartes et listes dans `Skeletonizer(enabled: isLoading, child: ...)`.
    - Fournir des modèles fictifs (*dummy data*) pendant `loading == true` pour que le *shimmer* dessine la structure finale.
@@ -77,6 +79,7 @@ Pour garantir une expérience visuelle moderne et fluide digne des meilleures ap
 Consultez le guide détaillé : [Guide des Standards de Polish UI](forui-best-practices/references/polish-guidelines.md).
 
 ## Specialized Skills
+
 - [Setup & App Root](forui-setup/SKILL.md)
 - [Theming & Styles](forui-theming/SKILL.md)
 - [Controls & State](forui-controls/SKILL.md)

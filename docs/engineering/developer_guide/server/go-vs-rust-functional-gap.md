@@ -1,13 +1,17 @@
+---
+id: 377a22cf-18e4-47b5-8e2e-f8979c75c582
+---
+
 :::success
-**Version:** 1.0  
-**Original language:** French  
+**Version:** 1.0
+**Original language:** French
 :::
 
 ---
 
 # Go vs Rust — Comparaison fonctionnelle serveur
 
-_Date: 2026-04-01_
+*Date: 2026-04-01*
 
 ---
 
@@ -15,36 +19,36 @@ _Date: 2026-04-01_
 
 - [Go vs Rust — Comparaison fonctionnelle serveur](#go-vs-rust--comparaison-fonctionnelle-serveur)
   - [Table of Contents](#table-of-contents)
-  - [Périmètre comparé](#périmètre-comparé)
-  - [Synthèse rapide](#synthèse-rapide)
-  - [Différences fonctionnelles détaillées](#différences-fonctionnelles-détaillées)
+  - [Périmètre comparé](#p%C3%A9rim%C3%A8tre-compar%C3%A9)
+  - [Synthèse rapide](#synth%C3%A8se-rapide)
+  - [Différences fonctionnelles détaillées](#diff%C3%A9rences-fonctionnelles-d%C3%A9taill%C3%A9es)
   - [1) Authentification](#1-authentification)
-    - [Go (`apps/server`)](#go-appsserver)
-    - [Rust (`apps/server-rust`)](#rust-appsserver-rust)
-    - [Écart](#écart)
+    - [Go (](#go-appsserver)`apps/server`[)](#go-appsserver)
+    - [Rust (](#rust-appsserver-rust)`apps/server-rust`[)](#rust-appsserver-rust)
+    - [Écart](#%C3%A9cart)
   - [2) Users](#2-users)
     - [Go](#go)
     - [Rust](#rust)
-    - [Écart](#écart)
+    - [Écart](#%C3%A9cart)
   - [3) Videos](#3-videos)
     - [Go](#go)
     - [Rust](#rust)
-    - [Écart](#écart)
+    - [Écart](#%C3%A9cart)
   - [4) Analyses IA](#4-analyses-ia)
     - [Go](#go)
     - [Rust](#rust)
-    - [Écart](#écart)
+    - [Écart](#%C3%A9cart)
   - [5) Documentation API](#5-documentation-api)
     - [Go](#go)
     - [Rust](#rust)
-    - [Écart](#écart)
-  - [Ce qui manque à implémenter dans le serveur Go (checklist)](#ce-qui-manque-à-implémenter-dans-le-serveur-go-checklist)
-  - [Priorité P0 — Analyse enrichie (fort impact produit)](#priorité-p0-analyse-enrichie-fort-impact-produit)
-  - [Priorité P1 — Documentation API](#priorité-p1-documentation-api)
-  - [Priorité P2 — Alignement DX/comportement (optionnel)](#priorité-p2-alignement-dxcomportement-optionnel)
-  - [Plan d’implémentation recommandé (ordre pratique)](#plan-dimplémentation-recommandé-ordre-pratique)
-  - [Critères d’acceptation (Done)](#critères-dacceptation-done)
-  - [Notes de compatibilité](#notes-de-compatibilité)
+    - [Écart](#%C3%A9cart)
+  - [Ce qui manque à implémenter dans le serveur Go (checklist)](#ce-qui-manque-%C3%A0-impl%C3%A9menter-dans-le-serveur-go-checklist)
+  - [Priorité P0 — Analyse enrichie (fort impact produit)](#priorit%C3%A9-p0-analyse-enrichie-fort-impact-produit)
+  - [Priorité P1 — Documentation API](#priorit%C3%A9-p1-documentation-api)
+  - [Priorité P2 — Alignement DX/comportement (optionnel)](#priorit%C3%A9-p2-alignement-dxcomportement-optionnel)
+  - [Plan d’implémentation recommandé (ordre pratique)](#plan-dimpl%C3%A9mentation-recommand%C3%A9-ordre-pratique)
+  - [Critères d’acceptation (Done)](#crit%C3%A8res-dacceptation-done)
+  - [Notes de compatibilité](#notes-de-compatibilit%C3%A9)
 
 ---
 
@@ -195,35 +199,30 @@ _Date: 2026-04-01_
 
 ## Priorité P0 — Analyse enrichie (fort impact produit)
 
-- [ ] **Ajouter `job_id` dans la table `analysis`**
+- [ ] **Ajouter** `job_id` **dans la table** `analysis`
   - Cible: `apps/server/migrations/`
   - Action: migration SQL `ALTER TABLE analysis ADD COLUMN job_id UUID ...` + index/contrainte utile.
   - Validation: création d’analyse retourne/persiste un `job_id`.
-
-- [ ] **Ajouter `progress` (0–100) dans la table `analysis`**
+- [ ] **Ajouter** `progress` **(0–100) dans la table** `analysis`
   - Cible: `apps/server/migrations/`
   - Action: `progress INTEGER NOT NULL DEFAULT 0`.
   - Validation: lecture API reflète la progression.
-
-- [ ] **Ajouter `hints` dans la table `analysis`**
+- [ ] **Ajouter** `hints` **dans la table** `analysis`
   - Cible: `apps/server/migrations/`
   - Action: `hints TEXT NULL`.
   - Validation: champs visible en `GET /v1/analysis/:id` quand disponible.
-
 - [ ] **Mettre à jour les DTO DB et modèle Go**
   - Cibles:
     - `apps/server/internal/model/analysis.go`
     - `apps/server/internal/outbound/postgres/dto/` (structure `Analysis`)
   - Action: mapper `job_id`, `progress`, `hints`.
   - Validation: tests repository/handler passent avec nouveaux champs.
-
 - [ ] **Exposer les nouveaux champs dans les réponses HTTP**
   - Cibles:
     - `apps/server/internal/inbound/http/dto/response/analysis.go`
     - handlers analysis
   - Action: enrichir réponse de `GET` (et potentiellement `POST`) avec `job_id`, `progress`, `hints`, `result_json`, `processing_time_ms`.
   - Validation: contrat API vérifié par tests d’intégration.
-
 - [ ] **Ajouter un usecase/repository update progress**
   - Cibles:
     - `apps/server/internal/service/analysis.go`
@@ -244,7 +243,7 @@ _Date: 2026-04-01_
 
 ## Priorité P2 — Alignement DX/comportement (optionnel)
 
-- [ ] **Évaluer l’ajout d’un cookie `HttpOnly` de session**
+- [ ] **Évaluer l’ajout d’un cookie** `HttpOnly` **de session**
   - Cible: handlers auth Go.
   - Action: optionnel selon stratégie frontend (token header-only vs cookie).
   - Validation: règles CORS/CSRF définies et testées.

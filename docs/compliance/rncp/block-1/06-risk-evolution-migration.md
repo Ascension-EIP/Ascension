@@ -1,7 +1,11 @@
+---
+id: ae144014-0f99-4ab9-82c3-25b668bc5810
+---
+
 :::success
-**Version:** 1.0  
-**Original language:** French  
-DON'T EDIT THIS FILE !  
+**Version:** 1.0
+**Original language:** French
+DON'T EDIT THIS FILE !
 :::
 
 ---
@@ -12,19 +16,19 @@ DON'T EDIT THIS FILE !
 
 ## Table des matières
 
-- [Bloc 1 — M1 — 06 Risques, évolutions et migration](#bloc-1--m1--06-risques-évolutions-et-migration)
-  - [Table des matières](#table-des-matières)
+- [Bloc 1 — M1 — 06 Risques, évolutions et migration](#bloc-1--m1--06-risques-%C3%A9volutions-et-migration)
+  - [Table des matières](#table-des-mati%C3%A8res)
   - [Objectif](#objectif)
   - [Registre des risques prioritaires](#registre-des-risques-prioritaires)
-  - [Zones de rupture de chaîne opérationnelle](#zones-de-rupture-de-chaîne-opérationnelle)
-  - [Stratégie d’évolution (24–36 mois)](#stratégie-dévolution-2436-mois)
+  - [Zones de rupture de chaîne opérationnelle](#zones-de-rupture-de-cha%C3%AEne-op%C3%A9rationnelle)
+  - [Stratégie d’évolution (24–36 mois)](#strat%C3%A9gie-d%C3%A9volution-2436-mois)
     - [Horizon 0–12 mois](#horizon-012-mois)
     - [Horizon 12–24 mois](#horizon-1224-mois)
     - [Horizon 24–36 mois](#horizon-2436-mois)
-  - [Stratégie de migration technique](#stratégie-de-migration-technique)
+  - [Stratégie de migration technique](#strat%C3%A9gie-de-migration-technique)
   - [Plan de mitigation et gouvernance](#plan-de-mitigation-et-gouvernance)
   - [Vulgarisation orale (O11) — trame 90 secondes](#vulgarisation-orale-o11--trame-90-secondes)
-  - [Traçabilité RNCP M1 (O10, O11)](#traçabilité-rncp-m1-o10-o11)
+  - [Traçabilité RNCP M1 (O10, O11)](#tra%C3%A7abilit%C3%A9-rncp-m1-o10-o11)
 
 ---
 
@@ -44,13 +48,13 @@ Sources :
 
 ## Registre des risques prioritaires
 
-| Risque                           | Impact                            | Probabilité    | Niveau      | Mitigation clé                                                     |
-| :------------------------------- | :-------------------------------- | :------------- | :---------- | :----------------------------------------------------------------- |
-| Précision modèle IA insuffisante | Qualité feedback dégradée         | Moyenne/haute  | Élevé       | Dataset métier + validation utilisateur + indicateurs de confiance |
-| Indisponibilité RabbitMQ/DB      | Blocage du flux d’analyse         | Moyenne        | Élevé       | Queue durable, retry, supervision, procédure de reprise            |
-| Fuite de données sensibles       | Risque légal et réputationnel     | Faible/moyenne | Élevé       | Durcissement secrets, chiffrement, revue d’accès, conformité RGPD  |
-| Dette accessibilité PSH          | Non-conformité et exclusion usage | Moyenne        | Moyen/élevé | Check-list WCAG/RGAA, recettes PSH dédiées                         |
-| Écart docs vs implémentation     | Défaut de pilotage                | Moyenne        | Moyen       | Sync documentaire continue et revues croisées                      |
+| Risque | Impact | Probabilité | Niveau | Mitigation clé |
+| --- | --- | --- | --- | --- |
+| Précision modèle IA insuffisante | Qualité feedback dégradée | Moyenne/haute | Élevé | Dataset métier + validation utilisateur + indicateurs de confiance |
+| Indisponibilité RabbitMQ/DB | Blocage du flux d’analyse | Moyenne | Élevé | Queue durable, retry, supervision, procédure de reprise |
+| Fuite de données sensibles | Risque légal et réputationnel | Faible/moyenne | Élevé | Durcissement secrets, chiffrement, revue d’accès, conformité RGPD |
+| Dette accessibilité PSH | Non-conformité et exclusion usage | Moyenne | Moyen/élevé | Check-list WCAG/RGAA, recettes PSH dédiées |
+| Écart docs vs implémentation | Défaut de pilotage | Moyenne | Moyen | Sync documentaire continue et revues croisées |
 
 ---
 
@@ -128,7 +132,7 @@ Exemple déjà présent dans l’existant :
 
 ## Traçabilité RNCP M1 (O10, O11)
 
-| Observable                                      | Éléments de preuve                                                       | Couverture |
-| :---------------------------------------------- | :----------------------------------------------------------------------- | :--------- |
-| **O10** — étude prospective évolution/migration | registre de risques + feuille de route + stratégie de migration additive | **Forte**  |
-| **O11** — capacité à vulgariser                 | trame orale courte, orientée décision/risque/mitigation                  | **Forte**  |
+| Observable | Éléments de preuve | Couverture |
+| --- | --- | --- |
+| **O10** — étude prospective évolution/migration | registre de risques + feuille de route + stratégie de migration additive | **Forte** |
+| **O11** — capacité à vulgariser | trame orale courte, orientée décision/risque/mitigation | **Forte** |

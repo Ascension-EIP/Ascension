@@ -1,7 +1,11 @@
+---
+id: 3577774c-8ab3-4f54-9c93-74ffb0477198
+---
+
 :::success
-**Version:** 1.1  
-**Original language:** English  
-DON'T EDIT THIS FILE !  
+**Version:** 1.1
+**Original language:** English
+DON'T EDIT THIS FILE !
 :::
 
 ---
@@ -12,20 +16,20 @@ DON'T EDIT THIS FILE !
 
 ## Table of Contents
 
-- [Technical \& Functional Specifications](#technical--functional-specifications)
+- [Technical & Functional Specifications](#technical--functional-specifications)
   - [Table of Contents](#table-of-contents)
   - [Overview](#overview)
-  - [1. Architecture Diagram](#1-architecture-diagram)
+  - [1\. Architecture Diagram](#1-architecture-diagram)
     - [1.1 C4 Level 1 — Context Diagram](#11-c4-level-1--context-diagram)
     - [1.2 C4 Level 2 — Container Diagram](#12-c4-level-2--container-diagram)
     - [1.3 C4 Level 3 — Component Diagram (Rust API)](#13-c4-level-3--component-diagram-rust-api)
     - [1.4 Data Flow — Video Analysis Pipeline](#14-data-flow--video-analysis-pipeline)
-    - [1.5 API Contract \& Security](#15-api-contract--security)
+    - [1.5 API Contract & Security](#15-api-contract--security)
       - [Authentication — JWT Bearer](#authentication--jwt-bearer)
       - [Standard Error Codes](#standard-error-codes)
     - [1.6 Deployment Architecture (Hetzner VPS — MVP)](#16-deployment-architecture-hetzner-vps--mvp)
-  - [2. Stack Justification (Decision Record)](#2-stack-justification-decision-record)
-    - [2.1 Context \& Constraints](#21-context--constraints)
+  - [2\. Stack Justification (Decision Record)](#2-stack-justification-decision-record)
+    - [2.1 Context & Constraints](#21-context--constraints)
     - [2.2 Decision Record](#22-decision-record)
       - [Mobile: Flutter (Dart)](#mobile-flutter-dart)
       - [Backend: Rust (Axum + Tokio)](#backend-rust-axum--tokio)
@@ -36,18 +40,18 @@ DON'T EDIT THIS FILE !
       - [Infrastructure: Hetzner Cloud](#infrastructure-hetzner-cloud)
     - [2.3 Summary Table](#23-summary-table)
     - [2.4 Performance Constraints (SLA)](#24-performance-constraints-sla)
-  - [3. Data Model](#3-data-model)
+  - [3\. Data Model](#3-data-model)
     - [3.1 Entity-Relationship Diagram (ERD)](#31-entity-relationship-diagram-erd)
     - [3.2 Key Design Decisions](#32-key-design-decisions)
     - [3.3 Subscription Tiers](#33-subscription-tiers)
-  - [4. UI/UX Specification](#4-uiux-specification)
+  - [4\. UI/UX Specification](#4-uiux-specification)
     - [4.1 Design System](#41-design-system)
     - [4.2 Navigation Structure](#42-navigation-structure)
     - [4.3 Screen Specifications](#43-screen-specifications)
       - [Screen 1 — Home (Dashboard)](#screen-1--home-dashboard)
       - [Screen 2 — Upload (Video Analysis)](#screen-2--upload-video-analysis)
-      - [Screen 3 — Stats (Progress \& History)](#screen-3--stats-progress--history)
-      - [Screen 4 — Profile (Settings \& Subscription)](#screen-4--profile-settings--subscription)
+      - [Screen 3 — Stats (Progress & History)](#screen-3--stats-progress--history)
+      - [Screen 4 — Profile (Settings & Subscription)](#screen-4--profile-settings--subscription)
     - [4.4 Key User Flows (Wireflow)](#44-key-user-flows-wireflow)
       - [Flow A — First-time Video Analysis](#flow-a--first-time-video-analysis)
       - [Flow B — Ghost Mode Comparison (Premium)](#flow-b--ghost-mode-comparison-premium)
@@ -65,7 +69,7 @@ This document is the complete technical and functional specification covering al
 
 ---
 
-## 1. Architecture Diagram
+## 1\. Architecture Diagram
 
 > 📌 All diagrams below are written in **Mermaid** and render natively on wiki.js, GitHub, and most modern Markdown viewers.
 
@@ -208,11 +212,9 @@ sequenceDiagram
 
 ### 1.5 API Contract & Security
 
-**Base URL:** `https://api.ascension.app/v1`
-**Protocol:** REST (commands) + WebSocket `wss://` (real-time notifications)
-**Format:** JSON — `Content-Type: application/json`
+**Base URL:** `https://api.ascension.app/v1` **Protocol:** REST (commands) + WebSocket `wss://` (real-time notifications) **Format:** JSON — `Content-Type: application/json`
 
-#### Authentication — JWT Bearer
+Authentication — JWT Bearer
 
 Every protected endpoint requires a signed JWT token in the `Authorization` header:
 
@@ -222,33 +224,33 @@ Authorization: Bearer <jwt_access_token>
 
 Tokens are issued on `POST /auth/login` and `POST /auth/register`. They are signed with a server-side secret (HS256), carry a short expiry (1 h), and are verified by the **Auth Handler** in the Rust API before any handler executes.
 
-| Flow                | Endpoint                         | Method  | Auth required |
-| :------------------ | :------------------------------- | :-----: | :-----------: |
-| Register            | `/auth/register`                 | `POST`  |      ❌       |
-| Login               | `/auth/login`                    | `POST`  |      ❌       |
-| Request upload URL  | `/analysis/video/request-upload` | `POST`  |      ✅       |
-| Start analysis      | `/analysis/video/start`          | `POST`  |      ✅       |
-| Get analysis result | `/analysis/video/{id}`           |  `GET`  |      ✅       |
-| Generate ghost      | `/analysis/route/generate-ghost` | `POST`  | ✅ (Premium+) |
-| Detect holds        | `/holds/detect`                  | `POST`  |      ✅       |
-| Correct hold        | `/holds/{id}`                    | `PATCH` |      ✅       |
-| Set goals           | `/coaching/goals`                | `POST`  |      ✅       |
-| Get routine         | `/coaching/routine`              |  `GET`  |      ✅       |
-| Log session         | `/coaching/sessions`             | `POST`  |      ✅       |
-| Get profile         | `/users/me`                      |  `GET`  |      ✅       |
-| Real-time updates   | `wss://…/ws?token={jwt}`         |   WS    |      ✅       |
+| Flow | Endpoint | Method | Auth required |
+| --- | --- | --- | --- |
+| Register | `/auth/register` | `POST` | ❌ |
+| Login | `/auth/login` | `POST` | ❌ |
+| Request upload URL | `/analysis/video/request-upload` | `POST` | ✅ |
+| Start analysis | `/analysis/video/start` | `POST` | ✅ |
+| Get analysis result | `/analysis/video/{id}` | `GET` | ✅ |
+| Generate ghost | `/analysis/route/generate-ghost` | `POST` | ✅ (Premium+) |
+| Detect holds | `/holds/detect` | `POST` | ✅ |
+| Correct hold | `/holds/{id}` | `PATCH` | ✅ |
+| Set goals | `/coaching/goals` | `POST` | ✅ |
+| Get routine | `/coaching/routine` | `GET` | ✅ |
+| Log session | `/coaching/sessions` | `POST` | ✅ |
+| Get profile | `/users/me` | `GET` | ✅ |
+| Real-time updates | `wss://…/ws?token={jwt}` | WS | ✅ |
 
-#### Standard Error Codes
+Standard Error Codes
 
-| Code  | Meaning                                          |
-| :---: | :----------------------------------------------- |
-| `400` | Invalid / malformed request                      |
-| `401` | Missing or expired JWT token                     |
+| Code | Meaning |
+| --- | --- |
+| `400` | Invalid / malformed request |
+| `401` | Missing or expired JWT token |
 | `403` | Quota exceeded or feature not available for tier |
-| `404` | Resource not found                               |
-| `413` | Video file too large (> 500 MB)                  |
-| `429` | Rate limit exceeded                              |
-| `500` | Internal server error                            |
+| `404` | Resource not found |
+| `413` | Video file too large (> 500 MB) |
+| `429` | Rate limit exceeded |
+| `500` | Internal server error |
 
 ---
 
@@ -308,111 +310,132 @@ graph TB
 
 ---
 
-## 2. Stack Justification (Decision Record)
+## 2\. Stack Justification (Decision Record)
 
 ### 2.1 Context & Constraints
 
-| Constraint           | Description                                          |
-| :------------------- | :--------------------------------------------------- |
-| **Team size**        | 5 students (Epitech EIP)                             |
-| **Timeline**         | MVP within 6 months                                  |
-| **Budget**           | ~100 €/month max at launch                           |
-| **Key feature**      | Real-time skeleton overlay on climbing video         |
-| **Target**           | iOS + Android simultaneously                         |
+| Constraint | Description |
+| --- | --- |
+| **Team size** | 5 students (Epitech EIP) |
+| **Timeline** | MVP within 6 months |
+| **Budget** | ~100 €/month max at launch |
+| **Key feature** | Real-time skeleton overlay on climbing video |
+| **Target** | iOS + Android simultaneously |
 | **Data sensitivity** | Biometric data (video body posture) → RGPD Article 9 |
 
 ---
 
 ### 2.2 Decision Record
 
-#### Mobile: Flutter (Dart)
+Mobile: Flutter (Dart)
 
-|                           |                                                                                                                                                                                                                                                                                                                              |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Decision**              | Flutter, cross-platform framework by Google                                                                                                                                                                                                                                                                                  |
-| **Rationale**             | Single codebase targets iOS **and** Android simultaneously, cutting mobile development effort by half. The `CustomPainter` API allows drawing skeleton keypoint overlays frame-by-frame on the video without any native bridge. The team already has Flutter expertise, and hot-reload drastically accelerates UI iteration. |
-| **Alternatives rejected** | **React Native** — JS bridge introduces latency for frame-by-frame rendering; **Swift + Kotlin** — two codebases doubles workload, incompatible with our 6-month deadline.                                                                                                                                                   |
-| **Trade-offs**            | App binary is slightly larger (~10 MB overhead). Accepted.                                                                                                                                                                                                                                                                   |
+|
+ |
 
----
-
-#### Backend: Rust (Axum + Tokio)
-
-|                           |                                                                                                                                                                                                                                                                                                                                                                                                                |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Decision**              | Rust with the Axum web framework and Tokio async runtime                                                                                                                                                                                                                                                                                                                                                       |
-| **Rationale**             | Rust delivers C++-level throughput with near-zero memory footprint (idle < 100 MB), allowing the API and Nginx to coexist on a single CX31 node (15 €/month). Memory safety eliminates whole classes of vulnerabilities (buffer overflow, use-after-free). The type system catches data contract errors at compile time. Axum's async model handles thousands of concurrent WebSocket connections efficiently. |
-| **Alternatives rejected** | **Node.js** — higher memory usage, dynamically typed; **Go** — good performance but the team already has a Rust specialist; **Python** — too slow for high-concurrency API, GIL limits WebSocket scalability.                                                                                                                                                                                                  |
-| **Trade-offs**            | Steeper learning curve. Mitigated by pairing juniors with the Rust expert during code reviews.                                                                                                                                                                                                                                                                                                                 |
+ |
+| --- | --- |
+| **Decision** | Flutter, cross-platform framework by Google |
+| **Rationale** | Single codebase targets iOS **and** Android simultaneously, cutting mobile development effort by half. The `CustomPainter` API allows drawing skeleton keypoint overlays frame-by-frame on the video without any native bridge. The team already has Flutter expertise, and hot-reload drastically accelerates UI iteration. |
+| **Alternatives rejected** | **React Native** — JS bridge introduces latency for frame-by-frame rendering; **Swift + Kotlin** — two codebases doubles workload, incompatible with our 6-month deadline. |
+| **Trade-offs** | App binary is slightly larger (~10 MB overhead). Accepted. |
 
 ---
 
-#### AI/ML: Python (PyTorch + MediaPipe + OpenCV)
+Backend: Rust (Axum + Tokio)
 
-|                           |                                                                                                                                                                                                                                                                                                                                              |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Decision**              | Python workers using MediaPipe for pose estimation, OpenCV for video frame processing, PyTorch for model fine-tuning                                                                                                                                                                                                                         |
-| **Rationale**             | Python is the lingua franca of AI/ML research. MediaPipe provides a production-ready, pre-trained human pose estimation model (33 landmarks) that runs without GPU for prototyping. The asynchronous worker pattern (RabbitMQ worker) isolates Python's GIL from the Rust API entirely. The team's AI specialist has deep PyTorch expertise. |
-| **Alternatives rejected** | **TensorFlow** — team prefers PyTorch ecosystem; **ONNX Runtime** — faster inference but harder to iterate on custom climbing-specific models; **Rust ML (burn)** — ecosystem too immature.                                                                                                                                                  |
-| **Trade-offs**            | Python is slower than Rust, but since workers are I/O-bound (reading video from S3) and CPU-bound in isolation, the GIL is not a bottleneck at our scale.                                                                                                                                                                                    |
+|
+ |
 
----
-
-#### Database: PostgreSQL 16
-
-|                           |                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Decision**              | PostgreSQL with JSONB columns for semi-structured AI results                                                                                                                                                                                                                                                                                                                                                         |
-| **Rationale**             | Our core entities (users, videos, analyses, routes, training sessions) have clear relational structure that benefits from JOIN queries and foreign-key constraints. The `JSONB` type stores MediaPipe keypoint arrays (per-frame skeleton data) efficiently without a separate NoSQL layer. `ON DELETE CASCADE` simplifies RGPD right-to-erasure implementation. SQLx (Rust) provides compile-time query validation. |
-| **Alternatives rejected** | **MongoDB** — flexible schema not needed when most data is structured; added operational complexity; **MySQL** — fewer features (no JSONB, weaker ACID guarantees).                                                                                                                                                                                                                                                  |
-| **Trade-offs**            | Horizontal sharding is harder than with NoSQL, but irrelevant at our scale.                                                                                                                                                                                                                                                                                                                                          |
+ |
+| --- | --- |
+| **Decision** | Rust with the Axum web framework and Tokio async runtime |
+| **Rationale** | Rust delivers C++-level throughput with near-zero memory footprint (idle < 100 MB), allowing the API and Nginx to coexist on a single CX31 node (15 €/month). Memory safety eliminates whole classes of vulnerabilities (buffer overflow, use-after-free). The type system catches data contract errors at compile time. Axum's async model handles thousands of concurrent WebSocket connections efficiently. |
+| **Alternatives rejected** | **Node.js** — higher memory usage, dynamically typed; **Go** — good performance but the team already has a Rust specialist; **Python** — too slow for high-concurrency API, GIL limits WebSocket scalability. |
+| **Trade-offs** | Steeper learning curve. Mitigated by pairing juniors with the Rust expert during code reviews. |
 
 ---
 
-#### Message Broker: RabbitMQ
+AI/ML: Python (PyTorch + MediaPipe + OpenCV)
 
-|                           |                                                                                                                                                                                                                                                                                                                                         |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Decision**              | RabbitMQ for asynchronous job queuing between the API and AI workers                                                                                                                                                                                                                                                                    |
-| **Rationale**             | Video analysis is CPU-intensive (20–60 s per video). Without a queue, the API would block. RabbitMQ ensures jobs are **never lost** even if a worker crashes (persistent queues, manual ACK). It decouples the API from workers, enabling horizontal scaling by simply adding worker nodes. Dead-letter queues provide automatic retry. |
-| **Alternatives rejected** | **Redis (BullMQ)** — faster but message persistence is weaker; **Kafka** — designed for millions of events/second, overkill for our throughput; **AWS SQS** — cloud lock-in, incompatible with local dev.                                                                                                                               |
-| **Trade-offs**            | Slightly more complex ops than Redis. Mitigated by Docker Compose setup and good documentation.                                                                                                                                                                                                                                         |
+|
+ |
 
----
-
-#### Object Storage: MinIO (dev) → Hetzner Storage Box / S3 (prod)
-
-|                           |                                                                                                                                                                                                                                                                                                                                |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Decision**              | MinIO locally, S3-compatible storage in production                                                                                                                                                                                                                                                                             |
-| **Rationale**             | Videos (avg. 50 MB each) must not transit through the API server (bandwidth cost + latency). **Presigned URLs** let clients upload directly to the storage bucket, bypassing the API entirely. MinIO is S3-compatible, so zero code changes for production. Hetzner Storage Box costs ~7 €/TB/month versus ~23 €/TB on AWS S3. |
-| **Alternatives rejected** | **Cloudinary** — expensive for video; **Firebase Storage** — Google lock-in, RGPD concerns; **AWS S3 only** — 4× more expensive than Hetzner.                                                                                                                                                                                  |
-| **Trade-offs**            | Self-managed MinIO in dev requires Docker. Trivial overhead.                                                                                                                                                                                                                                                                   |
+ |
+| --- | --- |
+| **Decision** | Python workers using MediaPipe for pose estimation, OpenCV for video frame processing, PyTorch for model fine-tuning |
+| **Rationale** | Python is the lingua franca of AI/ML research. MediaPipe provides a production-ready, pre-trained human pose estimation model (33 landmarks) that runs without GPU for prototyping. The asynchronous worker pattern (RabbitMQ worker) isolates Python's GIL from the Rust API entirely. The team's AI specialist has deep PyTorch expertise. |
+| **Alternatives rejected** | **TensorFlow** — team prefers PyTorch ecosystem; **ONNX Runtime** — faster inference but harder to iterate on custom climbing-specific models; **Rust ML (burn)** — ecosystem too immature. |
+| **Trade-offs** | Python is slower than Rust, but since workers are I/O-bound (reading video from S3) and CPU-bound in isolation, the GIL is not a bottleneck at our scale. |
 
 ---
 
-#### Infrastructure: Hetzner Cloud
+Database: PostgreSQL 16
 
-|                           |                                                                                                                                                                                                                                                                                                          |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Decision**              | Hetzner Cloud (Falkenstein, Germany)                                                                                                                                                                                                                                                                     |
-| **Rationale**             | Hetzner offers comparable compute to AWS at 4× lower cost (CX31 = 15 €/month vs. ~60 €/month for equivalent EC2). 100% certified renewable energy (ISO 14001) aligns with our GreenIT commitment. German datacenter guarantees EU-only data residency for RGPD compliance (biometric data under Art. 9). |
-| **Alternatives rejected** | **AWS** — too expensive for student budget; **GCP** — similar pricing to AWS.                                                                                                                                                                                                                            |
+|
+ |
+
+ |
+| --- | --- |
+| **Decision** | PostgreSQL with JSONB columns for semi-structured AI results |
+| **Rationale** | Our core entities (users, videos, analyses, routes, training sessions) have clear relational structure that benefits from JOIN queries and foreign-key constraints. The `JSONB` type stores MediaPipe keypoint arrays (per-frame skeleton data) efficiently without a separate NoSQL layer. `ON DELETE CASCADE` simplifies RGPD right-to-erasure implementation. SQLx (Rust) provides compile-time query validation. |
+| **Alternatives rejected** | **MongoDB** — flexible schema not needed when most data is structured; added operational complexity; **MySQL** — fewer features (no JSONB, weaker ACID guarantees). |
+| **Trade-offs** | Horizontal sharding is harder than with NoSQL, but irrelevant at our scale. |
+
+---
+
+Message Broker: RabbitMQ
+
+|
+ |
+
+ |
+| --- | --- |
+| **Decision** | RabbitMQ for asynchronous job queuing between the API and AI workers |
+| **Rationale** | Video analysis is CPU-intensive (20–60 s per video). Without a queue, the API would block. RabbitMQ ensures jobs are **never lost** even if a worker crashes (persistent queues, manual ACK). It decouples the API from workers, enabling horizontal scaling by simply adding worker nodes. Dead-letter queues provide automatic retry. |
+| **Alternatives rejected** | **Redis (BullMQ)** — faster but message persistence is weaker; **Kafka** — designed for millions of events/second, overkill for our throughput; **AWS SQS** — cloud lock-in, incompatible with local dev. |
+| **Trade-offs** | Slightly more complex ops than Redis. Mitigated by Docker Compose setup and good documentation. |
+
+---
+
+Object Storage: MinIO (dev) → Hetzner Storage Box / S3 (prod)
+
+|
+ |
+
+ |
+| --- | --- |
+| **Decision** | MinIO locally, S3-compatible storage in production |
+| **Rationale** | Videos (avg. 50 MB each) must not transit through the API server (bandwidth cost + latency). **Presigned URLs** let clients upload directly to the storage bucket, bypassing the API entirely. MinIO is S3-compatible, so zero code changes for production. Hetzner Storage Box costs ~7 €/TB/month versus ~23 €/TB on AWS S3. |
+| **Alternatives rejected** | **Cloudinary** — expensive for video; **Firebase Storage** — Google lock-in, RGPD concerns; **AWS S3 only** — 4× more expensive than Hetzner. |
+| **Trade-offs** | Self-managed MinIO in dev requires Docker. Trivial overhead. |
+
+---
+
+Infrastructure: Hetzner Cloud
+
+|
+ |
+
+ |
+| --- | --- |
+| **Decision** | Hetzner Cloud (Falkenstein, Germany) |
+| **Rationale** | Hetzner offers comparable compute to AWS at 4× lower cost (CX31 = 15 €/month vs. ~60 €/month for equivalent EC2). 100% certified renewable energy (ISO 14001) aligns with our GreenIT commitment. German datacenter guarantees EU-only data residency for RGPD compliance (biometric data under Art. 9). |
+| **Alternatives rejected** | **AWS** — too expensive for student budget; **GCP** — similar pricing to AWS. |
 
 ---
 
 ### 2.3 Summary Table
 
-| Composant          | Technologie                      | Raison principale                                                          |
-| :----------------- | :------------------------------- | :------------------------------------------------------------------------- |
-| Application Mobile | **Flutter (Dart)**               | Base de code unique iOS + Android, CustomPainter pour les superpositions   |
-| Backend API        | **Rust (Axum)**                  | Débit élevé, sécurité mémoire, faible coût par requête                     |
-| Workers IA         | **Python (PyTorch / MediaPipe)** | Standard du secteur IA/ML, modèles de pose pré-entraînés, expertise équipe |
-| Base de données    | **PostgreSQL 16**                | Structure relationnelle + JSONB pour les résultats IA, cascades RGPD       |
-| Message Broker     | **RabbitMQ**                     | Tâches asynchrones persistantes, découplage, mise à l'échelle horizontale  |
-| Stockage Objet     | **MinIO → Hetzner S3**           | Compatible S3, upload direct client, 4× moins cher qu'AWS                  |
-| Infrastructure     | **Hetzner Cloud (DE)**           | Rentable, énergie 100% verte, résidence des données en UE                  |
-| Outils Monorepo    | **moonrepo**                     | Gestionnaire de tâches unifié pour les dépôts Rust / Flutter / Python      |
+| Composant | Technologie | Raison principale |
+| --- | --- | --- |
+| Application Mobile | **Flutter (Dart)** | Base de code unique iOS + Android, CustomPainter pour les superpositions |
+| Backend API | **Rust (Axum)** | Débit élevé, sécurité mémoire, faible coût par requête |
+| Workers IA | **Python (PyTorch / MediaPipe)** | Standard du secteur IA/ML, modèles de pose pré-entraînés, expertise équipe |
+| Base de données | **PostgreSQL 16** | Structure relationnelle + JSONB pour les résultats IA, cascades RGPD |
+| Message Broker | **RabbitMQ** | Tâches asynchrones persistantes, découplage, mise à l'échelle horizontale |
+| Stockage Objet | **MinIO → Hetzner S3** | Compatible S3, upload direct client, 4× moins cher qu'AWS |
+| Infrastructure | **Hetzner Cloud (DE)** | Rentable, énergie 100% verte, résidence des données en UE |
+| Outils Monorepo | **moonrepo** | Gestionnaire de tâches unifié pour les dépôts Rust / Flutter / Python |
 
 ---
 
@@ -420,23 +443,23 @@ graph TB
 
 The following SLA targets are set for MVP and must be validated during load testing before the production release.
 
-| Operation                           |      Target      | Measurement conditions                |
-| :---------------------------------- | :--------------: | :------------------------------------ |
-| API response (read endpoints)       |  < 200 ms (p95)  | 100 concurrent users, Hetzner CX31    |
-| API response (write / job dispatch) |  < 500 ms (p95)  | Includes RabbitMQ publish round-trip  |
-| Video analysis — 30 s clip          |    **< 60 s**    | 1 active worker (Srv-ML CX51, 8 vCPU) |
-| Video analysis — 90 s clip          |   **< 3 min**    | 1 active worker                       |
-| Ghost path generation               |    **< 90 s**    | 1 active worker                       |
-| Hold detection (single photo)       |    **< 15 s**    | 1 active worker                       |
-| Upload (50 MB video, 100 Mbps)      |      < 10 s      | Client-side chunked upload to MinIO   |
-| WebSocket notification latency      |      < 2 s       | After worker writes result to DB      |
-| Availability (API)                  | ≥ 99.5 % / month | Monitored via Uptime Kuma             |
+| Operation | Target | Measurement conditions |
+| --- | --- | --- |
+| API response (read endpoints) | < 200 ms (p95) | 100 concurrent users, Hetzner CX31 |
+| API response (write / job dispatch) | < 500 ms (p95) | Includes RabbitMQ publish round-trip |
+| Video analysis — 30 s clip | **< 60 s** | 1 active worker (Srv-ML CX51, 8 vCPU) |
+| Video analysis — 90 s clip | **< 3 min** | 1 active worker |
+| Ghost path generation | **< 90 s** | 1 active worker |
+| Hold detection (single photo) | **< 15 s** | 1 active worker |
+| Upload (50 MB video, 100 Mbps) | < 10 s | Client-side chunked upload to MinIO |
+| WebSocket notification latency | < 2 s | After worker writes result to DB |
+| Availability (API) | ≥ 99.5 % / month | Monitored via Uptime Kuma |
 
 > **Note on video analysis SLA:** Processing time scales with clip length and complexity. The 60 s target for a 30 s clip was measured with MediaPipe running on CPU. Adding a GPU-enabled worker node (Hetzner CCX) drops this to < 20 s.
 
 ---
 
-## 3. Data Model
+## 3\. Data Model
 
 ### 3.1 Entity-Relationship Diagram (ERD)
 
@@ -554,31 +577,29 @@ erDiagram
 
 ### 3.2 Key Design Decisions
 
-| Decision                                                               | Justification                                                                                                                                                   |
-| :--------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **JSONB for AI results** (`analyses.result_json`, `ghosts.ghost_path`) | AI output is variable-length arrays (per-frame keypoints). JSONB avoids a separate NoSQL store while retaining full SQL query capability.                       |
-| **`ON DELETE CASCADE`** on all FK relationships                        | Implements RGPD right-to-erasure in a single `DELETE FROM users WHERE id = $1` — videos, analyses, ghosts, holds are automatically purged.                      |
-| **`subscription_tier` + quota fields on `USERS`**                      | Enforces business rules (freemium = 10 videos/month) at the database level, not only in application code.                                                       |
-| **Separate `ROUTES` and `VIDEOS`**                                     | A route (wall photo + holds) is a reusable entity independent of any specific climb attempt. Multiple videos can reference the same route ghost for comparison. |
-| **`HOLDS.manually_corrected` flag**                                    | Allows tracing AI accuracy over time and filtering out corrected holds from model re-training datasets.                                                         |
+| Decision | Justification |
+| --- | --- |
+| **JSONB for AI results** (`analyses.result_json`, `ghosts.ghost_path`) | AI output is variable-length arrays (per-frame keypoints). JSONB avoids a separate NoSQL store while retaining full SQL query capability. |
+| `ON DELETE CASCADE` on all FK relationships | Implements RGPD right-to-erasure in a single `DELETE FROM users WHERE id = $1` — videos, analyses, ghosts, holds are automatically purged. |
+| `subscription_tier` **+ quota fields on** `USERS` | Enforces business rules (freemium = 10 videos/month) at the database level, not only in application code. |
+| **Separate** `ROUTES` **and** `VIDEOS` | A route (wall photo + holds) is a reusable entity independent of any specific climb attempt. Multiple videos can reference the same route ghost for comparison. |
+| `HOLDS.manually_corrected` **flag** | Allows tracing AI accuracy over time and filtering out corrected holds from model re-training datasets. |
 
 ---
 
 ### 3.3 Subscription Tiers
 
-|     Tier     |   Price    | Videos / Month | Ghost Mode | Deep Analysis | Server Priority | Ads |
-| :----------: | :--------: | :------------: | :--------: | :-----------: | :-------------: | :-: |
-| **Freemium** |    Free    |       10       |     ❌     |      ❌       |       ❌        | ✅  |
-| **Premium**  | 20 €/month |       30       |     ✅     |      ❌       |       ❌        | ❌  |
-| **Infinity** | 30 €/month |      100       |     ✅     |      ✅       |       ✅        | ❌  |
+| Tier | Price | Videos / Month | Ghost Mode | Deep Analysis | Server Priority | Ads |
+| --- | --- | --- | --- | --- | --- | --- |
+| **Freemium** | Free | 10 | ❌ | ❌ | ❌ | ✅ |
+| **Premium** | 20 €/month | 30 | ✅ | ❌ | ❌ | ❌ |
+| **Infinity** | 30 €/month | 100 | ✅ | ✅ | ✅ | ❌ |
 
 ---
 
-## 4. UI/UX Specification
+## 4\. UI/UX Specification
 
-> 🎨 **Interactive Prototype (read-only):**
-> The full clickable prototype is available at: **[Ascension — Figma Web Prototype](http://localhost:5173)**
-> _(Run locally: `cd docs/rncp/workshop/figma && npm install && npm run dev`)_
+> 🎨 **Interactive Prototype (read-only):** The full clickable prototype is available at: [**Ascension — Figma Web Prototype**](http://localhost:5173) *(Run locally:* `cd docs/rncp/workshop/figma && npm install && npm run dev`*)*
 >
 > The prototype covers all 4 main screens (Home, Upload, Stats, Profile) with bottom-tab navigation replicating the native mobile experience.
 
@@ -588,18 +609,18 @@ erDiagram
 
 The Ascension app follows a dark, immersive aesthetic inspired by the vertical world of climbing.
 
-| Token           | Value                   | Usage                                |
-| :-------------- | :---------------------- | :----------------------------------- |
-| Background      | `#0f0f0f` (gray-950)    | App background                       |
-| Surface         | `#1f2937` (gray-800/50) | Cards, modals                        |
-| Accent — Cyan   | `#22d3ee` (cyan-400)    | Primary CTA, video stats, highlights |
-| Accent — Green  | `#34d399` (emerald-400) | Success, level indicators            |
-| Accent — Purple | `#a78bfa` (violet-400)  | Ghost mode, progression              |
-| Accent — Orange | `#fb923c` (orange-400)  | Time metrics, warnings               |
-| Text Primary    | `#ffffff`               | Headings, values                     |
-| Text Secondary  | `#9ca3af` (gray-400)    | Labels, descriptions                 |
-| Border radius   | `1rem` (rounded-2xl)    | Cards; `9999px` for pills            |
-| Touch targets   | Minimum 48 × 48 px      | WCAG 2.1 AA compliance               |
+| Token | Value | Usage |
+| --- | --- | --- |
+| Background | `#0f0f0f` (gray-950) | App background |
+| Surface | `#1f2937` (gray-800/50) | Cards, modals |
+| Accent — Cyan | `#22d3ee` (cyan-400) | Primary CTA, video stats, highlights |
+| Accent — Green | `#34d399` (emerald-400) | Success, level indicators |
+| Accent — Purple | `#a78bfa` (violet-400) | Ghost mode, progression |
+| Accent — Orange | `#fb923c` (orange-400) | Time metrics, warnings |
+| Text Primary | `#ffffff` | Headings, values |
+| Text Secondary | `#9ca3af` (gray-400) | Labels, descriptions |
+| Border radius | `1rem` (rounded-2xl) | Cards; `9999px` for pills |
+| Touch targets | Minimum 48 × 48 px | WCAG 2.1 AA compliance |
 
 ---
 
@@ -623,7 +644,7 @@ App
 
 ### 4.3 Screen Specifications
 
-#### Screen 1 — Home (Dashboard)
+Screen 1 — Home (Dashboard)
 
 **Purpose:** Give the climber an at-a-glance summary of their recent performance and quick access to the most recent analysis.
 
@@ -645,7 +666,7 @@ App
 
 ---
 
-#### Screen 2 — Upload (Video Analysis)
+Screen 2 — Upload (Video Analysis)
 
 **Purpose:** Allow a climber to submit a video for AI analysis in as few taps as possible.
 
@@ -676,7 +697,7 @@ Tap "Choisir une vidéo"
 
 ---
 
-#### Screen 3 — Stats (Progress & History)
+Screen 3 — Stats (Progress & History)
 
 **Purpose:** Deep-dive into biomechanical progression over time.
 
@@ -690,7 +711,7 @@ Tap "Choisir une vidéo"
 
 ---
 
-#### Screen 4 — Profile (Settings & Subscription)
+Screen 4 — Profile (Settings & Subscription)
 
 **Purpose:** Manage account, goals, and subscription tier.
 
@@ -709,7 +730,7 @@ Tap "Choisir une vidéo"
 
 ### 4.4 Key User Flows (Wireflow)
 
-#### Flow A — First-time Video Analysis
+Flow A — First-time Video Analysis
 
 ```
 [Onboarding] → Register
@@ -720,7 +741,7 @@ Tap "Choisir une vidéo"
 → Tap analysis → Skeleton overlay player
 ```
 
-#### Flow B — Ghost Mode Comparison (Premium)
+Flow B — Ghost Mode Comparison (Premium)
 
 ```
 [Upload] → Upload route photo
@@ -730,7 +751,7 @@ Tap "Choisir une vidéo"
 → Deviation score + per-frame annotations displayed
 ```
 
-#### Flow C — Degraded Mode (Network Loss During Upload)
+Flow C — Degraded Mode (Network Loss During Upload)
 
 ```
 [Upload] → Upload starts (chunked: 5 MB chunks)
@@ -746,26 +767,26 @@ Tap "Choisir une vidéo"
 
 ### 4.5 Accessibility (WCAG 2.1 AA)
 
-| Criterion               | Implementation                                                                             |
-| :---------------------- | :----------------------------------------------------------------------------------------- |
-| **Contrast**            | All text meets 4.5:1 contrast ratio on dark backgrounds                                    |
-| **Touch targets**       | All interactive elements ≥ 48 × 48 px                                                      |
-| **Screen readers**      | `Semantics` widgets on all Flutter components; VoiceOver (iOS) + TalkBack (Android) tested |
-| **Captions / Alt text** | Skeleton analysis results include text descriptions of detected posture errors             |
-| **Video control**       | Playback pause/play, speed control (0.5×, 1×, 2×) for users with cognitive impairments     |
-| **No color-only info**  | All status indicators (Excellent/Failed) use both color **and** text label                 |
-| **Font scaling**        | UI respects system font size settings (Flutter `textScaleFactor`)                          |
+| Criterion | Implementation |
+| --- | --- |
+| **Contrast** | All text meets 4.5:1 contrast ratio on dark backgrounds |
+| **Touch targets** | All interactive elements ≥ 48 × 48 px |
+| **Screen readers** | `Semantics` widgets on all Flutter components; VoiceOver (iOS) + TalkBack (Android) tested |
+| **Captions / Alt text** | Skeleton analysis results include text descriptions of detected posture errors |
+| **Video control** | Playback pause/play, speed control (0.5×, 1×, 2×) for users with cognitive impairments |
+| **No color-only info** | All status indicators (Excellent/Failed) use both color **and** text label |
+| **Font scaling** | UI respects system font size settings (Flutter `textScaleFactor`) |
 
 ---
 
 ## Appendix — Cross-Reference with Functional Scope
 
-| User Story (Workshop 1)             | Technical Implementation                                                                |
-| :---------------------------------- | :-------------------------------------------------------------------------------------- |
-| Record climb → see skeleton overlay | MediaPipe pose estimation (Python Worker) → JSONB → Flutter CustomPainter               |
-| Ghost Mode overlay                  | Route photo → Hold detection → Ghost path generation (Python Worker) → Flutter overlay  |
-| Affordable coaching (free tier)     | Freemium: 10 analyses/month, no Ghost Mode; enforced by `quota_used` + Quota Middleware |
-| Hold recognition                    | Python Worker: OpenCV + custom ML classifier → `HOLDS` table                            |
-| Personalized training routines      | `GOALS` + `TRAINING_SESSIONS` + `/coaching/goals` endpoint                              |
-| Social sharing (Ghost clip)         | Video export composited client-side in Flutter → share sheet                            |
-| Server Priority (Infinity tier)     | RabbitMQ priority queue: Infinity jobs routed to high-priority lane                     |
+| User Story (Workshop 1) | Technical Implementation |
+| --- | --- |
+| Record climb → see skeleton overlay | MediaPipe pose estimation (Python Worker) → JSONB → Flutter CustomPainter |
+| Ghost Mode overlay | Route photo → Hold detection → Ghost path generation (Python Worker) → Flutter overlay |
+| Affordable coaching (free tier) | Freemium: 10 analyses/month, no Ghost Mode; enforced by `quota_used` + Quota Middleware |
+| Hold recognition | Python Worker: OpenCV + custom ML classifier → `HOLDS` table |
+| Personalized training routines | `GOALS` + `TRAINING_SESSIONS` + `/coaching/goals` endpoint |
+| Social sharing (Ghost clip) | Video export composited client-side in Flutter → share sheet |
+| Server Priority (Infinity tier) | RabbitMQ priority queue: Infinity jobs routed to high-priority lane |

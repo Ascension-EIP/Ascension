@@ -1,3 +1,7 @@
+---
+id: 82c030f7-cd50-48e3-bc8a-abea8d9ff19a
+---
+
 # Guide des Standards de Polish UI (Forui + Ascension)
 
 Ce document définit les standards obligatoires d'excellence visuelle et d'expérience utilisateur pour toutes les interfaces Flutter développées avec **Forui** dans le projet Ascension.
@@ -6,13 +10,12 @@ Tout développeur ou agent IA autonome intervenant sur l'application mobile doit
 
 ---
 
-## 1. Iconographie : Utilisation stricte de `FLucideIcons`
+## 1\. Iconographie : Utilisation stricte de `FLucideIcons`
 
-> [!CAUTION]
-> **Interdiction formelle d'utiliser `Icons.*` de Flutter Material.** Les icônes Material 2/3 jurent avec le design system minimaliste Forui (inspiré de shadcn/ui).
-> **Inutile d'ajouter `lucide_icons` :** Forui intègre et réexporte déjà l'intégralité du catalogue Lucide v1.33+ via `import 'package:forui/forui.dart';`.
+> \[!CAUTION\] **Interdiction formelle d'utiliser** `Icons.*` **de Flutter Material.** Les icônes Material 2/3 jurent avec le design system minimaliste Forui (inspiré de shadcn/ui). **Inutile d'ajouter** `lucide_icons` **:** Forui intègre et réexporte déjà l'intégralité du catalogue Lucide v1.33+ via `import 'package:forui/forui.dart';`.
 
 ### Règle d'or
+
 Utilisez systématiquement `FLucideIcons.<nom>` avec un widget standard `Icon` :
 
 ```dart
@@ -34,7 +37,7 @@ Icon(Icons.logout)
 ### Table de correspondance rapide
 
 | Usage courant | ❌ Ancien Material | ✅ Standard Ascension (`FLucideIcons`) |
-| :--- | :--- | :--- |
+| --- | --- | --- |
 | Éditer / Modifier | `Icons.edit` / `edit_outlined` | `FLucideIcons.pencil` |
 | Paramètres | `Icons.settings` / `settings_outlined` | `FLucideIcons.settings` |
 | Statistiques / Analyse | `Icons.analytics` / `bar_chart` | `FLucideIcons.chartColumn` ou `chartSpline` |
@@ -51,13 +54,12 @@ Icon(Icons.logout)
 
 ---
 
-## 2. Micro-Interactions & Transitions Déclaratives (`flutter_animate`)
+## 2\. Micro-Interactions & Transitions Déclaratives (`flutter_animate`)
 
-> [!IMPORTANT]
-> Les écrans et composants Forui ne doivent jamais apparaître de façon abrupte ou rigide.
-> N'utilisez pas de `SingleTickerProviderStateMixin` ou d'`AnimationController` manuel pour des animations d'entrée : utilisez **`flutter_animate`**.
+> \[!IMPORTANT\] Les écrans et composants Forui ne doivent jamais apparaître de façon abrupte ou rigide. N'utilisez pas de `SingleTickerProviderStateMixin` ou d'`AnimationController` manuel pour des animations d'entrée : utilisez `flutter_animate`.
 
 ### Standard d'entrée de page / sections
+
 Appliquez un fondu subtil (`fadeIn`) couplé à un léger déplacement vertical (`slideY`) :
 
 ```dart
@@ -71,6 +73,7 @@ _MySection()
 ```
 
 ### Entrée décalée en cascade (Staggered list / cards)
+
 Lorsque vous affichez une liste d'éléments (sessions d'escalade, cartes de métriques) :
 
 ```dart
@@ -88,6 +91,7 @@ Column(
 ```
 
 ### Règles de timing
+
 - **Durée d'apparition :** Entre `200.ms` et `350.ms` maximum (l'interface doit rester nerveuse et réactive).
 - **Décalage (stagger) :** Entre `30.ms` et `50.ms` par élément.
 - **Courbe par défaut :** `Curves.easeOut` ou `Curves.easeOutCubic`.
@@ -95,11 +99,9 @@ Column(
 
 ---
 
-## 3. États de Chargement Modernes (`Skeletonizer`)
+## 3\. États de Chargement Modernes (`Skeletonizer`)
 
-> [!WARNING]
-> **Bannir les indicateurs circulaires de chargement plein écran (`CircularProgressIndicator`)** lors de la récupération des données de profil, statistiques ou historiques.
-> Utilisez **`Skeletonizer`** pour projeter la géométrie finale de l'écran avec un effet *shimmer*.
+> \[!WARNING\] **Bannir les indicateurs circulaires de chargement plein écran (**`CircularProgressIndicator`**)** lors de la récupération des données de profil, statistiques ou historiques. Utilisez `Skeletonizer` pour projeter la géométrie finale de l'écran avec un effet *shimmer*.
 
 ### Patron d'implémentation standard
 
@@ -133,6 +135,7 @@ Skeletonizer(
 ```
 
 ### Patron pour les listes de cartes (`history == null`)
+
 Pour les listes de données dynamiques, affichez 3 ou 4 cartes factices (*dummy entries*) dans le `Skeletonizer` pendant le chargement :
 
 ```dart
@@ -170,7 +173,9 @@ else
 ```
 
 ### Cas particulier : Graphiques complexes (`fl_chart`)
+
 `Skeletonizer` tente de squelettiser tous les éléments personnalisés. Sur les graphiques de progression de cotation ou d'angles biomécaniques :
+
 ```dart
 Skeleton.ignore(
   child: LineChart(...), // Ne sera pas déformé par l'effet squelette
@@ -186,9 +191,10 @@ Skeleton.leaf(
 
 ---
 
-## 4. Exemple d'Écran Référentiel
+## 4\. Exemple d'Écran Référentiel
 
 Consultez `forui_profile_view.dart` comme référence absolue combinant :
+
 - Thème et composants Forui (`FCard`, `FButton`, `FAvatar`, `FBadge`, `FSheet`, `FDialog`).
 - `FLucideIcons` pour tous les symboles d'actions et d'états.
 - `flutter_animate` pour l'entrée étagée et dynamique des sections.

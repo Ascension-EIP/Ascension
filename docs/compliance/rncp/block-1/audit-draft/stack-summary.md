@@ -1,7 +1,11 @@
+---
+id: ef46b3c0-d32d-433c-af05-e071290fb408
+---
+
 :::success
-**Version:** 1.0  
-**Original language:** French  
-DON'T EDIT THIS FILE !  
+**Version:** 1.0
+**Original language:** French
+DON'T EDIT THIS FILE !
 :::
 
 ---
@@ -43,11 +47,11 @@ Ce document donne une vue d'ensemble concise de la stack technique utilisée dan
 
 **Structure de dépôt (points clés)**
 
-- **`.moon/`** : Configuration du workspace moonrepo (`workspace.yml`, `toolchain.yml`).
-- **`apps/server/`** (Go) — service API principal.
-- **`apps/mobile/`** (Flutter) — application mobile multiplateforme.
-- **`apps/ai/`** (Python) — workers AI et modèles ML.
-- **`docs/`** — guides, architecture et pré-prompts AI.
+- `.moon/` : Configuration du workspace moonrepo (`workspace.yml`, `toolchain.yml`).
+- `apps/server/` (Go) — service API principal.
+- `apps/mobile/` (Flutter) — application mobile multiplateforme.
+- `apps/ai/` (Python) — workers AI et modèles ML.
+- `docs/` — guides, architecture et pré-prompts AI.
 
 **Recommandations opérationnelles rapides**
 

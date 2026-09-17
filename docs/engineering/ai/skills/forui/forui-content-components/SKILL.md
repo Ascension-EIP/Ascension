@@ -1,4 +1,5 @@
 ---
+id: a2647d68-218a-48dd-be3c-d246f0f77729
 name: forui-content-components
 description: Use Forui content and display components. Use when implementing FCard, FTile, FTileGroup, FItem, FItemGroup, FAccordion, FAlert, FBadge, FAvatar, FCircularProgress, FDeterminateProgress, FProgress, FCollapsible, FFocusedOutline, FTappable, or display-oriented Forui widgets.
 metadata:
