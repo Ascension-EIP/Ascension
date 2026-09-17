@@ -1,10 +1,15 @@
-# Roadmap fonctionnelle
+<!-- markdownlint-disable MD041 -->
 
 > **Last updated:** 5th April 2026  
 > **Version:** 1.3  
-> **Authors:** Nicolas following a team meeting  
+> **Authors:** Nicolas TORO  
+> **Original language:** French  
 > **Status:** Done  
 > {.is-success}
+
+---
+
+# Roadmap fonctionnelle
 
 ---
 

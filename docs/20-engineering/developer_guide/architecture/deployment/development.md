@@ -1,7 +1,10 @@
-> **Last updated:** 11th March 2026
-> **Version:** 2.2
-> **Authors:** Gianni TUERO
-> **Status:** Done
+<!-- markdownlint-disable MD041 -->
+
+> **Last updated:** 11th March 2026  
+> **Version:** 2.2  
+> **Authors:** Gianni TUERO  
+> **Original language:** English  
+> **Status:** Done  
 > {.is-success}
 
 ---
@@ -163,7 +166,7 @@ Ascension/                      # Monorepo root
 
 - Single `git clone` — everything is already in the repo
 - Unified task runner with caching (`moon run server:dev`)
-- Toolchain versions (Rust, Python) pinned in `.moon/toolchain.yml`
+- Toolchain versions (Go, Python) pinned in `.moon/toolchain.yml`
 - Affected-only CI builds
 
 ---
@@ -433,7 +436,7 @@ version: "3.8"
 services:
   # PostgreSQL Database
   db:
-    image: postgres:15-alpine
+    image: postgres:18-alpine
     container_name: ascension-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -452,7 +455,7 @@ services:
 
   # RabbitMQ (Message Broker)
   rabbitmq:
-    image: rabbitmq:3.12-management-alpine
+    image: rabbitmq:4.2.4-management-alpine
     container_name: ascension-rabbitmq
     ports:
       - "5672:5672"
@@ -764,7 +767,7 @@ Login:
 
 Key views:
 
-- **Queues**: Monitor `analysis_jobs` queue depth
+- **Queues**: Monitor `vision.skeleton` queue depth
 - **Connections**: Check active connections from API and workers
 - **Exchanges**: View `ascension.analysis` and `ascension.events`
 

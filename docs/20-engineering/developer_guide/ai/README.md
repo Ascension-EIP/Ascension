@@ -1,7 +1,10 @@
-> **Last updated:** 12th March 2026
-> **Version:** 1.5
-> **Authors:** Darius
-> **Status:** Done
+<!-- markdownlint-disable MD041 -->
+
+> **Last updated:** 12th March 2026  
+> **Version:** 1.5  
+> **Authors:** Nicolas TORO  
+> **Original language:** English  
+> **Status:** Done  
 > {.is-success}
 
 ---
@@ -43,7 +46,7 @@
 ## Overview
 
 The AI layer is a Python worker service (`apps/ai/`) that processes climbing video jobs
-dispatched by the Rust API via RabbitMQ. Each pipeline is implemented as a **dedicated
+dispatched by the Go API via RabbitMQ. Each pipeline is implemented as a **dedicated
 worker process** that subscribes to a single queue, processes the job, persists results
 to PostgreSQL, and publishes a completion event to the `ascension.events` topic exchange.
 

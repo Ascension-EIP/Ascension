@@ -1,3 +1,14 @@
+<!-- markdownlint-disable MD041 -->
+
+> **Last updated:** 17th September 2026  
+> **Version:** 1.0  
+> **Authors:** Nicolas TORO  
+> **Original language:** English  
+> **Status:** Done  
+> {.is-success}
+
+---
+
 # AI Instructions - Ascension Project
 
 This file contains the unified, global instructions and context for all AI models and coding assistants (Claude Code, GitHub Copilot, Antigravity) working on the Ascension project.
@@ -176,8 +187,8 @@ The system follows an **event-driven architecture** with **CQRS** and **client-s
 | Tier     | Price     | Analyses/month | Ghost Mode | Ads | Server Priority |
 |----------|-----------|----------------|------------|-----|-----------------|
 | Freemium | Free      | 10             | ✗          | ✓   | ✗               |
-| Premium  | €20/month | 30             | ✓          | ✗   | ✗               |
-| Infinity | €30/month | 100            | ✓          | ✗   | ✓               |
+| Premium  | €20/month | 50             | ✓          | ✗   | ✗               |
+| Infinity | €30/month | Unlimited      | ✓          | ✗   | ✓               |
 
 **Target market:** Individual climbers + partnerships with gyms (Climb Up, Arkose).
 

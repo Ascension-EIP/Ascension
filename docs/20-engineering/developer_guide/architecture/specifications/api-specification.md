@@ -1,6 +1,9 @@
+<!-- markdownlint-disable MD041 -->
+
 > **Last updated:** 16th February 2026  
 > **Version:** 1.0  
 > **Authors:** Gianni TUERO  
+> **Original language:** English  
 > **Status:** Done  
 > {.is-success}
 
@@ -537,8 +540,8 @@ Authorization: Bearer {token}
 | Tier | Price | Videos/Month | Ghost Mode | Server Priority | Deep Analysis | Ads |
 |------|-------|--------------|------------|-----------------|---------------|-----|
 | **Freemium** | Free | 10 | ❌ | ❌ | ❌ | ✅ |
-| **Premium** | 20€/month | 30 | ✅ | ❌ | ❌ | ❌ |
-| **Infinity** | 30€/month | 100 | ✅ | ✅ | ✅ | ❌ |
+| **Premium** | 20€/month | 50 | ✅ | ❌ | ❌ | ❌ |
+| **Infinity** | 30€/month | Unlimited | ✅ | ✅ | ✅ | ❌ |
 
 ---
 

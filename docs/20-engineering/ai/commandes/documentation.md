@@ -10,7 +10,7 @@ alwaysApply: false
 Before writing, editing, or improving **any** Markdown documentation, you MUST read the full project style guide:
 
 ```
-docs/guidelines/markdown-guidelines.md
+docs/00-start-here/guidelines/markdown-guidelines.md
 ```
 
 Do not skip this step, even if you think you already know the rules. The guidelines are the source of truth — if there is a conflict between your defaults and the guide, the guide wins.
@@ -24,10 +24,13 @@ After reading the guidelines, verify every point below before outputting a file:
 - [ ] **Header block** — the file starts with the required blockquote header:
 
   ```
-  > **Last updated:** [Day] [Month] [Year]
-  > **Version:** [X.X]
-  > **Authors:** [Name]
-  > **Status:** [Status]
+  <!-- markdownlint-disable MD041 -->
+
+  > **Last updated:** [Day] [Month] [Year]  
+  > **Version:** [X.X]  
+  > **Authors:** [Name]  
+  > **Original language:** [Language]  
+  > **Status:** [Status]  
   > {.is-[status-color]}
   ```
 
@@ -50,7 +53,7 @@ After reading the guidelines, verify every point below before outputting a file:
 
 - [ ] **Filename is kebab-case** — all lowercase, words separated by hyphens.
 
-- [ ] **Language is English** — unless a specific exception is documented.
+- [ ] **Language is English or French** — as declared in **Original language**.
 
 ---
 

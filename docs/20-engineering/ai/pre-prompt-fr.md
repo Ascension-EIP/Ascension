@@ -1,6 +1,9 @@
+<!-- markdownlint-disable MD041 -->
+
 > **Last updated:** 2nd April 2026  
 > **Version:** 1.3  
 > **Authors:** Nicolas TORO  
+> **Original language:** French  
 > **Status:** Done  
 > {.is-success}
 
@@ -69,7 +72,7 @@ Tu es un consultant technique expert intégré à l'équipe de développement **
 | Couche          | Technologie                                                         | Notes                              |
 |-----------------|---------------------------------------------------------------------|------------------------------------|
 | Client mobile   | Flutter / Dart `^3.11.0`                                            | iOS & Android                      |
-| API Gateway     | Rust (Axum `0.8.8`, Tokio `1.49.0`) [en cours de migration vers Go] | Edition 2024, Rust `1.93.1`        |
+| API Gateway     | Go (`1.26.0`) + Gin                                                 | Edition 2024, Go `1.26.0`          |
 | Workers IA      | Python `3.11` + MediaPipe + PyTorch + OpenCV + Pika                 | 2 pipelines                        |
 | Message broker  | RabbitMQ `4.2.4`                                                    | AMQP, queues durables              |
 | Base de données | PostgreSQL `18`                                                     | JSONB pour les résultats d'analyse |
@@ -84,7 +87,7 @@ Ascension/
 ├── apps/
 │   ├── ai/           # Workers IA Python
 │   ├── mobile/       # Application Flutter
-│   └── server/       # API Rust/Axum
+│   └── server/       # API Go/Gin
 ├── docs/
 ├── docker-compose.yml
 └── .moon/            # Configuration moonrepo
@@ -110,8 +113,8 @@ Le système suit une **architecture événementielle** avec **CQRS** et **rendu 
 | Offre    | Prix      | Analyses/mois | Mode Fantôme | Publicités | Priorité serveur |
 |----------|-----------|---------------|--------------|------------|------------------|
 | Freemium | Gratuit   | 10            | ✗            | ✓          | ✗                |
-| Premium  | 20 €/mois | 30            | ✓            | ✗          | ✗                |
-| Infinity | 30 €/mois | 100           | ✓            | ✗          | ✓                |
+| Premium  | 20 €/mois | 50            | ✓            | ✗          | ✗                |
+| Infinity | 30 €/mois | Illimité      | ✓            | ✗          | ✓                |
 
 **Marché cible:** Grimpeurs individuels + partenariats avec salles (Climb Up, Arkose).
 

@@ -1,6 +1,9 @@
+<!-- markdownlint-disable MD041 -->
+
 > **Last updated:** 12th March 2026  
 > **Version:** 1.5  
 > **Authors:** Gianni TUERO  
+> **Original language:** English  
 > **Status:** Done  
 > {.is-success}
 
@@ -40,7 +43,7 @@
   - [For Architects & Tech Leads](#for-architects-tech-leads)
   - [Quick Links](#quick-links)
 - [Design Decisions](#design-decisions)
-  - [Why Rust for API?](#why-rust-for-api)
+  - [Why Go for API? (Migrated from Rust)](#why-go-for-api-migrated-from-rust)
   - [Why Python for AI?](#why-python-for-ai)
   - [Why Separate AI Workers?](#why-separate-ai-workers)
   - [Why RabbitMQ?](#why-rabbitmq)
@@ -78,7 +81,7 @@ Before diving into implementation, review these key documents:
 ### 📋 Part 1: System Architecture
 
 1. **[Architecture Decision Record (ADR)](./adr/tech-stack-decision.md)** - Technology stack justifications
-   - Why Rust for API, Flutter for mobile, Python for AI
+   - Why Go for API, Flutter for mobile, Python for AI
    - Performance benchmarks and cost analysis
    - Decision framework and evaluation criteria
 
@@ -215,7 +218,7 @@ architecture/
 │   ├── staging.md                     # Staging environment setup
 │   └── production.md                  # Production environment setup
 └── components/ (planned)
-    ├── api-gateway.md                 # Rust API server details
+    ├── api-gateway.md                 # Go API server details
     ├── ai-workers.md                  # Python AI workers details
     └── message-queue.md               # RabbitMQ queue patterns
 ```
@@ -230,7 +233,7 @@ Ascension uses a **monorepo managed with [moonrepo](https://moonrepo.dev)**. All
 Ascension/                      # Monorepo root
 ├── .moon/
 │   ├── workspace.yml           # moonrepo project definitions
-│   └── toolchain.yml           # Pinned Rust & Python versions
+│   └── toolchain.yml           # Pinned Go & Python versions
 ├── docker-compose.yml          # Development orchestration
 ├── .env.example                # Environment template
 ├── README.md
@@ -285,7 +288,7 @@ Ascension/                      # Monorepo root
 
 ### AI Processing
 
-- **Language**: Python 3.10+
+- **Language**: Python 3.11
 - **ML Frameworks**: MediaPipe (pose estimation), custom model (hold recognition)
 - **Services**:
   - Pose Estimation (skeleton extraction)
@@ -294,9 +297,9 @@ Ascension/                      # Monorepo root
 
 ### Data Layer
 
-- **Database**: PostgreSQL 15+
+- **Database**: PostgreSQL 18
 - **Object Storage**: MinIO (self-hosted)
-- **Message Queue**: RabbitMQ 3.12+
+- **Message Queue**: RabbitMQ 4.2.4
 
 ---
 

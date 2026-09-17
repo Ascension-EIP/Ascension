@@ -1,6 +1,9 @@
+<!-- markdownlint-disable MD041 -->
+
 > **Last updated:** 25th February 2026  
 > **Version:** 2.0  
 > **Authors:** Gianni TUERO  
+> **Original language:** English  
 > **Status:** In progress  
 > {.is-warning}
 
@@ -47,7 +50,7 @@
     - [Grafana Data Sources](#grafana-data-sources)
     - [Key Metrics](#key-metrics)
     - [Alerting Rules (Grafana → Slack)](#alerting-rules-grafana--slack)
-    - [Application Metrics (Rust API)](#application-metrics-rust-api)
+    - [Application Metrics (Go API)](#application-metrics-go-api)
   - [Backup \& Disaster Recovery](#backup--disaster-recovery)
     - [PostgreSQL Backups](#postgresql-backups)
     - [MinIO Backups](#minio-backups)
@@ -92,9 +95,9 @@ graph TB
     end
 
     subgraph "Srv-DB — Hetzner CX41 4 vCPU / 16 GB"
-        PG_Master[PostgreSQL 16<br/>Master]
-        PG_Replica[PostgreSQL 16<br/>Read Replica]
-        RabbitMQ[RabbitMQ 3.x<br/>Message Broker]
+        PG_Master[PostgreSQL 18<br/>Master]
+        PG_Replica[PostgreSQL 18<br/>Read Replica]
+        RabbitMQ[RabbitMQ 4.2.4<br/>Message Broker]
     end
 
     subgraph "Srv-ML — Hetzner CX51 8 vCPU / 16 GB"
@@ -295,7 +298,7 @@ services:
 
   # PostgreSQL Database
   db:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     container_name: ascension-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -325,7 +328,7 @@ services:
 
   # RabbitMQ Message Broker
   rabbitmq:
-    image: rabbitmq:3.12-management-alpine
+    image: rabbitmq:4.2.4-management-alpine
     container_name: ascension-rabbitmq
     ports:
       - "5672:5672"
@@ -911,7 +914,7 @@ Single set of VPS instances with Docker Compose. Scale by:
 
 Separate machines for each concern:
 
-- **Srv-API (×2)**: Nginx + multiple Rust API instances
+- **Srv-API (×2)**: Nginx + multiple Go API instances
 - **Srv-DB**: Dedicated PostgreSQL with streaming replication
 - **Srv-ML (×2-3)**: Dedicated AI worker machines
 - **Srv-Storage**: Dedicated MinIO cluster

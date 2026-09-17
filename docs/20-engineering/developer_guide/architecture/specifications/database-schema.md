@@ -1,6 +1,9 @@
+<!-- markdownlint-disable MD041 -->
+
 > **Last updated:** 16th February 2026  
 > **Version:** 1.0  
 > **Authors:** Gianni TUERO  
+> **Original language:** English  
 > **Status:** Done  
 > {.is-success}
 
@@ -175,8 +178,8 @@ CREATE INDEX idx_users_created_at ON users(created_at DESC);
 
 **Business Rules**:
 - Freemium tier: 10 videos/month (with ads)
-- Premium tier: 30 videos/month (20€/month, ghost mode enabled)
-- Infinity tier: 100 videos/month (30€/month, all features + server priority)
+- Premium tier: 50 videos/month (20€/month, ghost mode enabled)
+- Infinity tier: Unlimited videos/month (30€/month, all features + server priority)
 
 ---
 

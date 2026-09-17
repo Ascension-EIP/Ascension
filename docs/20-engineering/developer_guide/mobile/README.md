@@ -1,6 +1,9 @@
+<!-- markdownlint-disable MD041 -->
+
 > **Last updated:** 9th March 2026  
 > **Version:** 1.0  
-> **Authors:** Nicolas  
+> **Authors:** Nicolas TORO  
+> **Original language:** English  
 > **Status:** Done  
 > {.is-success}
 
@@ -63,7 +66,7 @@ Install Flutter by following the [official guide](https://docs.flutter.dev/get-s
 | **Flutter**          | stable  | UI framework                                 |
 | `image_picker`       | ^1.1.2  | Pick videos from gallery or camera           |
 | `video_player`       | ^2.9.3  | Preview selected videos inline               |
-| `http`               | ^1.2.0  | HTTP client for the Rust API                 |
+| `http`               | ^1.2.0  | HTTP client for the Go API                   |
 | `fl_chart`           | ^0.69.0 | Charts for biomechanics data (angle graphs)  |
 | `shared_preferences` | ^2.3.0  | Persists the backend URL across app restarts |
 | `equatable`          | ^2.0.8  | Value equality for state objects             |
@@ -82,7 +85,7 @@ apps/mobile/
 │   │   ├── constants/        # AppConstants (backend URL, storage keys)
 │   │   ├── error/            # Shared error types
 │   │   └── network/
-│   │       └── api_service.dart  # Singleton HTTP client for the Rust API
+│   │       └── api_service.dart  # Singleton HTTP client for the Go API
 │   ├── features/
 │   │   ├── auth/             # Login & Register pages (UI only, auth not wired)
 │   │   ├── home/             # Home screen
@@ -324,7 +327,7 @@ normalised `(x, y)` coordinates and presence score.
 
 ### ApiService — Singleton
 
-All HTTP calls to the Rust backend go through `ApiService` (`lib/core/network/api_service.dart`).
+All HTTP calls to the Go backend go through `ApiService` (`lib/core/network/api_service.dart`).
 It is a Dart singleton — call `ApiService()` from anywhere to get the same instance.
 
 ```dart
@@ -373,11 +376,11 @@ All methods throw an `Exception` on non-2xx responses.
 │     status: pending → processing → completed                     │
 │                                                                  │
 │  6. Navigate to AnalysisPage with result_json                    │
-└──────────────────────────────────────────────────────────────────┘
+│└──────────────────────────────────────────────────────────────────┘
 ```
 
-The video is **never proxied through the Rust server**. It goes directly from the device
-to MinIO using the presigned URL. The Rust server only creates the database record and
+The video is **never proxied through the Go server**. It goes directly from the device
+to MinIO using the presigned URL. The Go server only creates the database record and
 returns the URL.
 
 ---

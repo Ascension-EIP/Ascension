@@ -1,12 +1,17 @@
+<!-- markdownlint-disable MD041 -->
+
 > **Last updated:** 16th March 2026  
 > **Version:** 1.1  
-> **Authors:** Nicolas  
+> **Authors:** Nicolas TORO  
+> **Original language:** English  
 > **Status:** Done  
 > {.is-success}
 
 ---
 
 # 10 — Product
+
+---
 
 ## Table of Contents
 

@@ -1,6 +1,9 @@
-> **Last updated:** 18th March 2026
-> **Version:** 1.1
-> **Authors:** Darius (Docs), Nicolas TORO
+<!-- markdownlint-disable MD041 -->
+
+> **Last updated:** 18th March 2026  
+> **Version:** 1.1  
+> **Authors:** Nicolas TORO  
+> **Original language:** French  
 > **Status:** Final  
 > {.is-success}
 

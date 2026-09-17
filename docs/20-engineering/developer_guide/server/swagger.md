@@ -1,7 +1,11 @@
+<!-- markdownlint-disable MD041 -->
+
 > **Last updated:** 12th March 2026  
 > **Version:** 1.0  
-> **Authors:** Nicolas  
+> **Authors:** Nicolas TORO  
+> **Original language:** English  
 > **Status:** Done  
+> {.is-success}
 
 ---
 
@@ -73,6 +77,8 @@ In the Rust codebase, we used [`utoipa`](https://docs.rs/utoipa) to generate the
 #[openapi(paths(...), components(schemas(...)), tags(...))]
 pub struct ApiDoc;
 ```
+
+---
 
 ## Planned Go Implementation
 

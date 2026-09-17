@@ -1,6 +1,9 @@
+<!-- markdownlint-disable MD041 -->
+
 > **Last updated:** 16th March 2026  
 > **Version:** 1.0  
-> **Authors:** Darius (Docs), Nicolas TORO  
+> **Authors:** Nicolas TORO  
+> **Original language:** French  
 > **Status:** Final  
 > {.is-success}
 
@@ -52,7 +55,7 @@ Hypothèse de méthode : les montants sont repris comme **estimations atelier**
 Comparatif synthétique (atelier) :
 
 - **Hébergement** : Hetzner retenu face à AWS pour un ratio coût/performance plus favorable au stade MVP.
-- **Backend** : Rust/Axum pour efficacité runtime.
+- **Backend** : Go/Gin pour efficacité runtime et rapidité de développement.
 - **IA** : Python + MediaPipe/OpenCV pour rapidité de prototypage et écosystème ML.
 - **Stockage objet** : MinIO/S3-compatible pour découpler upload et traitement.
 
@@ -121,6 +124,8 @@ Sans ligne budgétaire dédiée, le risque est de traiter la conformité trop ta
 | :----------------------------------- | :----------------------------------------------------------- | :------------------------------------ |
 | **O8** — analyse financière          | `costs.md`, `costs.xlsx`, cohérence avec architecture réelle | **Forte**                             |
 | **O9** — scénarios appuyés benchmark | comparaison provider + 3 scénarios de charge                 | **Forte** (à revalider régulièrement) |
+
+---
 
 ## Calendrier de développement (Horizon 3 ans)
 

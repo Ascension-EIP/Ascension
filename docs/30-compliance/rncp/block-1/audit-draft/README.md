@@ -1,6 +1,9 @@
+<!-- markdownlint-disable MD041 -->
+
 > **Last updated:** 16th February 2026  
 > **Version:** 1.1  
 > **Authors:** Lou PELLEGRINO, Gianni TUERO  
+> **Original language:** French  
 > **Status:** Final  
 > {.is-success}
 
@@ -134,7 +137,6 @@ graph TB
   - Worker -> Pull Job -> AI Processing -> Update DB -> Notify User via RabbitMQ/WebSocket
 - **Points de défaillance uniques (SPOF)** :
   - Architecture conçue pour la haute disponibilité sur Hetzner.
-  -
 
 ---
 
@@ -186,8 +188,9 @@ graph TB
 
 - **Typologie des utilisateurs** : Grimpeurs (Amateur à Pro), Coachs.
 - **Droits et rôles** :
-  - **Guest/Freemium** : Analyses limitées, fonctionnalités de base, programmes d'entraînement.
-  - **Premium/Infinity** : Analyses quasi-illimitées, accès au Ghost Mode, conseils ciblés.
+  - **Guest/Freemium** : 10 analyses/mois, fonctionnalités de base, programmes d'entraînement.
+  - **Premium** : 50 analyses/mois, accès au Ghost Mode, conseils ciblés.
+  - **Infinity** : Analyses illimitées, priorité serveur, biomécanique avancée.
   - **Admin** : Gestion utilisateurs, monitoring système.
 
 **Scénarios clés** :

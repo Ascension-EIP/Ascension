@@ -1,6 +1,9 @@
+<!-- markdownlint-disable MD041 -->
+
 > **Last updated:** 12th March 2026  
-> **Version:** 1.1  
-> **Authors:** Nicolas  
+> **Version:** 1.2  
+> **Authors:** Nicolas TORO  
+> **Original language:** English  
 > **Status:** Done  
 > {.is-success}
 
@@ -79,9 +82,8 @@ Error responses are plain strings, e.g.:
 
 ## Authentication
 
-> **Authentication is partially implemented.** JWT middleware exists for `/healthz`
-> but is not yet applied to the `/v1/*` routes. All `/v1/*` routes are currently
-> accessible without a token.
+> **Authentication:** Protected endpoints require a valid JWT bearer token.
+> Public endpoints such as `/healthz` and `/v1/auth/*` do not require authentication.
 
 When authentication is enabled, the expected header is:
 
@@ -89,7 +91,7 @@ When authentication is enabled, the expected header is:
 Authorization: Bearer <jwt_token>
 ```
 
-Two middleware functions exist in `src/inbound/http/middleware/auth.rs`:
+Two middleware functions exist in `internal/inbound/http/middleware/auth.go`:
 
 | Middleware | What it does                                                                             |
 |------------|------------------------------------------------------------------------------------------|

@@ -3,6 +3,7 @@
 > **Last updated:** 6th April 2026  
 > **Version:** 1.1  
 > **Authors:** Nicolas TORO  
+> **Original language:** French  
 > **Status:** Done  
 > {.is-success}
 

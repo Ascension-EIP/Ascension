@@ -13,6 +13,23 @@
 
 L'objectif de cet audit était de définir l'écosystème complet dans lequel évolue **Ascension**. Nous avons dépassé la simple analyse de la concurrence pour intégrer des contraintes techniques, juridiques et humaines, garantissant ainsi que nous ne "réinventons pas la roue".
 
+---
+
+## Table of Contents
+
+- [Méthodologie d'Audit et de Conformité](#méthodologie-daudit-et-de-conformité)
+  - [Table of Contents](#table-of-contents)
+  - [1. Analyse du Contexte Concurrentiel](#1-analyse-du-contexte-concurrentiel)
+  - [2. Audit de l'État de l'Art Technique](#2-audit-de-létat-de-lart-technique)
+  - [3. Conformité Légale et Sécurité](#3-conformité-légale-et-sécurité)
+  - [4. Audit des Compétences de l'Équipe (HR)](#4-audit-des-compétences-de-léquipe-hr)
+  - [Conclusion](#conclusion)
+    - [1. Feuille de route d'évolution (Horizon 36 mois)](#1-feuille-de-route-dévolution-horizon-36-mois)
+    - [2. Stratégie de migration technique](#2-stratégie-de-migration-technique)
+    - [3. Gouvernance et Mitigation des risques](#3-gouvernance-et-mitigation-des-risques)
+
+---
+
 ## 1. Analyse du Contexte Concurrentiel
 
 Notre approche a combiné l'intuition brute et l'objectivité rationnelle pour positionner Ascension sur le marché.
@@ -26,6 +43,8 @@ Notre approche a combiné l'intuition brute et l'objectivité rationnelle pour p
   - **Technique** : Latence de traitement (cible < 60s), précision de l'extraction de squelette, consommation de batterie sur mobile.
 
 - **Outils de Visualisation** : Nous avons utilisé un **tableau comparatif de fonctionnalités** pour mettre en avant nos différenciateurs clés, notamment le **Mode Fantôme** et le rendu côté client.
+
+---
 
 ## 2. Audit de l'État de l'Art Technique
 
@@ -47,15 +66,19 @@ La gestion de vidéos d'utilisateurs impose une rigueur absolue en matière de p
 
 - **Accessibilité (A11y)** : Nous suivons les standards **WCAG** pour l'application Flutter, en nous concentrant sur les contrastes élevés pour une utilisation en salle d'escalade (souvent très lumineuse ou poussiéreuse).
 
+---
+
 ## 4. Audit des Compétences de l'Équipe (HR)
 
 Nous avons confronté l'ambition d'Ascension aux forces réelles de nos 5 membres.
 
-- **Matrice de Compétences** : Nous avons listé les besoins en IA (Python/PyTorch), Backend (Rust), Mobile (Flutter) et DevOps (Moonrepo/Docker).
+- **Matrice de Compétences** : Nous avons listé les besoins en IA (Python/PyTorch), Backend (Go), Mobile (Flutter) et DevOps (Moonrepo/Docker).
 
 - **Analyse d'Écart (Gap Analysis)** : L'audit a révélé un besoin de montée en compétence sur l'intégration RabbitMQ pour Gianni et sur l'optimisation GPU pour Olivier.
 
 - **Plan d'Action** : Nous avons instauré des sessions de "Technology Watch" régulières et des POCs (Proof of Concept) pour valider l'intégration de chaque brique avant sa mise en production.
+
+---
 
 ## Conclusion
 

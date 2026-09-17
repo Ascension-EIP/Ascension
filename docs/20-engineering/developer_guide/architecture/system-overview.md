@@ -1,6 +1,9 @@
+<!-- markdownlint-disable MD041 -->
+
 > **Last updated:** 12th March 2026  
 > **Version:** 1.2  
 > **Authors:** Gianni TUERO  
+> **Original language:** English  
 > **Status:** Done  
 > {.is-success}
 
@@ -56,7 +59,7 @@
   - [Target SLAs](#target-slas)
   - [Bottleneck Analysis](#bottleneck-analysis)
 - [Technology Choices Rationale](#technology-choices-rationale)
-  - [Why Rust over Node.js/Go?](#why-rust-over-nodejsgo)
+  - [Why Go over Node.js/Rust? (Backend Migration)](#why-go-over-nodejsrust-backend-migration)
   - [Why PostgreSQL over MongoDB?](#why-postgresql-over-mongodb)
   - [Why RabbitMQ over Redis?](#why-rabbitmq-over-redis)
   - [Why MinIO for Development?](#why-minio-for-development)
@@ -550,8 +553,8 @@ API → DB: Fetch user permissions
 ### Authorization Levels
 
 - **Freemium**: 10 analyses/month, with ads, no Ghost Climber
-- **Premium**: 30 analyses/month (20€/month), Ghost Mode enabled
-- **Infinity**: 100 analyses/month (30€/month), all features + server priority
+- **Premium**: 50 analyses/month (20€/month), Ghost Mode enabled
+- **Infinity**: Unlimited analyses (30€/month), all features + server priority
 
 ### Data Protection
 

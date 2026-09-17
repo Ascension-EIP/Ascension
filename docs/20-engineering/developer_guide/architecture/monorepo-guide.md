@@ -1,7 +1,10 @@
-> **Last updated:** 10th September 2026
-> **Version:** 2.5
-> **Authors:** Gianni TUERO
-> **Status:** Done
+<!-- markdownlint-disable MD041 -->
+
+> **Last updated:** 10th September 2026  
+> **Version:** 2.5  
+> **Authors:** Gianni TUERO  
+> **Original language:** English  
+> **Status:** Done  
 > {.is-success}
 
 ---
@@ -64,7 +67,7 @@ Ascension/ (Monorepo)
 │
 ├── .moon/
 │   ├── workspace.yml        # moonrepo workspace configuration
-│   └── toolchain.yml        # Toolchain versions (Rust, Python…)
+│   └── toolchain.yml        # Toolchain versions (Go, Python…)
 │
 ├── docker-compose.yml       # Development orchestration
 ├── .env.example             # Environment template
@@ -106,7 +109,7 @@ Ascension/ (Monorepo)
    - Tasks are defined per project in `moon.yml` files
 
 3. **Toolchain Management**
-   - Rust and Python versions are pinned in `.moon/toolchain.yml`
+   - Go and Python versions are pinned in `.moon/toolchain.yml`
    - Consistent across all developer machines and CI
 
 4. **Affected-only Builds**

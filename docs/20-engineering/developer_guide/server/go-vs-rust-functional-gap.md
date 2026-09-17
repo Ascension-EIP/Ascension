@@ -13,6 +13,45 @@
 
 _Date: 2026-04-01_
 
+---
+
+## Table of Contents
+
+- [Go vs Rust — Comparaison fonctionnelle serveur](#go-vs-rust--comparaison-fonctionnelle-serveur)
+  - [Table of Contents](#table-of-contents)
+  - [Périmètre comparé](#périmètre-comparé)
+  - [Synthèse rapide](#synthèse-rapide)
+  - [Différences fonctionnelles détaillées](#différences-fonctionnelles-détaillées)
+  - [1) Authentification](#1-authentification)
+    - [Go (`apps/server`)](#go-appsserver)
+    - [Rust (`apps/server-rust`)](#rust-appsserver-rust)
+    - [Écart](#écart)
+  - [2) Users](#2-users)
+    - [Go](#go)
+    - [Rust](#rust)
+    - [Écart](#écart)
+  - [3) Videos](#3-videos)
+    - [Go](#go)
+    - [Rust](#rust)
+    - [Écart](#écart)
+  - [4) Analyses IA](#4-analyses-ia)
+    - [Go](#go)
+    - [Rust](#rust)
+    - [Écart](#écart)
+  - [5) Documentation API](#5-documentation-api)
+    - [Go](#go)
+    - [Rust](#rust)
+    - [Écart](#écart)
+  - [Ce qui manque à implémenter dans le serveur Go (checklist)](#ce-qui-manque-à-implémenter-dans-le-serveur-go-checklist)
+  - [Priorité P0 — Analyse enrichie (fort impact produit)](#priorité-p0-analyse-enrichie-fort-impact-produit)
+  - [Priorité P1 — Documentation API](#priorité-p1-documentation-api)
+  - [Priorité P2 — Alignement DX/comportement (optionnel)](#priorité-p2-alignement-dxcomportement-optionnel)
+  - [Plan d’implémentation recommandé (ordre pratique)](#plan-dimplémentation-recommandé-ordre-pratique)
+  - [Critères d’acceptation (Done)](#critères-dacceptation-done)
+  - [Notes de compatibilité](#notes-de-compatibilité)
+
+---
+
 ## Périmètre comparé
 
 - Serveur Go: `apps/server`
@@ -30,6 +69,8 @@ _Date: 2026-04-01_
 ---
 
 ## Différences fonctionnelles détaillées
+
+---
 
 ## 1) Authentification
 
@@ -154,6 +195,8 @@ _Date: 2026-04-01_
 
 > Objectif: atteindre la parité utile avec les fonctionnalités avancées du serveur Rust, sans casser les flux déjà en place côté Go.
 
+---
+
 ## Priorité P0 — Analyse enrichie (fort impact produit)
 
 - [ ] **Ajouter `job_id` dans la table `analysis`**
@@ -192,12 +235,16 @@ _Date: 2026-04-01_
   - Action: méthode dédiée `UpdateAnalysisProgress(id, progress)`.
   - Validation: update transactionnel et borne `0..100`.
 
+---
+
 ## Priorité P1 — Documentation API
 
 - [ ] **Ajouter OpenAPI/Swagger au serveur Go**
   - Cible: `apps/server/internal/inbound/http/`
   - Action: intégrer génération spec + endpoint UI (`/swagger` ou similaire).
   - Validation: routes auth/users/videos/analysis documentées et testables via UI.
+
+---
 
 ## Priorité P2 — Alignement DX/comportement (optionnel)
 

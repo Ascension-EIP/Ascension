@@ -1,6 +1,9 @@
+<!-- markdownlint-disable MD041 -->
+
 > **Last updated:** 16th March 2026  
 > **Version:** 1.0  
-> **Authors:** Nicolas  
+> **Authors:** Nicolas TORO  
+> **Original language:** French  
 > **Status:** Final  
 > {.is-success}
 
@@ -57,9 +60,9 @@
     - [API Endpoints principaux](#api-endpoints-principaux)
 - [PARTIE 4 : COSTING \& SIZING](#partie-4--costing--sizing)
   - [**Slide 13 : Resource Inventory (Infra \& Hardware)**](#slide-13--resource-inventory-infra--hardware)
-  - [Inventaire exhaustif - Infrastructure cloud](#inventaire-exhaustif---infrastructure-cloud)
-  - [CAPEX - Coûts uniques lancement](#capex---coûts-uniques-lancement)
-    - [Coûts cachés explicitement inclus](#coûts-cachés-explicitement-inclus)
+    - [Inventaire exhaustif - Infrastructure cloud](#inventaire-exhaustif---infrastructure-cloud)
+    - [CAPEX - Coûts uniques lancement](#capex---coûts-uniques-lancement)
+      - [Coûts cachés explicitement inclus](#coûts-cachés-explicitement-inclus)
   - [**Slide 14 : Financial Benchmark**](#slide-14--financial-benchmark)
     - [Comparaison providers - Infrastructure MVP équivalente](#comparaison-providers---infrastructure-mvp-équivalente)
     - [Graphique visuel](#graphique-visuel)
@@ -601,7 +604,7 @@ sequenceDiagram
 
 ## **Slide 13 : Resource Inventory (Infra & Hardware)**
 
-## Inventaire exhaustif - Infrastructure cloud
+### Inventaire exhaustif - Infrastructure cloud
 
 | Ressource                  | Rôle                        | Specs                          | Provider            | Coût mensuel         |
 | -------------------------- | --------------------------- | ------------------------------ | ------------------- | -------------------- |
@@ -613,7 +616,7 @@ sequenceDiagram
 | **CI/CD**                  | GitHub Actions              | Hosted runners                 | GitHub              | 0€ (< 2000 min/mois) |
 |                            |                             |                                | **TOTAL OPEX MVP**  | **96€/mois**         |
 
-## CAPEX - Coûts uniques lancement
+### CAPEX - Coûts uniques lancement
 
 | Item                     | Description                              | Fréquence       | Coût     |
 | ------------------------ | ---------------------------------------- | --------------- | -------- |
@@ -1081,7 +1084,8 @@ _Merci de votre attention !_
 - Ayez backup slides détaillées (benchmarks complets, schemas DB détaillés) en annexe
 - Testez démo 3× avant présentation (Murphy's law)
 - Préparez version "Plan B" si démo plante (screenshots/vidéo pré-enregistrée)
--
+
+---
 
 ## Benchmark Hébergement Cloud : Hetzner vs OVH vs AWS
 
@@ -1098,6 +1102,8 @@ _Merci de votre attention !_
 | API / CLI                   | Hetzner Cloud API       | OVH API              | AWS CLI complet        | AWS         | Faible         |
 | Coût total 3 machines/mois  | -                       | -                    | -                      | Hetzner     | Critique       |
 
+---
+
 ## Benchmark Backend : Rust vs Go vs Node.js
 
 | Critère               | Rust (Axum)           | Go (Gin/Fiber)         | Node.js (Fastify) | Gagnant | Importance     |
@@ -1110,6 +1116,8 @@ _Merci de votre attention !_
 | Dev speed initial     | Lent (learning curve) | Rapide                 | Très rapide       | Node    | Moyen          |
 | Coût serveur 1k users | 24€/mois              | 45€/mois               | 70€/mois          | Rust    | Très important |
 | Argument RNCP/CV      | Expert (rare)         | Intermédiaire          | Standard          | Rust    | Important      |
+
+---
 
 ## Benchmark Base de données : PostgreSQL vs MongoDB vs MySQL
 

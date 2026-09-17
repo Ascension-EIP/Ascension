@@ -1,7 +1,10 @@
-> **Last updated:** 9th March 2026
-> **Version:** 1.2
-> **Authors:** Nicolas
-> **Status:** Done
+<!-- markdownlint-disable MD041 -->
+
+> **Last updated:** 9th March 2026  
+> **Version:** 1.2  
+> **Authors:** Nicolas TORO  
+> **Original language:** English  
+> **Status:** Done  
 > {.is-success}
 
 ---

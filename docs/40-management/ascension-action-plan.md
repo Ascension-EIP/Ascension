@@ -3,6 +3,7 @@
 > **Last updated:** 6th April 2026  
 > **Version:** 1.0  
 > **Authors:** Nicolas TORO  
+> **Original language:** French  
 > **Status:** Done  
 > {.is-success}
 
@@ -33,8 +34,9 @@
   - [3. Non-Technical Specifications](#3-non-technical-specifications)
     - [3.1 Mentorat et gouvernance](#31-mentorat-et-gouvernance)
     - [3.2 Topic mandatory - Evaluate and integrate new technologies](#32-topic-mandatory---evaluate-and-integrate-new-technologies)
-    - [3.3 Topic optional - Collaborate with technical experts](#33-topic-optional---collaborate-with-technical-experts)
-    - [3.4 Topic optional - Measure, test, and optimize technical performance](#34-topic-optional---measure-test-and-optimize-technical-performance)
+    - [3.3 Topic mandatory - Structure, document, and harden the project's technical architecture](#33-topic-mandatory---structure-document-and-harden-the-projects-technical-architecture)
+    - [3.4 Topic optional - Collaborate with technical experts](#34-topic-optional---collaborate-with-technical-experts)
+    - [3.5 Topic optional - Measure, test, and optimize technical performance](#35-topic-optional---measure-test-and-optimize-technical-performance)
 
 ---
 
@@ -105,7 +107,7 @@ Parties prenantes externes :
 | Couche          | Technologie                                         | Rôle principal                                     |
 |:----------------|:----------------------------------------------------|:---------------------------------------------------|
 | Mobile          | Flutter / Dart                                      | Expérience utilisateur, rendu 3D, parcours complet |
-| API             | Rust (migration planifiée vers Go)                  | Orchestration, sécurité, contrats API              |
+| API             | Go (Gin)                                            | Orchestration, sécurité, contrats API              |
 | IA              | Python (MediaPipe, OpenCV, PyTorch, pipeline SAM3D) | Analyse biomécanique, détection prises, conseils   |
 | Broker          | RabbitMQ                                            | Traitement asynchrone fiable                       |
 | Base de données | PostgreSQL                                          | Stockage métier et résultats                       |
@@ -208,7 +210,25 @@ Le mentor sert de support stratégique, de garde-fou méthodologique, et de rela
 - au moins 1 benchmark structuré par grand chantier (IA, backend, mobile),
 - au moins 1 POC à impact décisionnel documenté.
 
-### 3.3 Topic optional - Collaborate with technical experts
+### 3.3 Topic mandatory - Structure, document, and harden the project's technical architecture
+
+**Intention**
+
+Bâtir une architecture logicielle robuste, modulaire, sécurisée et entièrement documentée pour garantir l’évolutivité, la maintenabilité et la résilience du système.
+
+**Plan d’action**
+
+- maintenir une documentation technique exhaustive et à jour (README par composant, schémas d’architecture, guides de déploiement),
+- appliquer des standards de qualité de code stricts (linters automatisés, conventions de nommage, CI sur chaque pull request),
+- durcir la sécurité applicative (authentification JWT, validation des entrées, gestion sécurisée des secrets d'environnement) et fiabiliser la gestion d'erreurs,
+- couvrir l’ensemble des modules critiques (API, algorithmes IA, services réseau mobile) par des tests unitaires et d’intégration.
+
+**Objectif mesurable**
+
+- 100 % des composants disposent d’un README structuré et de pipelines de tests CI au vert,
+- couverture de tests et conformité aux standards validées avant chaque livraison de jalon.
+
+### 3.4 Topic optional - Collaborate with technical experts
 
 **Intention**
 
@@ -226,7 +246,7 @@ Améliorer la qualité des choix techniques en sollicitant des retours externes 
 - au moins 2 revues externes significatives,
 - traçabilité des actions issues des retours.
 
-### 3.4 Topic optional - Measure, test, and optimize technical performance
+### 3.5 Topic optional - Measure, test, and optimize technical performance
 
 **Intention**
 

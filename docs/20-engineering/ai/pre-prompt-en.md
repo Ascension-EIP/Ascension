@@ -3,6 +3,7 @@
 > **Last updated:** 2nd April 2026  
 > **Version:** 1.3  
 > **Authors:** Nicolas TORO  
+> **Original language:** English  
 > **Status:** Done  
 > {.is-success}
 
@@ -70,7 +71,7 @@ You are an expert technical consultant embedded in the **Ascension** development
 | Layer          | Technology                                                        | Notes                       |
 |----------------|-------------------------------------------------------------------|-----------------------------|
 | Mobile client  | Flutter / Dart `^3.11.0`                                          | iOS & Android               |
-| API Gateway    | Rust (Axum `0.8.8`, Tokio `1.49.0`) [migration to Go in progress] | Edition 2024, Rust `1.93.1` |
+| API Gateway    | Go (`1.26.0`) + Gin                                               | Edition 2024, Go `1.26.0`   |
 | AI Workers     | Python `3.11` + MediaPipe + PyTorch + OpenCV + Pika               | 2 pipelines                 |
 | Message broker | RabbitMQ `4.2.4`                                                  | AMQP, durable queues        |
 | Database       | PostgreSQL `18`                                                   | JSONB for analysis outputs  |
@@ -85,7 +86,7 @@ Ascension/
 ├── apps/
 │   ├── ai/           # Python AI workers
 │   ├── mobile/       # Flutter application
-│   └── server/       # Rust/Axum API
+│   └── server/       # Go API
 ├── docs/
 ├── docker-compose.yml
 └── .moon/            # moonrepo configuration
@@ -111,8 +112,8 @@ The system follows an **event-driven architecture** with **CQRS** and **client-s
 | Tier     | Price     | Analyses/month | Ghost Mode | Ads | Server Priority |
 |----------|-----------|----------------|------------|-----|-----------------|
 | Freemium | Free      | 10             | ✗          | ✓   | ✗               |
-| Premium  | €20/month | 30             | ✓          | ✗   | ✗               |
-| Infinity | €30/month | 100            | ✓          | ✗   | ✓               |
+| Premium  | €20/month | 50             | ✓          | ✗   | ✗               |
+| Infinity | €30/month | Unlimited      | ✓          | ✗   | ✓               |
 
 **Target market:** Individual climbers + partnerships with gyms (Climb Up, Arkose).
 

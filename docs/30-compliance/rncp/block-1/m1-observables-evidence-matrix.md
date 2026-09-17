@@ -2,7 +2,7 @@
 
 > **Last updated:** 17th September 2026  
 > **Version:** 1.0  
-> **Authors:** Darius (Docs), Nicolas TORO  
+> **Authors:** Nicolas TORO  
 > **Original language:** English  
 > **Status:** Final  
 > {.is-success}
@@ -12,7 +12,7 @@
 # RNCP Block 1 — M1 Observables Evidence Matrix (C1→C5, O1→O11)
 
 > Scope: evidence inventory for oral prep (Block 1, M1).  
-> Audience: Darius (documentation lead) + candidate oral prep.
+> Audience: Nicolas TORO (documentation lead) + candidate oral prep.
 
 ---
 
@@ -20,7 +20,7 @@
 
 - [RNCP Block 1 — M1 Observables Evidence Matrix (C1→C5, O1→O11)](#rncp-block-1--m1-observables-evidence-matrix-c1c5-o1o11)
   - [Table of Contents](#table-of-contents)
-  - [Priority recommendations for Darius](#priority-recommendations-for-darius)
+  - [Priority recommendations](#priority-recommendations)
 
 ---
 
@@ -38,7 +38,9 @@
 | **O10 [C5]**   | Prospective migration/evolution study based on audit findings                            | `docs/10-product/prototype-pool/workshop/impacts-risks.md` (migration strategy, SPOF, roadmap); `docs/10-product/prototype-pool/workshop/context-audit-compliance.md` (§6.2 action plan); `docs/30-compliance/rncp/block-1/audit/tech-stack.md` (future considerations)                                                   | Create `docs/30-compliance/rncp/block-1/evidence/o10-evolution-migration-roadmap.md` with 24–36 month milestones, triggers, and mitigation ownership                | **Medium**      |
 | **O11 [C5]**   | Oral ability to explain prospective evolution/migration clearly and concisely            | Oral structure exists in `docs/10-product/prototype-pool/workshop/presentation/oral_25-02_ppt_content.md`; timing context in `docs/30-compliance/rncp/block-1/besoin.md` and `docs/50-resources/rncp/rncp.md`                                                                                                             | Create per-observable oral slides/scripts: `docs/30-compliance/rncp/block-1/slides/o1.md` ... `o11.md` (+ 60–90s talk track each, jury Q&A bullets)                 | **High**        |
 
-## Priority recommendations for Darius
+---
+
+## Priority recommendations
 
 1. **Close high-risk observables first**: O2, O7, O11.
 2. **Build traceability once, reuse everywhere**: O1/O5/O6 via one shared need-to-spec matrix.
