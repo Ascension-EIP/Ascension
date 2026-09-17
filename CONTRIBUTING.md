@@ -1,10 +1,3 @@
-:::success
-**Version:** 1.1  
-**Original language:** English  
-:::
-
----
-
 # Contributing to Ascension
 
 Thank you for taking the time to contribute. Please read this guide before opening issues or pull requests.

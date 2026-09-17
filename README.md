@@ -1,10 +1,3 @@
-:::success
-**Version:** 2.0  
-**Original language:** English  
-:::
-
----
-
 # Ascension
 
 **AI-powered climbing coach — objective technique analysis, personalized feedback.**

@@ -1,10 +1,3 @@
-:::success
-**Version:** 1.0  
-**Original language:** English  
-:::
-
----
-
 # Code of Conduct
 
 ---

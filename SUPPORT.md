@@ -1,10 +1,3 @@
-:::success
-**Version:** 1.1  
-**Original language:** English  
-:::
-
----
-
 # Support
 
 ---
