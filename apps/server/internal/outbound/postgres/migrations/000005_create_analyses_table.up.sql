@@ -9,7 +9,7 @@ CREATE TABLE analyses (
     completed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-)
+);
 
 CREATE TRIGGER update_analyses_updated_at
 	BEFORE UPDATE ON analyses
