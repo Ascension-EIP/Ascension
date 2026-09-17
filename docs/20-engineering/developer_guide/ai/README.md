@@ -261,13 +261,18 @@ A landmark is included in a frame only if its **presence score ≥ 0.8**.
 
 ---
 
-## The ai_sam3d Module (SAM 3D Body)
+## The ai_sam3d Module (SAM 3D Body) [Deprecated / Archived]
 
 **Source:** `apps/ai/src/ai_sam3d.py`
 
+> [!WARNING]
+> **Status: Deprecated / Archived POC**  
+> The SAM 3D Body pipeline (`ai_sam3d.py`) was evaluated as an experimental prototype for 3D body reconstruction. Due to heavy external dependencies, large checkpoint sizes, and excessive GPU/CUDA requirements incompatible with our operational constraints, **SAM 3D is no longer used for production in Ascension**.  
+> For Phase ATP (August 2027 → March 2028), 3D pose extraction and mobile 3D experiences will be rebuilt around a generic, lightweight 3D pose estimation model. The documentation below is retained as a technical reference for the experimental prototype.
+
 ### SAM 3D Body Overview
 
-`ai_sam3d` is the second
+`ai_sam3d` is the second pose estimation pipeline in Ascension (based on Meta's SAM 3D Body
 vision-transformer model). Unlike the MediaPipe module which produces 2D landmarks
 normalised to the frame, `ai_sam3d` produces both **pixel-space 2D keypoints** and
 **metric-space 3D keypoints** for the full MHR-70 skeleton (70 joints), along with
