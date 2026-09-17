@@ -1,8 +1,8 @@
-// @date 2026-03-16
-// @file auth.go
+// @date 2026-09-17
+// @file session.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package postgres
@@ -74,7 +74,7 @@ func (r *PostgresRepository) DeleteSessionsExpired(ctx context.Context) error {
 	tx := r.getTx(ctx)
 
 	_, err := tx.Exec(ctx,
-		"DELETE FROM sessions WHERE expires_at < ?",
+		"DELETE FROM sessions WHERE expires_at < $1",
 		time.Now())
 	if err != nil {
 		return err
