@@ -1,8 +1,8 @@
-// @date 2026-03-19
+// @date 2026-09-17
 // @file auth.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package request
@@ -20,7 +20,7 @@ type SignupForm struct {
 func (req *SignupForm) IntoSignupForm() (model.SignupForm, error) {
 	return model.SignupForm{
 		Name:     model.UserName(req.Name),
-		Email:    model.UserEmail(req.Email),
+		Email:    model.NewUserEmail(req.Email),
 		Password: model.UserPassword(req.Password),
 	}, nil
 }
@@ -35,7 +35,7 @@ type SignupLoginForm struct {
 func (req *SignupLoginForm) IntoSignupLoginForm() (model.SignupForm, error) {
 	return model.SignupForm{
 		Name:     model.UserName(req.Name),
-		Email:    model.UserEmail(req.Email),
+		Email:    model.NewUserEmail(req.Email),
 		Password: model.UserPassword(req.Password),
 	}, nil
 }
@@ -48,7 +48,7 @@ type LoginForm struct {
 
 func (req *LoginForm) IntoLoginForm() (model.LoginForm, error) {
 	return model.LoginForm{
-		Email:    model.UserEmail(req.Email),
+		Email:    model.NewUserEmail(req.Email),
 		Password: model.UserPassword(req.Password),
 	}, nil
 }
