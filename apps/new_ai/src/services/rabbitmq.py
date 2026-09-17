@@ -18,7 +18,6 @@ from common.utils.errors import throw_if_none
 from common.utils.logger import log
 
 
-
 class Broker:
     def __init__(self):
         self.config: BrokerModel | None = None

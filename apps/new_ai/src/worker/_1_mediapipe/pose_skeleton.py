@@ -1,12 +1,12 @@
-# @date 2026-09-11
-# @file video_body_skeleton.py
+# @date 2026-09-17
+# @file pose_skeleton.py
 # @brief File description.
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
-from typing import Self
 from pathlib import Path
+from typing import Self
 
 import cv2
 import mediapipe as mp

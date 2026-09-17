@@ -5,7 +5,6 @@
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
-from worker._1_mediapipe.pose_skeleton import PoseSkeleton
 import os
 import sys
 import traceback
@@ -16,6 +15,7 @@ from common.utils.logger import log
 from services.minio import MinIO
 from services.postgresql import PostgreSQL
 from services.rabbitmq import Broker
+from worker._1_mediapipe.pose_skeleton import PoseSkeleton
 
 load_dotenv()
 
