@@ -5,7 +5,7 @@ CREATE TABLE videos (
     status     VARCHAR(32) NOT NULL DEFAULT 'pending',
 	expires_at TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_videos_user_id  ON videos(user_id);
