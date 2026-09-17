@@ -1,8 +1,8 @@
-// @date 2026-03-20
+// @date 2026-09-17
 // @file video.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package postgres
@@ -22,7 +22,7 @@ func (r *PostgresRepository) CreateVideo(ctx context.Context, video model.Video)
 	tx := r.getTx(ctx)
 
 	_, err := tx.Exec(ctx,
-		"INSERT INTO videos (id, user_id, object_key, status, expires_at) VALUES ($1, $2, $3, $4, $5, $6)",
+		"INSERT INTO videos (id, user_id, object_key, status, expires_at) VALUES ($1, $2, $3, $4, $5)",
 		video.ID, video.UserID, video.ObjectKey, video.Status, video.ExpiresAt)
 	if err != nil {
 		return err
