@@ -1,8 +1,8 @@
-// @date 2026-03-18
+// @date 2026-09-17
 // @file user.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package request
@@ -22,7 +22,7 @@ type CreateUser struct {
 func (req *CreateUser) IntoUser() (model.User, error) {
 	return model.User{
 		Name:     model.UserName(req.Name),
-		Email:    model.UserEmail(req.Email),
+		Email:    model.NewUserEmail(req.Email),
 		Password: model.UserPassword(req.Password),
 		Role:     model.UserRole(req.Role),
 	}, nil
@@ -49,7 +49,7 @@ func (req *UpdateUser) IntoUserPartial(id string) (model.UserPartial, error) {
 		userPartial.Name = new(model.UserName(*req.Name))
 	}
 	if req.Email != nil {
-		userPartial.Email = new(model.UserEmail(*req.Email))
+		userPartial.Email = new(model.NewUserEmail(*req.Email))
 	}
 	if req.Password != nil {
 		userPartial.Password = new(model.UserPassword(*req.Password))
