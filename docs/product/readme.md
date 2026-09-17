@@ -1,21 +1,17 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 16th March 2026  
-> **Version:** 1.1  
-> **Authors:** Nicolas TORO  
-> **Original language:** English  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 1.2  
+**Original language:** English  
+:::
 
 ---
 
-# 10 — Product
+# Product
 
 ---
 
 ## Table of Contents
 
-- [10 — Product](#10--product)
+- [Product](#product)
   - [Table of Contents](#table-of-contents)
   - [Prototype Pool](#prototype-pool)
   - [Workshop Documents](#workshop-documents)

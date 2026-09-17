@@ -1,8 +1,8 @@
-> **Last updated:** 11th March 2026
-> **Version:** 1.1
-> **Authors:** Nicolas TORO
-> **Status:** Final  
-> {.is-success}
+:::success
+**Version:** 1.1  
+**Original language:** English  
+DON'T EDIT THIS FILE !  
+:::
 
 ---
 

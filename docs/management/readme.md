@@ -1,24 +1,21 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 16th March 2026  
-> **Version:** 1.1  
-> **Authors:** Nicolas TORO  
-> **Original language:** English  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 1.2  
+**Original language:** English  
+:::
 
 ---
 
-# 40 — Management
+# Management
 
 ---
 
 ## Table of Contents
 
-- [40 — Management](#40--management)
+- [Management](#management)
   - [Table of Contents](#table-of-contents)
   - [Roadmaps](#roadmaps)
   - [Team Memos](#team-memos)
+  - [Resources](#resources)
 
 ---
 
@@ -45,3 +42,10 @@
 - [Memo — 26-08-31](./memo/26-08-31.md)
 - [Memo — 26-09-07](./memo/26-09-07.md)
 - [Memo — 26-09-14](./memo/26-09-14.md)
+
+---
+
+## Resources
+
+- [PDF](ascension-action-plan.pdf)
+- [PDF](ascension-beta-test-plan.pdf)

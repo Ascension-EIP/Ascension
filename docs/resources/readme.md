@@ -1,22 +1,19 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 16th March 2026  
-> **Version:** 1.1  
-> **Authors:** Nicolas TORO  
-> **Original language:** English  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 1.2  
+**Original language:** English  
+:::
 
 ---
 
-# 50 — Resources
+# Resources
 
 ---
 
 ## Table of Contents
 
-- [50 — Resources](#50--resources)
+- [Resources](#resources)
   - [Shared Assets](#shared-assets)
+  - [Resources](#resources-1)
 
 ---
 
@@ -28,3 +25,9 @@
 - [Deck Assets](./deck/)
 - [Image Assets](./images/)
 - [Intranet Assets](./intranet/)
+
+---
+
+## Resources
+
+![Ascension Architecture](ascension-excalidraw.png)

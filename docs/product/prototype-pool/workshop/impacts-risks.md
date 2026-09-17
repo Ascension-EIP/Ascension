@@ -1,11 +1,8 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 26th February 2026  
-> **Version:** 1.2  
-> **Authors:** Olivier POUECH, Nicolas TORO  
-> **Original language:** French  
-> **Status:** Final  
-> {.is-success}
+:::success
+**Version:** 1.2  
+**Original language:** French  
+DON'T EDIT THIS FILE !  
+:::
 
 ---
 

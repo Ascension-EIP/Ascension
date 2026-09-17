@@ -1,11 +1,8 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 15th July 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas TORO  
-> **Original language:** English  
-> **Status:** Final  
-> {.is-success}
+:::success
+**Version:** 1.0  
+**Original language:** English  
+DON'T EDIT THIS FILE !  
+:::
 
 ---
 
