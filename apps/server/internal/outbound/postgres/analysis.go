@@ -1,8 +1,8 @@
-// @date 2026-03-18
+// @date 2026-09-17
 // @file analysis.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package postgres
@@ -21,7 +21,7 @@ func (r *PostgresRepository) CreateAnalysis(ctx context.Context, analysis model.
 	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx,
-		"INSERT INTO analysis (video_id) VALUES ($1) RETURNING *",
+		"INSERT INTO analyses (video_id) VALUES ($1) RETURNING *",
 		analysis.VideoID)
 	if err != nil {
 		return model.Analysis{}, dto.Error(err)
@@ -53,7 +53,7 @@ func (r *PostgresRepository) GetAnalysisByFilter(ctx context.Context, filter mod
 		setParts = append(setParts, fmt.Sprintf("status = $%d", len(args)))
 	}
 
-	query := "SELECT * FROM analysis"
+	query := "SELECT * FROM analyses"
 
 	if len(setParts) > 0 {
 		query += " WHERE " + strings.Join(setParts, " AND ")
