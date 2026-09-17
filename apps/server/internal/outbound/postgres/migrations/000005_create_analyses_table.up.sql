@@ -8,7 +8,9 @@ CREATE TABLE analyses (
     processing_time_ms INTEGER,
     completed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT chk_analyses_progress CHECK (progress BETWEEN 0 AND 100)
 );
 
 CREATE TRIGGER update_analyses_updated_at
