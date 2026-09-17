@@ -1,21 +1,17 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 16th March 2026  
-> **Version:** 1.1  
-> **Authors:** Nicolas TORO  
-> **Original language:** English  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 1.2  
+**Original language:** English  
+:::
 
 ---
 
-# 00 — Start Here
+# Start Here
 
 ---
 
 ## Table of Contents
 
-- [00 — Start Here](#00--start-here)
+- [Start Here](#start-here)
   - [Core References](#core-references)
 
 ---

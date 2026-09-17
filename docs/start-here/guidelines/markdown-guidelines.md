@@ -1,11 +1,7 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 17th September 2026  
-> **Version:** 1.3  
-> **Authors:** Nicolas TORO  
-> **Original language:** English  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 1.4  
+**Original language:** English  
+:::
 
 ---
 
@@ -52,30 +48,59 @@ All Markdown filenames must follow the **kebab-case** convention:
 
 ## 3. Required Header
 
-Every single Markdown file must start with the following header block using blockquotes:
+Every single Markdown file must start with the following header block using Densho status container callouts:
 
 ```markdown
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** [Day] [Month] [Year]  
-> **Version:** [X.X]  
-> **Authors:** [Name]
-> **Original language:** [Language]
-> **Status:** [Status]
-> {.is-[status-color]}
+:::status
+**Version:** [X.X]  
+**Original language:** [Language]  
+:::
 ```
 
 ### 3.1 Status Types
 
-The `Status` field must strictly use one of the following authorized values, paired with its corresponding callout class:
+The container status must strictly use one of the authorized container types:
 
-| Status        | Callout Class   | Description (EN)                                                         |
-| ------------- | --------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `Final`       | `{.is-success}` | Final version not to be modified (used for historical/frozen documents). |
-| `Done`        | `{.is-success}` | Completed and validated, can still be modified in the future.            |
-| `In progress` | `{.is-warning}` | Work in progress, currently being authored or modified.                  |
-| `Todo`        | `{.is-danger}`  | To do (planned document not yet written).                                |
-| `Need update` | `{.is-warning}` | Needs to be updated (outdated or incomplete document).                   |
+| Status Container | Previous Status Equivalent | Description | Notes |
+| ---------------- | -------------------------- | ---------------- | ----- |
+| `:::success`     | `Done`, `Final`            | Completed and validated document. | If the document is frozen/final, append `DON'T EDIT THIS FILE !` on a new line after `Original language`. |
+| `:::warning`     | `In progress`, `Need update` | Work in progress or outdated document needing update. | |
+| `:::danger`      | `Todo`                     | Planned document not yet written. | |
+
+#### Examples
+
+**Completed document:**
+```markdown
+:::success
+**Version:** 1.0  
+**Original language:** English  
+:::
+```
+
+**Final / Frozen document:**
+```markdown
+:::success
+**Version:** 1.0  
+**Original language:** English  
+DON'T EDIT THIS FILE !  
+:::
+```
+
+**Work in progress or needing update:**
+```markdown
+:::warning
+**Version:** 0.2  
+**Original language:** English  
+:::
+```
+
+**To-do / stub document:**
+```markdown
+:::danger
+**Version:** 0.1  
+**Original language:** English  
+:::
+```
 
 ---
 
