@@ -7,7 +7,8 @@ CREATE TABLE users (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    CONSTRAINT chk_users_role CHECK (role IN ('user', 'admin'))
+    CONSTRAINT chk_users_role CHECK (role IN ('user', 'admin')),
+    CONSTRAINT chk_users_email_lowercase CHECK (email = lower(email))
 );
 
 CREATE TRIGGER update_users_updated_at
