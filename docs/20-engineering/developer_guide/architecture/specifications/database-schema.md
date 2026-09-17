@@ -222,7 +222,8 @@ CREATE TABLE users (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     CONSTRAINT chk_users_role CHECK (role IN ('user', 'admin')),
-    CONSTRAINT chk_users_email_lowercase CHECK (email = lower(email))
+    CONSTRAINT chk_users_email_lowercase CHECK (email = lower(email)),
+    CONSTRAINT chk_users_email_trimmed CHECK (email = btrim(email, E' \t\n\r\f\x0B'))
 );
 
 CREATE TRIGGER update_users_updated_at
@@ -234,7 +235,8 @@ CREATE TRIGGER update_users_updated_at
 **Notes:**
 
 - `password` stores a bcrypt hash, never the raw password. It is `TEXT` so the hashing algorithm can change (argon2id hashes exceed 64 characters).
-- `email` is stored lowercase and trimmed: the server normalizes it with `model.NewUserEmail` on signup, login and user create/update, and `chk_users_email_lowercase` enforces it, so the `UNIQUE` index also rejects addresses that only differ by case.
+- `email` is stored lowercase and trimmed: the server normalizes it with `model.NewUserEmail` on signup, login and user create/update, and `chk_users_email_lowercase` and `chk_users_email_trimmed` enforce it, so the `UNIQUE` index also rejects addresses that only differ by case or surrounding whitespace.
+- `email` stays `VARCHAR(256)`: an address is at most 254 characters (RFC 5321), and the bound keeps entries of the `UNIQUE` index under the B-tree size limit.
 - `role` values match `model.UserRole` in the Go server.
 - Name and password length rules are enforced by the Go model (`model.UserName`, `model.UserPassword`).
 
