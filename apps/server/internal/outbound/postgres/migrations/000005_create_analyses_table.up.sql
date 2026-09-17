@@ -3,7 +3,7 @@ CREATE TABLE analyses (
 	video_id UUID NOT NULL UNIQUE REFERENCES videos(id) ON DELETE CASCADE,
     status VARCHAR(32) NOT NULL DEFAULT 'pending',
     result_json JSONB,
-	advice VARCHAR(4096),
+	advice TEXT,
 	progress INTEGER NOT NULL DEFAULT 0,
     processing_time_ms INTEGER,
     completed_at TIMESTAMPTZ,
