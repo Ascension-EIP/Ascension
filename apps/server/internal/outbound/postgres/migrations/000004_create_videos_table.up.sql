@@ -11,7 +11,6 @@ CREATE TABLE videos (
 );
 
 CREATE INDEX idx_videos_user_id  ON videos(user_id);
-CREATE INDEX idx_videos_status  ON videos(status);
 CREATE INDEX idx_videos_expires_at ON videos(expires_at);
 
 CREATE TRIGGER update_videos_updated_at
