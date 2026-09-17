@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @date 2026-09-10
+# @date 2026-09-17
 # @file update_moon.py
 # @brief Script to update moon on the local machine and sync versions across the repository.
 # @project Ascension
@@ -64,9 +64,9 @@ def update_repo_files(version):
 
     # 2. Documentation and AI prompt files
     doc_files = [
-        "docs/20-engineering/ai/instructions.md",
-        "docs/20-engineering/ai/pre-prompt-en.md",
-        "docs/20-engineering/ai/pre-prompt-fr.md",
+        "docs/engineering/ai/instructions.md",
+        "docs/engineering/ai/pre-prompt-en.md",
+        "docs/engineering/ai/pre-prompt-fr.md",
     ]
     for rel_path in doc_files:
         full_path = os.path.join(REPO_ROOT, rel_path)

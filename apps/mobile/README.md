@@ -1,8 +1,7 @@
-> **Last updated:** 26th February 2026  
-> **Version:** 1.0  
-> **Authors:** Gianni TUERO  
-> **Status:** In Progress  
-> {.is-warning}
+:::warning
+**Version:** 1.0  
+**Original language:** English  
+:::
 
 ---
 

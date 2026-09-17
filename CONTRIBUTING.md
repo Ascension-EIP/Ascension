@@ -1,8 +1,7 @@
-> **Last updated:** 3rd March 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas TORO  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 1.1  
+**Original language:** English  
+:::
 
 ---
 
@@ -28,7 +27,7 @@ Thank you for taking the time to contribute. Please read this guide before openi
 
 All work branches off `dev`. Branch names follow the pattern `<type>/<description>` in kebab-case (e.g. `feat/hold-detection`, `fix/upload-timeout`). Direct pushes to `main` or `dev` are blocked.
 
-See the full rules and allowed types in the [Branch Standards Guide](docs/git/git-branch-standards-guide.md).
+See the full rules and allowed types in the [Branch Standards Guide](docs/engineering/git/git-branch-standards-guide.md).
 
 ---
 
@@ -36,7 +35,7 @@ See the full rules and allowed types in the [Branch Standards Guide](docs/git/gi
 
 We follow the [Conventional Commits](https://www.conventionalcommits.org) specification. Commit messages are validated by a Git hook on every commit.
 
-See format details, allowed scopes and examples in the [Commit Standards Guide](docs/git/git-commit-standards-guide.md).
+See format details, allowed scopes and examples in the [Commit Standards Guide](docs/engineering/git/git-commit-standards-guide.md).
 
 ---
 
@@ -47,13 +46,13 @@ See format details, allowed scopes and examples in the [Commit Standards Guide](
 3. CI must pass (affected tests + lint via moonrepo) before a PR can be merged.
 4. At least one review approval is required.
 
-See the full CI/CD pipeline and hook details in the [GitHub Actions & Hooks Guide](docs/git/github-actions-and-hooks-guide.md).
+See the full CI/CD pipeline and hook details in the [GitHub Actions & Hooks Guide](docs/engineering/git/github-actions-and-hooks-guide.md).
 
 ---
 
 ## Local Setup
 
-Follow the [Development Environment Setup](docs/developer_guide/architecture/deployment/development.md) guide to get everything running locally before submitting code.
+Follow the [Development Environment Setup](docs/engineering/developer_guide/architecture/deployment/development.md) guide to get everything running locally before submitting code.
 
 ---
 
@@ -62,4 +61,4 @@ Follow the [Development Environment Setup](docs/developer_guide/architecture/dep
 - **Go:** `go fmt` + `go vet` (enforced by CI).
 - **Python:** `ruff` for linting and formatting (enforced by CI).
 - **Dart/Flutter:** `dart format` (enforced by CI).
-- **Markdown:** see the [Markdown Guidelines](docs/guidelines/markdown-guidelines.md).
+- **Markdown:** see the [Markdown Guidelines](docs/start-here/guidelines/markdown-guidelines.md).
