@@ -5,6 +5,7 @@
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
+from typing import Self
 from pathlib import Path
 
 import cv2
@@ -16,26 +17,24 @@ from rich.progress import track
 from common.utils.logger import log
 
 
-class VideoBodySkeleton:
+class PoseSkeleton:
     def __init__(
-        self, video_path: str, model: str = "resources/pose_landmarker_full.task"
+        self, model: str = "resources/pose_landmarker_full.task"
     ):
-        self.video_path = video_path
-        self.landmarker = self.init_model(model)
-        self.mp_images_with_results: list[tuple] = self.landmark_video(
-            video_path, self.landmarker
-        )
+        self.model = model
+        self.video_path: str | None = None
+        self.landmarker = self.init_model()
+        self.mp_images_with_results: list[tuple] | None = None
 
     # def detect_frame(frame, detector):
-    def init_model(self, model):
+    def init_model(self):
         log.info("Initializing the mediapipe model.")
         BaseOptions = mp.tasks.BaseOptions
         PoseLandmarker = mp.tasks.vision.PoseLandmarker
         PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
         VisionRunningMode = mp.tasks.vision.RunningMode
-
         options = PoseLandmarkerOptions(
-            base_options=BaseOptions(model_asset_path=model),
+            base_options=BaseOptions(model_asset_path=self.model),
             running_mode=VisionRunningMode.VIDEO,
             min_pose_detection_confidence=0.1,
             min_pose_presence_confidence=0.1,
@@ -69,6 +68,8 @@ class VideoBodySkeleton:
 
         cv_video.release()
         return images_with_landmarks
+
+
 
     def draw_landmarks_on_image(self, mp_image, detection_result):
         pose_landmarks_list = detection_result.pose_landmarks
@@ -107,3 +108,9 @@ class VideoBodySkeleton:
         writer.release()
         log.info(f"Rendered video written to {output_path}")
         return output_path
+
+    def process(self, video_path: str) -> Self:
+        self.video_path = video_path
+        self.mp_images_with_results = self.landmark_video(
+            self.video_path, self.landmarker
+        )

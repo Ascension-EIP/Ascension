@@ -5,6 +5,7 @@
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
+from worker._1_mediapipe.pose_skeleton import PoseSkeleton
 import os
 import sys
 import traceback
@@ -18,6 +19,7 @@ from services.rabbitmq import Broker
 
 load_dotenv()
 
+pose_skeleton = PoseSkeleton()
 
 def main() -> None:
     try:

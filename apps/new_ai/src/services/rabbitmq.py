@@ -105,7 +105,9 @@ class Broker:
 
     def start_consuming(self) -> Self:
         """Start listening for jobs on the queue."""
-        from common.utils.macro import BROKER_BINDINGS  # avoids a circular import with worker.handlers
+        from common.utils.macro import (
+            BROKER_BINDINGS,  # avoids a circular import with worker.handlers
+        )
 
         for bind in BROKER_BINDINGS:
             self.channel.basic_consume(
