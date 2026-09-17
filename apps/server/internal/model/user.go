@@ -1,14 +1,15 @@
-// @date 2026-03-11
+// @date 2026-09-17
 // @file user.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package model
 
 import (
 	"fmt"
+	"strings"
 	"time"
 	"uuid"
 )
@@ -26,6 +27,11 @@ func (n UserName) IsValid() error {
 }
 
 type UserEmail string
+
+// NewUserEmail normalizes an email so the same address always maps to a single account.
+func NewUserEmail(email string) UserEmail {
+	return UserEmail(strings.ToLower(strings.TrimSpace(email)))
+}
 
 func (e UserEmail) IsValid() error {
 	return nil
