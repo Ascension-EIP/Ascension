@@ -1,11 +1,7 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 2nd April 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas TORO  
-> **Original language:** English  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 1.0  
+**Original language:** English  
+:::
 
 ---
 
@@ -58,7 +54,7 @@ The documentation process is aligned with the following references:
 
 - **WCAG 2.1 Level AA** principles (Perceivable, Operable, Understandable, Robust),
 - **CommonMark / GFM** syntax constraints for consistent parsing,
-- project-level Markdown conventions in `docs/00-start-here/guidelines/markdown-guidelines.md`.
+- project-level Markdown conventions in `docs/start-here/guidelines/markdown-guidelines.md`.
 
 This is a documentation conformance statement for Markdown content quality; it does not replace a full external legal accessibility audit of every downstream rendered page.
 
@@ -98,8 +94,8 @@ In practice, this proves that accessibility is embedded in the authoring lifecyc
 
 Primary evidence artifacts:
 
-- `docs/00-start-here/guidelines/markdown-guidelines.md` (normative writing rules),
-- `docs/index.md` (publication process and wiki synchronization references),
+- `docs/start-here/guidelines/markdown-guidelines.md` (normative writing rules),
+- `docs/readme.md` (publication process and wiki synchronization references),
 - this compliance statement as an explicit accessibility rationale.
 
 Governance principles:

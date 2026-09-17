@@ -1,8 +1,7 @@
-> **Last updated:** 3rd March 2026  
-> **Version:** 2.0  
-> **Authors:** Gianni TUERO, Nicolas TORO  
-> **Status:** Done  
-> {.is-success}  
+:::success
+**Version:** 2.0  
+**Original language:** English  
+:::
 
 ---
 
@@ -75,7 +74,7 @@ Ascension/
 └── docs/                   # All project documentation
 ```
 
-Each app under `apps/` is independently buildable and deployable. See the [Monorepo Guide](docs/20-engineering/developer_guide/architecture/monorepo-guide.md) for the full structure, moonrepo task conventions, and CI/CD workflow.
+Each app under `apps/` is independently buildable and deployable. See the [Monorepo Guide](docs/engineering/developer_guide/architecture/monorepo-guide.md) for the full structure, moonrepo task conventions, and CI/CD workflow.
 
 ---
 
@@ -92,13 +91,13 @@ Each app under `apps/` is independently buildable and deployable. See the [Monor
 | Infrastructure | Hetzner Cloud (EU), Docker Compose → Kubernetes              |
 | Monorepo       | moonrepo                                                     |
 
-For the full rationale behind every technology choice, see the [Architecture Decision Record](docs/20-engineering/developer_guide/architecture/README.md).
+For the full rationale behind every technology choice, see the [Architecture Decision Record](docs/engineering/developer_guide/architecture/readme.md).
 
 ---
 
 ## Getting Started
 
-> Full step-by-step instructions, prerequisites, and environment variables are in the **[Development Environment Setup](docs/20-engineering/developer_guide/architecture/deployment/development.md)** guide.
+> Full step-by-step instructions, prerequisites, and environment variables are in the **[Development Environment Setup](docs/engineering/developer_guide/architecture/deployment/development.md)** guide.
 
 **Quick start (local dev):**
 
@@ -121,7 +120,7 @@ moon run server:dev     # Go API
 moon run ai:dev         # Python AI worker
 ```
 
-For production deployment, see the [Production Setup Guide](docs/20-engineering/developer_guide/architecture/deployment/production.md).
+For production deployment, see the [Production Setup Guide](docs/engineering/developer_guide/architecture/deployment/production.md).
 
 ---
 
@@ -129,16 +128,16 @@ For production deployment, see the [Production Setup Guide](docs/20-engineering/
 
 | Topic                     | Document                                                                                                 |
 | :------------------------ | :------------------------------------------------------------------------------------------------------- |
-| Architecture overview     | [Architecture README](docs/20-engineering/developer_guide/architecture/README.md)                         |
-| System design & patterns  | [System Overview](docs/20-engineering/developer_guide/architecture/system-overview.md)                  |
-| Monorepo & moonrepo guide | [Monorepo Guide](docs/20-engineering/developer_guide/architecture/monorepo-guide.md)                    |
-| Database schema & ERD     | [Database Schema](docs/20-engineering/developer_guide/architecture/specifications/database-schema.md)   |
-| API specification         | [API Specification](docs/20-engineering/developer_guide/architecture/specifications/api-specification.md)|
-| Development environment   | [Dev Setup](docs/20-engineering/developer_guide/architecture/deployment/development.md)                 |
-| Production deployment     | [Production Setup](docs/20-engineering/developer_guide/architecture/deployment/production.md)           |
-| Git branch conventions    | [Branch Standards](docs/20-engineering/git/git-branch-standards-guide.md)                               |
-| Git commit conventions    | [Commit Standards](docs/20-engineering/git/git-commit-standards-guide.md)                               |
-| Markdown style guide      | [Markdown Guidelines](docs/00-start-here/guidelines/markdown-guidelines.md)                            |
+| Architecture overview     | [Architecture README](docs/engineering/developer_guide/architecture/readme.md)                         |
+| System design & patterns  | [System Overview](docs/engineering/developer_guide/architecture/system-overview.md)                  |
+| Monorepo & moonrepo guide | [Monorepo Guide](docs/engineering/developer_guide/architecture/monorepo-guide.md)                    |
+| Database schema & ERD     | [Database Schema](docs/engineering/developer_guide/architecture/specifications/database-schema.md)   |
+| API specification         | [API Specification](docs/engineering/developer_guide/architecture/specifications/api-specification.md)|
+| Development environment   | [Dev Setup](docs/engineering/developer_guide/architecture/deployment/development.md)                 |
+| Production deployment     | [Production Setup](docs/engineering/developer_guide/architecture/deployment/production.md)           |
+| Git branch conventions    | [Branch Standards](docs/engineering/git/git-branch-standards-guide.md)                               |
+| Git commit conventions    | [Commit Standards](docs/engineering/git/git-commit-standards-guide.md)                               |
+| Markdown style guide      | [Markdown Guidelines](docs/start-here/guidelines/markdown-guidelines.md)                            |
 
 ---
 

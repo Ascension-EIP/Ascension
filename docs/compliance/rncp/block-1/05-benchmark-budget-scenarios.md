@@ -1,11 +1,8 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 16th March 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas TORO  
-> **Original language:** French  
-> **Status:** Final  
-> {.is-success}
+:::success
+**Version:** 1.0  
+**Original language:** French  
+DON'T EDIT THIS FILE !  
+:::
 
 ---
 
@@ -41,9 +38,9 @@ Présenter un chiffrage cohérent avec le benchmark et proposer plusieurs scéna
 
 Sources utilisées :
 
-- `docs/10-product/prototype-pool/workshop/costs.md`
-- `docs/10-product/prototype-pool/workshop/costs.xlsx`
-- `docs/10-product/prototype-pool/workshop/context-audit-compliance.md`
+- `docs/product/prototype-pool/workshop/costs.md`
+- `docs/product/prototype-pool/workshop/costs.xlsx`
+- `docs/product/prototype-pool/workshop/context-audit-compliance.md`
 - `docker-compose.yml` (structure technique réelle)
 
 Hypothèse de méthode : les montants sont repris comme **estimations atelier** et doivent être revalidés avant engagement contractuel (prix cloud, volumétrie, egress, support).

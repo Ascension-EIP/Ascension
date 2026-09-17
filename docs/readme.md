@@ -1,21 +1,17 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 16th March 2026  
-> **Version:** 1.1  
-> **Authors:** Nicolas TORO  
-> **Original language:** English  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 1.2  
+**Original language:** English  
+:::
 
 ---
 
-# Ascension Documentation Index
+# Ascension Documentation Hub
 
 ---
 
 ## Table of Contents
 
-- [Ascension Documentation Index](#ascension-documentation-index)
+- [Ascension Documentation Hub](#ascension-documentation-hub)
   - [Documentation Hubs](#documentation-hubs)
   - [Wiki Publication](#wiki-publication)
 
@@ -25,13 +21,13 @@
 
 This page is the main entry point for all project documentation.
 
-- [00 — Start Here](./00-start-here/index.md)
-- [10 — Product](./10-product/index.md)
-- [20 — Engineering](./20-engineering/index.md)
-- [30 — Compliance](./30-compliance/index.md)
-- [40 — Management](./40-management/index.md)
-- [50 — Resources](./50-resources/index.md)
-- [90 — Drafts](./90-drafts/index.md)
+- [Start Here](./start-here/readme.md)
+- [Product](./product/readme.md)
+- [Engineering](./engineering/readme.md)
+- [Compliance](./compliance/readme.md)
+- [Management](./management/readme.md)
+- [Resources](./resources/readme.md)
+- [Drafts](./drafts/readme.md)
 
 ---
 
@@ -42,5 +38,4 @@ Documentation under `docs/` is synchronized to the project Wiki.
 - Workflow: `.github/workflows/docs-to-wiki.yml`
 - Generator: `.github/scripts/generate_wiki`
 
-Markdown files named `README.md` under `docs/` are excluded by the generator.
-Use `index.md` as the entry page for directories that must appear in the Wiki.
+Use `readme.md` as the entry page for directories that must appear in the Wiki.

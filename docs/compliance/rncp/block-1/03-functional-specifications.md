@@ -1,11 +1,8 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 16th March 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas TORO  
-> **Original language:** French  
-> **Status:** Final  
-> {.is-success}
+:::success
+**Version:** 1.0  
+**Original language:** French  
+DON'T EDIT THIS FILE !  
+:::
 
 ---
 
@@ -37,9 +34,9 @@ Décrire ce que la solution doit faire pour répondre au besoin métier et utili
 
 Sources utilisées :
 
-- `docs/10-product/prototype-pool/workshop/client-needs-and-functional-scope.md`
-- `docs/10-product/prototype-pool/workshop/tech-func-specs.md`
-- `docs/10-product/prototype-pool/workshop/context-audit-compliance.md`
+- `docs/product/prototype-pool/workshop/client-needs-and-functional-scope.md`
+- `docs/product/prototype-pool/workshop/tech-func-specs.md`
+- `docs/product/prototype-pool/workshop/context-audit-compliance.md`
 - `apps/server/src/inbound/http.rs`
 - `apps/ai/src/worker.py`
 
@@ -119,7 +116,7 @@ Exigences à intégrer dans la définition de “fonctionnalité terminée” :
 - Contraste texte/fond conforme au minimum WCAG 2.1 AA.
 - Restitution textuelle alternative des résultats visuels (graphes, overlay).
 
-Source d’alignement : `docs/10-product/prototype-pool/workshop/tech-func-specs.md` (section accessibilité).
+Source d’alignement : `docs/product/prototype-pool/workshop/tech-func-specs.md` (section accessibilité).
 
 ---
 
@@ -130,4 +127,4 @@ Source d’alignement : `docs/10-product/prototype-pool/workshop/tech-func-spec
 | Feedback technique objectif | Analyse asynchrone vidéo           | `apps/ai/src/worker.py`                                          |
 | Fluidité d’usage            | Upload direct via URL présignée    | `apps/server/src/inbound/http/handlers/video/get_upload_url.rs`  |
 | Visibilité utilisateur      | Statut/progress/résultat d’analyse | `apps/server/src/inbound/http/handlers/analysis/get_analysis.rs` |
-| Inclusion PSH               | Critères WCAG déclarés dans specs  | `docs/10-product/prototype-pool/workshop/tech-func-specs.md`     |
+| Inclusion PSH               | Critères WCAG déclarés dans specs  | `docs/product/prototype-pool/workshop/tech-func-specs.md`     |

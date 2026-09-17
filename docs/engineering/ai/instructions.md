@@ -1,11 +1,7 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 17th September 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas TORO  
-> **Original language:** English  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 1.0  
+**Original language:** English  
+:::
 
 ---
 
@@ -79,7 +75,7 @@ Examples of what to avoid by default:
 - Before implementing, identify if a repository guideline is relevant to the task.
 - Read only the guideline(s) needed for the current task, not all guidelines.
 - Example, if the task is Markdown-related, read:
-  - `docs/00-start-here/guidelines/markdown-guidelines.md`
+  - `docs/start-here/guidelines/markdown-guidelines.md`
 - Apply the same behavior for any other language/tool guideline: detect relevance, read, then apply.
 
 ---

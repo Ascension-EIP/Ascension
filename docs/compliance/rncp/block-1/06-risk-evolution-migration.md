@@ -1,11 +1,8 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 16th March 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas TORO  
-> **Original language:** French  
-> **Status:** Final  
-> {.is-success}
+:::success
+**Version:** 1.0  
+**Original language:** French  
+DON'T EDIT THIS FILE !  
+:::
 
 ---
 
@@ -37,8 +34,8 @@ Présenter une étude prospective réaliste sur les risques et les voies d’év
 
 Sources :
 
-- `docs/10-product/prototype-pool/workshop/impacts-risks.md`
-- `docs/10-product/prototype-pool/workshop/context-audit-compliance.md`
+- `docs/product/prototype-pool/workshop/impacts-risks.md`
+- `docs/product/prototype-pool/workshop/context-audit-compliance.md`
 - `apps/ai/src/worker.py`
 - `apps/server/src/inbound/http.rs`
 - `apps/server/migrations/*.sql`

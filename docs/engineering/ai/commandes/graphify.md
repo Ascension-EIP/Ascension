@@ -5,12 +5,10 @@ globs: ["*"]
 alwaysApply: false
 ---
 
-> **Last updated:** 3rd September 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas TORO  
-> **Original language:** French  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 1.0  
+**Original language:** French  
+:::
 
 ---
 

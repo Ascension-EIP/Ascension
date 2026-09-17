@@ -5,12 +5,10 @@ globs: ["*.md"]
 alwaysApply: false
 ---
 
-> **Last updated:** 3rd September 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas TORO  
-> **Original language:** English  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 1.1  
+**Original language:** English  
+:::
 
 ---
 
@@ -32,7 +30,7 @@ This document serves as an execution protocol for creating and maintaining Markd
 
 ## 1. Command Objective
 
-Ensure all Markdown files created or updated adhere strictly to the repository markdown guidelines (`docs/00-start-here/guidelines/markdown-guidelines.md`).
+Ensure all Markdown files created or updated adhere strictly to the repository markdown guidelines (`docs/start-here/guidelines/markdown-guidelines.md`).
 
 ---
 
@@ -40,14 +38,14 @@ Ensure all Markdown files created or updated adhere strictly to the repository m
 
 Before writing or editing any `.md` file, consult:
 ```
-docs/00-start-here/guidelines/markdown-guidelines.md
+docs/start-here/guidelines/markdown-guidelines.md
 ```
 
 ---
 
 ## 3. Mandatory Structure
 
-- **Header Block**: Every Markdown file must start with a metadata blockquote.
+- **Header Block**: Every Markdown file must start with a Densho metadata status container (`:::success`, `:::warning`, `:::danger`).
 - **Title & TOC**: Single `# Title` heading followed by a Table of Contents.
 - **Section Separators**: Horizontal rules (`---`) before every `##` heading.
 - **Kebab-Case Naming**: All markdown filenames must be lowercase kebab-case.

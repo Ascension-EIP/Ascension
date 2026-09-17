@@ -10,7 +10,7 @@ alwaysApply: false
 Before writing, editing, or improving **any** Markdown documentation, you MUST read the full project style guide:
 
 ```
-docs/00-start-here/guidelines/markdown-guidelines.md
+docs/start-here/guidelines/markdown-guidelines.md
 ```
 
 Do not skip this step, even if you think you already know the rules. The guidelines are the source of truth — if there is a conflict between your defaults and the guide, the guide wins.
@@ -21,21 +21,20 @@ Do not skip this step, even if you think you already know the rules. The guideli
 
 After reading the guidelines, verify every point below before outputting a file:
 
-- [ ] **Header block** — the file starts with the required blockquote header:
+- [ ] **Header block** — the file starts with the required Densho status container callout:
 
-  ```
-  <!-- markdownlint-disable MD041 -->
-
-  > **Last updated:** [Day] [Month] [Year]  
-  > **Version:** [X.X]  
-  > **Authors:** [Name]  
-  > **Original language:** [Language]  
-  > **Status:** [Status]  
-  > {.is-[status-color]}
+  ```markdown
+  :::status
+  **Version:** [X.X]  
+  **Original language:** [Language]  
+  :::
   ```
 
   Each line ends with **two trailing spaces** to produce a Markdown line break.  
-  Authorized statuses: `Final` (`{.is-success}`), `Done` (`{.is-success}`), `In progress` (`{.is-warning}`), `Todo` (`{.is-danger}`), `Need update` (`{.is-warning}`).
+  Authorized container statuses:
+  - `:::success` for completed (`Done`) documents, and frozen (`Final`) documents with `DON'T EDIT THIS FILE !` added after original language.
+  - `:::warning` for `In progress` or `Need update` documents.
+  - `:::danger` for `Todo` (planned) documents.
 
 - [ ] **Horizontal rule after header** — a `---` separator immediately follows the header block.
 
@@ -87,6 +86,5 @@ some-folder/
 
 ## When updating an existing file
 
-- Keep the original author(s) in the `Authors` field; add your own name only if you made substantial changes.
-- Update `Last updated` to today's date in the format `4th March 2026`.
 - Bump the patch version (e.g. `1.0` → `1.1`) for content changes, minor version for structural rewrites.
+- Adjust the status container type if the document lifecycle status changes (e.g. `:::warning` → `:::success`).

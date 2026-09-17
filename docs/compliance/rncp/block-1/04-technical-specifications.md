@@ -1,8 +1,8 @@
-> **Last updated:** 16th March 2026  
-> **Version:** 1.0  
-> **Authors:** Darius (Docs), Nicolas TORO  
-> **Status:** Final  
-> {.is-success}
+:::success
+**Version:** 1.0  
+**Original language:** French  
+DON'T EDIT THIS FILE !  
+:::
 
 ---
 
@@ -73,7 +73,7 @@ D’après `apps/server/src/inbound/http.rs` :
 - `GET /v1/analyses/{id}`
 - CRUD users sous `/v1/users/*`
 
-NB : ces routes sont la base technique démontrable pour le Bloc 1. Les routes métier plus larges documentées dans `docs/20-engineering/developer_guide/architecture/specifications/api-specification.md` relèvent en partie d’une cible produit étendue.
+NB : ces routes sont la base technique démontrable pour le Bloc 1. Les routes métier plus larges documentées dans `docs/engineering/developer_guide/architecture/specifications/api-specification.md` relèvent en partie d’une cible produit étendue.
 
 ---
 

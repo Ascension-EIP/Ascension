@@ -1,11 +1,8 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 16th February 2026  
-> **Version:** 1.1  
-> **Authors:** Lou PELLEGRINO, Gianni TUERO  
-> **Original language:** French  
-> **Status:** Final  
-> {.is-success}
+:::success
+**Version:** 1.1  
+**Original language:** French  
+DON'T EDIT THIS FILE !  
+:::
 
 ---
 

@@ -1,11 +1,8 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 16th March 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas TORO  
-> **Original language:** French  
-> **Status:** Final  
-> {.is-success}
+:::success
+**Version:** 1.0  
+**Original language:** French  
+DON'T EDIT THIS FILE !  
+:::
 
 ---
 
@@ -43,8 +40,8 @@ Périmètre audité :
 - `apps/ai/**`
 - `apps/mobile/**`
 - `docker-compose.yml`
-- `docs/10-product/prototype-pool/workshop/*`
-- `docs/20-engineering/developer_guide/architecture/specifications/*`
+- `docs/product/prototype-pool/workshop/*`
+- `docs/engineering/developer_guide/architecture/specifications/*`
 
 ---
 
@@ -120,7 +117,7 @@ Point de vigilance :
 
 État actuel observable :
 
-- Les exigences PSH sont bien documentées côté spécifications (`docs/10-product/prototype-pool/workshop/tech-func-specs.md`).
+- Les exigences PSH sont bien documentées côté spécifications (`docs/product/prototype-pool/workshop/tech-func-specs.md`).
 - Côté mobile (`apps/mobile/lib`), on observe des éléments favorables (thème cohérent, tooltips ponctuels), mais peu de traces explicites d’une stratégie accessibilité systématique (sémantique lecteur d’écran, check-list RGAA/WCAG outillée).
 
 Conclusion PSH audit :

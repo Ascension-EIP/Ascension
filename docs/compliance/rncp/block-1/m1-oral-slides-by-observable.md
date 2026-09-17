@@ -1,11 +1,8 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 18th March 2026  
-> **Version:** 1.1  
-> **Authors:** Nicolas TORO  
-> **Original language:** French  
-> **Status:** Final  
-> {.is-success}
+:::success
+**Version:** 1.1  
+**Original language:** French  
+DON'T EDIT THIS FILE !  
+:::
 
 ---
 
@@ -87,8 +84,8 @@ Style recommandé à l'oral:
 
 - **Compétence RNCP liée**: C1
 - **Titre de slide**: "O1 — Besoin utilisateur consolidé"
-- **Capture principale**: `docs/30-compliance/rncp/block-1/01-needs-analysis.md` (sections "Parties prenantes et besoins exprimés" + "Périmètre fonctionnel consolidé")
-- **Capture de renfort**: `docs/10-product/prototype-pool/workshop/client-needs-and-functional-scope.md` (personas + user stories + MoSCoW)
+- **Capture principale**: `docs/compliance/rncp/block-1/01-needs-analysis.md` (sections "Parties prenantes et besoins exprimés" + "Périmètre fonctionnel consolidé")
+- **Capture de renfort**: `docs/product/prototype-pool/workshop/client-needs-and-functional-scope.md` (personas + user stories + MoSCoW)
 
 > Justification
 > L'idée ici, c'est vraiment de prouver qu'on n'a pas foncé tête baissée dans la tech. On a pris le temps de confronter nos idées à de vrais profils. Cette slide montre au jury qu'on a fait des choix d'inclusion et de périmètre de manière très pragmatique, pour arriver à un MVP qui a du sens.
@@ -107,8 +104,8 @@ Style recommandé à l'oral:
 
 - **Compétence RNCP liée**: C1
 - **Titre de slide**: "O2 — PSH intégré dès l'analyse du besoin"
-- **Capture principale**: `docs/30-compliance/rncp/block-1/01-needs-analysis.md` (section "Exigences accessibilité (PSH)")
-- **Capture de renfort**: `docs/10-product/prototype-pool/workshop/tech-func-specs.md` (section "4.5 Accessibility (WCAG 2.1 AA)")
+- **Capture principale**: `docs/compliance/rncp/block-1/01-needs-analysis.md` (section "Exigences accessibilité (PSH)")
+- **Capture de renfort**: `docs/product/prototype-pool/workshop/tech-func-specs.md` (section "4.5 Accessibility (WCAG 2.1 AA)")
 
 > Justification
 > Le but de ce passage est de marquer des points sur notre vision de l'accessibilité. On veut montrer au jury qu'on ne l'a pas vue comme une corvée de fin de projet, mais bien comme un socle dès la conception. C'est une démarche par design, un choix de produit dès le premier jour.
@@ -127,7 +124,7 @@ Style recommandé à l'oral:
 
 - **Compétence RNCP liée**: C2
 - **Titre de slide**: "O3 — Audit de l'existant prouvé par artefacts"
-- **Capture principale**: `docs/30-compliance/rncp/block-1/02-current-state-audit.md` (sections "Audit technique", "Audit fonctionnel", "Audit sécurité")
+- **Capture principale**: `docs/compliance/rncp/block-1/02-current-state-audit.md` (sections "Audit technique", "Audit fonctionnel", "Audit sécurité")
 - **Capture de renfort**: `docker-compose.yml` + `apps/server/src/inbound/http.rs` + `apps/ai/src/worker.py`
 
 > Justification
@@ -147,8 +144,8 @@ Style recommandé à l'oral:
 
 - **Compétence RNCP liée**: C2
 - **Titre de slide**: "O4 — Méthode d'audit explicite et reproductible"
-- **Capture principale**: `docs/30-compliance/rncp/block-1/02-current-state-audit.md` (section "Méthodologie d'audit")
-- **Capture de renfort**: `docs/10-product/prototype-pool/workshop/context-audit-compliance.md` (section "1.3 Investigation Methodology")
+- **Capture principale**: `docs/compliance/rncp/block-1/02-current-state-audit.md` (section "Méthodologie d'audit")
+- **Capture de renfort**: `docs/product/prototype-pool/workshop/context-audit-compliance.md` (section "1.3 Investigation Methodology")
 
 > Justification
 > L'idée est de montrer qu'on ne fait pas les choses au feeling. Une méthodologie robuste, ça rassure énormément un jury. Il faut qu'ils se disent : "OK, c'est carré, si quelqu'un d'autre reprend le bébé, il saura refaire la même chose". C'est de la maturité pro.
@@ -167,8 +164,8 @@ Style recommandé à l'oral:
 
 - **Compétence RNCP liée**: C3
 - **Titre de slide**: "O5 — Spécifications fonctionnelles et techniques traçables"
-- **Capture principale**: `docs/30-compliance/rncp/block-1/03-functional-specifications.md` (table "Traçabilité besoins -> fonctions")
-- **Capture de renfort**: `docs/30-compliance/rncp/block-1/04-technical-specifications.md` (sections "Contrat API réellement exposé" + "Données et persistance")
+- **Capture principale**: `docs/compliance/rncp/block-1/03-functional-specifications.md` (table "Traçabilité besoins -> fonctions")
+- **Capture de renfort**: `docs/compliance/rncp/block-1/04-technical-specifications.md` (sections "Contrat API réellement exposé" + "Données et persistance")
 
 > Justification
 > Ici on s'attaque à la traçabilité. On veut éviter le cliché du développeur qui code des trucs qui n'ont rien à voir avec le besoin initial. Le jury doit voir le fil rouge : besoin => spec fonctionnelle => spec technique.
@@ -187,8 +184,8 @@ Style recommandé à l'oral:
 
 - **Compétence RNCP liée**: C3
 - **Titre de slide**: "O6 — Accessibilité transformée en exigences"
-- **Capture principale**: `docs/30-compliance/rncp/block-1/03-functional-specifications.md` (section "Exigences accessibilité (PSH)")
-- **Capture de renfort**: `docs/30-compliance/rncp/block-1/04-technical-specifications.md` (section "Exigences accessibilité techniques (PSH)")
+- **Capture principale**: `docs/compliance/rncp/block-1/03-functional-specifications.md` (section "Exigences accessibilité (PSH)")
+- **Capture de renfort**: `docs/compliance/rncp/block-1/04-technical-specifications.md` (section "Exigences accessibilité techniques (PSH)")
 
 > Justification
 > Suite logique de l'O2. On a dit que le PSH était important, maintenant on le prouve dans le dur. Ce ne sont pas juste de beaux principes, ce sont des tickets, des critères et de vraies contraintes dans la réalisation technique.
@@ -207,8 +204,8 @@ Style recommandé à l'oral:
 
 - **Compétence RNCP liée**: C2 + C3
 - **Titre de slide**: "O7 — Accessibilité du dossier et des supports"
-- **Capture principale**: `docs/30-compliance/rncp/block-1/m1-observables-evidence-matrix.md` (ligne O7: manque identifié)
-- **Capture de renfort**: `docs/30-compliance/rncp/block-1/02-current-state-audit.md` (section "Audit accessibilité (PSH)")
+- **Capture principale**: `docs/compliance/rncp/block-1/m1-observables-evidence-matrix.md` (ligne O7: manque identifié)
+- **Capture de renfort**: `docs/compliance/rncp/block-1/02-current-state-audit.md` (section "Audit accessibilité (PSH)")
 
 > Justification
 > La carte de l'honnêteté et de la maturité. Un pro sait dire "on n'est pas parfaits là-dessus, mais on a un plan pour y remédier". On montre qu'on pilote nos livrables.
@@ -227,8 +224,8 @@ Style recommandé à l'oral:
 
 - **Compétence RNCP liée**: C4
 - **Titre de slide**: "O8 — Analyse financière reliée à l'architecture"
-- **Capture principale**: `docs/30-compliance/rncp/block-1/05-benchmark-budget-scenarios.md` (section "Scénarios budgétaires")
-- **Capture de renfort**: `docs/10-product/prototype-pool/workshop/costs.md` (Executive Summary CAPEX/OPEX)
+- **Capture principale**: `docs/compliance/rncp/block-1/05-benchmark-budget-scenarios.md` (section "Scénarios budgétaires")
+- **Capture de renfort**: `docs/product/prototype-pool/workshop/costs.md` (Executive Summary CAPEX/OPEX)
 
 > Justification
 > Fini de rigoler, on parle d'argent. Mais on le fait de manière connectée au terrain. FinOps n'est pas un concept en l'air, c'est l'addition des briques qu'on a choisi d'allumer dans le cloud.
@@ -247,8 +244,8 @@ Style recommandé à l'oral:
 
 - **Compétence RNCP liée**: C4
 - **Titre de slide**: "O9 — Pilotage par scénarios budgétaires"
-- **Capture principale**: `docs/30-compliance/rncp/block-1/05-benchmark-budget-scenarios.md` (tableau MVP / Scale / Scale+)
-- **Capture de renfort**: `docs/10-product/prototype-pool/workshop/costs.md` + `docs/10-product/prototype-pool/workshop/impacts-risks.md`
+- **Capture principale**: `docs/compliance/rncp/block-1/05-benchmark-budget-scenarios.md` (tableau MVP / Scale / Scale+)
+- **Capture de renfort**: `docs/product/prototype-pool/workshop/costs.md` + `docs/product/prototype-pool/workshop/impacts-risks.md`
 
 > Justification
 > Le maître-mot ici, c'est l'anticipation. On ne donne pas un gros chiffre fixe qui sera faux dans 6 mois. On montre une capacité à piloter le risque financier au rythme de la croissance du projet.
@@ -267,8 +264,8 @@ Style recommandé à l'oral:
 
 - **Compétence RNCP liée**: C5
 - **Titre de slide**: "O10 — Feuille de route d'évolution et migration"
-- **Capture principale**: `docs/30-compliance/rncp/block-1/06-risk-evolution-migration.md` (sections "Stratégie d'évolution (24-36 mois)" + "Stratégie de migration technique")
-- **Capture de renfort**: `docs/10-product/prototype-pool/workshop/impacts-risks.md` (migration, SPOF, résilience)
+- **Capture principale**: `docs/compliance/rncp/block-1/06-risk-evolution-migration.md` (sections "Stratégie d'évolution (24-36 mois)" + "Stratégie de migration technique")
+- **Capture de renfort**: `docs/product/prototype-pool/workshop/impacts-risks.md` (migration, SPOF, résilience)
 
 > Justification
 > La preuve d'une vision long terme. C'est l'équivalent de l'échiquier : on ne se bat pas juste pour demain, on anticipe les 3 prochains coups pour la scalabilité et éviter l'effet "usine à gaz".
@@ -287,8 +284,8 @@ Style recommandé à l'oral:
 
 - **Compétence RNCP liée**: C5
 - **Titre de slide**: "O11 — Vulgariser la stratégie de risque et continuité"
-- **Capture principale**: `docs/30-compliance/rncp/block-1/06-risk-evolution-migration.md` (section "Vulgarisation orale (O11) — trame 90 secondes")
-- **Capture de renfort**: `docs/10-product/prototype-pool/workshop/impacts-risks.md` (mode dégradé, backup, SPOF)
+- **Capture principale**: `docs/compliance/rncp/block-1/06-risk-evolution-migration.md` (section "Vulgarisation orale (O11) — trame 90 secondes")
+- **Capture de renfort**: `docs/product/prototype-pool/workshop/impacts-risks.md` (mode dégradé, backup, SPOF)
 
 > Justification
 > La capacité ultime de l'architecte ou du tech lead : rendre le complexe évident. On doit prouver ici qu'on sait expliquer à n'importe qui (un comité de direction ou un décideur non-tech) pourquoi on s'est pété la figure, comment on relance la machine, et ce qu'on a préservé."

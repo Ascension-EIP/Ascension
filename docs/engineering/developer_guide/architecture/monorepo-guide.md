@@ -1,11 +1,7 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 10th September 2026  
-> **Version:** 2.5  
-> **Authors:** Gianni TUERO  
-> **Original language:** English  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 2.5  
+**Original language:** English  
+:::
 
 ---
 
@@ -528,8 +524,8 @@ moon toolchain --list
 
 - [moonrepo Documentation](https://moonrepo.dev/docs)
 - [moon CLI Reference](https://moonrepo.dev/docs/commands/overview)
-- [Deployment Guide](./deployment/README.md)
-- [Architecture Overview](./README.md)
+- [Deployment Guide](./deployment/development.md)
+- [Architecture Overview](./readme.md)
 
 ---
 

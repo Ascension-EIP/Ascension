@@ -1,11 +1,8 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 16th March 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas TORO  
-> **Original language:** French  
-> **Status:** Final  
-> {.is-success}
+:::success
+**Version:** 1.0  
+**Original language:** French  
+DON'T EDIT THIS FILE !  
+:::
 
 ---
 
@@ -44,12 +41,12 @@ Formaliser l’analyse des besoins pour la modalité M1 (Bloc 1 RNCP), en s’ap
 
 Sources principales exploitées :
 
-- `docs/30-compliance/rncp/block-1/besoin.md`
-- `docs/10-product/prototype-pool/workshop/client-needs-and-functional-scope.md`
-- `docs/10-product/prototype-pool/workshop/context-audit-compliance.md`
-- `docs/10-product/prototype-pool/workshop/tech-func-specs.md`
-- `docs/10-product/prototype-pool/workshop/presentation/oral_25-02_ppt_content.md`
-- `docs/50-resources/rncp/rncp.md`
+- `docs/compliance/rncp/block-1/besoin.md`
+- `docs/product/prototype-pool/workshop/client-needs-and-functional-scope.md`
+- `docs/product/prototype-pool/workshop/context-audit-compliance.md`
+- `docs/product/prototype-pool/workshop/tech-func-specs.md`
+- `docs/product/prototype-pool/workshop/presentation/oral_25-02_ppt_content.md`
+- `docs/resources/rncp/rncp.md`
 
 Ce document couvre le besoin client, le besoin utilisateur, la priorisation et l’intégration des exigences PSH attendues au Bloc 1.
 
@@ -59,9 +56,9 @@ Ce document couvre le besoin client, le besoin utilisateur, la priorisation et l
 
 Méthode retenue (déclarative + preuves repo) :
 
-1. **Analyse documentaire** des ateliers produit (`docs/10-product/prototype-pool/workshop/*`).
+1. **Analyse documentaire** des ateliers produit (`docs/product/prototype-pool/workshop/*`).
 2. **Consolidation des personas** et user stories depuis `client-needs-and-functional-scope.md`.
-3. **Rapprochement avec le cadrage RNCP** (`docs/50-resources/rncp/rncp.md`, observables O1/O2).
+3. **Rapprochement avec le cadrage RNCP** (`docs/resources/rncp/rncp.md`, observables O1/O2).
 4. **Validation de cohérence** avec les contraintes techniques et d’audit (`context-audit-compliance.md`).
 
 Limite assumée : les comptes-rendus d’entretiens terrain sont mentionnés dans la documentation atelier, mais ne sont pas archivés ici sous forme de verbatim brut.
@@ -119,8 +116,8 @@ Consolidation issue de `client-needs-and-functional-scope.md` et `tech-func-spec
 
 Exigences prises en compte dès la phase besoin (O2) via les documents ateliers :
 
-- Référence WCAG 2.1 AA dans `docs/10-product/prototype-pool/workshop/tech-func-specs.md`.
-- Cas d’usage PSH cités dans `docs/10-product/prototype-pool/workshop/presentation/oral_25-02_ppt_content.md`.
+- Référence WCAG 2.1 AA dans `docs/product/prototype-pool/workshop/tech-func-specs.md`.
+- Cas d’usage PSH cités dans `docs/product/prototype-pool/workshop/presentation/oral_25-02_ppt_content.md`.
 - Besoin de navigation compatible lecteur d’écran + lisibilité (contraste, taille d’actions).
 
 Décision de cadrage : l’accessibilité n’est pas un add-on de fin de projet, mais un critère d’acceptation fonctionnelle.

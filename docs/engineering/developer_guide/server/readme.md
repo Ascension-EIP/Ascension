@@ -1,11 +1,7 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 12th March 2026  
-> **Version:** 1.1  
-> **Authors:** Nicolas TORO  
-> **Original language:** English  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 1.1  
+**Original language:** English  
+:::
 
 ---
 
@@ -43,7 +39,7 @@ the [API routes reference](./api-routes.md) and the [Swagger UI guide](./swagger
 
 - **Go** (toolchain version `1.26.0` — download from go.dev or use proto)
 - **Docker** + **Docker Compose** — for PostgreSQL, RabbitMQ, MinIO locally
-- **moon** — monorepo task runner (see [Developer Quickstart](../README.md))
+- **moon** — monorepo task runner (see [Developer Quickstart](../readme.md))
 
 ---
 

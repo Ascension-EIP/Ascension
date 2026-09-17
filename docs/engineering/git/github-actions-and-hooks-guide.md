@@ -1,11 +1,7 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 6th September 2026  
-> **Version:** 1.2  
-> **Authors:** Nicolas TORO, Gianni TUERO  
-> **Original language:** English  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 1.2  
+**Original language:** English  
+:::
 
 ---
 

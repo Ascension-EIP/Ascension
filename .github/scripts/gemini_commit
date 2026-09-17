@@ -74,7 +74,7 @@ def get_standards_guide():
     repo_root = run_cmd(["git", "rev-parse", "--show-toplevel"])
     if not repo_root:
         return None
-    guide_path = os.path.join(repo_root, "docs/20-engineering/git/git-commit-standards-guide.md")
+    guide_path = os.path.join(repo_root, "docs/engineering/git/git-commit-standards-guide.md")
     if not os.path.exists(guide_path):
         return None
     try:

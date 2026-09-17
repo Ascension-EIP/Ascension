@@ -1,11 +1,7 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 9th March 2026  
-> **Version:** 1.2  
-> **Authors:** Nicolas TORO  
-> **Original language:** English  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 1.2  
+**Original language:** English  
+:::
 
 ---
 
@@ -132,7 +128,7 @@ We follow a dual-strategy for environment variables to balance local developer e
 
 ### Server (Go / Gin)
 
-- [Developer Guide](./server/README.md) — setup, env vars, moon tasks, Docker
+- [Developer Guide](./server/readme.md) — setup, env vars, moon tasks, Docker
 - [Architecture](./server/architecture.md) — hexagonal architecture, layers, request flow
 - [API Routes Reference](./server/api-routes.md) — all HTTP routes with examples
 - [How to Add a Route](./server/adding-a-route.md) — step-by-step guide
@@ -140,8 +136,8 @@ We follow a dual-strategy for environment variables to balance local developer e
 
 ### AI Worker (Python / MediaPipe)
 
-- [Developer Guide](./ai/README.md) — setup, pipelines, RabbitMQ, pose analysis
+- [Developer Guide](./ai/readme.md) — setup, pipelines, RabbitMQ, pose analysis
 
 ### Mobile (Flutter / Dart)
 
-- [Developer Guide](./mobile/README.md) — setup, screens, navigation, API integration
+- [Developer Guide](./mobile/readme.md) — setup, screens, navigation, API integration

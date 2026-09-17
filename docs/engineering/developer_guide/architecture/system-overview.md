@@ -1,11 +1,7 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 12th March 2026  
-> **Version:** 1.2  
-> **Authors:** Gianni TUERO  
-> **Original language:** English  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 1.2  
+**Original language:** English  
+:::
 
 ---
 
@@ -310,7 +306,7 @@ Each worker module:
 | `vision.ghost` | — | Planned |
 | `training.program` | — | Planned |
 
-See `docs/developer_guide/ai/README.md` for the full AI layer documentation.
+See `docs/engineering/developer_guide/ai/readme.md` for the full AI layer documentation.
 
 #### Typical Vision Pipeline Flow
 

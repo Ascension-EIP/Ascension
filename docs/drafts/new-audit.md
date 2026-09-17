@@ -1,11 +1,7 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 10th February 2026  
-> **Version:** 1.0  
-> **Authors:** Lou PELLEGRINO  
-> **Original language:** French  
-> **Status:** In progress  
-> {.is-warning}
+:::warning
+**Version:** 1.0  
+**Original language:** French  
+:::
 
 ---
 

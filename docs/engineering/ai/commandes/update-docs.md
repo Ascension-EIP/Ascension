@@ -5,18 +5,16 @@ globs: ["*.md"]
 alwaysApply: false
 ---
 
-> **Last updated:** 3rd September 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas TORO  
-> **Original language:** English  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 1.1  
+**Original language:** English  
+:::
 
 ---
 
 # AI Command: Update Documentation (`/update-docs`)
 
-Protocol for inspecting modified features, architecture, or APIs and updating all relevant documentation files accordingly.
+This document serves as an execution protocol for inspecting modified features, architecture, or APIs and updating all relevant documentation files accordingly.
 
 ---
 
@@ -39,5 +37,5 @@ Keep documentation in sync with codebase changes after implementing features, re
 
 1. Identify modified code files or features.
 2. Search `docs/` for relevant architecture, guide, or API documentation.
-3. Update metadata header dates and version numbers in modified `.md` files.
+3. Update metadata header version numbers and status container in modified `.md` files.
 4. Run `graphify update .` to ensure the knowledge graph reflects doc updates.

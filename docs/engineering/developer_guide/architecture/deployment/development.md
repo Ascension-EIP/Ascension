@@ -1,11 +1,7 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 11th March 2026  
-> **Version:** 2.2  
-> **Authors:** Gianni TUERO  
-> **Original language:** English  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 2.2  
+**Original language:** English  
+:::
 
 ---
 

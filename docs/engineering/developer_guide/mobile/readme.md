@@ -1,11 +1,7 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 9th March 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas TORO  
-> **Original language:** English  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 1.0  
+**Original language:** English  
+:::
 
 ---
 
@@ -107,7 +103,7 @@ apps/mobile/
 
 ## Running Locally
 
-Make sure the backend is running first (see the [server guide](../server/README.md)).
+Make sure the backend is running first (see the [server guide](../server/readme.md)).
 
 ```bash
 # Install dependencies

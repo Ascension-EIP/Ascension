@@ -1,28 +1,23 @@
-<!-- markdownlint-disable MD041 -->
-
-> **Last updated:** 16th March 2026  
-> **Version:** 1.1  
-> **Authors:** Nicolas TORO  
-> **Original language:** English  
-> **Status:** Done  
-> {.is-success}
+:::success
+**Version:** 1.2  
+**Original language:** English  
+:::
 
 ---
 
-# 90 — Drafts
+# Drafts
 
 ---
 
 ## Table of Contents
 
-- [90 — Drafts](#90--drafts)
+- [Drafts](#drafts)
   - [Working Drafts](#working-drafts)
 
 ---
 
 ## Working Drafts
 
-- [Block 1 Draft](./bloc-1.md)
 - [Issue Backlog Draft](./issues-to-create.md)
 - [New Audit Draft](./new-audit.md)
 - [Prototype Pool Draft](./pool-draft.md)
