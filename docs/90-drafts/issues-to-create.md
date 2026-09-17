@@ -1,6 +1,9 @@
+<!-- markdownlint-disable MD041 -->
+
 > **Last updated:** 20th April 2026  
 > **Version:** 2.0  
 > **Authors:** Nicolas TORO  
+> **Original language:** French  
 > **Status:** In progress  
 > {.is-warning}
 
@@ -26,6 +29,70 @@ Important:
 
 ---
 
+## Table of Contents
+
+- [Audit complet du backlog GitHub Issues (Ascension)](#audit-complet-du-backlog-github-issues-ascension)
+  - [Table of Contents](#table-of-contents)
+  - [1) Methode et constats](#1-methode-et-constats)
+  - [2) Actions sur les issues existantes](#2-actions-sur-les-issues-existantes)
+  - [2.1 A fermer rapidement](#21-a-fermer-rapidement)
+  - [2.2 A corriger avant fermeture](#22-a-corriger-avant-fermeture)
+  - [2.3 A re-scoper (contenu obsolete)](#23-a-re-scoper-contenu-obsolete)
+  - [2.4 A fusionner / fermer comme obsolete](#24-a-fusionner-fermer-comme-obsolete)
+  - [3) Nouvelles issues manquantes (hors migration Go)](#3-nouvelles-issues-manquantes-hors-migration-go)
+    - [NEW-01](#new-01)
+  - [Scope](#scope)
+  - [Definition of Done](#definition-of-done)
+    - [NEW-02](#new-02)
+  - [Scope](#scope)
+  - [Definition of Done](#definition-of-done)
+    - [NEW-03](#new-03)
+  - [Definition of Done](#definition-of-done)
+    - [NEW-04](#new-04)
+  - [Definition of Done](#definition-of-done)
+    - [NEW-05](#new-05)
+  - [Definition of Done](#definition-of-done)
+    - [NEW-06](#new-06)
+  - [Definition of Done](#definition-of-done)
+  - [4) Backlog complet de migration backend Rust -> Go](#4-backlog-complet-de-migration-backend-rust---go)
+    - [GO-EPIC-00](#go-epic-00)
+  - [Success Criteria](#success-criteria)
+    - [GO-01](#go-01)
+  - [Definition of Done](#definition-of-done)
+    - [GO-02](#go-02)
+  - [Definition of Done](#definition-of-done)
+    - [GO-03](#go-03)
+  - [Definition of Done](#definition-of-done)
+    - [GO-04](#go-04)
+  - [Definition of Done](#definition-of-done)
+    - [GO-05](#go-05)
+  - [Definition of Done](#definition-of-done)
+    - [GO-06](#go-06)
+  - [Definition of Done](#definition-of-done)
+    - [GO-07](#go-07)
+  - [Definition of Done](#definition-of-done)
+    - [GO-08](#go-08)
+  - [Definition of Done](#definition-of-done)
+    - [GO-09](#go-09)
+  - [Definition of Done](#definition-of-done)
+    - [GO-10](#go-10)
+  - [Definition of Done](#definition-of-done)
+    - [GO-11](#go-11)
+  - [Definition of Done](#definition-of-done)
+    - [GO-12](#go-12)
+  - [Definition of Done](#definition-of-done)
+    - [GO-13](#go-13)
+  - [Definition of Done](#definition-of-done)
+    - [GO-14](#go-14)
+  - [Definition of Done](#definition-of-done)
+    - [GO-15](#go-15)
+  - [Definition of Done](#definition-of-done)
+  - [5) Ordre d'execution recommande](#5-ordre-dexecution-recommande)
+  - [6) Commandes `gh` utiles (a executer manuellement)](#6-commandes-gh-utiles-a-executer-manuellement)
+  - [7) Validation finale attendue](#7-validation-finale-attendue)
+
+---
+
 ## 1) Methode et constats
 
 Sources utilisees:
@@ -46,6 +113,8 @@ Constats majeurs:
 
 ## 2) Actions sur les issues existantes
 
+---
+
 ## 2.1 A fermer rapidement
 
 1. `#31` - `SETUP: local development infrastructure with Docker Compose`  
@@ -53,6 +122,8 @@ Constats majeurs:
 
 2. `#142` - `MOBILE: Settings page`  
    Action: close (DoD completement coche)
+
+---
 
 ## 2.2 A corriger avant fermeture
 
@@ -74,6 +145,8 @@ Action:
 
 3. `#60` - `MOBILE: analysis result display screen`  
    Action: garder ouverte pour finaliser les items UI encore non coches (angles lisibles, feedback, empty states, navigation "Analyze again").
+
+---
 
 ## 2.3 A re-scoper (contenu obsolete)
 
@@ -117,6 +190,8 @@ Action:
 - references endpoints legacy `/api/...` -> `/v1/...`;
 - aligner les methodes avec `ApiService` actuel (`getUploadUrl`, `triggerAnalysis`, `getAnalysis`).
 
+---
+
 ## 2.4 A fusionner / fermer comme obsolete
 
 1. `#35` et `#42` (double intention "initialize Rust/Axum backend")  
@@ -146,11 +221,15 @@ Format: titre + labels + corps en anglais, directement reutilisable.
 
 Replace token persistence in mobile authentication from SharedPreferences to a secure storage mechanism (`flutter_secure_storage`) to prevent sensitive token leakage on rooted or compromised devices.
 
+---
+
 ## Scope
 
 - Store `access_token` and `refresh_token` in secure storage.
 - Keep non-sensitive profile values in SharedPreferences if needed.
 - Provide migration path for already logged-in users.
+
+---
 
 ## Definition of Done
 
@@ -171,11 +250,15 @@ Replace token persistence in mobile authentication from SharedPreferences to a s
 
 Wire JWT authentication middleware to all protected API routes and ensure role-based guards are effectively applied where required.
 
+---
+
 ## Scope
 
 - Define public routes (`/v1/auth/*`, health) vs protected routes.
 - Apply middleware at router level for protected groups.
 - Validate `Authorization: Bearer` and session cookie strategies.
+
+---
 
 ## Definition of Done
 
@@ -195,6 +278,8 @@ Wire JWT authentication middleware to all protected API routes and ensure role-b
 
 Add backend integration tests validating the critical API workflow: request upload URL -> trigger analysis -> poll analysis status/result.
 
+---
+
 ## Definition of Done
 
 - [ ] Integration tests run in CI.
@@ -212,6 +297,8 @@ Add backend integration tests validating the critical API workflow: request uplo
 **Description (EN):**
 
 Introduce unit tests for AI analysis output serialization and angle computation helpers to prevent silent schema regressions.
+
+---
 
 ## Definition of Done
 
@@ -231,6 +318,8 @@ Introduce unit tests for AI analysis output serialization and angle computation 
 
 Version the backend API contract and publish a canonical schema artifact used by mobile and QA to detect breaking changes early.
 
+---
+
 ## Definition of Done
 
 - [ ] A versioned API contract (OpenAPI or equivalent) is generated in CI.
@@ -248,6 +337,8 @@ Version the backend API contract and publish a canonical schema artifact used by
 **Description (EN):**
 
 Propagate a correlation ID through API requests, RabbitMQ jobs, AI processing logs, and database records to simplify production debugging.
+
+---
 
 ## Definition of Done
 
@@ -275,6 +366,8 @@ Principe:
 
 Plan and execute the migration of Ascension backend from Rust/Axum to Go while keeping API compatibility, production stability, and CI quality gates.
 
+---
+
 ## Success Criteria
 
 - [ ] Feature parity achieved for all mobile-consumed endpoints.
@@ -292,6 +385,8 @@ Plan and execute the migration of Ascension backend from Rust/Axum to Go while k
 **Description (EN):**
 
 Produce an ADR package for Go backend choices (router/framework, DB access strategy, migrations, configuration, logging, testing strategy).
+
+---
 
 ## Definition of Done
 
@@ -311,6 +406,8 @@ Produce an ADR package for Go backend choices (router/framework, DB access strat
 
 Create the initial Go backend workspace (`apps/server-go` or replacement strategy), including module setup, folder architecture, config loading, health endpoint, and local run command.
 
+---
+
 ## Definition of Done
 
 - [ ] Go service starts locally with one command.
@@ -328,6 +425,8 @@ Create the initial Go backend workspace (`apps/server-go` or replacement strateg
 **Description (EN):**
 
 Connect Go backend to PostgreSQL and ensure compatibility with existing schema and migration history.
+
+---
 
 ## Definition of Done
 
@@ -347,6 +446,8 @@ Connect Go backend to PostgreSQL and ensure compatibility with existing schema a
 
 Implement `/v1/auth/register`, `/v1/auth/login`, `/v1/auth/logout` with parity to current behavior and token semantics.
 
+---
+
 ## Definition of Done
 
 - [ ] Endpoint request/response contracts are backward-compatible.
@@ -364,6 +465,8 @@ Implement `/v1/auth/register`, `/v1/auth/login`, `/v1/auth/logout` with parity t
 **Description (EN):**
 
 Implement users CRUD endpoints with pagination and role constraints equivalent to existing backend behavior.
+
+---
 
 ## Definition of Done
 
@@ -383,6 +486,8 @@ Implement users CRUD endpoints with pagination and role constraints equivalent t
 
 Implement `POST /v1/videos/upload-url` with MinIO/S3 presign behavior compatible with mobile upload flow.
 
+---
+
 ## Definition of Done
 
 - [ ] Endpoint returns `video_id` + presigned URL.
@@ -400,6 +505,8 @@ Implement `POST /v1/videos/upload-url` with MinIO/S3 presign behavior compatible
 **Description (EN):**
 
 Implement `POST /v1/analyses` to create analysis records and publish analysis jobs to RabbitMQ using the agreed schema.
+
+---
 
 ## Definition of Done
 
@@ -419,6 +526,8 @@ Implement `POST /v1/analyses` to create analysis records and publish analysis jo
 
 Implement `GET /v1/analyses/{id}` with status/progress/result payload parity and null-safe behavior while analysis is in progress.
 
+---
+
 ## Definition of Done
 
 - [ ] Response fields match existing mobile usage.
@@ -436,6 +545,8 @@ Implement `GET /v1/analyses/{id}` with status/progress/result payload parity and
 **Description (EN):**
 
 Formalize whether the AI worker writes directly to DB, publishes completion events, or both; then implement the final strategy in Go backend integration.
+
+---
 
 ## Definition of Done
 
@@ -455,6 +566,8 @@ Formalize whether the AI worker writes directly to DB, publishes completion even
 
 Introduce observability primitives (structured logs, metrics export, trace context propagation) in the Go backend.
 
+---
+
 ## Definition of Done
 
 - [ ] Logs include request ID / correlation ID.
@@ -472,6 +585,8 @@ Introduce observability primitives (structured logs, metrics export, trace conte
 **Description (EN):**
 
 Set up a complete automated test strategy for Go backend including unit tests, integration tests against local infra, and contract tests against mobile expectations.
+
+---
 
 ## Definition of Done
 
@@ -491,6 +606,8 @@ Set up a complete automated test strategy for Go backend including unit tests, i
 
 Integrate Go backend into monorepo CI/CD workflows (lint, build, test, Docker image build, deployment hooks).
 
+---
+
 ## Definition of Done
 
 - [ ] Go backend jobs are added to CI.
@@ -508,6 +625,8 @@ Integrate Go backend into monorepo CI/CD workflows (lint, build, test, Docker im
 **Description (EN):**
 
 Run Rust and Go backends in parallel for parity checks on real/synthetic traffic before cutover.
+
+---
 
 ## Definition of Done
 
@@ -527,6 +646,8 @@ Run Rust and Go backends in parallel for parity checks on real/synthetic traffic
 
 Execute controlled switch from Rust backend to Go backend with rollback safety and incident runbook.
 
+---
+
 ## Definition of Done
 
 - [ ] Cutover checklist is validated.
@@ -544,6 +665,8 @@ Execute controlled switch from Rust backend to Go backend with rollback safety a
 **Description (EN):**
 
 After successful cutover, archive/remove obsolete Rust backend paths and update all documentation, diagrams, and onboarding guides to the Go stack.
+
+---
 
 ## Definition of Done
 

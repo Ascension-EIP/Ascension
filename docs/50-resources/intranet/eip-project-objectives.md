@@ -2,13 +2,16 @@
 
 > **Last updated:** 18th March 2026  
 > **Version:** 1.1  
-> **Authors:** Nicolas  
+> **Authors:** Nicolas TORO  
+> **Original language:** English  
 > **Status:** Done  
 > {.is-success}
 
 ---
 
 # EIP Project Objectives
+
+---
 
 ## Table of Contents
 
