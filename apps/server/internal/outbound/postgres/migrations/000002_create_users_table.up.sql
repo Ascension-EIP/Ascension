@@ -5,7 +5,9 @@ CREATE TABLE users (
 	password VARCHAR(64) NOT NULL,
 	role VARCHAR(32) NOT NULL DEFAULT 'user',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT chk_users_role CHECK (role IN ('user', 'admin'))
 );
 
 CREATE TRIGGER update_users_updated_at
