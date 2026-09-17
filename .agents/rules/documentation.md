@@ -1,1 +1,1 @@
-../../docs/20-engineering/ai/commandes/documentation.md
+../../docs/engineering/ai/commandes/documentation.md
