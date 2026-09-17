@@ -5,11 +5,12 @@ CREATE TABLE videos (
     status     VARCHAR(32) NOT NULL DEFAULT 'pending',
 	expires_at TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT chk_videos_status CHECK (status IN ('pending', 'completed'))
 );
 
 CREATE INDEX idx_videos_user_id  ON videos(user_id);
-CREATE INDEX idx_videos_status  ON videos(status);
 CREATE INDEX idx_videos_expires_at ON videos(expires_at);
 
 CREATE TRIGGER update_videos_updated_at
