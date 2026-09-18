@@ -10,4 +10,4 @@ order:
   - globale-architecture
 ---
 
-
+:::subpages cards 3
