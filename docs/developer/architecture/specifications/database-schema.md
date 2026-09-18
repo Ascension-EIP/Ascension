@@ -3,7 +3,7 @@ id: 2f73e756-4920-4208-ae1e-6928976f81ec
 ---
 
 :::success
-**Version:** 2.0
+**Version:** 2.1
 **Original language:** English
 :::
 
@@ -82,7 +82,7 @@ The current migrations in `apps/server/migrations/` implement only a subset of t
 | Naming              | `snake_case` for tables and columns. Tables are plural. Join tables are named after both sides (`ghost_holds`).                                    |
 | Closed value sets   | PostgreSQL `ENUM` types (never free `TEXT`). New values are added with `ALTER TYPE ... ADD VALUE`.                                                |
 | Units               | Encoded in the column name: `_ms`, `_cm`, `_kg`, `_bytes`, `_cents`, `_min`.                                                                      |
-| Object storage      | Only the `object_key` is stored. The bucket comes from the server configuration. The storage backend is S3-compatible (MinIO locally, S3 in prod). |
+| Object storage      | Only the `object_key` is stored. The bucket comes from the server configuration. The storage backend is Amazon S3.                                    |
 | Large AI payloads   | Stored as `JSONB` in PostgreSQL (`analyses.result`, `ghosts.path`). No secondary object storage for results.                                       |
 | Deletion            | Hard delete with `ON DELETE CASCADE`. Account deactivation is a status, not a deletion.                                                            |
 | Async job lifecycle | Every AI-processed entity (`analyses`, `ghosts`, `comparisons`) shares the `job_status` enum and the same columns (`status`, `progress`, `error`). |
@@ -388,14 +388,14 @@ CREATE TABLE tutorial_progress (
 
     PRIMARY KEY (user_id, tutorial_code),
     CONSTRAINT chk_tutorial_progress_completed
-        CHECK ((status = 'completed') = (completed_at IS NOT NULL))
+        CHECK (status <> 'completed' OR completed_at IS NOT NULL)
 );
 ```
 
 Business rules:
 
 - The first-launch onboarding is the tutorial with code `onboarding`. A user with no row for it is considered a new user.
-- Replaying a tutorial resets `status` to `in_progress` and `current_step` to `0`, but keeps `completed_at`.
+- Replaying a tutorial resets `status` to `in_progress` and `current_step` to `0`, but keeps `completed_at`. The check is one-way for that reason: a completed tutorial must have a date, a replayed one may keep it.
 
 ---
 
@@ -632,7 +632,7 @@ Business rules:
 
 ## 7. Routes, Holds and Ghost Mode
 
-Recommended split: the route photo is its own entity (`routes`), because it has a life independent of any video (F07 works without climbing). Holds belong to the route. A ghost is a computed path on a route for a given user morphology. A comparison joins a ghost with a video analysis (F05). All storage references are S3-compatible object keys; the backend (MinIO locally, S3 in production) is a configuration choice and never appears in the schema.
+Recommended split: the route photo is its own entity (`routes`), because it has a life independent of any video (F07 works without climbing). Holds belong to the route. A ghost is a computed path on a route for a given user morphology. A comparison joins a ghost with a video analysis (F05). All storage references are S3 object keys; the bucket is a configuration value and never appears in the schema.
 
 ### 7.1 `routes`
 
@@ -864,6 +864,7 @@ CREATE TABLE training_programs (
     CONSTRAINT uq_training_programs_goal_version UNIQUE (goal_id, version)
 );
 
+CREATE INDEX idx_training_programs_author_user_id ON training_programs(author_user_id);
 CREATE UNIQUE INDEX uq_training_programs_active ON training_programs(goal_id) WHERE status = 'active';
 ```
 
@@ -950,6 +951,7 @@ CREATE TABLE training_logs (
 
 CREATE INDEX idx_training_logs_user_performed ON training_logs(user_id, performed_on DESC);
 CREATE INDEX idx_training_logs_program_session_id ON training_logs(program_session_id);
+CREATE INDEX idx_training_logs_climbing_session_id ON training_logs(climbing_session_id);
 ```
 
 Business rules:
@@ -1117,6 +1119,7 @@ CREATE TABLE subscription_events (
 
 CREATE INDEX idx_subscription_events_user_occurred ON subscription_events(user_id, occurred_at DESC);
 CREATE INDEX idx_subscription_events_type_occurred ON subscription_events(type, occurred_at DESC);
+CREATE INDEX idx_subscription_events_subscription_id ON subscription_events(subscription_id);
 ```
 
 Business rules:
@@ -1181,7 +1184,7 @@ SELECT cron.schedule('clean-old-quota-usages', '0 3 1 * *', $$
 $$);
 ```
 
-Storage objects are not deleted by pg_cron. A bucket lifecycle rule (S3 and MinIO both support it) expires objects whose key matches a deleted row, or the Go server runs a reconciliation job that lists object keys absent from `videos` and `routes` and removes them.
+Storage objects are not deleted by pg_cron. An S3 bucket lifecycle rule expires objects whose key matches a deleted row, or the Go server runs a reconciliation job that lists object keys absent from `videos` and `routes` and removes them.
 
 ---
 
