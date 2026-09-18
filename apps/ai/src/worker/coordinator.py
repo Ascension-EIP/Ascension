@@ -68,6 +68,7 @@ class JobCoordinator:
 
             # 2. Open DB connection for real-time progress
             db_conn = self.db_repo.get_connection()
+            self.db_repo.mark_processing(db_conn, job.analysis_id)
 
             def on_progress(pct: int) -> None:
                 self.db_repo.update_progress(db_conn, job.analysis_id, pct)
