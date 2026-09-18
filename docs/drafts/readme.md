@@ -22,6 +22,6 @@ id: 75e79e19-461c-407b-8538-3c2bedafcf44
 
 ## Working Drafts
 
-- [Issue Backlog Draft](../OLD/drafts/issues-to-create.md)
-- [New Audit Draft](../OLD/drafts/new-audit.md)
-- [Prototype Pool Draft](../OLD/drafts/pool-draft.md)
+- [Issue Backlog Draft](issues-to-create.md)
+- [New Audit Draft](new-audit.md)
+- [Prototype Pool Draft](pool-draft.md)
