@@ -1,5 +1,27 @@
 ---
-id: e395884a-d848-40dd-9313-6d25e3f9f15f
+id: 75e79e19-461c-407b-8538-3c2bedafcf44
 ---
 
+:::success
+**Version:** 1.2\
+**Original language:** English
+:::
 
+---
+
+# Drafts
+
+---
+
+## Table of Contents
+
+- [Drafts](#drafts)
+  - [Working Drafts](#working-drafts)
+
+---
+
+## Working Drafts
+
+- [Issue Backlog Draft](../OLD/drafts/issues-to-create.md)
+- [New Audit Draft](../OLD/drafts/new-audit.md)
+- [Prototype Pool Draft](../OLD/drafts/pool-draft.md)
