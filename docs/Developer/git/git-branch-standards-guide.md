@@ -3,7 +3,7 @@ id: 9b271905-f546-48ec-9d1f-63ca9c6d45ba
 ---
 
 :::success
-**Version:** 1.1
+**Version:** 1.1\
 **Original language:** English
 :::
 
@@ -11,7 +11,7 @@ id: 9b271905-f546-48ec-9d1f-63ca9c6d45ba
 
 # Git Branch Standards Guide
 
-This document defines the standards to follow when creating, using, and merging branches in our project.
+This document defines the standards to follow when creating, using, and merging branches in our project.\
 Good branch conventions improve collaboration, prevent conflicts, and ensure a clean Git history.
 
 ---
@@ -39,21 +39,21 @@ Good branch conventions improve collaboration, prevent conflicts, and ensure a c
   - `description` must be kebab-case and must not be empty
 - **Special branches**: `main` and `dev` exist but are protected, do not push or commit directly to them.
 
-Important: branch names are validated by the script `.github/scripts/check_branch`.
+Important: branch names are validated by the script `.github/scripts/check_branch`.\
 If the name does not match the required format, CI (GitHub Actions) will fail and/or local hooks can block the push.
 
 ### 1.1 Allowed examples
 
-✅ `feat/add-login-flow`
-✅ `fix/login-typo`
-✅ `docs/api-spec`
+✅ `feat/add-login-flow`\
+✅ `fix/login-typo`\
+✅ `docs/api-spec`\
 ✅ `chore/update-dependencies`
 
 ### 1.2 Disallowed examples
 
-❌ `userAuth` (not kebab-case and missing type)
-❌ `feature-for-user-authentication` (missing type prefix)
-❌ `fix the issue with login` (full sentence / spaces)
+❌ `userAuth` (not kebab-case and missing type)\
+❌ `feature-for-user-authentication` (missing type prefix)\
+❌ `fix the issue with login` (full sentence / spaces)\
 ❌ `feat/InvalidCase` (contains uppercase)
 
 ---
