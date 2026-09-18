@@ -11,7 +11,7 @@ id: 693f55bc-a889-46d1-95bc-8aff6475c030
 
 # Server — Developer Guide
 
-This guide covers everything a new developer needs to start working on the Ascension backend server. It complements the [architecture overview](../../../../Developer/apps/server/architecture.md) and the [API routes reference](../../../../Developer/apps/server/api-routes.md) and the [Swagger UI guide](../../../../Developer/apps/server/swagger.md).
+This guide covers everything a new developer needs to start working on the Ascension backend server. It complements the [architecture overview](architecture.md) and the [API routes reference](api-routes.md) and the [Swagger UI guide](swagger.md).
 
 ---
 
@@ -80,7 +80,7 @@ apps/server/
     └── setup/          # Configuration and logger setup
 ```
 
-For a deeper explanation of each layer, read the [architecture overview](../../../../Developer/apps/server/architecture.md).
+For a deeper explanation of each layer, read the [architecture overview](architecture.md).
 
 ---
 

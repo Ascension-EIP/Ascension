@@ -105,7 +105,7 @@ apps/mobile/
 
 ## Running Locally
 
-Make sure the backend is running first (see the [server guide](../../../../Developer/apps/server/readme.md)).
+Make sure the backend is running first (see the [server guide](../server/readme.md)).
 
 ```bash
 # Install dependencies

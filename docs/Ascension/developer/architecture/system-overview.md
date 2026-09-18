@@ -707,7 +707,7 @@ We migrated the API Gateway server from Rust (Axum) to Go (Gin) for several reas
 
 ## Next Steps
 
-1. Read [Development Deployment](../../../Developer/architecture%20%282%29/deployment/development.md) to set up local environment
+1. Read [Development Deployment](../architecture%20%282%29/deployment/development.md) to set up local environment
 2. Review [API Gateway Documentation](./components/api-gateway.md) for implementation details
 3. Understand [Video Analysis Workflow](./workflows/video-analysis-flow.md) for the complete flow
 

@@ -89,18 +89,18 @@ Before diving into implementation, review these key documents:
    - Why Go for API, Flutter for mobile, Python for AI
    - Performance benchmarks and cost analysis
    - Decision framework and evaluation criteria
-2. [System Overview](../../../Developer/architecture/system-overview.md) - High-level design philosophy
+2. [System Overview](system-overview.md) - High-level design philosophy
    - Event-driven architecture patterns
    - CQRS implementation
    - Scaling strategy and performance targets
 
 ### 📊 Part 2: Data & API Modeling
 
-3. [Database Schema & ERD](../../../Developer/architecture%20%282%29/specifications/database-schema.md) - Complete data model
+3. [Database Schema & ERD](../architecture%20%282%29/specifications/database-schema.md) - Complete data model
    - Entity-Relationship Diagram (Mermaid)
    - PostgreSQL schema with triggers and indexes
    - Sample queries and migration strategy
-4. [API Specification](../../../Developer/architecture/specifications/api-specification.md) - OpenAPI 3.0 documentation
+4. [API Specification](specifications/api-specification.md) - OpenAPI 3.0 documentation
    - REST endpoints with request/response examples
    - WebSocket protocol for real-time updates
    - Authentication flows and error codes
@@ -337,28 +337,28 @@ Ascension/                      # Monorepo root
 **Recommended Reading Order**:
 
 1. [**Architecture Decision Record**](./adr/tech-stack-decision.md) - Understand WHY we chose each technology
-2. [System Overview](../../../Developer/architecture/system-overview.md) - Understand HOW the system works
-3. [Database Schema](../../../Developer/architecture%20%282%29/specifications/database-schema.md) - Understand WHAT data we store
-4. [API Specification](../../../Developer/architecture/specifications/api-specification.md) - Understand the API CONTRACT
+2. [System Overview](system-overview.md) - Understand HOW the system works
+3. [Database Schema](../architecture%20%282%29/specifications/database-schema.md) - Understand WHAT data we store
+4. [API Specification](specifications/api-specification.md) - Understand the API CONTRACT
 5. [**Video Analysis Flow**](./workflows/video-analysis-flow.md) - Understand the CORE FEATURE
-6. [Development Deployment](../../../Developer/architecture%20%282%29/deployment/development.md) - SET UP your local environment
+6. [Development Deployment](../architecture%20%282%29/deployment/development.md) - SET UP your local environment
 
 ### For Architects & Tech Leads
 
 **Quick Reference**:
 
 - 📐 **C4 Model Diagram**: See "Architecture Components" section above
-- 🗄️ **ERD Diagram**: [Database Schema](../../../Developer/architecture%20%282%29/specifications/database-schema.md)
-- 📡 **API Contract**: [OpenAPI 3.0 Spec](../../../Developer/architecture/specifications/api-specification.md)
+- 🗄️ **ERD Diagram**: [Database Schema](../architecture%20%282%29/specifications/database-schema.md)
+- 📡 **API Contract**: [OpenAPI 3.0 Spec](specifications/api-specification.md)
 - 🎯 **Tech Justifications**: [ADR](./adr/tech-stack-decision.md#technology-decisions)
-- 📊 **Performance Targets**: [System Overview - SLAs](../../../Developer/architecture/system-overview.md)
+- 📊 **Performance Targets**: [System Overview - SLAs](system-overview.md)
 
 ### Quick Links
 
 - **Architecture Questions?** → [Tech Stack Decision Record](./adr/tech-stack-decision.md)
-- **Need API docs?** → [API Specification](../../../Developer/architecture/specifications/api-specification.md)
-- **Database queries?** → [Database Schema](../../../Developer/architecture%20%282%29/specifications/database-schema.md)
-- **Setup local env?** → [Development Deployment](../../../Developer/architecture%20%282%29/deployment/development.md)
+- **Need API docs?** → [API Specification](specifications/api-specification.md)
+- **Database queries?** → [Database Schema](../architecture%20%282%29/specifications/database-schema.md)
+- **Setup local env?** → [Development Deployment](../architecture%20%282%29/deployment/development.md)
 
 ---
 
