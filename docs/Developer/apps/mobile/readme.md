@@ -3,7 +3,7 @@ id: 5da83c2d-e8a1-41b0-a989-d2652ca1923d
 ---
 
 :::success
-**Version:** 1.0
+**Version:** 1.0\
 **Original language:** English
 :::
 
@@ -105,7 +105,7 @@ apps/mobile/
 
 ## Running Locally
 
-Make sure the backend is running first (see the [server guide](../server/readme.md)).
+Make sure the backend is running first (see the [server guide](../../../developer/apps/server/readme.md)).
 
 ```bash
 # Install dependencies
