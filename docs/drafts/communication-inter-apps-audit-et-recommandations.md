@@ -1,10 +1,9 @@
 ---
-id: 1ba1107b-2df5-46bc-9245-0b250da2f631
+id: 93e14cb5-847c-4334-abb6-9571387df2df
 ---
 
 :::success
-**Version:** 1.0
-**Original language:** French
+**Version:** 1.0 **Original language:** French
 :::
 
 ---
