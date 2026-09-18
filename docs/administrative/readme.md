@@ -11,6 +11,7 @@ order:
   - rncp
   - prototype-pool
   - accessibility-compliance
+  - folder-files
 ---
 
 

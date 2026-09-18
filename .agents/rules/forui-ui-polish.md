@@ -1,1 +1,1 @@
-../../docs/engineering/ai/commandes/forui-ui-polish.md
+../commands/forui-ui-polish.md

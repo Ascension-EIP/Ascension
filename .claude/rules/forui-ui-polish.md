@@ -1,0 +1,1 @@
+../../.agents/rules/forui-ui-polish.md
