@@ -6,6 +6,7 @@ order:
   - specifications
   - monorepo-guide
   - system-overview
+  - audits
 ---
 
 :::success

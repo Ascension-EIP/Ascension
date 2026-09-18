@@ -8,9 +8,6 @@ order:
   - agents
   - architecture
   - apps
-  - agents (2)
-  - apps (2)
-  - architecture (2)
 ---
 
 Ceci est la page de présentation de la documentation developer
