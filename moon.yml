@@ -6,10 +6,18 @@ tasks:
       if [ -z "$GITHUB_ACTIONS" ] && [ -z "$CI" ]; then
         go -C apps/server run ./cmd/migrate
       fi
+    inputs:
+      - "apps/server/migrations/**/*"
+    options:
+      envFile: true
+      outputStyle: "buffer-only-failure"
+
+
+  update:
+    command: "python3"
+    args: ["scripts/update_moon.py"]
     options:
       cache: false
-      envFile: true
-
 
   db-up:
     command: "docker"
@@ -49,6 +57,8 @@ tasks:
       - "**/*.dart"
       - "**/*.py"
       - "scripts/manage_headers.py"
+    options:
+      outputStyle: "buffer-only-failure"
 
   sonar-up:
     command: "docker"
@@ -88,6 +98,14 @@ tasks:
 
   commit:
     command: "./.github/scripts/gemini_commit"
+    options:
+      cache: false
+      envFile: true
+      interactive: true
+
+  stand-up:
+    command: "python3"
+    args: ["scripts/stand_up.py"]
     options:
       cache: false
       envFile: true

@@ -1,0 +1,25 @@
+---
+id: 38883df7-d2e6-4a6e-be14-ccf8d3de5c26
+---
+
+:::success
+**Version:** 1.0
+**Original language:** French
+DON'T EDIT THIS FILE !
+:::
+
+---
+
+- Mettre les sources des chiffres
+- User story trop courte (faut pas trop d'éléments, plus grand, plus détaillé et dans le github project
+- Qu'est ce qu'on présent dans 2 semaine (faut augmenter le tableau et rajouter un coline)
+- Noter les données qu'on va stocker
+- Légal contraint a refaire
+- Faire un niveau par membre
+- Global system, c'est moche
+- Mettre les 3 scénario pour le capex opex
+- Y'a un tableau a refaire des trucs à clean
+- Plus de details sur geen it
+- Disponibilités cible inutile
+- La slide est horrible
+- Faut un backup stratégie, un plan B
