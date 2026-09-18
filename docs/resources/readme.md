@@ -7,6 +7,7 @@ order:
   - audio
   - deck
   - follow-up
+  - images
 ---
 
 :::success
