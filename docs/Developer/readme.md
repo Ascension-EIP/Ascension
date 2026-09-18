@@ -6,6 +6,8 @@ order:
   - guidelines
   - git
   - agents
+  - architecture
+  - apps
 ---
 
 

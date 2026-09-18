@@ -22,5 +22,5 @@ id: ad5d8dc0-4b6d-4b0f-a538-c7796f3dca32
 
 ## Core References
 
-- [Project Glossary](start-here/glossary.md)
-- [Markdown Guidelines](start-here/guidelines/markdown-guidelines.md)
+- [Project Glossary](Developer/glossary.md)
+- [Markdown Guidelines](Developer/guidelines/markdown-guidelines.md)

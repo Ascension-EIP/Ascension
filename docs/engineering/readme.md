@@ -36,9 +36,9 @@ id: 9881e700-91b2-46fe-a7a0-1c2d1065308e
 
 ## Engineering Standards
 
-- [Git Commit Standards](git/git-commit-standards-guide.md)
-- [Git Branch Standards](git/git-branch-standards-guide.md)
-- [GitHub Actions and Hooks](git/github-actions-and-hooks-guide.md)
-- [GitHub Issue Standards](git/github-issue-standards-guide.md)
-- [AI Pre-prompt (EN)](ai/pre-prompt-en.md)
-- [AI Pre-prompt (FR)](ai/pre-prompt-fr.md)
+- [Git Commit Standards](../Developer/git/git-commit-standards-guide.md)
+- [Git Branch Standards](../Developer/git/git-branch-standards-guide.md)
+- [GitHub Actions and Hooks](../Developer/git/github-actions-and-hooks-guide.md)
+- [GitHub Issue Standards](../Developer/git/github-issue-standards-guide.md)
+- [AI Pre-prompt (EN)](../Developer/agents/pre-prompt-en.md)
+- [AI Pre-prompt (FR)](../Developer/agents/pre-prompt-fr.md)
