@@ -96,7 +96,7 @@ Before diving into implementation, review these key documents:
 
 ### 📊 Part 2: Data & API Modeling
 
-3. [Database Schema & ERD](specifications/database-schema.md) - Complete data model
+3. [Database Schema & ERD](../architecture%20%282%29/specifications/database-schema.md) - Complete data model
    - Entity-Relationship Diagram (Mermaid)
    - PostgreSQL schema with triggers and indexes
    - Sample queries and migration strategy
@@ -338,7 +338,7 @@ Ascension/                      # Monorepo root
 
 1. [**Architecture Decision Record**](./adr/tech-stack-decision.md) - Understand WHY we chose each technology
 2. [System Overview](system-overview.md) - Understand HOW the system works
-3. [Database Schema](specifications/database-schema.md) - Understand WHAT data we store
+3. [Database Schema](../architecture%20%282%29/specifications/database-schema.md) - Understand WHAT data we store
 4. [API Specification](../../developer/architecture/specifications/api-specification.md) - Understand the API CONTRACT
 5. [**Video Analysis Flow**](./workflows/video-analysis-flow.md) - Understand the CORE FEATURE
 6. [Development Deployment](../architecture%20%282%29/deployment/development.md) - SET UP your local environment
@@ -348,7 +348,7 @@ Ascension/                      # Monorepo root
 **Quick Reference**:
 
 - 📐 **C4 Model Diagram**: See "Architecture Components" section above
-- 🗄️ **ERD Diagram**: [Database Schema](specifications/database-schema.md)
+- 🗄️ **ERD Diagram**: [Database Schema](../architecture%20%282%29/specifications/database-schema.md)
 - 📡 **API Contract**: [OpenAPI 3.0 Spec](../../developer/architecture/specifications/api-specification.md)
 - 🎯 **Tech Justifications**: [ADR](./adr/tech-stack-decision.md#technology-decisions)
 - 📊 **Performance Targets**: [System Overview - SLAs](system-overview.md)
@@ -357,7 +357,7 @@ Ascension/                      # Monorepo root
 
 - **Architecture Questions?** → [Tech Stack Decision Record](./adr/tech-stack-decision.md)
 - **Need API docs?** → [API Specification](../../developer/architecture/specifications/api-specification.md)
-- **Database queries?** → [Database Schema](specifications/database-schema.md)
+- **Database queries?** → [Database Schema](../architecture%20%282%29/specifications/database-schema.md)
 - **Setup local env?** → [Development Deployment](../architecture%20%282%29/deployment/development.md)
 
 ---
