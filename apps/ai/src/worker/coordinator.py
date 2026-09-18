@@ -1,8 +1,8 @@
-# @date 2026-09-06
+# @date 2026-09-18
 # @file coordinator.py
 # @brief Job coordinator orchestrating storage, AI pipelines, database, and messaging.
 # @project Ascension
-# @author Nicolas TORO <nicolas.toro@epitech.eu>
+# @author Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
 """Job coordinator connecting backend infrastructure to AI pipelines."""

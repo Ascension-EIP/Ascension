@@ -1,8 +1,8 @@
-// @date 2026-09-06
+// @date 2026-09-18
 // @file video.go
 // @brief PostgreSQL repository implementation for videos.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package postgres
