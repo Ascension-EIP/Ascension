@@ -11,7 +11,9 @@ id: ff864812-b4c3-4506-bb44-acefe8422a84
 
 # Swagger / OpenAPI
 
-> **Migration Status:** The Ascension backend was migrated from Rust to Go. The automatic OpenAPI documentation via `utoipa` is a feature of the legacy Rust backend and is currently **planned but not yet active** on the Go/Gin backend server. This document serves as a reference of the previous Rust implementation and the planned Go swagger documentation.
+:::info
+**Migration Status:** The Ascension backend was migrated from Rust to Go. The automatic OpenAPI documentation via `utoipa` is a feature of the legacy Rust backend and is currently **planned but not yet active** on the Go/Gin backend server. This document serves as a reference of the previous Rust implementation and the planned Go swagger documentation.
+:::
 
 This document explains how to access the interactive API documentation (Swagger UI) for the Ascension backend, and how to keep the spec up-to-date when adding new routes.
 
