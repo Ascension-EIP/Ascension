@@ -1,8 +1,8 @@
-# @date 2026-09-06
+# @date 2026-09-18
 # @file database.py
 # @brief PostgreSQL repository for saving analyses results and progress.
 # @project Ascension
-# @author Nicolas TORO <nicolas.toro@epitech.eu>
+# @author Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
 """PostgreSQL repository for analyses."""
@@ -55,6 +55,25 @@ class AnalysisRepository:
             conn.rollback()
             raise DatabaseError(f"Failed to update analysis status to {status}: {e}") from e
 
+    def mark_processing(self, conn: PgConnection, analysis_id: str) -> None:
+        """Mark the analysis as picked up by a worker."""
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE analyses
+                       SET status     = 'processing',
+                           started_at = NOW(),
+                           updated_at = NOW()
+                     WHERE id = %s
+                    """,
+                    (analysis_id,),
+                )
+            conn.commit()
+        except psycopg2.Error as e:
+            conn.rollback()
+            raise DatabaseError(f"Failed to mark analysis {analysis_id} as processing: {e}") from e
+
     def update_progress(self, conn: PgConnection, analysis_id: str, progress: int) -> None:
         """Update analysis real-time progress (0–99)."""
         try:
@@ -76,24 +95,31 @@ class AnalysisRepository:
         processing_time: int,
         hints: str | None = None,
     ) -> None:
-        """Save successful analysis completion."""
+        """Save successful analysis completion.
+
+        Hints are stored as structured JSON. Free-text advice from the current
+        generators becomes the summary until they return structured items.
+        """
+        hints_json = (
+            json.dumps({"summary": hints, "items": []}) if hints else None
+        )
         try:
             with conn.cursor() as cur:
                 cur.execute(
                     """
                     UPDATE analyses
                        SET status          = 'completed',
-                           result          = %s,
-                           hints           = %s,
-                           processing_time = %s,
-                           completed_at    = %s,
+                           result             = %s,
+                           hints              = %s,
+                           processing_time_ms = %s,
+                           completed_at       = %s,
                            progress        = 100,
                            updated_at      = NOW()
                      WHERE id = %s
                     """,
                     (
                         json.dumps(result),
-                        hints,
+                        hints_json,
                         processing_time,
                         datetime.now(timezone.utc),
                         analysis_id,
@@ -122,7 +148,7 @@ class AnalysisRepository:
                            updated_at = NOW()
                      WHERE id = %s
                     """,
-                    (error, analysis_id),
+                    (error or "Unknown error", analysis_id),
                 )
             conn.commit()
             logger.info("Marked analysis %s as failed in PostgreSQL", analysis_id)

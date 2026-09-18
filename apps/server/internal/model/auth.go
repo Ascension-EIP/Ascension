@@ -1,8 +1,8 @@
-// @date 2026-03-19
+// @date 2026-09-18
 // @file auth.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package model
@@ -14,16 +14,20 @@ import (
 )
 
 type SignupForm struct {
-	Name     string
-	Email    string
-	Password []byte
+	Username  string
+	FirstName string
+	LastName  string
+	Email     string
+	Password  []byte
 }
 
 type SignupLoginForm struct {
-	Name     string
-	Email    string
-	Password []byte
-	Remember bool
+	Username  string
+	FirstName string
+	LastName  string
+	Email     string
+	Password  []byte
+	Remember  bool
 }
 
 type LoginForm struct {
@@ -33,7 +37,7 @@ type LoginForm struct {
 }
 
 type Tokens struct {
-	RefreshToken uuid.UUID
+	RefreshToken string
 	AccessToken
 }
 
@@ -45,12 +49,18 @@ type AccessToken struct {
 
 type NewSession struct {
 	UserID    uuid.UUID
+	TokenHash string
 	ExpiresAt time.Time
 }
 
 type Session struct {
-	ID        uuid.UUID
-	UserID    uuid.UUID
-	ExpiresAt time.Time
-	CreatedAt time.Time
+	ID         uuid.UUID
+	UserID     uuid.UUID
+	TokenHash  string
+	UserAgent  *string
+	IPAddress  *string
+	LastUsedAt time.Time
+	RevokedAt  *time.Time
+	ExpiresAt  time.Time
+	CreatedAt  time.Time
 }

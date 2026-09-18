@@ -1,8 +1,8 @@
-// @date 2026-03-16
+// @date 2026-09-18
 // @file auth.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package postgres
@@ -24,8 +24,8 @@ func (r *PostgresRepository) CreateSession(ctx context.Context, newSession *mode
 	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx,
-		"INSERT INTO sessions (user_id, expires_at) VALUES ($1, $2) RETURNING *",
-		newSession.UserID, newSession.ExpiresAt)
+		"INSERT INTO sessions (user_id, token_hash, expires_at) VALUES ($1, $2, $3) RETURNING *",
+		newSession.UserID, newSession.TokenHash, newSession.ExpiresAt)
 	if err != nil {
 		return nil, err
 	}
@@ -38,16 +38,23 @@ func (r *PostgresRepository) CreateSession(ctx context.Context, newSession *mode
 	return session.ToSession(), nil
 }
 
-func (r *PostgresRepository) GetUserByUnexpiredSessionID(ctx context.Context, sessionID uuid.UUID) (*model.User, error) {
+func (r *PostgresRepository) GetUserByValidSessionTokenHash(ctx context.Context, tokenHash string) (*model.User, error) {
 	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx, `
+			WITH used AS (
+				UPDATE sessions
+				   SET last_used_at = NOW()
+				 WHERE token_hash = $1
+				   AND revoked_at IS NULL
+				   AND expires_at > NOW()
+				RETURNING user_id
+			)
 			SELECT u.*
-			FROM sessions s
+			FROM used s
 			JOIN users u ON u.id = s.user_id
-			WHERE s.id = $1 AND s.expires_at > NOW()
 			LIMIT 1
-		`, sessionID)
+		`, tokenHash)
 	if err != nil {
 		return nil, err
 	}
@@ -128,13 +135,13 @@ func (r *PostgresRepository) GetUserByUnexpiredSessionID(ctx context.Context, se
 // 	return nil
 // }
 
-func (r *PostgresRepository) DeleteSessionByUserID(ctx context.Context, userID uuid.UUID, sessionID uuid.UUID) error {
+func (r *PostgresRepository) DeleteSessionByUserID(ctx context.Context, userID uuid.UUID, tokenHash string) error {
 	tx := r.getTx(ctx)
 
 	_, err := tx.Exec(ctx,
-		"DELETE FROM sessions WHERE user_id = $1 AND id = $2",
+		"DELETE FROM sessions WHERE user_id = $1 AND token_hash = $2",
 		userID,
-		sessionID)
+		tokenHash)
 	if err != nil {
 		return err
 	}
