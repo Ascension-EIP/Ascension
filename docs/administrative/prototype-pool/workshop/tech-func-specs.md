@@ -3,8 +3,8 @@ id: 3577774c-8ab3-4f54-9c93-74ffb0477198
 ---
 
 :::success
-**Version:** 1.1
-**Original language:** English
+**Version:** 1.1\
+**Original language:** English\
 DON'T EDIT THIS FILE !
 :::
 

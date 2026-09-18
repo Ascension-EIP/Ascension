@@ -3,8 +3,8 @@ id: 033b4dbe-7535-42a8-806f-a5e5054e4866
 ---
 
 :::success
-**Version:** 1.0
-**Original language:** English
+**Version:** 1.0\
+**Original language:** English\
 DON'T EDIT THIS FILE !
 :::
 
@@ -12,7 +12,7 @@ DON'T EDIT THIS FILE !
 
 # RNCP Block 1 — M1 Observables Evidence Matrix (C1→C5, O1→O11)
 
-> Scope: evidence inventory for oral prep (Block 1, M1).
+> Scope: evidence inventory for oral prep (Block 1, M1).\
 > Audience: Nicolas TORO (documentation lead) + candidate oral prep.
 
 ---

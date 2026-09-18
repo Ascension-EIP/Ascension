@@ -3,7 +3,7 @@ id: aa084479-25cf-4486-9a98-c2609adbf9c7
 ---
 
 :::success
-**Version:** 1.2
+**Version:** 1.2\
 **Original language:** English
 :::
 

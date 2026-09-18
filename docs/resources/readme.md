@@ -12,8 +12,7 @@ order:
 ---
 
 :::success
-**Version:** 1.2
-**Original language:** English
+**Version:** 1.2 **Original language:** English
 :::
 
 ---

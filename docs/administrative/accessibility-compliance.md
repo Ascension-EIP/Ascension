@@ -3,7 +3,7 @@ id: 58c87ea5-d7f8-48f2-b7fc-85501b4444b5
 ---
 
 :::success
-**Version:** 1.0
+**Version:** 1.0\
 **Original language:** English
 :::
 
@@ -117,7 +117,7 @@ Ascension documentation is maintained with explicit accessibility rules, a share
 As a result, the documentation corpus is structured to respect accessibility best practices across both GitHub Wiki and Wiki.js publication targets.
 
 :::success
-**Version:** 1.0
+**Version:** 1.0\
 **Original language:** English
 :::
 

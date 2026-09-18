@@ -3,7 +3,7 @@ id: a89e1dbc-d3ae-4079-a67b-d306b0daac99
 ---
 
 :::success
-**Version:** 1.1
+**Version:** 1.1\
 **Original language:** English
 :::
 
@@ -11,7 +11,7 @@ id: a89e1dbc-d3ae-4079-a67b-d306b0daac99
 
 # Git Commit Standards Guide
 
-This document defines the standards to follow for commit messages in our project.
+This document defines the standards to follow for commit messages in our project.\
 Good commit conventions improve history readability, facilitate automatic changelog generation, and help team collaboration, which is particularly important in complex projects.
 
 We use the **Conventional Commits** specification with additional rules defined below.
@@ -53,9 +53,9 @@ Commit messages follow this structure:
 
 Scopes
 
-Scopes help specify **what part of the project is affected** (optional but recommended).
-Examples:
-`core`, `engine`, `network`, `ui`, `audio`, `database`, `renderer`, `physics`, `utils`, `docs`.
+Scopes help specify **what part of the project is affected** (optional but recommended).\
+Examples:\
+`core`, `engine`, `network`, `ui`, `audio`, `database`, `renderer`, `physics`, `utils`, `docs`.\
 **Example:**
 
 ```
@@ -77,7 +77,7 @@ The body provides **additional context**, such as:
 - The motivation behind the change
 - How the implementation works
 - Potential impacts
-- Separate paragraphs with a blank line
+- Separate paragraphs with a blank line\
   **Example body:**
 
 ```
@@ -95,7 +95,7 @@ The footer is used for:
 Closes #42
 ```
 
-**Breaking changes**
+**Breaking changes**\
 Must start with:
 
 ```

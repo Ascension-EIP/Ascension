@@ -3,8 +3,8 @@ id: f4a935cc-e183-4ec2-b621-bd5b905669b2
 ---
 
 :::success
-**Version:** 1.2
-**Original language:** French
+**Version:** 1.2\
+**Original language:** French\
 DON'T EDIT THIS FILE !
 :::
 

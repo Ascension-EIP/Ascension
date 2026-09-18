@@ -3,7 +3,7 @@ id: 615b8876-93f2-4f9d-80db-7d3e8553fe8b
 ---
 
 :::warning
-**Version:** 2.0
+**Version:** 2.0\
 **Original language:** English
 :::
 

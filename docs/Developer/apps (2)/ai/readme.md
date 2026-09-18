@@ -3,7 +3,7 @@ id: 893f3e29-902c-4391-87ca-0b4db4752440
 ---
 
 :::success
-**Version:** 1.5
+**Version:** 1.5\
 **Original language:** English
 :::
 
@@ -251,8 +251,8 @@ A landmark is included in a frame only if its **presence score ≥ 0.8**.
 
 **Source:** `apps/ai/src/ai_sam3d.py`
 
-> \[!WARNING\] **Status: Deprecated / Archived POC**
-> The SAM 3D Body pipeline (`ai_sam3d.py`) was evaluated as an experimental prototype for 3D body reconstruction. Due to heavy external dependencies, large checkpoint sizes, and excessive GPU/CUDA requirements incompatible with our operational constraints, **SAM 3D is no longer used for production in Ascension**.
+> \[!WARNING\] **Status: Deprecated / Archived POC**\
+> The SAM 3D Body pipeline (`ai_sam3d.py`) was evaluated as an experimental prototype for 3D body reconstruction. Due to heavy external dependencies, large checkpoint sizes, and excessive GPU/CUDA requirements incompatible with our operational constraints, **SAM 3D is no longer used for production in Ascension**.\
 > For Phase ATP (August 2027 → March 2028), 3D pose extraction and mobile 3D experiences will be rebuilt around a generic, lightweight 3D pose estimation model. The documentation below is retained as a technical reference for the experimental prototype.
 
 ### SAM 3D Body Overview

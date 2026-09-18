@@ -3,7 +3,7 @@ id: ff864812-b4c3-4506-bb44-acefe8422a84
 ---
 
 :::success
-**Version:** 1.0
+**Version:** 1.0\
 **Original language:** English
 :::
 
