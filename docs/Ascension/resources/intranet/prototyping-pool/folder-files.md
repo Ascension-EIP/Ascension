@@ -2,7 +2,7 @@
 id: e7e17a41-757b-4649-9a5f-42014a9c0a20
 ---
 
-# Folder in the
+# Files in the folder
 
 [PDF](./G-EIP-600_Prototyping_pool.pdf)
 
