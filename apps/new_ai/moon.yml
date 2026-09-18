@@ -1,0 +1,124 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+language: 'python'
+
+project:
+  name: 'new_ai'
+  description: 'AI service for Ascension'
+
+tasks:
+  install:
+    command: 'uv'
+    args: ['sync']
+    inputs:
+      - 'pyproject.toml'
+      - 'uv.lock'
+    deps:
+      - 'root:setup'
+
+  download-model:
+    command: 'bash'
+    args: ['scripts/download-model.sh']
+    inputs:
+      - 'scripts/download-model.sh'
+    outputs:
+      - 'resources/pose_landmarker_full.task'
+
+  update:
+    command: 'uv'
+    args: ['sync', '--upgrade']
+    options:
+      cache: false
+
+  format:
+    command: 'uv'
+    args: ['run', 'ruff', 'check', '--fix', 'src', 'tests']
+    inputs:
+      - '**/*.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+    deps:
+      - 'install'
+      - 'root:format'
+
+  lint:
+    command: 'uv'
+    args: ['run', 'ruff', 'check', 'src', 'tests']
+    inputs:
+      - '**/*.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+    deps:
+      - 'format'
+
+  build:
+    command: 'uv'
+    args: ['build']
+    inputs:
+      - '**/*.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+    outputs:
+      - 'dist'
+    deps:
+      - 'lint'
+
+  test:
+    command: 'uv'
+    args: ['run', 'pytest', '-p', 'no:cacheprovider']
+    inputs:
+      - '**/*.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+    options:
+      allowFailure: true
+    deps:
+      - 'install'
+
+  dev:
+    command: 'uv'
+    args: ['run', 'worker']
+    env:
+      LOG_LEVEL: 'debug'
+      PYTHONUNBUFFERED: '1'
+    options:
+      persistent: true
+      cache: false
+      envFile: true
+    deps:
+      - 'install'
+      - 'root:schemas-generate'
+
+  producer:
+    command: 'uv'
+    args: ['run', 'python', 'src/producer.py']
+    env:
+      PYTHONUNBUFFERED: '1'
+    options:
+      cache: false
+      envFile: true
+    deps:
+      - 'install'
+
+  # pose-2d:
+  #   command: 'uv'
+  #   args: ['run', 'python', 'src/main.py', 'pose-2d']
+  #   options:
+  #     cache: false
+  #   deps:
+  #     - 'install'
+
+  # pose-3d:
+  #   command: 'uv'
+  #   args: ['run', 'python', 'src/main.py', 'pose-3d']
+  #   options:
+  #     cache: false
+  #   deps:
+  #     - 'install'
+
+  clean:
+    script: |
+      rm -rf .venv .ruff_cache .pytest_cache
+      find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+    options:
+      cache: false

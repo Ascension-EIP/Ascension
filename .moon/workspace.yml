@@ -6,6 +6,7 @@ $schema: './cache/schemas/workspace.json'
 projects:
   root: '.'
   ai: 'apps/ai'
+  new_ai: 'apps/new_ai'
   server: 'apps/server'
   mobile: 'apps/mobile'
 

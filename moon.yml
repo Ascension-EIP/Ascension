@@ -110,3 +110,17 @@ tasks:
       cache: false
       envFile: true
       interactive: true
+
+  schemas-generate:
+    script: |
+      mkdir -p apps/server/internal/shared apps/new_ai/src/shared
+      npx -y quicktype --src-lang schema schemas/*.schema.json \
+        -o apps/server/internal/shared/models.go --lang go --just-types-and-package --package shared
+      npx -y quicktype --src-lang schema schemas/*.schema.json \
+        -o apps/new_ai/src/shared/models.py --lang python --just-types --python-version 3.9 --pydantic-base-model
+      sed -i -e 's/^from enum import Enum$/from enum import StrEnum/' -e 's/^class \(\w\+\)(Enum):/class \1(StrEnum):/' apps/new_ai/src/shared/models.py
+    inputs:
+      - "schemas/*.schema.json"
+    outputs:
+      - "apps/server/internal/shared/models.go"
+      - "apps/new_ai/src/shared/models.py"
