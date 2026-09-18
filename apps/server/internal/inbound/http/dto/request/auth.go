@@ -7,38 +7,49 @@
 // @status done
 package request
 
-import (
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/google/uuid"
-)
+import "github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 
 type SignupForm struct {
-	Name     string `json:"name" binding:"required,min=3,max=20,alphanumunicode|contains=_"`
-	Email    string `json:"email" binding:"omitempty,email"`
-	Password string `json:"password" binding:"required,min=8"`
+	Username  string `json:"username" binding:"required"`
+	FirstName string `json:"first_name" binding:"required,max=100"`
+	LastName  string `json:"last_name" binding:"required,max=100"`
+	Email     string `json:"email" binding:"required,email"`
+	Password  string `json:"password" binding:"required,min=8"`
 }
 
 func (req *SignupForm) IntoSignupForm() (model.SignupForm, error) {
+	if err := model.ValidateUsername(req.Username); err != nil {
+		return model.SignupForm{}, err
+	}
 	return model.SignupForm{
-		Name:     req.Name,
-		Email:    req.Email,
-		Password: []byte(req.Password),
+		Username:  req.Username,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Email:     req.Email,
+		Password:  []byte(req.Password),
 	}, nil
 }
 
 type SignupLoginForm struct {
-	Name     string `json:"name" binding:"required,min=3,max=20,alphanumunicode|contains=_"`
-	Email    string `json:"email" binding:"omitempty,email"`
-	Password string `json:"password" binding:"required,min=8"`
-	Remember bool   `json:"remember"`
+	Username  string `json:"username" binding:"required"`
+	FirstName string `json:"first_name" binding:"required,max=100"`
+	LastName  string `json:"last_name" binding:"required,max=100"`
+	Email     string `json:"email" binding:"required,email"`
+	Password  string `json:"password" binding:"required,min=8"`
+	Remember  bool   `json:"remember"`
 }
 
 func (req *SignupLoginForm) IntoSignupLoginForm() (model.SignupLoginForm, error) {
+	if err := model.ValidateUsername(req.Username); err != nil {
+		return model.SignupLoginForm{}, err
+	}
 	return model.SignupLoginForm{
-		Name:     req.Name,
-		Email:    req.Email,
-		Password: []byte(req.Password),
-		Remember: req.Remember,
+		Username:  req.Username,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Email:     req.Email,
+		Password:  []byte(req.Password),
+		Remember:  req.Remember,
 	}, nil
 }
 
@@ -56,5 +67,5 @@ func (req *LoginForm) IntoLoginForm() (model.LoginForm, error) {
 }
 
 type RefreshToken struct {
-	Token uuid.UUID `json:"refresh_token" binding:"required"`
+	Token string `json:"refresh_token" binding:"required"`
 }

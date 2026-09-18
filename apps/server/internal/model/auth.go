@@ -14,16 +14,20 @@ import (
 )
 
 type SignupForm struct {
-	Name     string
-	Email    string
-	Password []byte
+	Username  string
+	FirstName string
+	LastName  string
+	Email     string
+	Password  []byte
 }
 
 type SignupLoginForm struct {
-	Name     string
-	Email    string
-	Password []byte
-	Remember bool
+	Username  string
+	FirstName string
+	LastName  string
+	Email     string
+	Password  []byte
+	Remember  bool
 }
 
 type LoginForm struct {
@@ -33,7 +37,7 @@ type LoginForm struct {
 }
 
 type Tokens struct {
-	RefreshToken uuid.UUID
+	RefreshToken string
 	AccessToken
 }
 
@@ -45,12 +49,18 @@ type AccessToken struct {
 
 type NewSession struct {
 	UserID    uuid.UUID
+	TokenHash string
 	ExpiresAt time.Time
 }
 
 type Session struct {
-	ID        uuid.UUID
-	UserID    uuid.UUID
-	ExpiresAt time.Time
-	CreatedAt time.Time
+	ID         uuid.UUID
+	UserID     uuid.UUID
+	TokenHash  string
+	UserAgent  *string
+	IPAddress  *string
+	LastUsedAt time.Time
+	RevokedAt  *time.Time
+	ExpiresAt  time.Time
+	CreatedAt  time.Time
 }

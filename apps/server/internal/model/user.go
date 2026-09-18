@@ -7,35 +7,60 @@
 // @status done
 package model
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
+type UserStatus string
+
+const (
+	UserStatusActive      UserStatus = "active"
+	UserStatusDeactivated UserStatus = "deactivated"
+)
 
 type NewUser struct {
-	Name     string
-	Email    string
-	Password []byte
-	Role     UserRole
+	Username  string
+	FirstName string
+	LastName  string
+	Email     string
+	Password  []byte
+	Role      UserRole
 }
 
 type PartialUser struct {
-	ID       uuid.UUID
-	Name     *string
-	Email    *string
-	Password *[]byte
-	Role     *UserRole
+	ID        uuid.UUID
+	Username  *string
+	FirstName *string
+	LastName  *string
+	Email     *string
+	Password  *[]byte
+	Role      *UserRole
 }
 
 type UserClear struct {
-	ID       uuid.UUID
-	Name     string
-	Email    string
-	Password []byte
-	Role     UserRole
+	ID        uuid.UUID
+	Username  string
+	FirstName string
+	LastName  string
+	Email     string
+	Password  []byte
+	Role      UserRole
 }
 
 type User struct {
-	ID       uuid.UUID
-	Name     string
-	Email    string
-	Password []byte
-	Role     UserRole
+	ID              uuid.UUID
+	Username        string
+	FirstName       string
+	LastName        string
+	Email           string
+	Password        []byte
+	Role            UserRole
+	Status          UserStatus
+	EmailVerifiedAt *time.Time
+	LastLoginAt     *time.Time
+	DeactivatedAt   *time.Time
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }

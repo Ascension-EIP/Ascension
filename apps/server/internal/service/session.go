@@ -9,6 +9,10 @@ package service
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
 	"time"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
@@ -18,10 +22,10 @@ import (
 
 type sessionRepository interface {
 	CreateSession(context.Context, *model.NewSession) (*model.Session, error)
-	GetUserByUnexpiredSessionID(context.Context, uuid.UUID) (*model.User, error)
+	GetUserByValidSessionTokenHash(context.Context, string) (*model.User, error)
 	// GetUnexpiredSession(ctx context.Context, sessionID string) (*model.Session, error)
 	// UpdateSession(ctx context.Context, session *model.Session) error
-	DeleteSessionByUserID(context.Context, uuid.UUID, uuid.UUID) error
+	DeleteSessionByUserID(context.Context, uuid.UUID, string) error
 	// DeleteExpiredSessions(ctx context.Context) error
 }
 
@@ -39,22 +43,34 @@ func NewSessionService(cfg config.SessionConfig, repo sessionRepository) Session
 	}
 }
 
-func (s *SessionService) CreateRefreshToken(ctx context.Context, userID uuid.UUID, remember bool) (uuid.UUID, error) {
-	session, err := s.repo.CreateSession(ctx, &model.NewSession{
+// CreateRefreshToken returns a new random refresh token. Only its SHA-256 hash is stored.
+func (s *SessionService) CreateRefreshToken(ctx context.Context, userID uuid.UUID, remember bool) (string, error) {
+	raw := make([]byte, 32)
+	if _, err := rand.Read(raw); err != nil {
+		return "", err
+	}
+	token := base64.RawURLEncoding.EncodeToString(raw)
+
+	if _, err := s.repo.CreateSession(ctx, &model.NewSession{
 		UserID:    userID,
+		TokenHash: hashRefreshToken(token),
 		ExpiresAt: time.Now().Add(s.exp),
-	})
-	if err != nil {
-		return uuid.UUID{}, err
+	}); err != nil {
+		return "", err
 	}
 
-	return session.ID, nil
+	return token, nil
 }
 
-func (s *SessionService) DeleteRefreshTokenByUserID(ctx context.Context, userID uuid.UUID, sessionID uuid.UUID) error {
-	return s.repo.DeleteSessionByUserID(ctx, userID, sessionID)
+func (s *SessionService) DeleteRefreshTokenByUserID(ctx context.Context, userID uuid.UUID, refreshToken string) error {
+	return s.repo.DeleteSessionByUserID(ctx, userID, hashRefreshToken(refreshToken))
 }
 
-func (s *SessionService) GetUserBySessionID(ctx context.Context, sessionID uuid.UUID) (*model.User, error) {
-	return s.repo.GetUserByUnexpiredSessionID(ctx, sessionID)
+func (s *SessionService) GetUserByRefreshToken(ctx context.Context, refreshToken string) (*model.User, error) {
+	return s.repo.GetUserByValidSessionTokenHash(ctx, hashRefreshToken(refreshToken))
+}
+
+func hashRefreshToken(token string) string {
+	sum := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(sum[:])
 }

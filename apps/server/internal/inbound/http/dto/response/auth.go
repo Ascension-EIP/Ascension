@@ -19,7 +19,7 @@ type LoginResponse struct {
 
 func TokensUserToResponse(tokens *model.Tokens, user *model.User) *LoginResponse {
 	return &LoginResponse{
-		RefreshToken: tokens.RefreshToken.String(),
+		RefreshToken: tokens.RefreshToken,
 		AccessTokenResponse: AccessTokenResponse{
 			AccessToken: tokens.Token,
 			TokenType:   tokens.TokenType,

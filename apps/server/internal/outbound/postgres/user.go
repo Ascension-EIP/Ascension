@@ -24,9 +24,18 @@ func (r *PostgresRepository) CreateUser(ctx context.Context, newUser *model.NewU
 	}
 	tx := r.getTx(ctx)
 
-	rows, err := tx.Query(ctx,
-		"INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING *",
-		newUser.Name, newUser.Email, newUser.Password, newUser.Role)
+	// Every user owns an empty profile row, created in the same statement.
+	rows, err := tx.Query(ctx, `
+			WITH new_user AS (
+				INSERT INTO users (username, first_name, last_name, email, password_hash, role)
+				VALUES ($1, $2, $3, $4, $5, $6)
+				RETURNING *
+			), new_profile AS (
+				INSERT INTO user_profiles (user_id) SELECT id FROM new_user
+			)
+			SELECT * FROM new_user
+		`,
+		newUser.Username, newUser.FirstName, newUser.LastName, newUser.Email, newUser.Password, newUser.Role)
 	if err != nil {
 		return nil, err
 	}
@@ -100,9 +109,19 @@ func (r *PostgresRepository) UpdateUser(ctx context.Context, partialUser *model.
 	args := []any{}
 	argID := 1
 
-	if partialUser.Name != nil {
-		setParts = append(setParts, fmt.Sprintf("name=$%d", argID))
-		args = append(args, *partialUser.Name)
+	if partialUser.Username != nil {
+		setParts = append(setParts, fmt.Sprintf("username=$%d", argID))
+		args = append(args, *partialUser.Username)
+		argID++
+	}
+	if partialUser.FirstName != nil {
+		setParts = append(setParts, fmt.Sprintf("first_name=$%d", argID))
+		args = append(args, *partialUser.FirstName)
+		argID++
+	}
+	if partialUser.LastName != nil {
+		setParts = append(setParts, fmt.Sprintf("last_name=$%d", argID))
+		args = append(args, *partialUser.LastName)
 		argID++
 	}
 	if partialUser.Email != nil {
@@ -111,7 +130,7 @@ func (r *PostgresRepository) UpdateUser(ctx context.Context, partialUser *model.
 		argID++
 	}
 	if partialUser.Password != nil {
-		setParts = append(setParts, fmt.Sprintf("password=$%d", argID))
+		setParts = append(setParts, fmt.Sprintf("password_hash=$%d", argID))
 		args = append(args, *partialUser.Password)
 		argID++
 	}

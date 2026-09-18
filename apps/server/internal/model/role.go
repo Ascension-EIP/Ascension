@@ -19,6 +19,8 @@ type UserRole string
 const (
 	UserRoleAdmin UserRole = "admin"
 	UserRoleUser  UserRole = "user"
+	UserRoleCoach UserRole = "coach"
+	UserRoleGym   UserRole = "gym"
 )
 
 var (
@@ -27,7 +29,7 @@ var (
 
 func (r UserRole) IsValid() bool {
 	switch r {
-	case UserRoleAdmin, UserRoleUser:
+	case UserRoleAdmin, UserRoleUser, UserRoleCoach, UserRoleGym:
 		return true
 	}
 	return false

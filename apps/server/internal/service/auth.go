@@ -42,10 +42,12 @@ func (s *AuthService) SignupAndLogin(ctx context.Context, form *model.SignupLogi
 	}
 
 	user, err := s.repo.CreateUser(ctx, &model.NewUser{
-		Name:     form.Name,
-		Email:    form.Email,
-		Password: hash,
-		Role:     model.UserRoleUser,
+		Username:  form.Username,
+		FirstName: form.FirstName,
+		LastName:  form.LastName,
+		Email:     form.Email,
+		Password:  hash,
+		Role:      model.UserRoleUser,
 	})
 	if err != nil {
 		return nil, nil, err
@@ -74,10 +76,12 @@ func (s *AuthService) Signup(ctx context.Context, form *model.SignupForm) (*mode
 	}
 
 	user, err := s.repo.CreateUser(ctx, &model.NewUser{
-		Name:     form.Name,
-		Email:    form.Email,
-		Password: hash,
-		Role:     model.UserRoleUser,
+		Username:  form.Username,
+		FirstName: form.FirstName,
+		LastName:  form.LastName,
+		Email:     form.Email,
+		Password:  hash,
+		Role:      model.UserRoleUser,
 	})
 	if err != nil {
 		return nil, err
@@ -112,15 +116,15 @@ func (s *AuthService) Login(ctx context.Context, form *model.LoginForm) (*model.
 	}, nil
 }
 
-func (s *AuthService) Logout(ctx context.Context, userID uuid.UUID, sessionID uuid.UUID) error {
-	if err := s.sessionS.DeleteRefreshTokenByUserID(ctx, userID, sessionID); err != nil {
+func (s *AuthService) Logout(ctx context.Context, userID uuid.UUID, refreshToken string) error {
+	if err := s.sessionS.DeleteRefreshTokenByUserID(ctx, userID, refreshToken); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *AuthService) RefreshAccessToken(ctx context.Context, sessionID uuid.UUID) (*model.AccessToken, error) {
-	user, err := s.sessionS.GetUserBySessionID(ctx, sessionID)
+func (s *AuthService) RefreshAccessToken(ctx context.Context, refreshToken string) (*model.AccessToken, error) {
+	user, err := s.sessionS.GetUserByRefreshToken(ctx, refreshToken)
 	if err != nil {
 		return nil, err
 	}

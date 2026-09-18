@@ -15,35 +15,44 @@ import (
 )
 
 type User struct {
-	ID        uuid.UUID      `db:"id"`
-	Name      string         `db:"name"`
-	Email     string         `db:"email"`
-	Password  []byte         `db:"password"`
-	Role      model.UserRole `db:"role"`
-	CreatedAt time.Time      `db:"created_at"`
-	UpdatedAt time.Time      `db:"updated_at"`
+	ID               uuid.UUID      `db:"id"`
+	Email            string         `db:"email"`
+	Username         string         `db:"username"`
+	FirstName        string         `db:"first_name"`
+	LastName         string         `db:"last_name"`
+	PasswordHash     []byte         `db:"password_hash"`
+	Role             model.UserRole `db:"role"`
+	Status           string         `db:"status"`
+	EmailVerifiedAt  *time.Time     `db:"email_verified_at"`
+	LastLoginAt      *time.Time     `db:"last_login_at"`
+	DeactivatedAt    *time.Time     `db:"deactivated_at"`
+	StripeCustomerID *string        `db:"stripe_customer_id"`
+	CreatedAt        time.Time      `db:"created_at"`
+	UpdatedAt        time.Time      `db:"updated_at"`
 }
 
 func (u *User) ToUser() *model.User {
 	return &model.User{
-		ID:       u.ID,
-		Name:     u.Name,
-		Email:    u.Email,
-		Password: u.Password,
-		Role:     u.Role,
+		ID:              u.ID,
+		Username:        u.Username,
+		FirstName:       u.FirstName,
+		LastName:        u.LastName,
+		Email:           u.Email,
+		Password:        u.PasswordHash,
+		Role:            u.Role,
+		Status:          model.UserStatus(u.Status),
+		EmailVerifiedAt: u.EmailVerifiedAt,
+		LastLoginAt:     u.LastLoginAt,
+		DeactivatedAt:   u.DeactivatedAt,
+		CreatedAt:       u.CreatedAt,
+		UpdatedAt:       u.UpdatedAt,
 	}
 }
 
 func UsersToUsers(dto []*User) []*model.User {
-	users := []*model.User{}
+	users := make([]*model.User, 0, len(dto))
 	for _, user := range dto {
-		users = append(users, &model.User{
-			ID:       user.ID,
-			Name:     user.Name,
-			Email:    user.Email,
-			Password: user.Password,
-			Role:     user.Role,
-		})
+		users = append(users, user.ToUser())
 	}
 	return users
 }

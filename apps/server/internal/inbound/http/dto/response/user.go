@@ -10,18 +10,24 @@ package response
 import "github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 
 type User struct {
-	ID    string
-	Name  string
-	Email string
-	Role  string
+	ID        string `json:"id"`
+	Username  string `json:"username"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Role      string `json:"role"`
+	Status    string `json:"status"`
 }
 
 func UserToResponse(user *model.User) *User {
 	return &User{
-		ID:    user.ID.String(),
-		Name:  user.Name,
-		Email: user.Email,
-		Role:  string(user.Role),
+		ID:        user.ID.String(),
+		Username:  user.Username,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		Role:      string(user.Role),
+		Status:    string(user.Status),
 	}
 }
 
