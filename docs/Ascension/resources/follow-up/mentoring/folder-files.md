@@ -2,9 +2,6 @@
 id: e5ae2470-07b9-4d2a-a0cf-a3fcda5b3792
 ---
 
-# Fichiers du dossier
+![1.pdf](./1.pdf)
 
-| Fichier | Format |
-| --- | --- |
-| `1.pdf` | PDF |
-| `1.pptx` | PowerPoint (PPTX) |
+![1.pptx](./1.pptx)

@@ -2,10 +2,8 @@
 id: 0e73eb17-a889-4311-a5d6-b2e5f25a166f
 ---
 
-# Fichiers du dossier
+![G-EIP-600_track_technical.pdf](./G-EIP-600_track_technical.pdf)
 
-| Fichier | Format |
-| --- | --- |
-| `G-EIP-600_track_technical.pdf` | PDF |
-| `Technical Track - Student Guide – Tech 4.pdf` | PDF |
-| `kick-off EIP PGE4.pptx` | PowerPoint (PPTX) |
+![Technical Track - Student Guide – Tech 4.pdf](./Technical Track - Student Guide – Tech 4.pdf)
+
+![kick-off EIP PGE4.pptx](./kick-off EIP PGE4.pptx)

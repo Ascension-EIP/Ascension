@@ -2,9 +2,6 @@
 id: b3bb8c9c-819d-4d13-b591-503ef5946720
 ---
 
-# Fichiers du dossier
+![Bloc 1 - Presentation.pdf](./Bloc 1 - Presentation.pdf)
 
-| Fichier | Format |
-| --- | --- |
-| `Bloc 1 - Presentation.pdf` | PDF |
-| `Bloc 1 - Presentation.pptx` | PowerPoint (PPTX) |
+![Bloc 1 - Presentation.pptx](./Bloc 1 - Presentation.pptx)
