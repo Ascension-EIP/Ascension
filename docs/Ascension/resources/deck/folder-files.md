@@ -14,13 +14,13 @@ id: da36efeb-b77b-47b3-afef-74f7ca801b2d
 
 [PDF](./Ascension_-_Pitch_Deck_long.pdf)
 
-[Ascension\_-*Pitch\_Deck*(long).pptx](./Ascension_-_Pitch_Deck_long.pptx)
+[Ascension_-Pitch_Deck(long).pptx](./Ascension_-_Pitch_Deck_long.pptx)
 
 ## Pitch Deck (short)
 
 [PDF](./Ascension_-_Pitch_Deck_short.pdf)
 
-[Ascension\_-*Pitch\_Deck*(short).pptx](./Ascension_-_Pitch_Deck_short.pptx)
+[Ascension_-Pitch_Deck(short).pptx](./Ascension_-_Pitch_Deck_short.pptx)
 
 ## Slide Deck
 
