@@ -4,11 +4,11 @@ sort: custom
 order:
   - intranet
   - rncp
-  - images
   - audio
   - deck
   - folder-files
   - follow-up
+  - images
   - images (2)
 ---
 
