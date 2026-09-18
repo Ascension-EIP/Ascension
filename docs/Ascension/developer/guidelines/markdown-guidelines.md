@@ -13,7 +13,6 @@ id: 96dbe682-aa9e-4c8c-9113-c70112576d5e
 
 This document defines the formatting standards for all Markdown files in this project. Adhering to these rules ensures consistency, readability, and a professional look across the documentation.
 
-
 ---
 
 ## 1\. General Principles
