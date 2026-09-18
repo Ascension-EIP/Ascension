@@ -255,5 +255,5 @@ graph TB
 Les documents suivants complètent cet audit :
 
 - [Analyse des Risques et Impact (GreenIT)](impact-mitigation.md)
-- [Justification de la Stack Technique](../../../../compliance/rncp/block-1/audit-draft/tech-stack.md)
-- [Résumé de la Stack](../../../../compliance/rncp/block-1/audit-draft/stack-summary.md)
+- [Justification de la Stack Technique](tech-stack.md)
+- [Résumé de la Stack](stack-summary.md)

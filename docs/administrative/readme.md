@@ -6,6 +6,9 @@ order:
   - memo
   - rncp
   - prototype-pool
+  - accessibility-compliance
+  - acceptance-test-plan
+  - action-plan
 ---
 
 

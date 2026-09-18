@@ -34,18 +34,18 @@ id: d274369c-06fe-41b3-9dfb-5657429abd0c
 
 ## Team Memos
 
-- [Memo — 26-02-10](memo/26-02-10.md)
-- [Memo — 26-02-16](memo/26-02-16.md)
-- [Memo — 26-03-02](memo/26-03-02.md)
-- [Memo — 26-03-09](memo/26-03-09.md)
-- [Memo — 26-03-16](memo/26-03-16.md)
-- [Memo — 26-04-20](memo/26-04-20.md)
-- [Memo — 26-05-04](memo/26-05-04.md)
-- [Memo — 26-06-13](memo/26-06-13.md)
-- [Memo — 26-06-20](memo/26-06-20.md)
-- [Memo — 26-08-31](memo/26-08-31.md)
-- [Memo — 26-09-07](memo/26-09-07.md)
-- [Memo — 26-09-14](memo/26-09-14.md)
+- [Memo — 26-02-10](../administrative/memo/02-10.md)
+- [Memo — 26-02-16](../administrative/memo/02-16.md)
+- [Memo — 26-03-02](../administrative/memo/03-02.md)
+- [Memo — 26-03-09](../administrative/memo/03-09.md)
+- [Memo — 26-03-16](../administrative/memo/03-16.md)
+- [Memo — 26-04-20](../administrative/memo/04-20.md)
+- [Memo — 26-05-04](../administrative/memo/05-04.md)
+- [Memo — 26-06-13](../administrative/memo/06-13.md)
+- [Memo — 26-06-20](../administrative/memo/06-20.md)
+- [Memo — 26-08-31](../administrative/memo/08-31.md)
+- [Memo — 26-09-07](../administrative/memo/09-07.md)
+- [Memo — 26-09-14](../administrative/memo/09-14.md)
 
 ---
 
