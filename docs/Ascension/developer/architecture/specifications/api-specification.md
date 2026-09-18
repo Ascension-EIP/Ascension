@@ -610,6 +610,6 @@ Analysis Complete
 
 **Related Documentation**:
 
-- [Database Schema](../../architecture%20%282%29/specifications/database-schema.md)
+- [Database Schema](database-schema.md)
 - [System Overview](../system-overview.md)
 - [Video Analysis Workflow](../workflows/video-analysis-flow.md)

@@ -523,7 +523,7 @@ moon toolchain --list
 
 - [moonrepo Documentation](https://moonrepo.dev/docs)
 - [moon CLI Reference](https://moonrepo.dev/docs/commands/overview)
-- [Deployment Guide](../architecture%20%282%29/deployment/development.md)
+- [Deployment Guide](page:8981c8bc-85fc-4a2b-9c89-5c38cf81b6d6)
 - [Architecture Overview](readme.md)
 
 ---
