@@ -7,5 +7,4 @@ order:
   - administrative
   - resources
   - drafts
-  - developer (2)
 ---
