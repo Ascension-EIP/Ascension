@@ -1,13 +1,5 @@
 ---
-id: 251b48b7-e0eb-4e08-a6fa-0e07362bb6b5
+id: 70a1364c-671e-4bda-90e9-1518b784c93e
 ---
 
-Ça c’est la page de présentation de la doc d’ascension avec les liens de chaque sous doc, elle est à faire
 
-For dev edit dcs here : [https://rc.densho.dev/s/ascension](https://rc.densho.dev/s/ascension)
-
-For management documentation
-
-For developper documentation
-
-For user guide
