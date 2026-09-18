@@ -13,9 +13,37 @@ type SignupForm struct {
 	Password UserPassword
 }
 
+func (f SignupForm) IsValid() error {
+	if err := f.Name.IsValid(); err != nil {
+		return err
+	}
+
+	if err := f.Email.IsValid(); err != nil {
+		return err
+	}
+
+	if err := f.Password.IsValid(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type LoginForm struct {
 	Email    UserEmail
 	Password UserPassword
+}
+
+func (f LoginForm) IsValid() error {
+	if err := f.Email.IsValid(); err != nil {
+		return err
+	}
+
+	if err := f.Password.IsValid(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type Tokens struct {

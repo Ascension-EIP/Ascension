@@ -12,9 +12,9 @@ import (
 )
 
 type SignupForm struct {
-	Name     string `json:"name" binding:"required,min=3,max=20,alphanumunicode|contains=_"`
-	Email    string `json:"email" binding:"omitempty,email"`
-	Password string `json:"password" binding:"required,min=8"`
+	Name     string `json:"name" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
 }
 
 func (req *SignupForm) IntoSignupForm() (model.SignupForm, error) {
@@ -26,9 +26,9 @@ func (req *SignupForm) IntoSignupForm() (model.SignupForm, error) {
 }
 
 type SignupLoginForm struct {
-	Name     string `json:"name" binding:"required,min=3,max=20,alphanumunicode|contains=_"`
-	Email    string `json:"email" binding:"omitempty,email"`
-	Password string `json:"password" binding:"required,min=8"`
+	Name     string `json:"name" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
 	Remember bool   `json:"remember"`
 }
 
@@ -41,8 +41,8 @@ func (req *SignupLoginForm) IntoSignupLoginForm() (model.SignupForm, error) {
 }
 
 type LoginForm struct {
-	Email    string `json:"email" binding:"omitempty,email"`
-	Password string `json:"password" binding:"required,min=8"`
+	Email    string `json:"email" binding:"require,email"`
+	Password string `json:"password" binding:"required"`
 	Remember bool   `json:"remember"`
 }
 

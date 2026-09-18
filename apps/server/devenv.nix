@@ -16,7 +16,7 @@
   packages = [
     pkgs.air
     pkgs.jq
-	pkgs.moon
+    pkgs.moon
   ];
 
   # https://devenv.sh/languages/
