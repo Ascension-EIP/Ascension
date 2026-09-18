@@ -28,12 +28,13 @@ type analysisQueue interface {
 }
 
 type AnalysisService struct {
-	repo  analysisRepository
-	queue analysisQueue
+	repo        analysisRepository
+	queue       analysisQueue
+	videoBucket string
 }
 
-func NewAnalysisService(repo analysisRepository, queue analysisQueue) AnalysisService {
-	return AnalysisService{repo: repo, queue: queue}
+func NewAnalysisService(repo analysisRepository, queue analysisQueue, videoBucket string) AnalysisService {
+	return AnalysisService{repo: repo, queue: queue, videoBucket: videoBucket}
 }
 
 func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID, userID uuid.UUID, analysisType model.AnalysisType) (*model.Analysis, error) {
@@ -56,7 +57,7 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID
 			return err
 		}
 
-		videoURL := fmt.Sprintf("s3://%s/%s", videoInfo.Bucket, videoInfo.ObjectKey)
+		videoURL := fmt.Sprintf("s3://%s/%s", s.videoBucket, videoInfo.ObjectKey)
 
 		data, err := json.Marshal(struct {
 			AnalysisID   uuid.UUID `json:"analysis_id"`

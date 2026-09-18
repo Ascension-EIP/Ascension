@@ -48,7 +48,7 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 	userS := service.NewUserService(&repo)
 	authS := service.NewAuthService(&jwtS, &sessionS, &repo)
 	videoS := service.NewVideoService(&storage, &repo)
-	analyseS := service.NewAnalysisService(&repo, &queue)
+	analyseS := service.NewAnalysisService(&repo, &queue, storage.VideoBucket())
 
 	authMW := middleware.Auth(&jwtS)
 	guestMW := middleware.Guest(&jwtS)

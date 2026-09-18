@@ -16,9 +16,11 @@ import (
 type AnalysisStatus string
 
 const (
-	AnalysisStatusPending   AnalysisStatus = "pending"
-	AnalysisStatusCompleted AnalysisStatus = "completed"
-	AnalysisStatusFailed    AnalysisStatus = "failed"
+	AnalysisStatusPending         AnalysisStatus = "pending"
+	AnalysisStatusProcessing      AnalysisStatus = "processing"
+	AnalysisStatusGeneratingHints AnalysisStatus = "generating_hints"
+	AnalysisStatusCompleted       AnalysisStatus = "completed"
+	AnalysisStatusFailed          AnalysisStatus = "failed"
 )
 
 type AnalysisType string
@@ -34,16 +36,18 @@ type NewAnalysis struct {
 }
 
 type Analysis struct {
-	ID             uuid.UUID
-	VideoID        uuid.UUID
-	Type           AnalysisType
-	Status         AnalysisStatus
-	Progress       int
-	Result         *[]byte
-	Hints          *string
-	Error          *string
-	ProcessingTime *int
-	CompletedAt    *time.Time
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	ID               uuid.UUID
+	VideoID          uuid.UUID
+	Type             AnalysisType
+	Status           AnalysisStatus
+	Progress         int
+	Result           *[]byte
+	Hints            *[]byte
+	Error            *string
+	ProcessingTimeMs *int
+	StartedAt        *time.Time
+	CompletedAt      *time.Time
+	Visibility       string
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
