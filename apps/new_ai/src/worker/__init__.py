@@ -30,9 +30,9 @@ def main() -> None:
         load_dotenv()
 
         # start_consuming() est bloquant : il doit être appelé en dernier.
-        broker.setup_config().connect().setup_channel().start_consuming()
         db.connect()
         storage.connect()
+        broker.setup_config().connect().setup_channel().start_consuming()
     except Exception:  # noqa: BLE001
         log.error(traceback.format_exc())
 
