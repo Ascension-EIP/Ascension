@@ -7,6 +7,7 @@ order:
   - specifications
   - monorepo-guide
   - system-overview
+  - globale-architecture
 ---
 
 :::success
