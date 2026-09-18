@@ -1,4 +1,4 @@
-// @date 2026-09-18
+// @date 2026-09-07
 // @file settings_page.dart
 // @brief Page des paramètres de l'application Ascension avec intégration Forui.
 // @project Ascension
