@@ -7,7 +7,6 @@ order:
   - swagger
   - adding-a-route
   - implementing-a-crud
-  - go-vs-rust-functional-gap
 ---
 
 :::success
