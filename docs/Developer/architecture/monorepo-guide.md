@@ -3,7 +3,7 @@ id: 159ee3ac-6376-46bf-b459-dbb45c3fe71c
 ---
 
 :::success
-**Version:** 2.5
+**Version:** 2.5\
 **Original language:** English
 :::
 
@@ -523,8 +523,8 @@ moon toolchain --list
 
 - [moonrepo Documentation](https://moonrepo.dev/docs)
 - [moon CLI Reference](https://moonrepo.dev/docs/commands/overview)
-- [Deployment Guide](deployment/development.md)
-- [Architecture Overview](readme.md)
+- [Deployment Guide](../architecture%20%282%29/deployment/development.md)
+- [Architecture Overview](../../developer/architecture/readme.md)
 
 ---
 
