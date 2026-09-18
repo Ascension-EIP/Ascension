@@ -114,7 +114,7 @@ This command only needs to be run once per clone. The following hooks will then 
 - `commit-msg` — validates the commit message format.
 - `pre-push` — validates the branch name and blocks direct pushes to `main`.
 
-For a detailed description of each hook and script, refer to the [GitHub Actions & Hooks Guide](github-actions-and-hooks-guide.md).
+For a detailed description of each hook and script, refer to the [GitHub Actions & Hooks Guide](../../engineering/git/github-actions-and-hooks-guide.md).
 
 ---
 

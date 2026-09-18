@@ -50,15 +50,15 @@ Available color palettes: `FColors.neutralLight`, `FColors.neutralDark`, `FColor
 
 | Component | Description | Reference |
 | --- | --- | --- |
-| **FButton** | Minimalist buttons with variants (`.primary`, `.secondary`, `.outline`, `.destructive`, `.ghost`) | [forui-controls](forui-controls/SKILL.md) |
-| **FCard** | Elevated container for grouped information | [forui-content-components](forui-content-components/SKILL.md) |
-| **FAvatar** | User profile image with initials fallback | [forui-content-components](forui-content-components/SKILL.md) |
-| **FBadge** | Status and category badges with semantic variants | [forui-content-components](forui-content-components/SKILL.md) |
-| **FTextField** | Text input with labels, descriptions, and error states | [forui-forms-inputs](forui-forms-inputs/SKILL.md) |
-| **FDialog** | Modal dialogs via `showFDialog` with backdrop blur | [forui-overlays-feedback](forui-overlays-feedback/SKILL.md) |
-| **FSheet** | Bottom or side modal sheets via `showFSheet` | [forui-overlays-feedback](forui-overlays-feedback/SKILL.md) |
-| **FTile** | Grouped action and settings rows | [forui-content-components](forui-content-components/SKILL.md) |
-| **FProgress** | Linear and circular progress indicators | [forui-content-components](forui-content-components/SKILL.md) |
+| **FButton** | Minimalist buttons with variants (`.primary`, `.secondary`, `.outline`, `.destructive`, `.ghost`) | [forui-controls](../../../../engineering/ai/skills/forui/forui-controls/SKILL.md) |
+| **FCard** | Elevated container for grouped information | [forui-content-components](../../../../engineering/ai/skills/forui/forui-content-components/SKILL.md) |
+| **FAvatar** | User profile image with initials fallback | [forui-content-components](../../../../engineering/ai/skills/forui/forui-content-components/SKILL.md) |
+| **FBadge** | Status and category badges with semantic variants | [forui-content-components](../../../../engineering/ai/skills/forui/forui-content-components/SKILL.md) |
+| **FTextField** | Text input with labels, descriptions, and error states | [forui-forms-inputs](../../../../engineering/ai/skills/forui/forui-forms-inputs/SKILL.md) |
+| **FDialog** | Modal dialogs via `showFDialog` with backdrop blur | [forui-overlays-feedback](../../../../engineering/ai/skills/forui/forui-overlays-feedback/SKILL.md) |
+| **FSheet** | Bottom or side modal sheets via `showFSheet` | [forui-overlays-feedback](../../../../engineering/ai/skills/forui/forui-overlays-feedback/SKILL.md) |
+| **FTile** | Grouped action and settings rows | [forui-content-components](../../../../engineering/ai/skills/forui/forui-content-components/SKILL.md) |
+| **FProgress** | Linear and circular progress indicators | [forui-content-components](../../../../engineering/ai/skills/forui/forui-content-components/SKILL.md) |
 
 ## Polish & UI Standards (Ascension Standard)
 
@@ -76,16 +76,16 @@ Pour garantir une expérience visuelle moderne et fluide digne des meilleures ap
    - ✅ Encapsuler les cartes et listes dans `Skeletonizer(enabled: isLoading, child: ...)`.
    - Fournir des modèles fictifs (*dummy data*) pendant `loading == true` pour que le *shimmer* dessine la structure finale.
 
-Consultez le guide détaillé : [Guide des Standards de Polish UI](forui-best-practices/references/polish-guidelines.md).
+Consultez le guide détaillé : [Guide des Standards de Polish UI](../../../../engineering/ai/skills/forui/forui-best-practices/references/polish-guidelines.md).
 
 ## Specialized Skills
 
-- [Setup & App Root](forui-setup/SKILL.md)
-- [Theming & Styles](forui-theming/SKILL.md)
-- [Controls & State](forui-controls/SKILL.md)
-- [Forms & Inputs](forui-forms-inputs/SKILL.md)
-- [Content Components](forui-content-components/SKILL.md)
-- [Overlays & Feedback](forui-overlays-feedback/SKILL.md)
-- [Layout & Navigation](forui-layout-navigation/SKILL.md)
-- [Best Practices](forui-best-practices/SKILL.md)
-- [Polish Guidelines](forui-best-practices/references/polish-guidelines.md)
+- [Setup & App Root](../../../../engineering/ai/skills/forui/forui-setup/SKILL.md)
+- [Theming & Styles](../../../../engineering/ai/skills/forui/forui-theming/SKILL.md)
+- [Controls & State](../../../../engineering/ai/skills/forui/forui-controls/SKILL.md)
+- [Forms & Inputs](../../../../engineering/ai/skills/forui/forui-forms-inputs/SKILL.md)
+- [Content Components](../../../../engineering/ai/skills/forui/forui-content-components/SKILL.md)
+- [Overlays & Feedback](../../../../engineering/ai/skills/forui/forui-overlays-feedback/SKILL.md)
+- [Layout & Navigation](../../../../engineering/ai/skills/forui/forui-layout-navigation/SKILL.md)
+- [Best Practices](../../../../engineering/ai/skills/forui/forui-best-practices/SKILL.md)
+- [Polish Guidelines](../../../../engineering/ai/skills/forui/forui-best-practices/references/polish-guidelines.md)
