@@ -9,7 +9,6 @@ order:
   - folder-files
   - follow-up
   - images
-  - images (2)
 ---
 
 :::success
