@@ -21,8 +21,9 @@ import (
 func (r *PostgresRepository) CreateVideo(ctx context.Context, video model.Video) error {
 	tx := r.getTx(ctx)
 
+	fmt.Println(video.ObjectKey)
 	_, err := tx.Exec(ctx,
-		"INSERT INTO videos (id, user_id, object_key, status, expires_at) VALUES ($1, $2, $3, $4, $5, $6)",
+		"INSERT INTO videos (id, user_id, object_key, status, expires_at) VALUES ($1, $2, $3, $4, $5)",
 		video.ID, video.UserID, video.ObjectKey, video.Status, video.ExpiresAt)
 	if err != nil {
 		return err

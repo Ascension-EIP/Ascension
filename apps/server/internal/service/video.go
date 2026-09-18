@@ -55,7 +55,6 @@ func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo model.FileInfo
 	var expiresAt time.Time
 
 	videoID := uuid.NewV7() // can't rely on repo for this one since we need the id for the objectKey
-
 	objectKey := fmt.Sprintf("%s/%s.%s", fileInfo.UserID.String(), videoID.String(), fileInfo.Extension)
 
 	if err := s.repo.WithTransaction(ctx, func(ctx context.Context) error {

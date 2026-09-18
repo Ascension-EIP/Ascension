@@ -1,7 +1,7 @@
 CREATE TABLE videos (
 	id         UUID        PRIMARY KEY DEFAULT uuidv7(),
     user_id    UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    object_key VARCHAR(64) NOT NULL,
+    object_key VARCHAR(96) NOT NULL,
     status     VARCHAR(32) NOT NULL DEFAULT 'pending',
 	expires_at TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
