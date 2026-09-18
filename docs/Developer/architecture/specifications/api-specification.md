@@ -3,7 +3,7 @@ id: 5d09b283-adb5-4bde-b3a4-5d9d79c195d2
 ---
 
 :::success
-**Version:** 1.0
+**Version:** 1.0\
 **Original language:** English
 :::
 
@@ -610,6 +610,6 @@ Analysis Complete
 
 **Related Documentation**:
 
-- [Database Schema](database-schema.md)
+- [Database Schema](../../architecture%20%282%29/specifications/database-schema.md)
 - [System Overview](../system-overview.md)
 - [Video Analysis Workflow](../workflows/video-analysis-flow.md)
