@@ -1,8 +1,8 @@
-// @date 2026-09-06
+// @date 2026-09-18
 // @file video.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package handler
@@ -74,9 +74,10 @@ func (h *VideoHandler) GetUploadURL(c *gin.Context) {
 	}
 
 	fileInfo := &model.FileInfo{
-		UserID:    userID,
-		Extension: ext,
-		Size:      size,
+		UserID:      userID,
+		ContentType: c.Query("content_type"),
+		Extension:   ext,
+		Size:        size,
 	}
 
 	uploadURL, err := h.s.GetUploadURL(c.Request.Context(), fileInfo)

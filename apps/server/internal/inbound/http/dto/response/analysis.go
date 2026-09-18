@@ -1,8 +1,8 @@
-// @date 2026-09-06
+// @date 2026-09-18
 // @file analysis.go
 // @brief Response DTOs for analysis endpoints.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package response
@@ -30,18 +30,19 @@ func AnalysisToResponse(analysis *model.Analysis) *AnalysisResponse {
 }
 
 type AnalysisInfoResponse struct {
-	ID             uuid.UUID            `json:"id"`
-	VideoID        uuid.UUID            `json:"video_id"`
-	Type           model.AnalysisType   `json:"type"`
-	Status         model.AnalysisStatus `json:"status"`
-	Progress       int                  `json:"progress"`
-	Result         *json.RawMessage     `json:"result,omitempty"`
-	Hints          *string              `json:"hints,omitempty"`
-	Error          *string              `json:"error,omitempty"`
-	ProcessingTime *int                 `json:"processing_time,omitempty"`
-	CompletedAt    *time.Time           `json:"completed_at,omitempty"`
-	CreatedAt      time.Time            `json:"created_at"`
-	UpdatedAt      time.Time            `json:"updated_at"`
+	ID               uuid.UUID            `json:"id"`
+	VideoID          uuid.UUID            `json:"video_id"`
+	Type             model.AnalysisType   `json:"type"`
+	Status           model.AnalysisStatus `json:"status"`
+	Progress         int                  `json:"progress"`
+	Result           *json.RawMessage     `json:"result,omitempty"`
+	Hints            *json.RawMessage     `json:"hints,omitempty"`
+	Error            *string              `json:"error,omitempty"`
+	ProcessingTimeMs *int                 `json:"processing_time_ms,omitempty"`
+	StartedAt        *time.Time           `json:"started_at,omitempty"`
+	CompletedAt      *time.Time           `json:"completed_at,omitempty"`
+	CreatedAt        time.Time            `json:"created_at"`
+	UpdatedAt        time.Time            `json:"updated_at"`
 }
 
 func AnalysisInfoToResponse(analysis *model.Analysis) *AnalysisInfoResponse {
@@ -50,18 +51,24 @@ func AnalysisInfoToResponse(analysis *model.Analysis) *AnalysisInfoResponse {
 		raw := json.RawMessage(*analysis.Result)
 		rawResult = &raw
 	}
+	var rawHints *json.RawMessage
+	if analysis.Hints != nil {
+		raw := json.RawMessage(*analysis.Hints)
+		rawHints = &raw
+	}
 	return &AnalysisInfoResponse{
-		ID:             analysis.ID,
-		VideoID:        analysis.VideoID,
-		Type:           analysis.Type,
-		Status:         analysis.Status,
-		Progress:       analysis.Progress,
-		Result:         rawResult,
-		Hints:          analysis.Hints,
-		Error:          analysis.Error,
-		ProcessingTime: analysis.ProcessingTime,
-		CompletedAt:    analysis.CompletedAt,
-		CreatedAt:      analysis.CreatedAt,
-		UpdatedAt:      analysis.UpdatedAt,
+		ID:               analysis.ID,
+		VideoID:          analysis.VideoID,
+		Type:             analysis.Type,
+		Status:           analysis.Status,
+		Progress:         analysis.Progress,
+		Result:           rawResult,
+		Hints:            rawHints,
+		Error:            analysis.Error,
+		ProcessingTimeMs: analysis.ProcessingTimeMs,
+		StartedAt:        analysis.StartedAt,
+		CompletedAt:      analysis.CompletedAt,
+		CreatedAt:        analysis.CreatedAt,
+		UpdatedAt:        analysis.UpdatedAt,
 	}
 }

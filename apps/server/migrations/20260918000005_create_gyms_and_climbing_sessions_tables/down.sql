@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS climbing_sessions;
+DROP TABLE IF EXISTS gyms;
