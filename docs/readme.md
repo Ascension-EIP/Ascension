@@ -8,5 +8,4 @@ order:
   - resources
   - drafts
   - developer (2)
-  - developer (3)
 ---
