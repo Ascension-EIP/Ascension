@@ -5,10 +5,10 @@ order:
   - intranet
   - rncp
   - audio
-  - deck
-  - folder-files
-  - follow-up
   - images
+  - deck
+  - follow-up
+  - folder-files
 ---
 
 :::subpages cards 3
