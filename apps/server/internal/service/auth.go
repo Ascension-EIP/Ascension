@@ -9,10 +9,12 @@ package service
 
 import (
 	"context"
+	"fmt"
+
+	"uuid"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"golang.org/x/crypto/bcrypt"
-	"uuid"
 )
 
 type AuthService struct {
@@ -30,6 +32,10 @@ func NewAuthService(jwtS *JWTService, sessionS *SessionService, userS *UserServi
 }
 
 func (s *AuthService) SignupAndLogin(ctx context.Context, form model.SignupForm, remember bool) (model.User, model.Tokens, error) {
+	if err := form.IsValid(); err != nil {
+		return model.User{}, model.Tokens{}, fmt.Errorf("form validation: %w", err)
+	}
+
 	user, err := s.userS.CreateUser(ctx, model.User{
 		Name:     form.Name,
 		Email:    form.Email,
@@ -49,6 +55,10 @@ func (s *AuthService) SignupAndLogin(ctx context.Context, form model.SignupForm,
 }
 
 func (s *AuthService) Signup(ctx context.Context, form model.SignupForm) (model.User, error) {
+	if err := form.IsValid(); err != nil {
+		return model.User{}, fmt.Errorf("form validation: %w", err)
+	}
+
 	user, err := s.userS.CreateUser(ctx, model.User{
 		Name:     form.Name,
 		Email:    form.Email,
@@ -63,6 +73,10 @@ func (s *AuthService) Signup(ctx context.Context, form model.SignupForm) (model.
 }
 
 func (s *AuthService) Login(ctx context.Context, form model.LoginForm, remember bool) (model.User, model.Tokens, error) {
+	if err := form.IsValid(); err != nil {
+		return model.User{}, model.Tokens{}, fmt.Errorf("form validation: %w", err)
+	}
+
 	user, err := s.userS.GetUserByFilter(ctx, model.UserFilter{
 		Email: &form.Email,
 	})

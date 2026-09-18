@@ -28,7 +28,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Run(cfg *config.Config) {
+func Run(cfg config.Config) {
 	repo, err := postgres.New(cfg.DB.DSN())
 	if err != nil {
 		slog.Error("failed to create a new postgres repository", slog.String("err", err.Error()))

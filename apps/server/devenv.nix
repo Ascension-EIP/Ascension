@@ -16,6 +16,7 @@
   packages = [
     pkgs.air
     pkgs.jq
+    pkgs.moon
   ];
 
   # https://devenv.sh/languages/
@@ -32,7 +33,32 @@
   };
 
   # https://devenv.sh/services/
-  # services.postgres.enable = true;
+  services = {
+    postgres = {
+      enable = true;
+      package = pkgs.postgresql_18;
+      initialDatabases = [
+        {
+          name = "name";
+          user = "user";
+          pass = "pass";
+        }
+      ];
+      listen_addresses = "localhost";
+      port = 5432;
+    };
+
+    minio = {
+      enable = true;
+      package = pkgs.minio;
+      accessKey = "accesskey";
+      secretKey = "secretkey";
+    };
+
+    rabbitmq = {
+      enable = true;
+    };
+  };
 
   # https://devenv.sh/scripts/
   scripts.install.exec = ''

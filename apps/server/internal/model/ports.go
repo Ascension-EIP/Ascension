@@ -57,9 +57,6 @@ type VideoStorage interface {
 	PresignedDownloadURL(context.Context, string) (*url.URL, time.Time, error)
 	FileExist(context.Context, string) error
 	Delete(context.Context, string) error
-	UploadExp() time.Duration
-	DownloadExp() time.Duration
-	VideoBucket() string
 }
 
 // -- //
