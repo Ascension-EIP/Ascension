@@ -135,7 +135,7 @@ Every Markdown file that contains headings must include a Table of Contents (TOC
 
 ### 4.4 Accessibility Rules
 
-All documentation must remain accessible on both **GitHub Wiki** and **Wiki.js** renderers.
+All documentation must remain accessible on both **GitHub Wiki** and **Densho** renderers.
 
 - Keep a strict heading hierarchy (`#` → `##` → `###`) so screen readers expose a logical outline.
 - Use descriptive link labels (avoid "click here"), so link purpose is understandable out of context.
