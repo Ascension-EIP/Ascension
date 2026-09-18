@@ -11,7 +11,7 @@ id: 693f55bc-a889-46d1-95bc-8aff6475c030
 
 # Server — Developer Guide
 
-This guide covers everything a new developer needs to start working on the Ascension backend server. It complements the [architecture overview](architecture.md) and the [API routes reference](api-routes.md) and the [Swagger UI guide](swagger.md).
+This guide covers everything a new developer needs to start working on the Ascension backend server. It complements the [architecture overview](../../../engineering/developer_guide/server/architecture.md) and the [API routes reference](../../../engineering/developer_guide/server/api-routes.md) and the [Swagger UI guide](../../../engineering/developer_guide/server/swagger.md).
 
 ---
 
@@ -41,7 +41,7 @@ This guide covers everything a new developer needs to start working on the Ascen
 
 - **Go** (toolchain version `1.26.0` — download from go.dev or use proto)
 - **Docker** + **Docker Compose** — for PostgreSQL, RabbitMQ, MinIO locally
-- **moon** — monorepo task runner (see [Developer Quickstart](../readme.md))
+- **moon** — monorepo task runner (see [Developer Quickstart](page:70bac601-6a07-45fa-9e3e-02ce2ec53ef1))
 
 ---
 
@@ -80,7 +80,7 @@ apps/server/
     └── setup/          # Configuration and logger setup
 ```
 
-For a deeper explanation of each layer, read the [architecture overview](architecture.md).
+For a deeper explanation of each layer, read the [architecture overview](../../../engineering/developer_guide/server/architecture.md).
 
 ---
 

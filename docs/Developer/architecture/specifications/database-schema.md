@@ -447,5 +447,5 @@ GROUP BY r.id, g.ghost_path;
 
 **Related**:
 
-- [API Specification](../../../engineering/developer_guide/architecture/specifications/api-specification.md)
-- [System Overview](../../../engineering/developer_guide/architecture/system-overview.md)
+- [API Specification](api-specification.md)
+- [System Overview](../system-overview.md)

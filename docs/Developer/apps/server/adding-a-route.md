@@ -11,7 +11,7 @@ id: 42f46e9a-0ca5-4e39-b882-98520f4fea1e
 
 # How to Add a Route
 
-This guide walks you through adding a new HTTP route to the server from scratch. It assumes you have read the [architecture overview](architecture.md) first.
+This guide walks you through adding a new HTTP route to the server from scratch. It assumes you have read the [architecture overview](../../../engineering/developer_guide/server/architecture.md) first.
 
 We will use a concrete example: adding a `GET /v1/status/version` endpoint that returns the current API version.
 
