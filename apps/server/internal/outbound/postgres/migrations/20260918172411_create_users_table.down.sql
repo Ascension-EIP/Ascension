@@ -1,4 +1,4 @@
-DROP TABLE users;
+DROP TABLE IF EXISTS users;
 
-DROP TYPE user_role;
-DROP TYPE user_status;
+DROP TYPE IF EXISTS user_role;
+DROP TYPE IF EXISTS user_status;

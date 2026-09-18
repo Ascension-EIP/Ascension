@@ -1,1 +1,1 @@
-DROP TABLE subscription_plans;
+DROP TABLE IF EXISTS subscription_plans;

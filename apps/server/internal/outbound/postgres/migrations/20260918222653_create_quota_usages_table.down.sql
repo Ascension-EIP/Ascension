@@ -1,1 +1,1 @@
-DROP TABLE quota_usages;
+DROP TABLE IF EXISTS quota_usages;

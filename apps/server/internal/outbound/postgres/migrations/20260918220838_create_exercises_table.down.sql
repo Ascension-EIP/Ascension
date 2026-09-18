@@ -1,1 +1,1 @@
-DROP TABLE exercises;
+DROP TABLE IF EXISTS exercises;

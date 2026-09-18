@@ -1,3 +1,3 @@
-DROP TABLE friendships;
+DROP TABLE IF EXISTS friendships;
 
-DROP TYPE friendship_status;
+DROP TYPE IF EXISTS friendship_status;

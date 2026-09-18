@@ -1,4 +1,4 @@
-DROP TABLE goals;
+DROP TABLE IF EXISTS goals;
 
-DROP TYPE focus_area;
-DROP TYPE goal_status;
+DROP TYPE IF EXISTS focus_area;
+DROP TYPE IF EXISTS goal_status;

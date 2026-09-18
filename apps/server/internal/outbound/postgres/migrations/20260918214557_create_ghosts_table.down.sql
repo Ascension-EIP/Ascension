@@ -1,1 +1,1 @@
-DROP TABLE ghosts;
+DROP TABLE IF EXISTS ghosts;

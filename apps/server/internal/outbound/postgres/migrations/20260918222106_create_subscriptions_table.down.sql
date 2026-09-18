@@ -1,3 +1,3 @@
-DROP TABLE subscriptions;
+DROP TABLE IF EXISTS subscriptions;
 
-DROP TYPE subscription_status;
+DROP TYPE IF EXISTS subscription_status;

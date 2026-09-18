@@ -1,1 +1,1 @@
-DROP TABLE gyms;
+DROP TABLE IF EXISTS gyms;

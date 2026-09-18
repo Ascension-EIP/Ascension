@@ -1,3 +1,3 @@
-DROP TABLE subscription_events;
+DROP TABLE IF EXISTS subscription_events;
 
-DROP TYPE subscription_event_type;
+DROP TYPE IF EXISTS subscription_event_type;

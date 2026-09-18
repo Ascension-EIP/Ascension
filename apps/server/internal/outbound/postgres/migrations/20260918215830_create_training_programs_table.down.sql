@@ -1,3 +1,3 @@
-DROP TABLE training_programs;
+DROP TABLE IF EXISTS training_programs;
 
-DROP TYPE training_program_status;
+DROP TYPE IF EXISTS training_program_status;

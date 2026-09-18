@@ -1,4 +1,4 @@
-DROP TABLE analyses;
+DROP TABLE IF EXISTS analyses;
 
-DROP TYPE job_status;
-DROP TYPE analysis_type;
+DROP TYPE IF EXISTS job_status;
+DROP TYPE IF EXISTS analysis_type;

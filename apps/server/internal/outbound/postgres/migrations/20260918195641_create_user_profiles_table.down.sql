@@ -1,4 +1,4 @@
-DROP TABLE user_profiles;
+DROP TABLE IF EXISTS user_profiles;
 
-DROP TYPE grading_system;
-DROP TYPE dominant_hand;
+DROP TYPE IF EXISTS grading_system;
+DROP TYPE IF EXISTS dominant_hand;

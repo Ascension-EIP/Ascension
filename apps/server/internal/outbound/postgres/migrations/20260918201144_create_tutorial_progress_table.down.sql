@@ -1,3 +1,3 @@
-DROP TABLE tutorial_progress;
+DROP TABLE IF EXISTS tutorial_progress;
 
-DROP TYPE tutorial_status;
+DROP TYPE IF EXISTS tutorial_status;

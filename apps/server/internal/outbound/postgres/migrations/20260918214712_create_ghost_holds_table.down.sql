@@ -1,1 +1,1 @@
-DROP TABLE ghost_holds;
+DROP TABLE IF EXISTS ghost_holds;

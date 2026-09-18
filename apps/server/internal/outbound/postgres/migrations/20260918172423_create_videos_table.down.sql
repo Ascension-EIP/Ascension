@@ -1,4 +1,4 @@
 DROP TABLE IF EXISTS videos CASCADE;
 
-DROP TYPE video_status;
-DROP TYPE visibility;
+DROP TYPE IF EXISTS video_status;
+DROP TYPE IF EXISTS visibility;

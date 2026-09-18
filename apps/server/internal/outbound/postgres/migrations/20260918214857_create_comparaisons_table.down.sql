@@ -1,1 +1,1 @@
-DROP TABLE comparisons;
+DROP TABLE IF EXISTS comparisons;
