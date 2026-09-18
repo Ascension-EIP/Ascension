@@ -9,7 +9,7 @@ id: 58c87ea5-d7f8-48f2-b7fc-85501b4444b5
 
 ---
 
-# Documentation Accessibility Compliance Statement
+# Accessibility Compliance Statement
 
 This document explains how Ascension documentation is structured to meet accessibility expectations and remain usable when automatically published to both **GitHub Wiki** and **Wiki.js**.
 

@@ -30,7 +30,7 @@ id: 22e9bdcd-3588-41fd-bfd2-e7aed08f81e6
 
 ## Workshop Documents
 
-- [Catalogue complet des fonctionnalites Ascension](product/catalogue-fonctionnalites.md)
+- [Catalogue complet des fonctionnalites Ascension](administrative/catalogue-fonctionnalites.md)
 - [Client Needs and Functional Scope](administrative/prototype-pool/workshop/client-needs-and-functional-scope.md)
 - [Context Audit Compliance](administrative/prototype-pool/workshop/context-audit-compliance.md)
 - [Costs](administrative/prototype-pool/workshop/costs.md)
