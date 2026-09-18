@@ -23,9 +23,10 @@ const (
 
 type (
 	FileInfo struct {
-		UserID    uuid.UUID
-		Extension string
-		Size      int64
+		UserID      uuid.UUID
+		ContentType string
+		Extension   string
+		Size        int64
 	}
 
 	DownloadVideoURL struct {
@@ -40,24 +41,32 @@ type (
 	}
 
 	VideoInfo struct {
-		ID        uuid.UUID
-		UserID    uuid.UUID
-		Bucket    string
-		ObjectKey string
-		Status    VideoStatus
-		Duration  *int64
-		Size      *int64
-		ExpiresAt time.Time
+		ID                uuid.UUID
+		UserID            uuid.UUID
+		ClimbingSessionID *uuid.UUID
+		Title             *string
+		ObjectKey         string
+		ContentType       string
+		Status            VideoStatus
+		SizeBytes         *int64
+		DurationMs        *int32
+		Width             *int16
+		Height            *int16
+		FPS               *float64
+		Retained          bool
+		ExpiresAt         time.Time
+		Visibility        string
+		CreatedAt         time.Time
+		UpdatedAt         time.Time
 	}
 
 	PartialVideoInfo struct {
-		ID        uuid.UUID
-		UserID    uuid.UUID
-		Bucket    *string
-		ObjectKey *string
-		Status    *VideoStatus
-		Duration  *int64
-		Size      *int64
-		ExpiresAt *time.Time
+		ID         uuid.UUID
+		UserID     uuid.UUID
+		ObjectKey  *string
+		Status     *VideoStatus
+		SizeBytes  *int64
+		DurationMs *int32
+		ExpiresAt  *time.Time
 	}
 )

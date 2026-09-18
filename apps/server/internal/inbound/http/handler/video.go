@@ -74,9 +74,10 @@ func (h *VideoHandler) GetUploadURL(c *gin.Context) {
 	}
 
 	fileInfo := &model.FileInfo{
-		UserID:    userID,
-		Extension: ext,
-		Size:      size,
+		UserID:      userID,
+		ContentType: c.Query("content_type"),
+		Extension:   ext,
+		Size:        size,
 	}
 
 	uploadURL, err := h.s.GetUploadURL(c.Request.Context(), fileInfo)

@@ -26,8 +26,8 @@ func (r *PostgresRepository) CreateVideoInfo(ctx context.Context, info *model.Vi
 	tx := r.getTx(ctx)
 
 	_, err := tx.Exec(ctx,
-		"INSERT INTO videos (id, user_id, bucket, object_key, status, duration, size, expires_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
-		info.ID, info.UserID, info.Bucket, info.ObjectKey, info.Status, info.Duration, info.Size, info.ExpiresAt)
+		"INSERT INTO videos (id, user_id, object_key, content_type, status, duration_ms, size_bytes, expires_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+		info.ID, info.UserID, info.ObjectKey, info.ContentType, info.Status, info.DurationMs, info.SizeBytes, info.ExpiresAt)
 	if err != nil {
 		return err
 	}
@@ -76,11 +76,6 @@ func (r *PostgresRepository) UpdateVideoInfo(ctx context.Context, partialInfo *m
 	args := []any{}
 	argID := 1
 
-	if partialInfo.Bucket != nil {
-		setParts = append(setParts, fmt.Sprintf("bucket=$%d", argID))
-		args = append(args, *partialInfo.Bucket)
-		argID++
-	}
 	if partialInfo.ObjectKey != nil {
 		setParts = append(setParts, fmt.Sprintf("object_key=$%d", argID))
 		args = append(args, *partialInfo.ObjectKey)
@@ -91,14 +86,14 @@ func (r *PostgresRepository) UpdateVideoInfo(ctx context.Context, partialInfo *m
 		args = append(args, *partialInfo.Status)
 		argID++
 	}
-	if partialInfo.Duration != nil {
-		setParts = append(setParts, fmt.Sprintf("duration=$%d", argID))
-		args = append(args, *partialInfo.Duration)
+	if partialInfo.DurationMs != nil {
+		setParts = append(setParts, fmt.Sprintf("duration_ms=$%d", argID))
+		args = append(args, *partialInfo.DurationMs)
 		argID++
 	}
-	if partialInfo.Size != nil {
-		setParts = append(setParts, fmt.Sprintf("size=$%d", argID))
-		args = append(args, *partialInfo.Size)
+	if partialInfo.SizeBytes != nil {
+		setParts = append(setParts, fmt.Sprintf("size_bytes=$%d", argID))
+		args = append(args, *partialInfo.SizeBytes)
 		argID++
 	}
 	if partialInfo.ExpiresAt != nil {

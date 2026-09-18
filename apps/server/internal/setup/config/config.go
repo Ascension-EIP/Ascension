@@ -20,6 +20,7 @@ type (
 		DB       DBConfig       `envPrefix:"POSTGRES_"`
 		MinIO    MinIOConfig    `envPrefix:"MINIO_"`
 		RabbitMQ RabbitMQConfig `envPrefix:"RABBITMQ_"`
+		Video    VideoConfig    `envPrefix:"VIDEO_"`
 		Auth     AuthConfig     `envPrefix:"AUTH_"`
 		HTTP     HTTPConfig
 		Log      LogConfig `envPrefix:"LOG_"`
@@ -43,6 +44,11 @@ type (
 		SSL         bool          `env:"SSL" envDefault:"false"`
 		UploadExp   time.Duration `env:"UPLOAD_EXP" envDefault:"1h"`
 		DownloadExp time.Duration `env:"DOWNLOAD_EXP" envDefault:"1h"`
+	}
+
+	VideoConfig struct {
+		// Retention is how long a completed video is kept when the user does not retain it.
+		Retention time.Duration `env:"RETENTION" envDefault:"8760h"`
 	}
 
 	RabbitMQConfig struct {

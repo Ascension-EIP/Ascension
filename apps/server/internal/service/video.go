@@ -24,7 +24,6 @@ type videoStorage interface {
 	Delete(context.Context, string) error
 	UploadExp() time.Duration
 	DownloadExp() time.Duration
-	VideoBucket() string
 }
 
 type videoRepository interface {
@@ -36,12 +35,13 @@ type videoRepository interface {
 }
 
 type VideoService struct {
-	storage videoStorage
-	repo    videoRepository
+	storage   videoStorage
+	repo      videoRepository
+	retention time.Duration
 }
 
-func NewVideoService(storage videoStorage, repo videoRepository) VideoService {
-	return VideoService{storage: storage, repo: repo}
+func NewVideoService(storage videoStorage, repo videoRepository, retention time.Duration) VideoService {
+	return VideoService{storage: storage, repo: repo, retention: retention}
 }
 
 func (s *VideoService) GetDownloadURL(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (*model.DownloadVideoURL, error) {
@@ -73,13 +73,13 @@ func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo *model.FileInf
 
 	if err := s.repo.WithTransaction(ctx, func(ctx context.Context) error {
 		if err := s.repo.CreateVideoInfo(ctx, &model.VideoInfo{
-			ID:        videoID,
-			UserID:    fileInfo.UserID,
-			Bucket:    s.storage.VideoBucket(),
-			ObjectKey: objectKey,
-			Status:    model.VideoStatusPending,
-			Size:      &fileInfo.Size,
-			ExpiresAt: time.Now().Add(s.storage.UploadExp()),
+			ID:          videoID,
+			UserID:      fileInfo.UserID,
+			ObjectKey:   objectKey,
+			ContentType: fileInfo.ContentType,
+			Status:      model.VideoStatusPending,
+			SizeBytes:   &fileInfo.Size,
+			ExpiresAt:   time.Now().Add(s.storage.UploadExp()),
 		}); err != nil {
 			return err
 		}
@@ -110,8 +110,10 @@ func (s *VideoService) UploadComplete(ctx context.Context, videoID uuid.UUID, us
 		return err
 	}
 
+	// A completed video is kept for the legal retention period, unless the user retains it.
 	status := model.VideoStatusCompleted
-	if _, err := s.repo.UpdateVideoInfo(ctx, &model.PartialVideoInfo{ID: videoID, UserID: userID, Status: &status}); err != nil {
+	expiresAt := time.Now().Add(s.retention)
+	if _, err := s.repo.UpdateVideoInfo(ctx, &model.PartialVideoInfo{ID: videoID, UserID: userID, Status: &status, ExpiresAt: &expiresAt}); err != nil {
 		return err
 	}
 	return nil
