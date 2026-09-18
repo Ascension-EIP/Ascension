@@ -2,7 +2,6 @@ CREATE TABLE climbing_sessions (
     id               UUID PRIMARY KEY DEFAULT uuidv7(),
     user_id          UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     gym_id           UUID REFERENCES gyms(id) ON DELETE SET NULL,
-    gym_id           UUID,
     title            TEXT,
     started_at       TIMESTAMPTZ NOT NULL,
     ended_at         TIMESTAMPTZ,

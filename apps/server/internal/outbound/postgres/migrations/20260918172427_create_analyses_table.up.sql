@@ -6,7 +6,7 @@ CREATE TABLE analyses (
 	video_id UUID NOT NULL UNIQUE REFERENCES videos(id) ON DELETE CASCADE,
 	type analysis_type NOT NULL DEFAULT '2d',
     status job_status NOT NULL DEFAULT 'pending',
-	visibility visibility NOT NULL DEFAULT 'private'
+	visibility visibility NOT NULL DEFAULT 'private',
 	progress SMALLINT NOT NULL DEFAULT 0,
     result JSONB,
 	advice TEXT,

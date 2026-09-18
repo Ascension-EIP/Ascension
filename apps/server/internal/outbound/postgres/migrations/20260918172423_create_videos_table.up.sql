@@ -8,7 +8,7 @@ CREATE TABLE videos (
 	climbing_session_id UUID REFERENCES users(id) ON DELETE SET NULL,
 	title TEXT,
     status      video_status NOT NULL DEFAULT 'pending',
-	visibility visibility NOT NULL DEFAULT 'private';
+	visibility visibility NOT NULL DEFAULT 'private',
 	width SMALLINT,
 	height SMALLINT,
 	fps NUMERIC(6, 3),
@@ -18,7 +18,7 @@ CREATE TABLE videos (
 	retained BOOLEAN NOT NULL DEFAULT FALSE,
     expires_at  TIMESTAMPTZ NOT NULL,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_videos_user_created ON videos(user_id, created_at DESC);

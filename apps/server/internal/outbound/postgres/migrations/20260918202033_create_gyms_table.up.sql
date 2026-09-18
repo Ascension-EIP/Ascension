@@ -10,7 +10,7 @@ CREATE TABLE gyms (
     website_url    TEXT,
     is_partner     BOOLEAN NOT NULL DEFAULT FALSE,
     created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX idx_gyms_city ON gyms(country_code, city);

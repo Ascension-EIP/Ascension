@@ -9,7 +9,7 @@ CREATE TABLE subscription_events (
     user_id          UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type             subscription_event_type NOT NULL,
     from_plan_code   TEXT REFERENCES subscription_plans(code),
-    to_plan_code     TEXT REFERENCES subscription_plans(code)
+    to_plan_code     TEXT REFERENCES subscription_plans(code),
     stripe_event_id  TEXT UNIQUE,
     payload          JSONB,
     occurred_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
