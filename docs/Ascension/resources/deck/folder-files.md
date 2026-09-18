@@ -2,17 +2,27 @@
 id: da36efeb-b77b-47b3-afef-74f7ca801b2d
 ---
 
+# Files in this folder
+
+## Pitch Deck
+
 [PDF](./Ascension_-_Pitch_Deck.pdf)
 
 [Ascension_-_Pitch_Deck.pptx](./Ascension_-_Pitch_Deck.pptx)
 
-[PDF](./Ascension_-_Pitch_Deck_\(long\).pdf)
+## Pitch Deck (long)
 
-[Ascension\_-*Pitch\_Deck*(long).pptx](./Ascension_-_Pitch_Deck_\(long\).pptx)
+[PDF](./Ascension_-_Pitch_Deck_long.pdf)
 
-[PDF](./Ascension_-_Pitch_Deck_\(short\).pdf)
+[Ascension\_-*Pitch\_Deck*(long).pptx](./Ascension_-_Pitch_Deck_long.pptx)
 
-[Ascension\_-*Pitch\_Deck*(short).pptx](./Ascension_-_Pitch_Deck_\(short\).pptx)
+## Pitch Deck (short)
+
+[PDF](./Ascension_-_Pitch_Deck_short.pdf)
+
+[Ascension\_-*Pitch\_Deck*(short).pptx](./Ascension_-_Pitch_Deck_short.pptx)
+
+## Slide Deck
 
 [PDF](./Ascension_-_Slide_Deck.pdf)
 
