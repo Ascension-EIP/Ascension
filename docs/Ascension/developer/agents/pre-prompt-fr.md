@@ -13,13 +13,6 @@ id: 277eed31-195d-41d5-9a77-b0723e50fc8b
 
 ---
 
-## Table of Contents
-
-- [Instructions pour l'IA (Français)](#instructions-pour-lia-fran%C3%A7ais)
-  - [Table of Contents](#table-of-contents)
-
----
-
 > Copie le bloc ci-dessous et colle-le au début de n'importe quelle conversation avec un assistant IA pour lui donner tout le contexte du projet Ascension.
 
 ---

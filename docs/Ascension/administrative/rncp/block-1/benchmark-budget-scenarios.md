@@ -14,24 +14,6 @@ DON'T EDIT THIS FILE !
 
 ---
 
-## Table des matières
-
-- [Bloc 1 — M1 — 05 Benchmark, budget et scénarios](#bloc-1--m1--05-benchmark-budget-et-sc%C3%A9narios)
-  - [Table des matières](#table-des-mati%C3%A8res)
-  - [Objectif](#objectif)
-  - [Sources et hypothèses](#sources-et-hypoth%C3%A8ses)
-  - [Benchmark des options techniques](#benchmark-des-options-techniques)
-  - [Structure des coûts](#structure-des-co%C3%BBts)
-    - [CAPEX (ponctuel)](#capex-ponctuel)
-    - [OPEX (mensuel)](#opex-mensuel)
-  - [Scénarios budgétaires](#sc%C3%A9narios-budg%C3%A9taires)
-  - [Leviers d’optimisation](#leviers-doptimisation)
-  - [Point accessibilité (PSH) dans le budget](#point-accessibilit%C3%A9-psh-dans-le-budget)
-  - [Traçabilité RNCP M1 (O8, O9)](#tra%C3%A7abilit%C3%A9-rncp-m1-o8-o9)
-  - [Calendrier de développement (Horizon 3 ans)](#calendrier-de-d%C3%A9veloppement-horizon-3-ans)
-
----
-
 ## Objectif
 
 Présenter un chiffrage cohérent avec le benchmark et proposer plusieurs scénarios d’exploitation, conformément aux observables O8/O9.

@@ -13,41 +13,6 @@ id: 5d09b283-adb5-4bde-b3a4-5d9d79c195d2
 
 ---
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Authentication](#authentication)
-  - [Register](#register)
-  - [Login](#login)
-- [Video Analysis (Skeleton Detection)](#video-analysis-skeleton-detection)
-  - [1\. Request Upload URL](#1-request-upload-url)
-  - [2\. Start Video Analysis](#2-start-video-analysis)
-  - [3\. Get Analysis Result](#3-get-analysis-result)
-- [Route Ghost (Optimal Path Generation)](#route-ghost-optimal-path-generation)
-  - [1\. Upload Route Photo](#1-upload-route-photo)
-  - [2\. Generate Ghost](#2-generate-ghost)
-  - [3\. Get Ghost Result](#3-get-ghost-result)
-- [Ghost Overlay on Video](#ghost-overlay-on-video)
-  - [Compare Video with Ghost](#compare-video-with-ghost)
-- [Hold Recognition](#hold-recognition)
-  - [1\. Upload Hold Image](#1-upload-hold-image)
-  - [2\. Detect Holds](#2-detect-holds)
-  - [3\. Correct Hold Type](#3-correct-hold-type)
-- [Coaching & Goals](#coaching-goals)
-  - [1\. Set Goals](#1-set-goals)
-  - [2\. Get Routine](#2-get-routine)
-  - [3\. Log Training Session](#3-log-training-session)
-- [User Profile & Subscription](#user-profile-subscription)
-  - [Get Profile](#get-profile)
-  - [Subscription Tiers](#subscription-tiers)
-- [WebSocket (Real-time Updates)](#websocket-real-time-updates)
-  - [Messages from Server](#messages-from-server)
-    - [Analysis Progress](#analysis-progress)
-    - [Analysis Complete](#analysis-complete)
-- [Error Codes](#error-codes)
-
----
-
 ## Overview
 
 This document describes the Ascension REST API for video analysis, route visualization, and climbing coaching.

@@ -15,43 +15,6 @@ id: 377a22cf-18e4-47b5-8e2e-f8979c75c582
 
 ---
 
-## Table of Contents
-
-- [Go vs Rust — Comparaison fonctionnelle serveur](#go-vs-rust--comparaison-fonctionnelle-serveur)
-  - [Table of Contents](#table-of-contents)
-  - [Périmètre comparé](#p%C3%A9rim%C3%A8tre-compar%C3%A9)
-  - [Synthèse rapide](#synth%C3%A8se-rapide)
-  - [Différences fonctionnelles détaillées](#diff%C3%A9rences-fonctionnelles-d%C3%A9taill%C3%A9es)
-  - [1) Authentification](#1-authentification)
-    - [Go (](#go-appsserver)`apps/server`[)](#go-appsserver)
-    - [Rust (](#rust-appsserver-rust)`apps/server-rust`[)](#rust-appsserver-rust)
-    - [Écart](#%C3%A9cart)
-  - [2) Users](#2-users)
-    - [Go](#go)
-    - [Rust](#rust)
-    - [Écart](#%C3%A9cart)
-  - [3) Videos](#3-videos)
-    - [Go](#go)
-    - [Rust](#rust)
-    - [Écart](#%C3%A9cart)
-  - [4) Analyses IA](#4-analyses-ia)
-    - [Go](#go)
-    - [Rust](#rust)
-    - [Écart](#%C3%A9cart)
-  - [5) Documentation API](#5-documentation-api)
-    - [Go](#go)
-    - [Rust](#rust)
-    - [Écart](#%C3%A9cart)
-  - [Ce qui manque à implémenter dans le serveur Go (checklist)](#ce-qui-manque-%C3%A0-impl%C3%A9menter-dans-le-serveur-go-checklist)
-  - [Priorité P0 — Analyse enrichie (fort impact produit)](#priorit%C3%A9-p0-analyse-enrichie-fort-impact-produit)
-  - [Priorité P1 — Documentation API](#priorit%C3%A9-p1-documentation-api)
-  - [Priorité P2 — Alignement DX/comportement (optionnel)](#priorit%C3%A9-p2-alignement-dxcomportement-optionnel)
-  - [Plan d’implémentation recommandé (ordre pratique)](#plan-dimpl%C3%A9mentation-recommand%C3%A9-ordre-pratique)
-  - [Critères d’acceptation (Done)](#crit%C3%A8res-dacceptation-done)
-  - [Notes de compatibilité](#notes-de-compatibilit%C3%A9)
-
----
-
 ## Périmètre comparé
 
 - Serveur Go: `apps/server`

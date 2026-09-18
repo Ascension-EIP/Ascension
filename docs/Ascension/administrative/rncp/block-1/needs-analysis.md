@@ -14,27 +14,6 @@ DON'T EDIT THIS FILE !
 
 ---
 
-## Table des matières
-
-- [Bloc 1 — M1 — 01 Analyse des besoins](#bloc-1--m1--01-analyse-des-besoins)
-  - [Table des matières](#table-des-mati%C3%A8res)
-  - [Objectif du document](#objectif-du-document)
-  - [Périmètre et sources](#p%C3%A9rim%C3%A8tre-et-sources)
-  - [Méthodologie de recueil](#m%C3%A9thodologie-de-recueil)
-  - [Parties prenantes et besoins exprimés](#parties-prenantes-et-besoins-exprim%C3%A9s)
-    - [1\. Parties prenantes identifiées](#1-parties-prenantes-identifi%C3%A9es)
-    - [2\. Besoins utilisateurs consolidés](#2-besoins-utilisateurs-consolid%C3%A9s)
-    - [3\. Besoin business](#3-besoin-business)
-  - [Périmètre fonctionnel consolidé](#p%C3%A9rim%C3%A8tre-fonctionnel-consolid%C3%A9)
-    - [Must Have (MVP Bloc 1)](#must-have-mvp-bloc-1)
-    - [Should / Could (hors MVP strict)](#should--could-hors-mvp-strict)
-    - [Out of scope explicite (version actuelle)](#out-of-scope-explicite-version-actuelle)
-  - [Exigences accessibilité (PSH)](#exigences-accessibilit%C3%A9-psh)
-  - [Traçabilité RNCP M1 (O1, O2)](#tra%C3%A7abilit%C3%A9-rncp-m1-o1-o2)
-  - [Points ouverts à sécuriser avant oral](#points-ouverts-%C3%A0-s%C3%A9curiser-avant-oral)
-
----
-
 ## Objectif du document
 
 Formaliser l’analyse des besoins pour la modalité M1 (Bloc 1 RNCP), en s’appuyant sur des preuves déjà présentes dans le dépôt, sans extrapoler au-delà des artefacts existants.

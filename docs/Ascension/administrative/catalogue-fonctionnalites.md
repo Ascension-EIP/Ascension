@@ -13,39 +13,6 @@ id: adc007ee-64c3-4a37-884b-07b65e0f2782
 
 ---
 
-## Table of Contents
-
-- [Catalogue complet des fonctionnalités Ascension](#catalogue-complet-des-fonctionnalit%C3%A9s-ascension)
-  - [Table of Contents](#table-of-contents)
-  - [Objectif du document](#objectif-du-document)
-  - [Vue d'ensemble des fonctionnalités](#vue-densemble-des-fonctionnalit%C3%A9s)
-  - [Parcours global simplifié (version débutant)](#parcours-global-simplifi%C3%A9-version-d%C3%A9butant)
-  - [Détail de chaque fonctionnalité](#d%C3%A9tail-de-chaque-fonctionnalit%C3%A9)
-    - [F01 - Profil morphologique et contexte utilisateur](#f01---profil-morphologique-et-contexte-utilisateur)
-    - [F02 - Analyse de grimpe (vidéo -> feedback)](#f02---analyse-de-grimpe-vid%C3%A9o---feedback)
-    - [F03 - Extraction de squelette et biomécanique](#f03---extraction-de-squelette-et-biom%C3%A9canique)
-    - [F04 - Score global et indicateurs de progression](#f04---score-global-et-indicateurs-de-progression)
-    - [F05 - Mode Fantôme en comparaison](#f05---mode-fant%C3%B4me-en-comparaison)
-    - [F06 - Analyse des prises (détection, qualification, correction)](#f06---analyse-des-prises-d%C3%A9tection-qualification-correction)
-    - [F07 - Mode Fantôme sans grimpe](#f07---mode-fant%C3%B4me-sans-grimpe)
-    - [F08 - Expérience 3D mobile](#f08---exp%C3%A9rience-3d-mobile)
-    - [F09 - Conseils techniques personnalisés (IA externe)](#f09---conseils-techniques-personnalis%C3%A9s-ia-externe)
-    - [F10 - Coach perso et programmes d'entraînement](#f10---coach-perso-et-programmes-dentra%C3%AEnement)
-    - [F11 - Dimension communautaire et partage](#f11---dimension-communautaire-et-partage)
-    - [F12 - Grimpe assistée (AR + audio)](#f12---grimpe-assist%C3%A9e-ar--audio)
-    - [F13 - Abonnements, quotas et montée en gamme](#f13---abonnements-quotas-et-mont%C3%A9e-en-gamme)
-    - [F14 - Onboarding et tutoriels rejouables](#f14---onboarding-et-tutoriels-rejouables)
-    - [F15 - Accessibilité numérique (transverse)](#f15---accessibilit%C3%A9-num%C3%A9rique-transverse)
-    - [F16 - Fiabilité plateforme (pipeline, CI/CD, observabilité)](#f16---fiabilit%C3%A9-plateforme-pipeline-cicd-observabilit%C3%A9)
-  - [Synthèse par phase roadmap](#synth%C3%A8se-par-phase-roadmap)
-    - [Avant septembre 2026 (livraison Action Plan + BTP)](#avant-septembre-2026-livraison-action-plan--btp)
-    - [Exécution BTP (septembre 2026 -> juillet 2027)](#ex%C3%A9cution-btp-septembre-2026---juillet-2027)
-    - [Passage GreenLight + livraison ATP (juillet 2027)](#passage-greenlight--livraison-atp-juillet-2027)
-    - [Exécution ATP (août 2027 -> mars 2028)](#ex%C3%A9cution-atp-ao%C3%BBt-2027---mars-2028)
-  - [Points qui font la valeur unique d'Ascension](#points-qui-font-la-valeur-unique-dascension)
-
----
-
 ## Objectif du document
 
 Ce document liste et explique toutes les fonctionnalités du projet Ascension de façon claire, simple et détaillée.

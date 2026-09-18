@@ -13,50 +13,6 @@ id: 66bf5d80-e1b4-457e-9fee-c1988ad5a22c
 
 ---
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Core Principles](#core-principles)
-- [Essential Documentation](#essential-documentation)
-  - [📋 Part 1: System Architecture](#part-1-system-architecture)
-  - [📊 Part 2: Data & API Modeling](#part-2-data-api-modeling)
-  - [🔄 Workflows](#workflows)
-- [Architecture Components](#architecture-components)
-- [Key Features](#key-features)
-  - [Intelligent Upload System](#intelligent-upload-system)
-  - [Asynchronous Processing](#asynchronous-processing)
-  - [Lightweight Results](#lightweight-results)
-  - [Lifecycle Management](#lifecycle-management)
-- [Directory Structure](#directory-structure)
-- [Repository Structure](#repository-structure)
-- [Technology Stack](#technology-stack)
-  - [Client Layer](#client-layer)
-  - [API Gateway](#api-gateway)
-  - [AI Processing](#ai-processing)
-  - [Data Layer](#data-layer)
-- [Deployment Phases](#deployment-phases)
-  - [Phase 1: Development (Single Machine)](#phase-1-development-single-machine)
-  - [Phase 2: Staging (Single Hetzner VPS)](#phase-2-staging-single-hetzner-vps)
-  - [Phase 3: Production (Distributed — Hetzner)](#phase-3-production-distributed-hetzner)
-- [Getting Started](#getting-started)
-  - [For New Developers](#for-new-developers)
-  - [For Architects & Tech Leads](#for-architects-tech-leads)
-  - [Quick Links](#quick-links)
-- [Design Decisions](#design-decisions)
-  - [Why Go for API? (Migrated from Rust)](#why-go-for-api-migrated-from-rust)
-  - [Why Python for AI?](#why-python-for-ai)
-  - [Why Separate AI Workers?](#why-separate-ai-workers)
-  - [Why RabbitMQ?](#why-rabbitmq)
-  - [Why Client-side Rendering?](#why-client-side-rendering)
-- [Performance Targets](#performance-targets)
-- [Security Considerations](#security-considerations)
-- [Monitoring & Observability](#monitoring-observability)
-- [Cost Optimization](#cost-optimization)
-- [Contributing](#contributing)
-- [References](#references)
-
----
-
 ## Overview
 
 Ascension is built on a modern microservices architecture designed to handle computationally intensive AI workloads while maintaining responsiveness for end users. The system separates concerns between user interaction (Go API), heavy computation (Python AI workers), and data persistence.

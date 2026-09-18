@@ -15,28 +15,6 @@ This guide covers everything a new developer needs to start working on the Ascen
 
 ---
 
-## Table of Contents
-
-- [Server — Developer Guide](#server--developer-guide)
-  - [Table of Contents](#table-of-contents)
-  - [Prerequisites](#prerequisites)
-  - [Tech Stack](#tech-stack)
-  - [Repository Layout](#repository-layout)
-  - [Environment Variables](#environment-variables)
-  - [Running Locally](#running-locally)
-    - [1\. Start the infrastructure](#1-start-the-infrastructure)
-    - [2\. Install sqlx-cli](#2-install-sqlx-cli)
-    - [3\. Run database migrations](#3-run-database-migrations)
-    - [4\. Start the server](#4-start-the-server)
-  - [Moon Tasks Reference](#moon-tasks-reference)
-  - [Database Migrations](#database-migrations)
-  - [SQLx Offline Mode](#sqlx-offline-mode)
-  - [Testing](#testing)
-  - [Docker](#docker)
-  - [Common Errors](#common-errors)
-
----
-
 ## Prerequisites
 
 - **Go** (toolchain version `1.26.0` — download from go.dev or use proto)

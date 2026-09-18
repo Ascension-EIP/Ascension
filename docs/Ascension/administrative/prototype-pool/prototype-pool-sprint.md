@@ -14,35 +14,6 @@ DON'T EDIT THIS FILE !
 
 ---
 
-## Table of Contents
-
-- [Prototype Pool — 2-Week Prototyping Sprint](#prototype-pool--2-week-prototyping-sprint)
-  - [Table of Contents](#table-of-contents)
-  - [1\. Objectives](#1-objectives)
-  - [2\. Scope](#2-scope)
-    - [2.1 AI Service](#21-ai-service)
-    - [2.2 Backend Server](#22-backend-server)
-    - [2.3 Mobile Application](#23-mobile-application)
-    - [2.4 Infrastructure](#24-infrastructure)
-  - [3\. User Flow](#3-user-flow)
-  - [4\. Development Environment](#4-development-environment)
-    - [4.1 Global Environment](#41-global-environment)
-    - [4.2 Team Setup](#42-team-setup)
-    - [4.3 Toolchain & Versions](#43-toolchain--versions)
-      - [Task Runner — moon](#task-runner--moon)
-      - [Backend — Rust](#backend--rust)
-      - [AI — Python](#ai--python)
-      - [Mobile — Flutter / Dart](#mobile--flutter--dart)
-      - [Infrastructure — Docker & Services](#infrastructure--docker--services)
-    - [4.4 Development Workflow](#44-development-workflow)
-  - [5\. Task Assignment](#5-task-assignment)
-  - [6\. Key Milestones](#6-key-milestones)
-  - [7\. Material Request](#7-material-request)
-    - [7.1 Cloud Infrastructure (Hetzner)](#71-cloud-infrastructure-hetzner)
-    - [7.2 Physical Test Devices](#72-physical-test-devices)
-
----
-
 ## 1\. Objectives
 
 The goal of this 2-week prototyping sprint is to build a **functional end-to-end prototype** that validates the feasibility of the entire Ascension technical stack.

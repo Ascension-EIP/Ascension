@@ -15,23 +15,6 @@ This document explains how the Ascension backend server is structured and why it
 
 ---
 
-## Table of Contents
-
-- [Server Architecture](#server-architecture)
-  - [Table of Contents](#table-of-contents)
-  - [Tech stack](#tech-stack)
-  - [What is Hexagonal Architecture?](#what-is-hexagonal-architecture)
-  - [The three layers of the server](#the-three-layers-of-the-server)
-    - [Domain (the core)](#domain-the-core)
-    - [Inbound (HTTP layer)](#inbound-http-layer)
-    - [Outbound (database layer)](#outbound-database-layer)
-  - [How a request flows through the server](#how-a-request-flows-through-the-server)
-  - [File structure map](#file-structure-map)
-  - [The entry point:](#the-entry-point-maingo) `main.go`
-  - [Configuration:](#configuration-configgo) `config.go`
-
----
-
 ## Tech stack
 
 | Technology | Role |

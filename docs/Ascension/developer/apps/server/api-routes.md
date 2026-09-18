@@ -15,38 +15,6 @@ This document lists every HTTP route exposed by the Ascension backend server, wi
 
 ---
 
-## Table of Contents
-
-- [Server API Routes Reference](#server-api-routes-reference)
-  - [Table of Contents](#table-of-contents)
-  - [Base URL](#base-url)
-  - [Response Format](#response-format)
-  - [Authentication](#authentication)
-  - [Rate Limiting](#rate-limiting)
-  - [Auth](#auth)
-    - [POST /v1/auth/signup — Register a new account](#post-v1authsignup--register-a-new-account)
-    - [POST /v1/auth/login — Log in](#post-v1authlogin--log-in)
-    - [DELETE /v1/auth/logout — Log out](#delete-v1authlogout--log-out)
-    - [PUT /v1/auth/refresh — Refresh token](#put-v1authrefresh--refresh-token)
-  - [Users](#users)
-    - [POST /v1/users — Create a user](#post-v1users--create-a-user)
-    - [GET /v1/users — List all users](#get-v1users--list-all-users)
-    - [GET /v1/users/{id} — Get a user](#get-v1usersid--get-a-user)
-    - [PUT /v1/users/{id} — Update a user](#put-v1usersid--update-a-user)
-    - [DELETE /v1/users/{id} — Delete a user](#delete-v1usersid--delete-a-user)
-  - [Videos](#videos)
-    - [GET /v1/videos/upload-url — Get a presigned upload URL](#get-v1videosupload-url--get-a-presigned-upload-url)
-    - [PUT /v1/videos/upload-done/{id} — Complete upload](#put-v1videosupload-doneid--complete-upload)
-    - [GET /v1/videos/download-url/{id} — Get download URL](#get-v1videosdownload-urlid--get-download-url)
-  - [Analyses](#analyses)
-    - [POST /v1/analysis — Trigger an analysis](#post-v1analysis--trigger-an-analysis)
-    - [GET /v1/analysis/{id} — Get an analysis](#get-v1analysisid--get-an-analysis)
-  - [Health](#health)
-    - [GET /healthz — Health check](#get-healthz--health-check)
-  - [Error Codes Reference](#error-codes-reference)
-
----
-
 ## Base URL
 
 | Environment | URL |

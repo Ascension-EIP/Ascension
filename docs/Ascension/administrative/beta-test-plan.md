@@ -13,18 +13,6 @@ id: 399207b7-e3a6-4697-97d9-382552ba3060
 
 ---
 
-## Table of Contents
-
-- [Ascension Beta Test Plan (BTP)](#ascension-beta-test-plan-btp)
-  - [Table of Contents](#table-of-contents)
-  - [1\. Project context, objectives and workflow](#1-project-context-objectives-and-workflow)
-  - [2\. User roles](#2-user-roles)
-  - [3\. Feature table (organized by user flow)](#3-feature-table-organized-by-user-flow)
-  - [4\. Success criteria table](#4-success-criteria-table)
-  - [5\. Out of beta scope](#5-out-of-beta-scope)
-
----
-
 ## 1\. Project context, objectives and workflow
 
 Ascension est une application mobile qui aide les grimpeurs à progresser grâce à une analyse biomécanique assistée par IA.

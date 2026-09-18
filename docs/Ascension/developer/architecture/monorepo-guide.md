@@ -13,46 +13,6 @@ id: 159ee3ac-6376-46bf-b459-dbb45c3fe71c
 
 ---
 
-## Table of Contents
-
-- [Ascension Monorepo Architecture Guide](#ascension-monorepo-architecture-guide)
-  - [Table of Contents](#table-of-contents)
-  - [Overview](#overview)
-  - [Repository Structure](#repository-structure)
-  - [Why moonrepo?](#why-moonrepo)
-    - [Advantages](#advantages)
-    - [Trade-offs](#trade-offs)
-  - [moonrepo Configuration](#moonrepo-configuration)
-    - [Workspace (](#workspace-moonworkspaceyml)`/.moon/workspace.yml`[)](#workspace-moonworkspaceyml)
-    - [Toolchain (](#toolchain-moontoolchainyml)`/.moon/toolchain.yml`[)](#toolchain-moontoolchainyml)
-    - [Project config (](#project-config-appsprojectmoonyml)`apps/<project>/moon.yml`[)](#project-config-appsprojectmoonyml)
-  - [Installing moon](#installing-moon)
-  - [Daily Workflow](#daily-workflow)
-    - [Initial Clone](#initial-clone)
-    - [Running Tasks](#running-tasks)
-    - [Common Commands](#common-commands)
-    - [Working on a Specific Service](#working-on-a-specific-service)
-  - [Development Environment](#development-environment)
-    - [Docker Compose Setup](#docker-compose-setup)
-    - [Starting Development Environment](#starting-development-environment)
-  - [CI/CD Architecture](#cicd-architecture)
-    - [Affected-only Pipelines with moon](#affected-only-pipelines-with-moon)
-    - [Full Build for Deploy](#full-build-for-deploy)
-  - [Best Practices](#best-practices)
-    - [1\. Always Define Tasks in](#1-always-define-tasks-in-moonyml) `moon.yml`
-    - [2\. Pin Toolchain Versions](#2-pin-toolchain-versions)
-    - [3\. Use](#3-use---affected-in-ci) `--affected` [in CI](#3-use---affected-in-ci)
-    - [4\. Document Breaking Changes in Commits](#4-document-breaking-changes-in-commits)
-    - [5\. Keep](#5-keep-moonyml-minimal) `moon.yml` [Minimal](#5-keep-moonyml-minimal)
-  - [Troubleshooting](#troubleshooting)
-    - [Problem:](#problem-moon-command-not-found) `moon` [Command Not Found](#problem-moon-command-not-found)
-    - [Problem: Task Fails with Missing Binary](#problem-task-fails-with-missing-binary)
-    - [Problem: Cache Is Stale](#problem-cache-is-stale)
-    - [Problem: Wrong Toolchain Version](#problem-wrong-toolchain-version)
-  - [Additional Resources](#additional-resources)
-
----
-
 ## Overview
 
 This guide explains how Ascension uses a **monorepo with** [**moonrepo**](https://moonrepo.dev) to organize its codebase and orchestrate tasks across all services within a single repository.

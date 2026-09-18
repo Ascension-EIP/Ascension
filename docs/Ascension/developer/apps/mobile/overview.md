@@ -15,38 +15,6 @@ This guide covers the architecture, screens, navigation, and API integration of 
 
 ---
 
-## Table of Contents
-
-- [Mobile — Developer Guide](#mobile--developer-guide)
-  - [Table of Contents](#table-of-contents)
-  - [Prerequisites](#prerequisites)
-  - [Tech Stack](#tech-stack)
-  - [Repository Layout](#repository-layout)
-  - [Running Locally](#running-locally)
-    - [Moon Tasks Reference](#moon-tasks-reference)
-  - [App Architecture](#app-architecture)
-    - [Feature-First Folder Structure](#feature-first-folder-structure)
-    - [Shared Layer](#shared-layer)
-    - [Core Layer](#core-layer)
-  - [Navigation](#navigation)
-  - [Screens](#screens)
-    - [Home](#home)
-    - [Upload](#upload)
-    - [Stats](#stats)
-    - [Profile](#profile)
-    - [Analysis Result](#analysis-result)
-  - [API Integration](#api-integration)
-    - [ApiService — Singleton](#apiservice--singleton)
-    - [Backend URL Configuration](#backend-url-configuration)
-    - [Available API Calls](#available-api-calls)
-  - [Video Upload Flow](#video-upload-flow)
-  - [Theme](#theme)
-  - [Environment Variables](#environment-variables)
-  - [Testing](#testing)
-  - [Common Errors](#common-errors)
-
----
-
 ## Prerequisites
 
 - **Flutter SDK** ≥ 3.11 (Dart ≥ 3.11)

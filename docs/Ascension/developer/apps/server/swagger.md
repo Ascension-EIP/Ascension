@@ -17,22 +17,6 @@ This document explains how to access the interactive API documentation (Swagger 
 
 ---
 
-## Table of Contents
-
-- [Swagger / OpenAPI](#swagger--openapi)
-  - [Table of Contents](#table-of-contents)
-  - [Accessing Swagger UI](#accessing-swagger-ui)
-  - [OpenAPI JSON endpoint](#openapi-json-endpoint)
-  - [Route groups (tags)](#route-groups-tags)
-  - [How it works](#how-it-works)
-  - [Adding a new route to the spec](#adding-a-new-route-to-the-spec)
-    - [1\. Annotate request/response structs](#1-annotate-requestresponse-structs)
-    - [2\. Annotate the handler function](#2-annotate-the-handler-function)
-    - [3\. Register in](#3-register-in-apidoc) `ApiDoc`
-    - [4\. Verify](#4-verify)
-
----
-
 ## Accessing Swagger UI
 
 | Environment | URL |

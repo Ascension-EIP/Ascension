@@ -15,20 +15,6 @@ This document explains how Ascension documentation is structured to meet accessi
 
 ---
 
-## Table of Contents
-
-- [Documentation Accessibility Compliance Statement](#documentation-accessibility-compliance-statement)
-  - [Table of Contents](#table-of-contents)
-  - [Scope](#scope)
-  - [Publication Context](#publication-context)
-  - [Reference Standards](#reference-standards)
-  - [Applied Accessibility Rules](#applied-accessibility-rules)
-  - [How Compliance Is Demonstrated](#how-compliance-is-demonstrated)
-  - [Evidence and Governance](#evidence-and-governance)
-  - [Conclusion](#conclusion)
-
----
-
 ## Scope
 
 This statement applies to Markdown documentation located under `docs/` and published through the project documentation workflow.
@@ -69,7 +55,6 @@ This is a documentation conformance statement for Markdown content quality; it d
 The project guideline enforces accessibility-oriented authoring rules, including:
 
 - hierarchical headings with no skipped levels,
-- mandatory Table of Contents for navigability,
 - descriptive links (no ambiguous "click here" phrasing),
 - meaningful alternative text for informative images,
 - no color-only meaning without text equivalent,
@@ -129,20 +114,6 @@ This document explains how Ascension documentation is structured to meet accessi
 
 ---
 
-## Table of Contents
-
-- [Documentation Accessibility Compliance Statement](#documentation-accessibility-compliance-statement)
-  - [Table of Contents](#table-of-contents)
-  - [Scope](#scope)
-  - [Publication Context](#publication-context)
-  - [Reference Standards](#reference-standards)
-  - [Applied Accessibility Rules](#applied-accessibility-rules)
-  - [How Compliance Is Demonstrated](#how-compliance-is-demonstrated)
-  - [Evidence and Governance](#evidence-and-governance)
-  - [Conclusion](#conclusion)
-
----
-
 ## Scope
 
 This statement applies to Markdown documentation located under `docs/` and published through the project documentation workflow.
@@ -183,7 +154,6 @@ This is a documentation conformance statement for Markdown content quality; it d
 The project guideline enforces accessibility-oriented authoring rules, including:
 
 - hierarchical headings with no skipped levels,
-- mandatory Table of Contents for navigability,
 - descriptive links (no ambiguous "click here" phrasing),
 - meaningful alternative text for informative images,
 - no color-only meaning without text equivalent,

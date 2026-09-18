@@ -20,55 +20,6 @@ Ce document fournit une analyse exhaustive et détaillée des flux de communicat
 
 ---
 
-## Table of Contents
-
-- [Audit des Communications Inter-Applications, Analyse des Écarts & Recommandations d'Architecture](#audit-des-communications-inter-applications-analyse-des-%C3%A9carts--recommandations-darchitecture)
-  - [Table of Contents](#table-of-contents)
-  - [1\. Synthèse Globale de l'Architecture et du Problème](#1-synth%C3%A8se-globale-de-larchitecture-et-du-probl%C3%A8me)
-    - [1.1 Vue d'ensemble des trois briques](#11-vue-densemble-des-trois-briques)
-    - [1.2 Diagramme de communication cible](#12-diagramme-de-communication-cible)
-  - [2\. Matrice Comparative : Front Mobile](#2-matrice-comparative--front-mobile-longleftrightarrow-backend-api) $\\longleftrightarrow$ [Backend API](#2-matrice-comparative--front-mobile-longleftrightarrow-backend-api)
-    - [2.1 Domaine Authentification](#21-domaine-authentification)
-      - [2.1.1 Inscription / Signup](#211-inscription--signup)
-      - [2.1.2 Connexion / Login](#212-connexion--login)
-      - [2.1.3 Déconnexion / Logout & Rafraîchissement de Token](#213-d%C3%A9connexion--logout--rafra%C3%AEchissement-de-token)
-    - [2.2 Domaine Utilisateurs & Profil](#22-domaine-utilisateurs--profil)
-      - [2.2.1 Récupération du profil (](#221-r%C3%A9cup%C3%A9ration-du-profil-getuser)`getUser`[)](#221-r%C3%A9cup%C3%A9ration-du-profil-getuser)
-      - [2.2.2 Mise à jour du profil](#222-mise-%C3%A0-jour-du-profil)
-    - [2.3 Domaine Vidéos & Stockage MinIO](#23-domaine-vid%C3%A9os--stockage-minio)
-      - [2.3.1 Demande d'URL de téléversement (](#231-demande-durl-de-t%C3%A9l%C3%A9versement-getuploadurl)`getUploadUrl`[)](#231-demande-durl-de-t%C3%A9l%C3%A9versement-getuploadurl)
-      - [2.3.2 Téléversement direct sur MinIO & Problème de résolution DNS](#232-t%C3%A9l%C3%A9versement-direct-sur-minio--probl%C3%A8me-de-r%C3%A9solution-dns)
-      - [2.3.3 Confirmation de téléversement (](#233-confirmation-de-t%C3%A9l%C3%A9versement-uploadcomplete)`UploadComplete`[)](#233-confirmation-de-t%C3%A9l%C3%A9versement-uploadcomplete)
-      - [2.3.4 Téléchargement de vidéo (](#234-t%C3%A9l%C3%A9chargement-de-vid%C3%A9o-getdownloadurl)`GetDownloadURL`[)](#234-t%C3%A9l%C3%A9chargement-de-vid%C3%A9o-getdownloadurl)
-    - [2.4 Domaine Analyses](#24-domaine-analyses)
-      - [2.4.1 Déclenchement de l'analyse (](#241-d%C3%A9clenchement-de-lanalyse-triggeranalysis)`triggerAnalysis`[)](#241-d%C3%A9clenchement-de-lanalyse-triggeranalysis)
-      - [2.4.2 Suivi et résultat d'analyse (](#242-suivi-et-r%C3%A9sultat-danalyse-getanalysis)`getAnalysis`[)](#242-suivi-et-r%C3%A9sultat-danalyse-getanalysis)
-      - [2.4.3 Historique des analyses d'un utilisateur](#243-historique-des-analyses-dun-utilisateur)
-    - [2.5 Gestion Transversale : Sécurité JWT & Erreurs](#25-gestion-transversale--s%C3%A9curit%C3%A9-jwt--erreurs)
-  - [3\. Matrice Comparative : Backend API](#3-matrice-comparative--backend-api-longleftrightarrow-worker-ia) $\\longleftrightarrow$ [Worker IA](#3-matrice-comparative--backend-api-longleftrightarrow-worker-ia)
-    - [3.1 Message Broker RabbitMQ](#31-message-broker-rabbitmq)
-      - [3.1.1 Nom de file (Queue Name Desynchronization)](#311-nom-de-file-queue-name-desynchronization)
-      - [3.1.2 Structure du message de tâche (](#312-structure-du-message-de-t%C3%A2che-jobpayload)`JobPayload`[)](#312-structure-du-message-de-t%C3%A2che-jobpayload)
-      - [3.1.3 Événements de terminaison (](#313-%C3%A9v%C3%A9nements-de-terminaison-ascensionevents)`ascension.events`[)](#313-%C3%A9v%C3%A9nements-de-terminaison-ascensionevents)
-    - [3.2 Base de Données PostgreSQL](#32-base-de-donn%C3%A9es-postgresql)
-      - [3.2.1 Nom de la table SQL (](#321-nom-de-la-table-sql-analysis-vs-analyses)`analysis` [vs](#321-nom-de-la-table-sql-analysis-vs-analyses) `analyses`[)](#321-nom-de-la-table-sql-analysis-vs-analyses)
-      - [3.2.2 Colonnes manquantes (](#322-colonnes-manquantes-progress-hints-job_id)`progress`[,](#322-colonnes-manquantes-progress-hints-job_id) `hints`[,](#322-colonnes-manquantes-progress-hints-job_id) `job_id`[)](#322-colonnes-manquantes-progress-hints-job_id)
-      - [3.2.3 Double jeu de migrations en concurrence](#323-double-jeu-de-migrations-en-concurrence)
-    - [3.3 Stockage Objet MinIO](#33-stockage-objet-minio)
-  - [4\. Recommandations d'Architecture & Conception Modulaire](#4-recommandations-darchitecture--conception-modulaire)
-    - [4.1 Architecture Backend Go](#41-architecture-backend-go)
-    - [4.2 Architecture Mobile Flutter](#42-architecture-mobile-flutter)
-    - [4.3 Architecture Worker IA Python](#43-architecture-worker-ia-python)
-    - [4.4 Évolution vers le Temps Réel (WebSockets / SSE)](#44-%C3%A9volution-vers-le-temps-r%C3%A9el-websockets--sse)
-  - [5\. Roadmap d'Actions Concrètes (Checklist Priorisée)](#5-roadmap-dactions-concr%C3%A8tes-checklist-prioris%C3%A9e)
-    - [Phase 1 : Rétablissement du Schéma SQL & Migrations (P0)](#phase-1--r%C3%A9tablissement-du-sch%C3%A9ma-sql--migrations-p0)
-    - [Phase 2 : Synchronisation RabbitMQ (P0)](#phase-2--synchronisation-rabbitmq-p0)
-    - [Phase 3 : Harmonisation du Backend Go (P0)](#phase-3--harmonisation-du-backend-go-p0)
-    - [Phase 4 : Refonte de la Couche Réseau Mobile Flutter (P0)](#phase-4--refonte-de-la-couche-r%C3%A9seau-mobile-flutter-p0)
-    - [Phase 5 : Modernisation & Cadrage Moyen Terme (P1)](#phase-5--modernisation--cadrage-moyen-terme-p1)
-
----
-
 ## 1\. Synthèse Globale de l'Architecture et du Problème
 
 ### 1.1 Vue d'ensemble des trois briques

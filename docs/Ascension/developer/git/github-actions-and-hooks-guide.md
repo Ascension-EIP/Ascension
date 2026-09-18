@@ -15,37 +15,6 @@ This document describes all the Git hooks, validation scripts, and GitHub Action
 
 ---
 
-## Table of Contents
-
-- [GitHub Actions & Hooks Guide](#github-actions--hooks-guide)
-  - [Table of Contents](#table-of-contents)
-  - [1\. Overview](#1-overview)
-  - [2\. Keywords configuration](#2-keywords-configuration)
-  - [3\. Git hooks](#3-git-hooks)
-    - [3.1](#31-pre-commit) `pre-commit`
-    - [3.2](#32-commit-msg) `commit-msg`
-    - [3.3](#33-pre-push) `pre-push`
-    - [3.4 Enabling hooks locally](#34-enabling-hooks-locally)
-  - [4\. Validation scripts](#4-validation-scripts)
-    - [4.1](#41-check_branch) `check_branch`
-    - [4.2](#42-check_commit) `check_commit`
-    - [4.3](#43-check_push) `check_push`
-    - [4.4](#44-reformat_code) `reformat_code`
-    - [4.5](#45-get_commits_list) `get_commits_list`
-    - [4.6](#46-generate_wiki) `generate_wiki`
-  - [5\. GitHub Actions workflows](#5-github-actions-workflows)
-    - [5.1 CI workflow (](#51-ci-workflow-ciyml)`ci.yml`[)](#51-ci-workflow-ciyml)
-    - [5.2 No-CI detection workflow (](#52-no-ci-detection-workflow-detect-no-ciyml)`detect-no-ci.yml`[)](#52-no-ci-detection-workflow-detect-no-ciyml)
-    - [5.3 Deploy workflow (](#53-deploy-workflow-deployyml)`deploy.yml`[)](#53-deploy-workflow-deployyml)
-    - [5.4 Dev-to-staging workflow (](#54-dev-to-staging-workflow-dev-to-stagingyml)`dev-to-staging.yml`[)](#54-dev-to-staging-workflow-dev-to-stagingyml)
-    - [5.5 Staging-to-main workflow (](#55-staging-to-main-workflow-staging-to-mainyml)`staging-to-main.yml`[)](#55-staging-to-main-workflow-staging-to-mainyml)
-    - [5.6 VPS deploy workflow (](#56-vps-deploy-workflow-vps-deployyml)`vps-deploy.yml`[)](#56-vps-deploy-workflow-vps-deployyml)
-    - [5.7 Docs-to-wiki workflow (](#57-docs-to-wiki-workflow-docs-to-wikiyml)`docs-to-wiki.yml`[)](#57-docs-to-wiki-workflow-docs-to-wikiyml)
-    - [5.8 Gemini PR review workflow (](#58-gemini-pr-review-workflow-gemini-pr-reviewyml)`gemini-pr-review.yml`[)](#58-gemini-pr-review-workflow-gemini-pr-reviewyml)
-  - [6\. Secrets and variables](#6-secrets-and-variables)
-
----
-
 ## 1\. Overview
 
 The Ascension project uses a two-layered enforcement strategy:

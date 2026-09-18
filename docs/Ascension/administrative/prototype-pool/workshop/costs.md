@@ -14,20 +14,6 @@ DON'T EDIT THIS FILE !
 
 ---
 
-## Table of Contents
-
-- [Executive Summary (Résumé financier)](#executive-summary-r%C3%A9sum%C3%A9-financier)
-- [1\. Identification des Ressources](#1-identification-des-ressources)
-  - [1.1 Infrastructure & Cloud (Hetzner)](#11-infrastructure-cloud-hetzner)
-  - [1.2 Coûts de Publication & Branding (CAPEX)](#12-co%C3%BBts-de-publication-branding-capex)
-- [2\. Benchmarks & Choix Stratégiques](#2-benchmarks-choix-strat%C3%A9giques)
-  - [2.1 Pourquoi Hetzner plutôt qu'AWS ?](#21-pourquoi-hetzner-plut%C3%B4t-quaws)
-  - [2.2 Stack Technique : L'optimisation au service du budget](#22-stack-technique-loptimisation-au-service-du-budget)
-- [3\. Architecture & Sizing (MVP)](#3-architecture-sizing-mvp)
-- [4\. Stratégie de Scaling](#4-strat%C3%A9gie-de-scaling)
-
----
-
 ## Executive Summary (Résumé financier)
 
 L'objectif de cette étude est d'estimer les ressources nécessaires au lancement du MVP (100 utilisateurs) et d'anticiper les coûts de passage à l'échelle (10 000 utilisateurs).

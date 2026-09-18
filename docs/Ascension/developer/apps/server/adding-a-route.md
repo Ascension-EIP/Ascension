@@ -17,21 +17,6 @@ We will use a concrete example: adding a `GET /v1/status/version` endpoint that 
 
 ---
 
-## Table of Contents
-
-- [How to Add a Route](#how-to-add-a-route)
-  - [Table of Contents](#table-of-contents)
-  - [Overview: what files are involved?](#overview-what-files-are-involved)
-  - [Step 1 – Create the handler struct and method](#step-1--create-the-handler-struct-and-method)
-  - [Step 2 – Register the handler and route in the Router](#step-2--register-the-handler-and-route-in-the-router)
-  - [Testing your route](#testing-your-route)
-  - [Route reference: HTTP methods in Gin](#route-reference-http-methods-in-gin)
-    - [Path parameters](#path-parameters)
-    - [Query parameters](#query-parameters)
-    - [JSON request body](#json-request-body)
-
----
-
 ## Overview: what files are involved?
 
 Adding a route always touches these files (at minimum):

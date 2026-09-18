@@ -14,26 +14,6 @@ DON'T EDIT THIS FILE !
 
 ---
 
-## Table des matières
-
-- [Bloc 1 — M1 — 02 Audit de l’existant (technique, fonctionnel, sécurité)](#bloc-1--m1--02-audit-de-lexistant-technique-fonctionnel-s%C3%A9curit%C3%A9)
-  - [Table des matières](#table-des-mati%C3%A8res)
-  - [Objectif et périmètre](#objectif-et-p%C3%A9rim%C3%A8tre)
-  - [Méthodologie d’audit](#m%C3%A9thodologie-daudit)
-  - [Audit technique](#audit-technique)
-    - [1) Architecture exécutable observée](#1-architecture-ex%C3%A9cutable-observ%C3%A9e)
-    - [2) Flux technique principal vérifié](#2-flux-technique-principal-v%C3%A9rifi%C3%A9)
-    - [3) Modèle de données observé (implémenté)](#3-mod%C3%A8le-de-donn%C3%A9es-observ%C3%A9-impl%C3%A9ment%C3%A9)
-  - [Audit fonctionnel](#audit-fonctionnel)
-  - [Audit sécurité](#audit-s%C3%A9curit%C3%A9)
-  - [Audit accessibilité (PSH)](#audit-accessibilit%C3%A9-psh)
-  - [Contraintes et opportunités](#contraintes-et-opportunit%C3%A9s)
-    - [Contraintes](#contraintes)
-    - [Opportunités](#opportunit%C3%A9s)
-  - [Traçabilité RNCP M1 (O3, O4)](#tra%C3%A7abilit%C3%A9-rncp-m1-o3-o4)
-
----
-
 ## Objectif et périmètre
 
 Dresser un état de l’existant vérifiable dans le repo : architecture, flux applicatifs, sécurité de base, points forts et limites.

@@ -12,58 +12,6 @@ id: 2f73e756-4920-4208-ae1e-6928976f81ec
 
 ---
 
-## Table of Contents
-
-- [Database Schema & Data Model](#database-schema--data-model)
-  - [Table of Contents](#table-of-contents)
-  - [1\. Scope and Conventions](#1-scope-and-conventions)
-    - [1.1 Scope](#11-scope)
-    - [1.2 Conventions](#12-conventions)
-    - [1.3 Feature Coverage](#13-feature-coverage)
-  - [2\. Entity-Relationship Diagram](#2-entity-relationship-diagram)
-  - [3\. Shared Definitions](#3-shared-definitions)
-    - [3.1 Enumerations](#31-enumerations)
-    - [3.2 Trigger](#32-trigger-update_updated_at_column) `update_updated_at_column`
-  - [4\. Identity and Profile](#4-identity-and-profile)
-    - [4.1](#41-users) `users`
-    - [4.2](#42-user_profiles) `user_profiles`
-    - [4.3](#43-user_body_constraints) `user_body_constraints`
-    - [4.4](#44-sessions) `sessions`
-    - [4.5](#45-tutorial_progress) `tutorial_progress`
-  - [5\. Gyms](#5-gyms)
-    - [5.1](#51-gyms) `gyms`
-  - [6\. Climbing Sessions, Videos and Analyses](#6-climbing-sessions-videos-and-analyses)
-    - [6.1](#61-climbing_sessions) `climbing_sessions`
-    - [6.2](#62-videos) `videos`
-    - [6.3](#63-analyses) `analyses`
-    - [6.4](#64-analysis_scores) `analysis_scores`
-  - [7\. Routes, Holds and Ghost Mode](#7-routes-holds-and-ghost-mode)
-    - [7.1](#71-routes) `routes`
-    - [7.2](#72-holds) `holds`
-    - [7.3](#73-ghosts) `ghosts`
-    - [7.4](#74-ghost_holds) `ghost_holds`
-    - [7.5](#75-comparisons) `comparisons`
-  - [8\. Coaching and Training](#8-coaching-and-training)
-    - [8.1](#81-goals) `goals`
-    - [8.2](#82-training_programs) `training_programs`
-    - [8.3](#83-training_program_sessions) `training_program_sessions`
-    - [8.4](#84-exercises) `exercises`
-    - [8.5](#85-training_logs) `training_logs`
-  - [9\. Social](#9-social)
-    - [9.1](#91-friendships) `friendships`
-    - [9.2](#92-follows) `follows`
-    - [9.3 Visibility Rules](#93-visibility-rules)
-  - [10\. Subscriptions and Quotas](#10-subscriptions-and-quotas)
-    - [10.1](#101-subscription_plans) `subscription_plans`
-    - [10.2](#102-subscriptions) `subscriptions`
-    - [10.3](#103-subscription_events) `subscription_events`
-    - [10.4](#104-quota_usages) `quota_usages`
-  - [11\. Scheduled Jobs (pg\_cron)](#11-scheduled-jobs-pg_cron)
-  - [12\. Sample Queries](#12-sample-queries)
-  - [13\. Migration Delta From Current Schema](#13-migration-delta-from-current-schema)
-
----
-
 ## 1\. Scope and Conventions
 
 ### 1.1 Scope

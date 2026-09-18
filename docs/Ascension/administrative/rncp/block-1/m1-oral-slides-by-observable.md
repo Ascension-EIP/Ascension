@@ -14,25 +14,6 @@ DON'T EDIT THIS FILE !
 
 ---
 
-## Table des matières
-
-- [Positionnement (réponse rapide à la question)](#positionnement-r%C3%A9ponse-rapide-%C3%A0-la-question)
-- [Mode opératoire PPT (captures documentaires)](#mode-op%C3%A9ratoire-ppt-captures-documentaires)
-- [Mode d’emploi](#mode-demploi)
-- [O1 — Analyse des besoins](#o1--analyse-des-besoins)
-- [O2 — Besoins PSH intégrés](#o2--besoins-psh-int%C3%A9gr%C3%A9s)
-- [O3 — Audit technique/fonctionnel/sécurité](#o3--audit-techniquefonctionnels%C3%A9curit%C3%A9)
-- [O4 — Méthodologie d’audit](#o4--m%C3%A9thodologie-daudit)
-- [O5 — Corpus de spécifications](#o5--corpus-de-sp%C3%A9cifications)
-- [O6 — Accessibilité dans les spécifications](#o6--accessibilit%C3%A9-dans-les-sp%C3%A9cifications)
-- [O7 — Accessibilité des documents fournis](#o7--accessibilit%C3%A9-des-documents-fournis)
-- [O8 — Analyse financière](#o8--analyse-financi%C3%A8re)
-- [O9 — Scénarios de chiffrage benchmarkés](#o9--sc%C3%A9narios-de-chiffrage-benchmark%C3%A9s)
-- [O10 — Étude prospective évolution/migration](#o10--%C3%A9tude-prospective-%C3%A9volutionmigration)
-- [O11 — Vulgarisation orale de la prospective](#o11--vulgarisation-orale-de-la-prospective)
-
----
-
 ## Positionnement (réponse rapide à la question)
 
 Oui, la matrice `m1-observables-evidence-matrix.md` est bien sur des justifications par observable RNCP (O1 -> O11), avec rattachement aux compétences C1 -> C5.

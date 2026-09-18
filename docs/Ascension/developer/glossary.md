@@ -15,16 +15,6 @@ This glossary defines key terms, acronyms, and domain vocabulary used across the
 
 ---
 
-## Table of Contents
-
-- [Project Glossary](#project-glossary)
-  - [Product and Business Terms](#product-and-business-terms)
-  - [Technical Terms](#technical-terms)
-  - [Climbing and Biomechanics Terms](#climbing-and-biomechanics-terms)
-  - [Project Components](#project-components)
-
----
-
 ## Product and Business Terms
 
 - **Ascension:** AI-powered climbing coaching platform including mobile, backend, and AI services.

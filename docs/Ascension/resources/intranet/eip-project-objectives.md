@@ -13,41 +13,6 @@ id: 5dbcaee3-a00b-4389-8320-866046792c20
 
 ---
 
-## Table of Contents
-
-- [EIP Project Objectives](#eip-project-objectives)
-  - [Table of Contents](#table-of-contents)
-  - [Introduction](#introduction)
-  - [Mandatory Objectives to Achieve](#mandatory-objectives-to-achieve)
-    - [1\. Evaluating and Integrating New Technologies (Technology Watch)](#1-evaluating-and-integrating-new-technologies-technology-watch)
-      - [Active Technology Watch](#active-technology-watch)
-      - [Documentation & Analysis](#documentation--analysis)
-      - [Concrete Application](#concrete-application)
-      - [Sharing & Openness](#sharing--openness)
-      - [Expected Deliverables for Technology Watch (Non-exhaustive)](#expected-deliverables-for-technology-watch-non-exhaustive)
-      - [What Is Not Sufficient for Technology Watch](#what-is-not-sufficient-for-technology-watch)
-    - [2\. Structure, Document, and Harden the Project’s Technical Architecture](#2-structure-document-and-harden-the-projects-technical-architecture)
-      - [Clear, Justified Architecture](#clear-justified-architecture)
-      - [Complete Technical Documentation](#complete-technical-documentation)
-      - [Quality, Reliability & Security](#quality-reliability--security)
-      - [Expected Deliverables for Architecture (Non-exhaustive)](#expected-deliverables-for-architecture-non-exhaustive)
-      - [What Is Not Sufficient for Architecture](#what-is-not-sufficient-for-architecture)
-  - [Complementary Objectives](#complementary-objectives)
-    - [1\. Collaborate with Technical Experts](#1-collaborate-with-technical-experts)
-      - [Identify & Approach Experts](#identify--approach-experts)
-      - [Structured Collaboration](#structured-collaboration)
-      - [Capitalize on the Exchange](#capitalize-on-the-exchange)
-      - [Expected Deliverables (Non-exhaustive)](#expected-deliverables-non-exhaustive)
-      - [What Is Not Sufficient](#what-is-not-sufficient)
-    - [2\. Measure, Test, and Optimize Technical Performance](#2-measure-test-and-optimize-technical-performance)
-      - [Define Key Technical Metrics](#define-key-technical-metrics)
-      - [Set Up Automated or Manual Tests](#set-up-automated-or-manual-tests)
-      - [Implement Optimizations](#implement-optimizations)
-      - [Expected Deliverables (Non-exhaustive)](#expected-deliverables-non-exhaustive-1)
-      - [What Is Not Sufficient](#what-is-not-sufficient-1)
-
----
-
 ## Introduction
 
 Welcome to the Technical Track of the Epitech Innovative Project (EIP), where engineering excellence meets innovation. This track is designed for students who are passionate about pushing technological boundaries, solving complex technical challenges, and building solutions that stand out through their architectural elegance, performance, and reliability.

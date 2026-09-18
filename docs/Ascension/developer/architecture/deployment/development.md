@@ -13,20 +13,6 @@ id: ab77caf4-081b-4c22-8817-d8570baadf55
 
 ---
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Architecture Diagram](#architecture-diagram)
-- [Prerequisites](#prerequisites)
-  - [Required Software](#required-software)
-  - [Optional Tools](#optional-tools)
-- [Project Structure](#project-structure)
-- [Step-by-Step Setup](#step-by-step-setup)
-  - [1\. Install moon](#1-install-moon)
-  - [2\. Clone Repository](#2-clone-repository)
-
----
-
 ## Overview
 
 The development environment runs all services on a single machine using Docker Compose. This setup is optimized for rapid iteration and local testing.
@@ -899,20 +885,6 @@ For faster iteration during development:
 ---
 
 # Development Environment Setup
-
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Architecture Diagram](#architecture-diagram)
-- [Prerequisites](#prerequisites)
-  - [Required Software](#required-software)
-  - [Optional Tools](#optional-tools)
-- [Project Structure](#project-structure)
-- [Step-by-Step Setup](#step-by-step-setup)
-  - [1\. Install moon](#1-install-moon)
-  - [2\. Clone Repository](#2-clone-repository)
 
 ---
 

@@ -14,40 +14,6 @@ DON'T EDIT THIS FILE !
 
 ---
 
-## Table of Contents
-
-- [Context, Audit & Compliance — Workshop Deliverable](#context-audit--compliance--workshop-deliverable)
-  - [Table of Contents](#table-of-contents)
-  - [1\. Project Context & Operational Environment](#1-project-context--operational-environment)
-    - [1.1 Project Overview](#11-project-overview)
-    - [1.2 Operational Environment](#12-operational-environment)
-    - [1.3 Investigation Methodology](#13-investigation-methodology)
-  - [2\. Technical Audit](#2-technical-audit)
-    - [2.1 Execution Environment](#21-execution-environment)
-    - [2.2 Technical Stack](#22-technical-stack)
-    - [2.3 Architecture](#23-architecture)
-    - [2.4 Exploitability (CI/CD, Monitoring, Backups)](#24-exploitability-cicd-monitoring-backups)
-  - [3\. Functional Audit](#3-functional-audit)
-    - [3.1 Business Needs & Use Cases](#31-business-needs--use-cases)
-    - [3.2 Solution/Need Alignment](#32-solutionneed-alignment)
-    - [3.3 User Journeys](#33-user-journeys)
-  - [4\. Security Audit](#4-security-audit)
-    - [4.1 Infrastructure Security](#41-infrastructure-security)
-    - [4.2 Access Management](#42-access-management)
-    - [4.3 Application Security (OWASP Top 10)](#43-application-security-owasp-top-10)
-    - [4.4 Compliance](#44-compliance)
-  - [5\. GDPR Compliance Deep Dive](#5-gdpr-compliance-deep-dive)
-    - [5.1 Data Classification](#51-data-classification)
-    - [5.2 Legal Bases & Consent Architecture](#52-legal-bases--consent-architecture)
-    - [5.3 Data Subject Rights Implementation](#53-data-subject-rights-implementation)
-    - [5.4 Data Retention Policy](#54-data-retention-policy)
-    - [5.5 Data Breach Response Plan](#55-data-breach-response-plan)
-  - [6\. Audit Synthesis & Action Plan](#6-audit-synthesis--action-plan)
-    - [6.1 Audit Summary Dashboard](#61-audit-summary-dashboard)
-    - [6.2 Prioritized Action Plan](#62-prioritized-action-plan)
-
----
-
 ## 1\. Project Context & Operational Environment
 
 ### 1.1 Project Overview

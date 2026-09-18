@@ -13,33 +13,6 @@ id: 6dbad1cf-7a8f-43f8-a5a4-111052513263
 
 ---
 
-## Table of Contents
-
-- [Ascension Action Plan](#ascension-action-plan)
-  - [Table of Contents](#table-of-contents)
-  - [1\. Context](#1-context)
-    - [1.1 Origine du projet](#11-origine-du-projet)
-    - [1.2 Problème identifié](#12-probl%C3%A8me-identifi%C3%A9)
-    - [1.3 Solution proposée](#13-solution-propos%C3%A9e)
-    - [1.4 Objectif global et résultat attendu](#14-objectif-global-et-r%C3%A9sultat-attendu)
-    - [1.5 Inside track choisi](#15-inside-track-choisi)
-    - [1.6 Parties prenantes et appuis externes](#16-parties-prenantes-et-appuis-externes)
-  - [2\. Technical Specifications](#2-technical-specifications)
-    - [2.1 Stack visée](#21-stack-vis%C3%A9e)
-    - [2.2 Méthode de travail technique](#22-m%C3%A9thode-de-travail-technique)
-    - [2.3 Périmètre fonctionnel suivi dans ce plan](#23-p%C3%A9rim%C3%A8tre-fonctionnel-suivi-dans-ce-plan)
-    - [2.4 User stories de référence](#24-user-stories-de-r%C3%A9f%C3%A9rence)
-    - [2.5 Milestones planifiés](#25-milestones-planifi%C3%A9s)
-    - [2.6 Definition of Done transversale](#26-definition-of-done-transversale)
-  - [3\. Non-Technical Specifications](#3-non-technical-specifications)
-    - [3.1 Mentorat et gouvernance](#31-mentorat-et-gouvernance)
-    - [3.2 Topic mandatory - Evaluate and integrate new technologies](#32-topic-mandatory---evaluate-and-integrate-new-technologies)
-    - [3.3 Topic mandatory - Structure, document, and harden the project's technical architecture](#33-topic-mandatory---structure-document-and-harden-the-projects-technical-architecture)
-    - [3.4 Topic optional - Collaborate with technical experts](#34-topic-optional---collaborate-with-technical-experts)
-    - [3.5 Topic optional - Measure, test, and optimize technical performance](#35-topic-optional---measure-test-and-optimize-technical-performance)
-
----
-
 ## 1\. Context
 
 ### 1.1 Origine du projet

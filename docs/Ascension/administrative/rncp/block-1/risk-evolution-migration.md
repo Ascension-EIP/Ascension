@@ -14,24 +14,6 @@ DON'T EDIT THIS FILE !
 
 ---
 
-## Table des matières
-
-- [Bloc 1 — M1 — 06 Risques, évolutions et migration](#bloc-1--m1--06-risques-%C3%A9volutions-et-migration)
-  - [Table des matières](#table-des-mati%C3%A8res)
-  - [Objectif](#objectif)
-  - [Registre des risques prioritaires](#registre-des-risques-prioritaires)
-  - [Zones de rupture de chaîne opérationnelle](#zones-de-rupture-de-cha%C3%AEne-op%C3%A9rationnelle)
-  - [Stratégie d’évolution (24–36 mois)](#strat%C3%A9gie-d%C3%A9volution-2436-mois)
-    - [Horizon 0–12 mois](#horizon-012-mois)
-    - [Horizon 12–24 mois](#horizon-1224-mois)
-    - [Horizon 24–36 mois](#horizon-2436-mois)
-  - [Stratégie de migration technique](#strat%C3%A9gie-de-migration-technique)
-  - [Plan de mitigation et gouvernance](#plan-de-mitigation-et-gouvernance)
-  - [Vulgarisation orale (O11) — trame 90 secondes](#vulgarisation-orale-o11--trame-90-secondes)
-  - [Traçabilité RNCP M1 (O10, O11)](#tra%C3%A7abilit%C3%A9-rncp-m1-o10-o11)
-
----
-
 ## Objectif
 
 Présenter une étude prospective réaliste sur les risques et les voies d’évolution/migration, en s’appuyant sur l’audit existant et le code implémenté.

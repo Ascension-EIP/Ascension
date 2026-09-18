@@ -14,26 +14,6 @@ DON'T EDIT THIS FILE !
 
 ---
 
-## Table of Contents
-
-- [Impacts, Risks & Mitigation - Workshop Deliverable](#impacts-risks-mitigation-workshop-deliverable)
-  - [1\. Risk Management](#1-risk-management)
-    - [Matrice des risques](#matrice-des-risques)
-    - [Visualisation Matrice (Impact vs Probabilité)](#visualisation-matrice-impact-vs-probabilit%C3%A9)
-    - [Détail des risques critiques (criticité >= 10)](#d%C3%A9tail-des-risques-critiques-criticit%C3%A9-10)
-  - [2\. Environmental Impact (GreenIT)](#2-environmental-impact-greenit)
-    - [Choix d'hébergement - Empreinte carbone datacenter](#choix-dh%C3%A9bergement-empreinte-carbone-datacenter)
-    - [Principes d'éco-conception appliqués](#principes-d%C3%A9co-conception-appliqu%C3%A9s)
-    - [Estimation empreinte carbone infrastructure](#estimation-empreinte-carbone-infrastructure)
-  - [3\. Deployment & Resilience](#3-deployment-resilience)
-    - [CI/CD — Automatisation des tests et déploiements](#cicd-automatisation-des-tests-et-d%C3%A9ploiements)
-    - [Stratégie de migration (schema évolutif)](#strat%C3%A9gie-de-migration-schema-%C3%A9volutif)
-    - [SPOF — Single Points of Failure identifiés](#spof-single-points-of-failure-identifi%C3%A9s)
-    - [Politique de sauvegarde (Backup Policy)](#politique-de-sauvegarde-backup-policy)
-    - [Plan de scalabilité (Roadmap Infrastructure)](#plan-de-scalabilit%C3%A9-roadmap-infrastructure)
-
----
-
 ## 1\. Risk Management
 
 ### Matrice des risques

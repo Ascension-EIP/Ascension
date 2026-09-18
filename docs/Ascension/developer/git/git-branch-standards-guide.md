@@ -16,20 +16,6 @@ Good branch conventions improve collaboration, prevent conflicts, and ensure a c
 
 ---
 
-## Table of Contents
-
-- [Git Branch Standards Guide](#git-branch-standards-guide)
-  - [Table of Contents](#table-of-contents)
-  - [1\. Branch naming conventions](#1-branch-naming-conventions)
-    - [1.1 Allowed examples](#11-allowed-examples)
-    - [1.2 Disallowed examples](#12-disallowed-examples)
-  - [2\. Branch usage rules](#2-branch-usage-rules)
-  - [3\. Pull request process](#3-pull-request-process)
-  - [4\. Enabling local checks](#4-enabling-local-checks)
-  - [5\. Summary](#5-summary)
-
----
-
 ## 1\. Branch naming conventions
 
 - **Language**: English only

@@ -14,24 +14,6 @@ DON'T EDIT THIS FILE !
 
 ---
 
-## Table des matières
-
-- [Bloc 1 — M1 — 03 Spécifications fonctionnelles](#bloc-1--m1--03-sp%C3%A9cifications-fonctionnelles)
-  - [Table des matières](#table-des-mati%C3%A8res)
-  - [Objectif](#objectif)
-  - [Périmètre fonctionnel retenu](#p%C3%A9rim%C3%A8tre-fonctionnel-retenu)
-    - [Fonctionnalités cœur (MVP soutenable)](#fonctionnalit%C3%A9s-c%C5%93ur-mvp-soutenable)
-    - [Fonctionnalités élargies (citées dans le dossier, hors preuve complète d’implémentation ici)](#fonctionnalit%C3%A9s-%C3%A9largies-cit%C3%A9es-dans-le-dossier-hors-preuve-compl%C3%A8te-dimpl%C3%A9mentation-ici)
-  - [Acteurs et cas d’usage](#acteurs-et-cas-dusage)
-  - [Parcours utilisateur de référence](#parcours-utilisateur-de-r%C3%A9f%C3%A9rence)
-    - [Parcours “Analyse vidéo”](#parcours-analyse-vid%C3%A9o)
-  - [Règles de gestion](#r%C3%A8gles-de-gestion)
-  - [Critères d’acceptation fonctionnels](#crit%C3%A8res-dacceptation-fonctionnels)
-  - [Exigences accessibilité (PSH)](#exigences-accessibilit%C3%A9-psh)
-  - [Traçabilité besoins -> fonctions](#tra%C3%A7abilit%C3%A9-besoins---fonctions)
-
----
-
 ## Objectif
 
 Décrire ce que la solution doit faire pour répondre au besoin métier et utilisateur du Bloc 1, avec un périmètre testable et soutenable à l’oral.

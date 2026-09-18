@@ -18,15 +18,6 @@ We use the **Conventional Commits** specification with additional rules defined 
 
 ---
 
-## Table of Contents
-
-1. [Commit message format](#1-commit-message-format)
-2. [Commit types](#2-commit-types)
-3. [Best practices](#3-best-practices)
-4. [Useful resources](#4-useful-resources)
-
----
-
 ## 1\. Commit message format
 
 Commit messages follow this structure:

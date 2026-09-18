@@ -14,20 +14,6 @@ DON'T EDIT THIS FILE !
 
 ---
 
-## Table of Contents
-
-- [Vue d'ensemble](#vue-densemble)
-- [Modalités d'évaluation](#modalit%C3%A9s-d%C3%A9valuation)
-- [Bloc 1 — Cadrer un projet logiciel](#bloc-1--cadrer-un-projet-logiciel)
-- [Bloc 2 — Concevoir une architecture logicielle](#bloc-2--concevoir-une-architecture-logicielle)
-- [Bloc 3 — Architecture pour applications lourdes](#bloc-3--architecture-pour-applications-lourdes)
-- [Bloc 4 — Architecture pour applications web](#bloc-4--architecture-pour-applications-web)
-- [Bloc 5 — Assurance qualité](#bloc-5--assurance-qualit%C3%A9)
-- [Bloc 6 — Mise en production](#bloc-6--mise-en-production)
-- [Bloc 7 — Pilotage de projet](#bloc-7--pilotage-de-projet)
-
----
-
 ## Vue d'ensemble
 
 ### Référentiel des blocs de compétences

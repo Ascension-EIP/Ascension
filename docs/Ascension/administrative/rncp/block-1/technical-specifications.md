@@ -14,24 +14,6 @@ DON'T EDIT THIS FILE !
 
 ---
 
-## Table des matières
-
-- [Bloc 1 — M1 — 04 Spécifications techniques](#bloc-1--m1--04-sp%C3%A9cifications-techniques)
-  - [Table des matières](#table-des-mati%C3%A8res)
-  - [Objectif](#objectif)
-  - [Architecture technique retenue](#architecture-technique-retenue)
-  - [Composants et responsabilités](#composants-et-responsabilit%C3%A9s)
-  - [Contrat API réellement exposé](#contrat-api-r%C3%A9ellement-expos%C3%A9)
-  - [Données et persistance](#donn%C3%A9es-et-persistance)
-  - [Chaîne opérationnelle et points de rupture](#cha%C3%AEne-op%C3%A9rationnelle-et-points-de-rupture)
-    - [Chaîne nominale](#cha%C3%AEne-nominale)
-    - [Ruptures potentielles identifiées](#ruptures-potentielles-identifi%C3%A9es)
-  - [Exigences non fonctionnelles](#exigences-non-fonctionnelles)
-  - [Exigences accessibilité techniques (PSH)](#exigences-accessibilit%C3%A9-techniques-psh)
-  - [Découpage en livrables testables](#d%C3%A9coupage-en-livrables-testables)
-
----
-
 ## Objectif
 
 Définir la traduction technique du besoin fonctionnel M1 avec des composants, interfaces et contraintes vérifiables dans le code actuel.

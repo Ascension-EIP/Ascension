@@ -13,13 +13,6 @@ id: 75c02209-c62c-43bf-8b8e-5c48e688fea2
 
 ---
 
-## Table of Contents
-
-- [AI Pre-Prompt (English)](#ai-pre-prompt-english)
-  - [Table of Contents](#table-of-contents)
-
----
-
 > Copy the block below and paste it at the beginning of any conversation with an AI assistant to provide full context for the Ascension project.
 
 ---

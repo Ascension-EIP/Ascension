@@ -13,18 +13,6 @@ id: 5a77e108-21d3-4916-8298-d97e6ac230f9
 
 ---
 
-## Table of Contents
-
-- [Ascension Acceptance Test Plan (ATP)](#ascension-acceptance-test-plan-atp)
-  - [Table of Contents](#table-of-contents)
-  - [1\. Project context, objectives and workflow](#1-project-context-objectives-and-workflow)
-  - [2\. User roles](#2-user-roles)
-  - [3\. Feature table (organized by user flow)](#3-feature-table-organized-by-user-flow)
-  - [4\. Success criteria table](#4-success-criteria-table)
-  - [5\. Out of alpha scope](#5-out-of-alpha-scope)
-
----
-
 ## 1\. Project context, objectives and workflow
 
 Ce document décrit le périmètre ATP d’Ascension, c’est-à-dire la phase qui suit le GreenLight et qui mène au jury final de mars 2028.

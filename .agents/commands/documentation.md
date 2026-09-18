@@ -37,7 +37,6 @@ After reading the guidelines, verify every point below before outputting a file:
   - `:::danger` for `Todo` (planned) documents.
 - [ ] **Horizontal rule after header** — a `---` separator immediately follows the header block.
 - [ ] **Top-level heading** — a single `# Title` heading comes right after the separator.
-- [ ] **Table of Contents** — every file with headings must include a TOC after the title, listing all `##` and `###` sections.
 - [ ] **Horizontal rule before every** `##` **heading** — a `---` separator is placed before each major section.
 - [ ] **Heading levels are not skipped** — no jumping from `##` to `####`.
 - [ ] **Unordered lists use** `-`, not `*` or `+`.
@@ -51,7 +50,7 @@ After reading the guidelines, verify every point below before outputting a file:
 
 Before auditing or mass-updating documentation, check for a `.docignore` file at the root of any directory you are working in. Files and patterns listed there **must not** be modified.
 
-The following files and patterns are **always ignored** — never add a project header, TOC, or apply these guidelines to them:
+The following files and patterns are **always ignored** — never add a project header or apply these guidelines to them:
 
 - `.github/prompts/*.prompt.md` — Copilot prompt files use their own YAML frontmatter format and must not be reformatted.
 - `.github/agents/*.agent.md` — Copilot agent definition files.

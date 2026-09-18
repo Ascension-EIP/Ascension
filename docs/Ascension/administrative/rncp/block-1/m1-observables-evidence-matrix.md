@@ -17,14 +17,6 @@ DON'T EDIT THIS FILE !
 
 ---
 
-## Table of Contents
-
-- [RNCP Block 1 — M1 Observables Evidence Matrix (C1→C5, O1→O11)](#rncp-block-1--m1-observables-evidence-matrix-c1c5-o1o11)
-  - [Table of Contents](#table-of-contents)
-  - [Priority recommendations](#priority-recommendations)
-
----
-
 | Observable | Required proof | Existing repo evidence | Missing evidence/doc to create | Risk level |
 | --- | --- | --- | --- | --- |
 | **O1 \[C1\]** | Needs analysis + stakeholder exchanges covering full functional scope | `docs/product/prototype-pool/workshop/client-needs-and-functional-scope.md` (personas, user stories, MoSCoW); `docs/product/prototype-pool/workshop/context-audit-compliance.md` (interviews at Arkose/Climb Up, §1.3) | Create `docs/compliance/rncp/block-1/evidence/o1-user-research-pack.md` with interview logs, questionnaire, sample size, synthesis and link to backlog items | **Medium-High** |

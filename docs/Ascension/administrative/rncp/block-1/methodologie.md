@@ -16,21 +16,6 @@ L'objectif de cet audit était de définir l'écosystème complet dans lequel é
 
 ---
 
-## Table of Contents
-
-- [Méthodologie d'Audit et de Conformité](#m%C3%A9thodologie-daudit-et-de-conformit%C3%A9)
-  - [Table of Contents](#table-of-contents)
-  - [1\. Analyse du Contexte Concurrentiel](#1-analyse-du-contexte-concurrentiel)
-  - [2\. Audit de l'État de l'Art Technique](#2-audit-de-l%C3%A9tat-de-lart-technique)
-  - [3\. Conformité Légale et Sécurité](#3-conformit%C3%A9-l%C3%A9gale-et-s%C3%A9curit%C3%A9)
-  - [4\. Audit des Compétences de l'Équipe (HR)](#4-audit-des-comp%C3%A9tences-de-l%C3%A9quipe-hr)
-  - [Conclusion](#conclusion)
-    - [1\. Feuille de route d'évolution (Horizon 36 mois)](#1-feuille-de-route-d%C3%A9volution-horizon-36-mois)
-    - [2\. Stratégie de migration technique](#2-strat%C3%A9gie-de-migration-technique)
-    - [3\. Gouvernance et Mitigation des risques](#3-gouvernance-et-mitigation-des-risques)
-
----
-
 ## 1\. Analyse du Contexte Concurrentiel
 
 Notre approche a combiné l'intuition brute et l'objectivité rationnelle pour positionner Ascension sur le marché.

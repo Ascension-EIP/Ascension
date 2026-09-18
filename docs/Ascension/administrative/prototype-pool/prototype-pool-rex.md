@@ -16,29 +16,6 @@ Ce document dresse le bilan de notre expérience durant la "Prototyping Pool". E
 
 ---
 
-## Table of Contents
-
-- [Retour d'Expérience (REX): Piscine de Prototypage](#retour-dexp%C3%A9rience-rex-piscine-de-prototypage)
-  - [Table of Contents](#table-of-contents)
-  - [1\. Contexte](#1-contexte)
-  - [2\. Ce qui nous a plu (Points Positifs)](#2-ce-qui-nous-a-plu-points-positifs)
-    - [Évolution de la vision produit](#%C3%A9volution-de-la-vision-produit)
-    - [Validation et pivot technique](#validation-et-pivot-technique)
-    - [Découverte de nouvelles technologies](#d%C3%A9couverte-de-nouvelles-technologies)
-    - [Accompagnement pédagogique](#accompagnement-p%C3%A9dagogique)
-    - [IA & Prompt Engineering](#ia--prompt-engineering)
-  - [3\. Ce qui nous a moins plu (Points Négatifs)](#3-ce-qui-nous-a-moins-plu-points-n%C3%A9gatifs)
-    - [La course contre la montre et la "contrainte" de l'IA](#la-course-contre-la-montre-et-la-contrainte-de-lia)
-    - [Une organisation parfois floue](#une-organisation-parfois-floue)
-    - [La lourdeur administrative](#la-lourdeur-administrative)
-  - [4\. Notre ressenti (Comment on l'a vécu)](#4-notre-ressenti-comment-on-la-v%C3%A9cu)
-    - [Entre stress et satisfaction](#entre-stress-et-satisfaction)
-    - [Le sentiment d'un changement de paradigme](#le-sentiment-dun-changement-de-paradigme)
-    - [Le besoin de décompression](#le-besoin-de-d%C3%A9compression)
-  - [Conclusion](#conclusion)
-
----
-
 ## 1\. Contexte
 
 La piscine s'est déroulée en deux phases distinctes :

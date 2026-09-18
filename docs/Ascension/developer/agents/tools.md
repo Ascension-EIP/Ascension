@@ -15,38 +15,6 @@ This document provides the complete architecture, configuration standards, and u
 
 ---
 
-## Table of Contents
-
-- [AI Agent Configuration & Tools Architecture](#ai-agent-configuration--tools-architecture)
-  - [Table of Contents](#table-of-contents)
-  - [1\. Architecture & Philosophy](#1-architecture--philosophy)
-  - [2\. Canonical Root:](#2-canonical-root-agents) `.agents/`
-  - [3\. Command Reference](#3-command-reference)
-    - [3.1](#31-commit) `/commit`
-    - [3.2](#32-documentation) `/documentation`
-    - [3.3](#33-documentation-files) `/documentation-files`
-    - [3.4](#34-code-documentation) `/code-documentation`
-    - [3.5](#35-forui-ui-polish) `/forui-ui-polish`
-    - [3.6](#36-graphify) `/graphify`
-    - [3.7](#37-update-docs) `/update-docs`
-  - [4\. Rules Reference](#4-rules-reference)
-    - [4.1 Markdown Guidelines (](#41-markdown-guidelines-markdownmd)`markdown.md`[)](#41-markdown-guidelines-markdownmd)
-    - [4.2 Forui UI Polish (](#42-forui-ui-polish-forui-ui-polishmd)`forui-ui-polish.md`[)](#42-forui-ui-polish-forui-ui-polishmd)
-    - [4.3 Code Documentation (](#43-code-documentation-code-documentationmd)`code-documentation.md`[)](#43-code-documentation-code-documentationmd)
-  - [5\. Skills Reference](#5-skills-reference)
-    - [5.1 Densho (](#51-densho-densho)`densho`[)](#51-densho-densho)
-    - [5.2 Graphify (](#52-graphify-graphify)`graphify`[)](#52-graphify-graphify)
-    - [5.3 Forui (](#53-forui-forui)`forui`[)](#53-forui-forui)
-  - [6\. Model Context Protocol (MCP) Configuration](#6-model-context-protocol-mcp-configuration)
-  - [7\. Multi-Tool Integration & Symlink Matrix](#7-multi-tool-integration--symlink-matrix)
-    - [7.1 Symlink Mapping Table](#71-symlink-mapping-table)
-    - [7.2 Google Antigravity 2.0 Integration](#72-google-antigravity-20-integration)
-    - [7.3 Claude Code Integration](#73-claude-code-integration)
-    - [7.4 GitHub Copilot Integration](#74-github-copilot-integration)
-  - [8\. Maintenance & Best Practices](#8-maintenance--best-practices)
-
----
-
 ## 1\. Architecture & Philosophy
 
 Development teams often utilize different AI programming assistants based on developer preference, operating system, and IDE choice. Within the Ascension project:
@@ -121,7 +89,6 @@ Commands are structured task prompts that can be triggered on demand using slash
   - Mandatory Densho status header block (`:::success`, `:::warning`, `:::danger`).
   - Strict heading hierarchy without skipping levels.
   - Horizontal rules (`---`) before every `##` heading.
-  - Automatic Table of Contents.
   - Checks `.docignore` before performing modifications.
 
 ### 3.3 `/documentation-files`

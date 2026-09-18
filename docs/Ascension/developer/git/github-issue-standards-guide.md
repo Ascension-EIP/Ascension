@@ -15,23 +15,6 @@ This document defines the official standards for creating, writing, updating, an
 
 ---
 
-## Table of Contents
-
-- [GitHub Issue Standards Guide](#github-issue-standards-guide)
-  - [Table of Contents](#table-of-contents)
-  - [1\. Purpose](#1-purpose)
-  - [2\. Language and Tone](#2-language-and-tone)
-  - [3\. Title Convention](#3-title-convention)
-  - [4\. Labels and Classification](#4-labels-and-classification)
-  - [5\. Required Issue Template](#5-required-issue-template)
-  - [6\. Definition of Done Rules](#6-definition-of-done-rules)
-  - [7\. Lifecycle Rules](#7-lifecycle-rules)
-  - [8\. Anti-patterns to Avoid](#8-anti-patterns-to-avoid)
-  - [9\. Quality Checklist Before Creation](#9-quality-checklist-before-creation)
-  - [10\. Quick Issue Snippet](#10-quick-issue-snippet)
-
----
-
 ## 1\. Purpose
 
 The goal of this policy is to keep the backlog consistent, actionable, and maintainable.

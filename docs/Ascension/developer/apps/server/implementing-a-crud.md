@@ -17,19 +17,6 @@ We will use a hypothetical **Post** resource as our example.
 
 ---
 
-## Table of Contents
-
-1. [Big picture: what you will create](#big-picture-what-you-will-create)
-2. [Step 1 – SQL migration](#step-1--sql-migration)
-3. [Step 2 – Domain models](#step-2--domain-models)
-4. [Step 3 – Service and Repository Port](#step-3--service-and-repository-port)
-5. [Step 4 – Outbound adapter (PostgreSQL)](#step-4--outbound-adapter-postgresql)
-6. [Step 5 – Inbound handlers (HTTP)](#step-5--inbound-handlers-http)
-7. [Step 6 – Register routes and wire dependencies](#step-6--register-routes-and-wire-dependencies)
-8. [Step 7 – Unit tests](#step-7--unit-tests)
-
----
-
 ## Big picture: what you will create
 
 For a resource called `Post`, you will create or extend the following files:

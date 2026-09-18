@@ -14,22 +14,6 @@ DON'T EDIT THIS FILE !
 
 ---
 
-## Table of Contents
-
-- [Client Needs & Functional Scope - Workshop Deliverable](#client-needs-functional-scope-workshop-deliverable)
-  - [1\. User Personas](#1-user-personas)
-  - [2\. User Stories](#2-user-stories)
-    - [For Pierre (Intermediate)](#for-pierre-intermediate)
-    - [For Tanya (Expert)](#for-tanya-expert)
-  - [3\. Prioritized Backlog (MoSCoW Method)](#3-prioritized-backlog-moscow-method)
-    - [M - Must Have (The MVP)](#m-must-have-the-mvp)
-    - [S - Should Have](#s-should-have)
-    - [C - Could Have](#c-could-have)
-    - [W - Won't Have (This Scope)](#w-wont-have-this-scope)
-  - [4\. Next Steps: Continuous Improvement Loop](#4-next-steps-continuous-improvement-loop)
-
----
-
 ## 1\. User Personas
 
 To define our users, we have created two distinct archetypes representing our target audience.

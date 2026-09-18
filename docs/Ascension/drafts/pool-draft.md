@@ -14,17 +14,6 @@ DON'T EDIT THIS FILE !
 
 ---
 
-## Table of Contents
-
-- [Prototype Pool Draft Notes](#prototype-pool-draft-notes)
-  - [Sprint Intent](#sprint-intent)
-  - [Initial Scope](#initial-scope)
-  - [Team Ownership](#team-ownership)
-  - [Technical Flow Draft](#technical-flow-draft)
-  - [Key Stages and Deliverables](#key-stages-and-deliverables)
-
----
-
 ## Sprint Intent
 
 This draft captures the initial alignment notes for the prototyping pool sprint. The objective is to deliver a first end-to-end, functional slice using the core Ascension stack.

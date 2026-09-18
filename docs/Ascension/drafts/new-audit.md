@@ -13,26 +13,6 @@ id: b76d808f-6123-4def-9e88-5326822d276c
 
 ---
 
-## Table of Contents
-
-- [Environnement d'exécution du projet](#environnement-dex%C3%A9cution-du-projet)
-- [3\. Audit technique](#3-audit-technique)
-  - [3.1 Environnement d’exécution](#31-environnement-dex%C3%A9cution)
-  - [3.2 Stack technique](#32-stack-technique)
-  - [3.3 Architecture](#33-architecture)
-  - [3.4 Exploitabilité](#34-exploitabilit%C3%A9)
-- [4\. Audit fonctionnel](#4-audit-fonctionnel)
-  - [4.1 Compréhension du besoin](#41-compr%C3%A9hension-du-besoin)
-  - [4.2 Adéquation solution / besoin](#42-ad%C3%A9quation-solution-besoin)
-  - [4.3 Parcours utilisateurs](#43-parcours-utilisateurs)
-- [5\. Audit sécurité](#5-audit-s%C3%A9curit%C3%A9)
-  - [5.1 Sécurité de l’infrastructure](#51-s%C3%A9curit%C3%A9-de-linfrastructure)
-  - [5.2 Gestion des accès](#52-gestion-des-acc%C3%A8s)
-  - [5.3 Sécurité applicative (niveau projet)](#53-s%C3%A9curit%C3%A9-applicative-niveau-projet)
-  - [5.4 Conformité](#54-conformit%C3%A9)
-
----
-
 ## Environnement d'exécution du projet
 
 Le dossier du candidat contient un **compte-rendu d'audit technique, fonctionnel et de sécurité** de l'environnement d'exécution du projet, mettant en lumière les **contraintes et opportunités du contexte opérationnel**. \[C2\]

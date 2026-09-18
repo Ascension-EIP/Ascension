@@ -15,38 +15,6 @@ Ce document rassemble l'ensemble des constats, anomalies identifiées, fonctionn
 
 ---
 
-## Table of Contents
-
-- [Plan d'Action Technique : Audit, Harmonisation d'Architecture & Refonte Mobile](#plan-daction-technique--audit-harmonisation-darchitecture--refonte-mobile)
-  - [Table of Contents](#table-of-contents)
-  - [1\. Contexte & Synthèse Globale](#1-contexte--synth%C3%A8se-globale)
-    - [1.1 Postulat de travail retenu](#11-postulat-de-travail-retenu)
-    - [1.2 Les grands axes de travail](#12-les-grands-axes-de-travail)
-  - [2\. Chantier 1 : Cadrage & Harmonisation des Contrats d'API](#2-chantier-1--cadrage--harmonisation-des-contrats-dapi)
-    - [2.1 Divergences actuelles entre Mobile et Backend](#21-divergences-actuelles-entre-mobile-et-backend)
-    - [2.2 Cadrage futur & Spécification OpenAPI](#22-cadrage-futur--sp%C3%A9cification-openapi)
-  - [3\. Chantier 2 : Backend Go (Parité Fonctionnelle & Corrections)](#3-chantier-2--backend-go-parit%C3%A9-fonctionnelle--corrections)
-    - [3.1 Fonctionnalités perdues lors de la migration Rust vers Go](#31-fonctionnalit%C3%A9s-perdues-lors-de-la-migration-rust-vers-go)
-    - [3.2 Bugs techniques & Anomalies SQL identifiés](#32-bugs-techniques--anomalies-sql-identifi%C3%A9s)
-    - [3.3 Travaux prioritaires sur le Backend](#33-travaux-prioritaires-sur-le-backend)
-  - [4\. Chantier 3 : Worker IA (Stabilisation, Environnement & SAM 3D)](#4-chantier-3--worker-ia-stabilisation-environnement--sam-3d)
-    - [4.1 État actuel des pipelines d'analyse](#41-%C3%A9tat-actuel-des-pipelines-danalyse)
-    - [4.2 Focus sur SAM 3D (](#42-focus-sur-sam-3d-ai_sam3dpy)`ai_sam3d.py`[)](#42-focus-sur-sam-3d-ai_sam3dpy)
-    - [4.3 Anomalies de configuration & Déploiement Docker](#43-anomalies-de-configuration--d%C3%A9ploiement-docker)
-    - [4.4 Travaux prioritaires sur l'IA](#44-travaux-prioritaires-sur-lia)
-  - [5\. Chantier 4 : Application Mobile Flutter (Refonte Graphique & Réseau)](#5-chantier-4--application-mobile-flutter-refonte-graphique--r%C3%A9seau)
-    - [5.1 Refonte UI / UX Complète (Design Moderne Grimpeur)](#51-refonte-ui--ux-compl%C3%A8te-design-moderne-grimpeur)
-    - [5.2 Intégration Réseau & Gestion de Session](#52-int%C3%A9gration-r%C3%A9seau--gestion-de-session)
-    - [5.3 Travaux prioritaires sur le Mobile](#53-travaux-prioritaires-sur-le-mobile)
-  - [6\. Matrice des Priorités & Roadmap d'Exécution](#6-matrice-des-priorit%C3%A9s--roadmap-dex%C3%A9cution)
-    - [Phase 1 : Rétablissement du Flux de Bout en Bout (Court Terme)](#phase-1--r%C3%A9tablissement-du-flux-de-bout-en-bout-court-terme)
-    - [Phase 2 : Cadrage Formel & Standardisation OpenAPI (Moyen Terme)](#phase-2--cadrage-formel--standardisation-openapi-moyen-terme)
-    - [Phase 3 : Parité Fonctionnelle Backend & Données d'Analyse (Moyen Terme)](#phase-3--parit%C3%A9-fonctionnelle-backend--donn%C3%A9es-danalyse-moyen-terme)
-    - [Phase 4 : Refonte Graphique Complète du Mobile Flutter (Moyen/Long Terme)](#phase-4--refonte-graphique-compl%C3%A8te-du-mobile-flutter-moyenlong-terme)
-    - [Phase 5 : Tests d'Intégration End-to-End & Monitoring (Long Terme)](#phase-5--tests-dint%C3%A9gration-end-to-end--monitoring-long-terme)
-
----
-
 ## 1\. Contexte & Synthèse Globale
 
 Le projet **Ascension** repose sur une architecture événementielle distribuée :
