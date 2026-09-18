@@ -1,6 +1,6 @@
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuidv7(),
-    name VARCHAR(64) NOT NULL,
+	user VARCHAR(64) NOT NULL,
     email VARCHAR(256) NOT NULL UNIQUE,
 	password TEXT NOT NULL,
 	role VARCHAR(32) NOT NULL DEFAULT 'user',

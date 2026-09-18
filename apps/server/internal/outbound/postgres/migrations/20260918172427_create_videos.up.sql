@@ -3,9 +3,9 @@ CREATE TABLE videos (
     user_id    UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     object_key VARCHAR(128) NOT NULL,
     status     VARCHAR(32) NOT NULL DEFAULT 'pending',
-	  expires_at TIMESTAMPTZ NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-	  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     CONSTRAINT chk_videos_status CHECK (status IN ('pending', 'completed'))
 );

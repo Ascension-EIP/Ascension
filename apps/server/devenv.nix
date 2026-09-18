@@ -15,8 +15,6 @@
   # https://devenv.sh/packages/
   packages = [
     pkgs.air
-    pkgs.jq
-    pkgs.moon
   ];
 
   # https://devenv.sh/languages/
