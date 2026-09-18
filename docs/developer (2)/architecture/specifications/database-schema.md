@@ -1,10 +1,9 @@
 ---
-id: 2f73e756-4920-4208-ae1e-6928976f81ec
+id: e56da220-4bd2-484e-ad95-3e4fa16cfb44
 ---
 
 :::success
-**Version:** 2.0
-**Original language:** English
+**Version:** 2.0 **Original language:** English
 :::
 
 ---
@@ -15,57 +14,57 @@ id: 2f73e756-4920-4208-ae1e-6928976f81ec
 
 ## Table of Contents
 
-- [Database Schema \& Data Model](#database-schema--data-model)
+- [Database Schema & Data Model](#database-schema--data-model)
   - [Table of Contents](#table-of-contents)
-  - [1. Scope and Conventions](#1-scope-and-conventions)
+  - [1\. Scope and Conventions](#1-scope-and-conventions)
     - [1.1 Scope](#11-scope)
     - [1.2 Conventions](#12-conventions)
     - [1.3 Feature Coverage](#13-feature-coverage)
-  - [2. Entity-Relationship Diagram](#2-entity-relationship-diagram)
-  - [3. Shared Definitions](#3-shared-definitions)
+  - [2\. Entity-Relationship Diagram](#2-entity-relationship-diagram)
+  - [3\. Shared Definitions](#3-shared-definitions)
     - [3.1 Enumerations](#31-enumerations)
-    - [3.2 Trigger `update_updated_at_column`](#32-trigger-update_updated_at_column)
-  - [4. Identity and Profile](#4-identity-and-profile)
-    - [4.1 `users`](#41-users)
-    - [4.2 `user_profiles`](#42-user_profiles)
-    - [4.3 `user_body_constraints`](#43-user_body_constraints)
-    - [4.4 `sessions`](#44-sessions)
-    - [4.5 `tutorial_progress`](#45-tutorial_progress)
-  - [5. Gyms](#5-gyms)
-    - [5.1 `gyms`](#51-gyms)
-  - [6. Climbing Sessions, Videos and Analyses](#6-climbing-sessions-videos-and-analyses)
-    - [6.1 `climbing_sessions`](#61-climbing_sessions)
-    - [6.2 `videos`](#62-videos)
-    - [6.3 `analyses`](#63-analyses)
-    - [6.4 `analysis_scores`](#64-analysis_scores)
-  - [7. Routes, Holds and Ghost Mode](#7-routes-holds-and-ghost-mode)
-    - [7.1 `routes`](#71-routes)
-    - [7.2 `holds`](#72-holds)
-    - [7.3 `ghosts`](#73-ghosts)
-    - [7.4 `ghost_holds`](#74-ghost_holds)
-    - [7.5 `comparisons`](#75-comparisons)
-  - [8. Coaching and Training](#8-coaching-and-training)
-    - [8.1 `goals`](#81-goals)
-    - [8.2 `training_programs`](#82-training_programs)
-    - [8.3 `training_program_sessions`](#83-training_program_sessions)
-    - [8.4 `exercises`](#84-exercises)
-    - [8.5 `training_logs`](#85-training_logs)
-  - [9. Social](#9-social)
-    - [9.1 `friendships`](#91-friendships)
-    - [9.2 `follows`](#92-follows)
+    - [3.2 Trigger](#32-trigger-update_updated_at_column) `update_updated_at_column`
+  - [4\. Identity and Profile](#4-identity-and-profile)
+    - [4.1](#41-users) `users`
+    - [4.2](#42-user_profiles) `user_profiles`
+    - [4.3](#43-user_body_constraints) `user_body_constraints`
+    - [4.4](#44-sessions) `sessions`
+    - [4.5](#45-tutorial_progress) `tutorial_progress`
+  - [5\. Gyms](#5-gyms)
+    - [5.1](#51-gyms) `gyms`
+  - [6\. Climbing Sessions, Videos and Analyses](#6-climbing-sessions-videos-and-analyses)
+    - [6.1](#61-climbing_sessions) `climbing_sessions`
+    - [6.2](#62-videos) `videos`
+    - [6.3](#63-analyses) `analyses`
+    - [6.4](#64-analysis_scores) `analysis_scores`
+  - [7\. Routes, Holds and Ghost Mode](#7-routes-holds-and-ghost-mode)
+    - [7.1](#71-routes) `routes`
+    - [7.2](#72-holds) `holds`
+    - [7.3](#73-ghosts) `ghosts`
+    - [7.4](#74-ghost_holds) `ghost_holds`
+    - [7.5](#75-comparisons) `comparisons`
+  - [8\. Coaching and Training](#8-coaching-and-training)
+    - [8.1](#81-goals) `goals`
+    - [8.2](#82-training_programs) `training_programs`
+    - [8.3](#83-training_program_sessions) `training_program_sessions`
+    - [8.4](#84-exercises) `exercises`
+    - [8.5](#85-training_logs) `training_logs`
+  - [9\. Social](#9-social)
+    - [9.1](#91-friendships) `friendships`
+    - [9.2](#92-follows) `follows`
     - [9.3 Visibility Rules](#93-visibility-rules)
-  - [10. Subscriptions and Quotas](#10-subscriptions-and-quotas)
-    - [10.1 `subscription_plans`](#101-subscription_plans)
-    - [10.2 `subscriptions`](#102-subscriptions)
-    - [10.3 `subscription_events`](#103-subscription_events)
-    - [10.4 `quota_usages`](#104-quota_usages)
-  - [11. Scheduled Jobs (pg\_cron)](#11-scheduled-jobs-pg_cron)
-  - [12. Sample Queries](#12-sample-queries)
-  - [13. Migration Delta From Current Schema](#13-migration-delta-from-current-schema)
+  - [10\. Subscriptions and Quotas](#10-subscriptions-and-quotas)
+    - [10.1](#101-subscription_plans) `subscription_plans`
+    - [10.2](#102-subscriptions) `subscriptions`
+    - [10.3](#103-subscription_events) `subscription_events`
+    - [10.4](#104-quota_usages) `quota_usages`
+  - [11\. Scheduled Jobs (pg\_cron)](#11-scheduled-jobs-pg_cron)
+  - [12\. Sample Queries](#12-sample-queries)
+  - [13\. Migration Delta From Current Schema](#13-migration-delta-from-current-schema)
 
 ---
 
-## 1. Scope and Conventions
+## 1\. Scope and Conventions
 
 ### 1.1 Scope
 
@@ -75,42 +74,42 @@ The current migrations in `apps/server/migrations/` implement only a subset of t
 
 ### 1.2 Conventions
 
-| Rule                | Convention                                                                                                                                        |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Primary keys        | `UUID` generated with `uuidv7()` (time-ordered, native in PostgreSQL 18).                                                                         |
-| Timestamps          | Always `TIMESTAMPTZ`. Every mutable table has `created_at` and `updated_at`, the latter maintained by the shared trigger.                          |
-| Naming              | `snake_case` for tables and columns. Tables are plural. Join tables are named after both sides (`ghost_holds`).                                    |
-| Closed value sets   | PostgreSQL `ENUM` types (never free `TEXT`). New values are added with `ALTER TYPE ... ADD VALUE`.                                                |
-| Units               | Encoded in the column name: `_ms`, `_cm`, `_kg`, `_bytes`, `_cents`, `_min`.                                                                      |
-| Object storage      | Only the `object_key` is stored. The bucket comes from the server configuration. The storage backend is S3-compatible (MinIO locally, S3 in prod). |
-| Large AI payloads   | Stored as `JSONB` in PostgreSQL (`analyses.result`, `ghosts.path`). No secondary object storage for results.                                       |
-| Deletion            | Hard delete with `ON DELETE CASCADE`. Account deactivation is a status, not a deletion.                                                            |
+| Rule | Convention |
+| --- | --- |
+| Primary keys | `UUID` generated with `uuidv7()` (time-ordered, native in PostgreSQL 18). |
+| Timestamps | Always `TIMESTAMPTZ`. Every mutable table has `created_at` and `updated_at`, the latter maintained by the shared trigger. |
+| Naming | `snake_case` for tables and columns. Tables are plural. Join tables are named after both sides (`ghost_holds`). |
+| Closed value sets | PostgreSQL `ENUM` types (never free `TEXT`). New values are added with `ALTER TYPE ... ADD VALUE`. |
+| Units | Encoded in the column name: `_ms`, `_cm`, `_kg`, `_bytes`, `_cents`, `_min`. |
+| Object storage | Only the `object_key` is stored. The bucket comes from the server configuration. The storage backend is S3-compatible (MinIO locally, S3 in prod). |
+| Large AI payloads | Stored as `JSONB` in PostgreSQL (`analyses.result`, `ghosts.path`). No secondary object storage for results. |
+| Deletion | Hard delete with `ON DELETE CASCADE`. Account deactivation is a status, not a deletion. |
 | Async job lifecycle | Every AI-processed entity (`analyses`, `ghosts`, `comparisons`) shares the `job_status` enum and the same columns (`status`, `progress`, `error`). |
-| Visibility          | Shareable content (`videos`, `analyses`, `routes`, `climbing_sessions`) carries a `visibility` column using the `visibility` enum.                 |
+| Visibility | Shareable content (`videos`, `analyses`, `routes`, `climbing_sessions`) carries a `visibility` column using the `visibility` enum. |
 
 ### 1.3 Feature Coverage
 
-| Feature                                   | Tables                                                                                     |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------ |
-| F01 Morphological profile                 | `user_profiles`, `user_body_constraints`                                                   |
-| F02 / F03 Video analysis and skeleton     | `videos`, `analyses`                                                                       |
-| F04 Score and progression                 | `climbing_sessions`, `analysis_scores`                                                     |
-| F05 Ghost comparison                      | `comparisons`                                                                              |
-| F06 Hold analysis                         | `routes`, `holds`                                                                          |
-| F07 Ghost without climbing                | `routes`, `holds`, `ghosts`, `ghost_holds`                                                 |
-| F08 3D mobile experience                  | `analyses` (type `3d`)                                                                     |
-| F09 Personalised advice                   | `analyses.hints`                                                                           |
-| F10 Coach and training programs           | `goals`, `training_programs`, `training_program_sessions`, `exercises`, `training_logs`    |
-| F11 Community and sharing                 | `friendships`, `follows`, `visibility` columns                                             |
-| F12 Assisted climbing (AR)                | Real-time only, no persistence beyond `climbing_sessions`                                  |
-| F13 Subscriptions and quotas              | `subscription_plans`, `subscriptions`, `subscription_events`, `quota_usages`               |
-| F14 Onboarding and tutorials              | `tutorial_progress`                                                                        |
-| Gym partnerships                          | `gyms`, `users.role = 'gym'`                                                               |
-| Authentication                            | `users`, `sessions`                                                                        |
+| Feature | Tables |
+| --- | --- |
+| F01 Morphological profile | `user_profiles`, `user_body_constraints` |
+| F02 / F03 Video analysis and skeleton | `videos`, `analyses` |
+| F04 Score and progression | `climbing_sessions`, `analysis_scores` |
+| F05 Ghost comparison | `comparisons` |
+| F06 Hold analysis | `routes`, `holds` |
+| F07 Ghost without climbing | `routes`, `holds`, `ghosts`, `ghost_holds` |
+| F08 3D mobile experience | `analyses` (type `3d`) |
+| F09 Personalised advice | `analyses.hints` |
+| F10 Coach and training programs | `goals`, `training_programs`, `training_program_sessions`, `exercises`, `training_logs` |
+| F11 Community and sharing | `friendships`, `follows`, `visibility` columns |
+| F12 Assisted climbing (AR) | Real-time only, no persistence beyond `climbing_sessions` |
+| F13 Subscriptions and quotas | `subscription_plans`, `subscriptions`, `subscription_events`, `quota_usages` |
+| F14 Onboarding and tutorials | `tutorial_progress` |
+| Gym partnerships | `gyms`, `users.role = 'gym'` |
+| Authentication | `users`, `sessions` |
 
 ---
 
-## 2. Entity-Relationship Diagram
+## 2\. Entity-Relationship Diagram
 
 The diagram below shows the tables and their relationships. Column details are in the table definitions that follow. Enumerations and the `updated_at` trigger are shared across all tables.
 
@@ -161,7 +160,7 @@ Summary: `users` is the root of every branch. The video branch (`climbing_sessio
 
 ---
 
-## 3. Shared Definitions
+## 3\. Shared Definitions
 
 ### 3.1 Enumerations
 
@@ -237,7 +236,7 @@ The trigger statement is omitted from the table definitions below for brevity.
 
 ---
 
-## 4. Identity and Profile
+## 4\. Identity and Profile
 
 ### 4.1 `users`
 
@@ -370,7 +369,7 @@ Business rules:
 
 - The refresh token sent to the client is a random 256-bit value. Only its SHA-256 hash is stored. The session `id` is never used as a secret.
 - A session is valid when `revoked_at IS NULL AND expires_at > NOW()`. Logout sets `revoked_at`; "logout everywhere" revokes all sessions of the user.
-- Expired sessions are purged by pg_cron (section 11).
+- Expired sessions are purged by pg\_cron (section 11).
 
 ### 4.5 `tutorial_progress`
 
@@ -399,7 +398,7 @@ Business rules:
 
 ---
 
-## 5. Gyms
+## 5\. Gyms
 
 ### 5.1 `gyms`
 
@@ -432,7 +431,7 @@ Business rules:
 
 ---
 
-## 6. Climbing Sessions, Videos and Analyses
+## 6\. Climbing Sessions, Videos and Analyses
 
 ### 6.1 `climbing_sessions`
 
@@ -551,7 +550,7 @@ Business rules:
 - No uniqueness on `(video_id, type)`: a user may relaunch an analysis. The API returns the latest completed analysis of each type by default.
 - The partial index on `status` keeps the "in-flight jobs" lookup cheap without indexing millions of completed rows.
 
-**`result` structure** (written by the AI worker, consumed by the mobile app for client-side rendering):
+`result` **structure** (written by the AI worker, consumed by the mobile app for client-side rendering):
 
 ```json
 {
@@ -577,7 +576,7 @@ Business rules:
 
 For `type = '3d'`, `landmarks` values are metric 3D coordinates and the object carries the fields produced by the 3D pipeline (`fps`, `width`, `height` are always present).
 
-**`hints` structure** (structured advice generated by the external model, F09):
+`hints` **structure** (structured advice generated by the external model, F09):
 
 ```json
 {
@@ -630,7 +629,7 @@ Business rules:
 
 ---
 
-## 7. Routes, Holds and Ghost Mode
+## 7\. Routes, Holds and Ghost Mode
 
 Recommended split: the route photo is its own entity (`routes`), because it has a life independent of any video (F07 works without climbing). Holds belong to the route. A ghost is a computed path on a route for a given user morphology. A comparison joins a ghost with a video analysis (F05). All storage references are S3-compatible object keys; the backend (MinIO locally, S3 in production) is a configuration choice and never appears in the schema.
 
@@ -804,7 +803,7 @@ Business rules:
 
 ---
 
-## 8. Coaching and Training
+## 8\. Coaching and Training
 
 The coaching model is normalised: a goal drives one or more programs, a program is a schedule of planned sessions, a planned session is a list of exercises, and a training log records what was actually done.
 
@@ -959,7 +958,7 @@ Business rules:
 
 ---
 
-## 9. Social
+## 9\. Social
 
 ### 9.1 `friendships`
 
@@ -1018,16 +1017,16 @@ Business rules:
 `videos`, `analyses`, `routes` and `climbing_sessions` carry a `visibility` column. Access is resolved as follows:
 
 | Visibility | Owner | Accepted friend | Follower | Anyone |
-| ---------- | ----- | --------------- | -------- | ------ |
-| `private`  | Yes   | No              | No       | No     |
-| `friends`  | Yes   | Yes             | No       | No     |
-| `public`   | Yes   | Yes             | Yes      | Yes    |
+| --- | --- | --- | --- | --- |
+| `private` | Yes | No | No | No |
+| `friends` | Yes | Yes | No | No |
+| `public` | Yes | Yes | Yes | Yes |
 
 An analysis is never more visible than its video: the effective visibility is the most restrictive of the two. A `blocked` friendship overrides everything. Deactivated users are treated as `private` everywhere.
 
 ---
 
-## 10. Subscriptions and Quotas
+## 10\. Subscriptions and Quotas
 
 ### 10.1 `subscription_plans`
 
@@ -1056,11 +1055,11 @@ CREATE TABLE subscription_plans (
 
 Seed data:
 
-| code       | name     | price_cents | monthly_analysis_quota | ghost_mode_enabled | ads_enabled | server_priority | stripe_price_id |
-| ---------- | -------- | ----------- | ---------------------- | ------------------ | ----------- | --------------- | --------------- |
-| `freemium` | Freemium | 0           | 10                     | false              | true        | false           | `NULL`          |
-| `premium`  | Premium  | 2000        | 30                     | true               | false       | false           | set in prod     |
-| `infinity` | Infinity | 3000        | 100                    | true               | false       | true            | set in prod     |
+| code | name | price\_cents | monthly\_analysis\_quota | ghost\_mode\_enabled | ads\_enabled | server\_priority | stripe\_price\_id |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `freemium` | Freemium | 0 | 10 | false | true | false | `NULL` |
+| `premium` | Premium | 2000 | 30 | true | false | false | set in prod |
+| `infinity` | Infinity | 3000 | 100 | true | false | true | set in prod |
 
 ### 10.2 `subscriptions`
 
@@ -1150,7 +1149,7 @@ Business rules:
 
 ---
 
-## 11. Scheduled Jobs (pg_cron)
+## 11\. Scheduled Jobs (pg\_cron)
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS pg_cron;
@@ -1181,11 +1180,11 @@ SELECT cron.schedule('clean-old-quota-usages', '0 3 1 * *', $$
 $$);
 ```
 
-Storage objects are not deleted by pg_cron. A bucket lifecycle rule (S3 and MinIO both support it) expires objects whose key matches a deleted row, or the Go server runs a reconciliation job that lists object keys absent from `videos` and `routes` and removes them.
+Storage objects are not deleted by pg\_cron. A bucket lifecycle rule (S3 and MinIO both support it) expires objects whose key matches a deleted row, or the Go server runs a reconciliation job that lists object keys absent from `videos` and `routes` and removes them.
 
 ---
 
-## 12. Sample Queries
+## 12\. Sample Queries
 
 Latest completed analysis of each type for a video:
 
@@ -1261,18 +1260,18 @@ SELECT v.*
 
 ---
 
-## 13. Migration Delta From Current Schema
+## 13\. Migration Delta From Current Schema
 
 The migrations in `apps/server/migrations/` (20260905000001 to 20260905000005) differ from this specification as follows. These changes require a coordinated update of the Go models and DTOs (`apps/server/internal/model`, `apps/server/internal/outbound/postgres/dto`) and of the AI worker (`apps/ai/src/infrastructure/database.py`).
 
-| Table      | Change                                                                                                                                                                                 |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `users`    | Replace `name` with `first_name`, `last_name`, `username`. Rename `password` to `password_hash`. Convert `role` from `TEXT` to the `user_role` enum. Add `status`, `email_verified_at`, `last_login_at`, `deactivated_at`, `stripe_customer_id`, email and username `CHECK`s. |
-| `sessions` | Add `token_hash` (the session `id` is no longer the refresh token), `user_agent`, `ip_address`, `last_used_at`, `revoked_at`.                                                          |
-| `videos`   | Drop `bucket`. Rename `size` to `size_bytes`, `duration` to `duration_ms`. Convert `status` to the `video_status` enum. Add `climbing_session_id`, `title`, `content_type`, `width`, `height`, `fps`, `retained`, `visibility`. Make `object_key` unique. |
+| Table | Change |
+| --- | --- |
+| `users` | Replace `name` with `first_name`, `last_name`, `username`. Rename `password` to `password_hash`. Convert `role` from `TEXT` to the `user_role` enum. Add `status`, `email_verified_at`, `last_login_at`, `deactivated_at`, `stripe_customer_id`, email and username `CHECK`s. |
+| `sessions` | Add `token_hash` (the session `id` is no longer the refresh token), `user_agent`, `ip_address`, `last_used_at`, `revoked_at`. |
+| `videos` | Drop `bucket`. Rename `size` to `size_bytes`, `duration` to `duration_ms`. Convert `status` to the `video_status` enum. Add `climbing_session_id`, `title`, `content_type`, `width`, `height`, `fps`, `retained`, `visibility`. Make `object_key` unique. |
 | `analyses` | Convert `status` from `TEXT` to `job_status` (adds `processing` and `generating_hints`, already written by the worker). Rename `processing_time` to `processing_time_ms`. Convert `hints` from `TEXT` to `JSONB`. Add `started_at`, `visibility`, progress and consistency `CHECK`s. Drop `uq_analyses_video_id_type` and the two redundant indexes; keep one index on `(video_id, created_at DESC)`. |
-| pg_cron    | Split `clean-expired-upload` into `clean-abandoned-uploads` and `clean-expired-videos`; add `clean-old-quota-usages`.                                                                   |
-| New        | All enums of section 3.1 and the tables `user_profiles`, `user_body_constraints`, `tutorial_progress`, `gyms`, `climbing_sessions`, `analysis_scores`, `routes`, `holds`, `ghosts`, `ghost_holds`, `comparisons`, `goals`, `training_programs`, `training_program_sessions`, `exercises`, `training_logs`, `friendships`, `follows`, `subscription_plans`, `subscriptions`, `subscription_events`, `quota_usages`. |
+| pg\_cron | Split `clean-expired-upload` into `clean-abandoned-uploads` and `clean-expired-videos`; add `clean-old-quota-usages`. |
+| New | All enums of section 3.1 and the tables `user_profiles`, `user_body_constraints`, `tutorial_progress`, `gyms`, `climbing_sessions`, `analysis_scores`, `routes`, `holds`, `ghosts`, `ghost_holds`, `comparisons`, `goals`, `training_programs`, `training_program_sessions`, `exercises`, `training_logs`, `friendships`, `follows`, `subscription_plans`, `subscriptions`, `subscription_events`, `quota_usages`. |
 
 Recommended migration order: enums and shared trigger, then `users` and `sessions` changes, then `gyms` and `climbing_sessions`, then `videos` and `analyses` changes, then each feature group in the order of the sections above.
 
