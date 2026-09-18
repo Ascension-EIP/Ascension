@@ -14,6 +14,6 @@ order:
   - folder-files
 ---
 
-Ceci est la page de pr
+Ceci est la page de présentation de la doc administrative
 
 :::subpages cards 3
