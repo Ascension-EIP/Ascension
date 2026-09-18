@@ -9,6 +9,8 @@ order:
   - accessibility-compliance
   - acceptance-test-plan
   - action-plan
+  - beta-test-plan
+  - roadmap-fonctionnelle
 ---
 
 

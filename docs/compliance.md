@@ -23,7 +23,7 @@ id: 7284a1d6-09e4-4f12-ae94-4aeeedf96b30
 
 ## Documentation Accessibility
 
-- [Documentation Accessibility Compliance Statement](compliance/accessibility-compliance.md)
+- [Documentation Accessibility Compliance Statement](administrative/accessibility-compliance.md)
 
 ---
 
