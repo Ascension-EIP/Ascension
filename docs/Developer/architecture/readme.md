@@ -89,7 +89,7 @@ Before diving into implementation, review these key documents:
    - Why Go for API, Flutter for mobile, Python for AI
    - Performance benchmarks and cost analysis
    - Decision framework and evaluation criteria
-2. [System Overview](../../developer/architecture/system-overview.md) - High-level design philosophy
+2. [System Overview](system-overview.md) - High-level design philosophy
    - Event-driven architecture patterns
    - CQRS implementation
    - Scaling strategy and performance targets
@@ -337,7 +337,7 @@ Ascension/                      # Monorepo root
 **Recommended Reading Order**:
 
 1. [**Architecture Decision Record**](./adr/tech-stack-decision.md) - Understand WHY we chose each technology
-2. [System Overview](../../developer/architecture/system-overview.md) - Understand HOW the system works
+2. [System Overview](system-overview.md) - Understand HOW the system works
 3. [Database Schema](specifications/database-schema.md) - Understand WHAT data we store
 4. [API Specification](../../developer/architecture/specifications/api-specification.md) - Understand the API CONTRACT
 5. [**Video Analysis Flow**](./workflows/video-analysis-flow.md) - Understand the CORE FEATURE
@@ -351,7 +351,7 @@ Ascension/                      # Monorepo root
 - 🗄️ **ERD Diagram**: [Database Schema](specifications/database-schema.md)
 - 📡 **API Contract**: [OpenAPI 3.0 Spec](../../developer/architecture/specifications/api-specification.md)
 - 🎯 **Tech Justifications**: [ADR](./adr/tech-stack-decision.md#technology-decisions)
-- 📊 **Performance Targets**: [System Overview - SLAs](../../developer/architecture/system-overview.md)
+- 📊 **Performance Targets**: [System Overview - SLAs](system-overview.md)
 
 ### Quick Links
 
