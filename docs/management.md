@@ -25,9 +25,9 @@ id: d274369c-06fe-41b3-9dfb-5657429abd0c
 
 ## Roadmaps
 
-- [Roadmap fonctionnelle](management/roadmap-fonctionnelle.md)
+- [Roadmap fonctionnelle](administrative/roadmap-fonctionnelle.md)
 - [Ascension Action Plan](administrative/action-plan.md)
-- [Ascension Beta Test Plan (BTP)](management/beta-test-plan.md)
+- [Ascension Beta Test Plan (BTP)](administrative/beta-test-plan.md)
 - [Ascension Acceptance Test Plan (ATP)](administrative/acceptance-test-plan.md)
 
 ---
