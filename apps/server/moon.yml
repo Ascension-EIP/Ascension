@@ -84,6 +84,7 @@ tasks:
       envFile: true
     deps:
       - "install"
+      - "root:schemas-generate"
 
   clean:
     command: "rm"

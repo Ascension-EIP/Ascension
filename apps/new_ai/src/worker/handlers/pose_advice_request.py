@@ -1,4 +1,4 @@
-# @date 2026-09-17
+# @date 2026-09-18
 # @file pose_advice_request.py
 # @brief File description.
 # @project Ascension
@@ -7,10 +7,9 @@
 # @status done
 import traceback
 
-from common.models.broker import RoutingKey
-from common.models.job import JobStatus, JobStatusModel
 from common.utils.broker import payload_validity
 from common.utils.logger import log
+from shared.models import *
 from worker import broker
 
 
@@ -20,18 +19,18 @@ def pose_advice_request(ch, method, properties, payload):
     job_id = payload.get("job_id")
     broker.publish(
         RoutingKey.POSE_ADVICE_STATUS,
-        JobStatusModel(job_id=job_id, status=JobStatus.PENDING),
+        JobStatus(job_id=job_id, status=JobStatus.PENDING),
     )
     try:
         # pose_advice.process()
         broker.publish(
             RoutingKey.POSE_ADVICE_STATUS,
-            JobStatusModel(job_id=job_id, status=JobStatus.SUCCESS),
+            JobStatus(job_id=job_id, status=JobStatus.SUCCESS),
         )
     except Exception:  # noqa: BLE001
         broker.publish(
             RoutingKey.POSE_ADVICE_STATUS,
-            JobStatusModel(
+            JobStatus(
                 job_id=job_id, status=JobStatus.FAILED, message=traceback.format_exc()
             ),
         )

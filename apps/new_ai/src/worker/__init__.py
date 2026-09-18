@@ -1,12 +1,12 @@
-# @date 2026-09-17
+# @date 2026-09-18
 # @file __init__.py
 # @brief File description.
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
-import os
-import sys
+import os  # noqa: F401
+import sys  # noqa: F401
 import traceback
 
 from dotenv import load_dotenv

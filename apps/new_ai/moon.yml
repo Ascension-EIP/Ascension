@@ -87,6 +87,7 @@ tasks:
       envFile: true
     deps:
       - 'install'
+      - 'root:schemas-generate'
 
   producer:
     command: 'uv'

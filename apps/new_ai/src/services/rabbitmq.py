@@ -1,4 +1,4 @@
-# @date 2026-09-17
+# @date 2026-09-18
 # @file rabbitmq.py
 # @brief File description.
 # @project Ascension
@@ -14,7 +14,6 @@ from pika import BlockingConnection
 from pika.adapters.blocking_connection import BlockingChannel
 
 from common.models.broker import BrokerModel
-from common.models.job import Job
 from common.utils.errors import throw_if_none
 from common.utils.logger import log
 
@@ -67,7 +66,7 @@ class Broker:
                     )
                 )
                 self.channel = self.connection.channel()
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 log.warning(
                     "RabbitMQ not ready (attempt %d/%d), retrying in %ds…",
                     i,
@@ -90,6 +89,7 @@ class Broker:
 
     def setup_channel(self) -> Self:
         from common.utils.macro import BROKER_BINDINGS
+
         self.channel.basic_qos(prefetch_count=1)
         self.channel.exchange_declare(
             exchange=self.config.exchange,
@@ -99,7 +99,9 @@ class Broker:
         for bind in BROKER_BINDINGS:
             self.channel.queue_declare(queue=bind.queue, durable=True)
             self.channel.queue_bind(
-                queue=bind.queue, routing_key=bind.routing_key, exchange=self.config.exchange
+                queue=bind.queue,
+                routing_key=bind.routing_key,
+                exchange=self.config.exchange,
             )
         return self
 
@@ -119,13 +121,14 @@ class Broker:
         self.channel.start_consuming()
         return self
 
-    def publish(self, routing_key: str, payload: Job) -> Self:
+    def publish(self, routing_key: str, payload) -> Self:
         self.channel.basic_publish(
             exchange=self.config.exchange,
             routing_key=routing_key,
             body=payload.model_dump_json().encode("utf-8"),
-            properties=pika.BasicProperties(content_type="application/json", delivery_mode=2),
+            properties=pika.BasicProperties(
+                content_type="application/json", delivery_mode=2
+            ),
         )
         log.info("Published to %s: %s", routing_key, payload)
         return self
-        
