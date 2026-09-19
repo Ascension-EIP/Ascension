@@ -1,8 +1,8 @@
-// @date 2026-03-18
+// @date 2026-09-18
 // @file analysis.go
-// @brief File description.
+// @brief Domain models for analyses.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package model
@@ -16,21 +16,38 @@ import (
 type AnalysisStatus string
 
 const (
-	AnalysisStatusPending   AnalysisStatus = "pending"
-	AnalysisStatusCompleted AnalysisStatus = "completed"
+	AnalysisStatusPending         AnalysisStatus = "pending"
+	AnalysisStatusProcessing      AnalysisStatus = "processing"
+	AnalysisStatusGeneratingHints AnalysisStatus = "generating_hints"
+	AnalysisStatusCompleted       AnalysisStatus = "completed"
+	AnalysisStatusFailed          AnalysisStatus = "failed"
+)
+
+type AnalysisType string
+
+const (
+	AnalysisType2D AnalysisType = "2d"
+	AnalysisType3D AnalysisType = "3d"
 )
 
 type NewAnalysis struct {
 	VideoID uuid.UUID
+	Type    AnalysisType
 }
 
 type Analysis struct {
 	ID               uuid.UUID
 	VideoID          uuid.UUID
+	Type             AnalysisType
 	Status           AnalysisStatus
-	ResultJSON       *[]byte
-	ProcessingTimeMS *int
+	Progress         int
+	Result           *[]byte
+	Hints            *[]byte
+	Error            *string
+	ProcessingTimeMs *int
+	StartedAt        *time.Time
 	CompletedAt      *time.Time
+	Visibility       string
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 }

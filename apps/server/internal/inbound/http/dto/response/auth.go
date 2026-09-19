@@ -1,8 +1,8 @@
-// @date 2026-03-14
+// @date 2026-09-18
 // @file auth.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package response
@@ -19,7 +19,7 @@ type LoginResponse struct {
 
 func TokensUserToResponse(tokens *model.Tokens, user *model.User) *LoginResponse {
 	return &LoginResponse{
-		RefreshToken: tokens.RefreshToken.String(),
+		RefreshToken: tokens.RefreshToken,
 		AccessTokenResponse: AccessTokenResponse{
 			AccessToken: tokens.Token,
 			TokenType:   tokens.TokenType,

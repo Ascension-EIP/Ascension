@@ -1,8 +1,8 @@
-// @date 2026-03-11
+// @date 2026-09-18
 // @file role.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package model
@@ -19,6 +19,8 @@ type UserRole string
 const (
 	UserRoleAdmin UserRole = "admin"
 	UserRoleUser  UserRole = "user"
+	UserRoleCoach UserRole = "coach"
+	UserRoleGym   UserRole = "gym"
 )
 
 var (
@@ -27,7 +29,7 @@ var (
 
 func (r UserRole) IsValid() bool {
 	switch r {
-	case UserRoleAdmin, UserRoleUser:
+	case UserRoleAdmin, UserRoleUser, UserRoleCoach, UserRoleGym:
 		return true
 	}
 	return false

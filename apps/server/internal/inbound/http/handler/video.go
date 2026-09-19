@@ -1,8 +1,8 @@
-// @date 2026-03-20
+// @date 2026-09-18
 // @file video.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package handler
@@ -74,9 +74,10 @@ func (h *VideoHandler) GetUploadURL(c *gin.Context) {
 	}
 
 	fileInfo := &model.FileInfo{
-		UserID:    userID,
-		Extension: ext,
-		Size:      size,
+		UserID:      userID,
+		ContentType: c.Query("content_type"),
+		Extension:   ext,
+		Size:        size,
 	}
 
 	uploadURL, err := h.s.GetUploadURL(c.Request.Context(), fileInfo)
@@ -108,11 +109,11 @@ func getVideoExtension(contentType string) (string, error) {
 	return ext, nil
 }
 
-func validateVideoSize(s string) (int, error) {
+func validateVideoSize(s string) (int64, error) {
 	if s == "" {
 		return 0, fmt.Errorf("size missing")
 	}
-	size, err := strconv.Atoi(s)
+	size, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
 		return 0, fmt.Errorf("invalid size")
 	}

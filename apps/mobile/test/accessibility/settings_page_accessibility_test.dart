@@ -1,29 +1,33 @@
-// @date 2026-03-18
+// @date 2026-09-07
 // @file settings_page_accessibility_test.dart
-// @brief File description.
+// @brief Tests unitaires d'accessibilité de SettingsPage avec Forui.
 // @project Ascension
-// @author Nicolas TORO <nicolas.toro@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/forui.dart';
 import 'package:mobile/core/accessibility/accessibility_settings_service.dart';
 import 'package:mobile/features/profile/presentation/pages/settings_page.dart';
 import 'package:mobile/shared/localization/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Widget _buildTestApp() {
-  return const MaterialApp(
-    locale: Locale('fr'),
+  return MaterialApp(
+    locale: const Locale('fr'),
     supportedLocales: AppLocalizations.supportedLocales,
-    localizationsDelegates: [
+    localizationsDelegates: const [
       AppLocalizations.delegate,
       GlobalMaterialLocalizations.delegate,
       GlobalWidgetsLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,
     ],
-    home: SettingsPage(),
+    home: FTheme(
+      data: FThemeData(colors: FColors.neutralLight, touch: true),
+      child: const FToaster(child: FTooltipGroup(child: SettingsPage())),
+    ),
   );
 }
 
@@ -37,6 +41,12 @@ void main() {
   });
 
   testWidgets('shows required accessibility settings controls', (tester) async {
+    // The Apparence/Thème section adds height above the accessibility
+    // section, so use a tall surface to keep every assertion below visible
+    // without needing to scroll.
+    await tester.binding.setSurfaceSize(const Size(400, 4000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
     await tester.pumpWidget(_buildTestApp());
     await tester.pumpAndSettle();
 
@@ -71,11 +81,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final contrastTile = find.ancestor(
-      of: contrastLabel,
-      matching: find.byType(SwitchListTile),
+    final contrastRow = find
+        .ancestor(of: contrastLabel, matching: find.byType(Row))
+        .first;
+    final contrastSwitch = find.descendant(
+      of: contrastRow,
+      matching: find.byType(FSwitch),
     );
-    await tester.tap(contrastTile);
+    await tester.tap(contrastSwitch);
     await tester.pumpAndSettle();
 
     expect(service.highContrast, isTrue);
