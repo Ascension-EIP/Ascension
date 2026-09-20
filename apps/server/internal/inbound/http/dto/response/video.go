@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type DownloadURL struct {
@@ -19,10 +19,10 @@ type DownloadURL struct {
 	ExpiresAt time.Time `json:"expires_at"`
 }
 
-func DownloadURLToResponse(downloadVideoURL *model.DownloadVideoURL) *DownloadURL {
-	return &DownloadURL{
-		URL:       downloadVideoURL.URL.String(),
-		ExpiresAt: downloadVideoURL.ExpiresAt,
+func DownloadURLToResponse(url model.VideoDownloadURL) DownloadURL {
+	return DownloadURL{
+		URL:       url.URL.String(),
+		ExpiresAt: url.ExpiresAt,
 	}
 }
 
@@ -32,10 +32,10 @@ type UploadURL struct {
 	ExpiresAt time.Time `json:"expires_at"`
 }
 
-func UploadURLToResponse(uploadVideoURL *model.UploadVideoURL) *UploadURL {
-	return &UploadURL{
-		ID:        uploadVideoURL.VideoID,
-		URL:       uploadVideoURL.URL.String(),
-		ExpiresAt: uploadVideoURL.ExpiresAt,
+func UploadURLToResponse(url model.VideoUploadURL) UploadURL {
+	return UploadURL{
+		ID:        url.VideoID,
+		URL:       url.URL.String(),
+		ExpiresAt: url.ExpiresAt,
 	}
 }

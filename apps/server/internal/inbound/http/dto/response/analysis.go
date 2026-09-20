@@ -1,74 +1,47 @@
-// @date 2026-09-18
+// @date 2026-03-18
 // @file analysis.go
-// @brief Response DTOs for analysis endpoints.
+// @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package response
 
 import (
-	"encoding/json"
 	"time"
+	"uuid"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/google/uuid"
 )
 
 type AnalysisResponse struct {
-	ID     uuid.UUID            `json:"id"`
-	Type   model.AnalysisType   `json:"type"`
-	Status model.AnalysisStatus `json:"status"`
+	ID               uuid.UUID          `json:"id"`
+	VideoID          uuid.UUID          `json:"video_id"`
+	Type             model.AnalysisType `json:"type"`
+	Status           model.JobStatus    `json:"status"`
+	Visibility       model.Visibility   `json:"visibility"`
+	Progress         int16              `json:"progress"`
+	Result           *map[string]any    `json:"result"`
+	Advice           *string            `json:"advice"`
+	Error            *string            `json:"error"`
+	ProcessingTimeMS *time.Duration     `json:"processing_time_ms"`
+	StartedAt        *time.Time         `json:"started_at"`
+	CompletedAt      *time.Time         `json:"completed_at"`
 }
 
-func AnalysisToResponse(analysis *model.Analysis) *AnalysisResponse {
-	return &AnalysisResponse{
-		ID:     analysis.ID,
-		Type:   analysis.Type,
-		Status: analysis.Status,
-	}
-}
-
-type AnalysisInfoResponse struct {
-	ID               uuid.UUID            `json:"id"`
-	VideoID          uuid.UUID            `json:"video_id"`
-	Type             model.AnalysisType   `json:"type"`
-	Status           model.AnalysisStatus `json:"status"`
-	Progress         int                  `json:"progress"`
-	Result           *json.RawMessage     `json:"result,omitempty"`
-	Hints            *json.RawMessage     `json:"hints,omitempty"`
-	Error            *string              `json:"error,omitempty"`
-	ProcessingTimeMs *int                 `json:"processing_time_ms,omitempty"`
-	StartedAt        *time.Time           `json:"started_at,omitempty"`
-	CompletedAt      *time.Time           `json:"completed_at,omitempty"`
-	CreatedAt        time.Time            `json:"created_at"`
-	UpdatedAt        time.Time            `json:"updated_at"`
-}
-
-func AnalysisInfoToResponse(analysis *model.Analysis) *AnalysisInfoResponse {
-	var rawResult *json.RawMessage
-	if analysis.Result != nil {
-		raw := json.RawMessage(*analysis.Result)
-		rawResult = &raw
-	}
-	var rawHints *json.RawMessage
-	if analysis.Hints != nil {
-		raw := json.RawMessage(*analysis.Hints)
-		rawHints = &raw
-	}
-	return &AnalysisInfoResponse{
+func AnalysisToResponse(analysis model.Analysis) AnalysisResponse {
+	return AnalysisResponse{
 		ID:               analysis.ID,
 		VideoID:          analysis.VideoID,
 		Type:             analysis.Type,
 		Status:           analysis.Status,
+		Visibility:       analysis.Visibility,
 		Progress:         analysis.Progress,
-		Result:           rawResult,
-		Hints:            rawHints,
+		Result:           analysis.Result,
+		Advice:           analysis.Advice,
 		Error:            analysis.Error,
-		ProcessingTimeMs: analysis.ProcessingTimeMs,
+		ProcessingTimeMS: analysis.ProcessingTimeMS,
 		StartedAt:        analysis.StartedAt,
 		CompletedAt:      analysis.CompletedAt,
-		CreatedAt:        analysis.CreatedAt,
-		UpdatedAt:        analysis.UpdatedAt,
 	}
 }

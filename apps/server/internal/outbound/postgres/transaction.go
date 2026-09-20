@@ -9,13 +9,13 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type DBTX interface {
-	Begin(context.Context) (pgx.Tx, error)
 	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
 	Query(context.Context, string, ...any) (pgx.Rows, error)
 	QueryRow(context.Context, string, ...any) pgx.Row
@@ -26,12 +26,27 @@ type contextKey string
 const txKey contextKey = "tx"
 
 func (r *PostgresRepository) WithTransaction(ctx context.Context, fn func(ctx context.Context) error) error {
-	tx := r.getTx(ctx)
-	return pgx.BeginFunc(ctx, tx, func(nestedTx pgx.Tx) error {
-		nestedCtx := context.WithValue(ctx, txKey, nestedTx)
-		return fn(nestedCtx)
-	})
+	if _, ok := ctx.Value(txKey).(DBTX); ok {
+		return fn(ctx)
+	}
 
+	tx, err := r.Pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return fmt.Errorf("begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	newCtx := context.WithValue(ctx, txKey, tx)
+
+	if err := fn(newCtx); err != nil {
+		return fmt.Errorf("during transaction: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return nil
 }
 
 func (r *PostgresRepository) getTx(ctx context.Context) DBTX {

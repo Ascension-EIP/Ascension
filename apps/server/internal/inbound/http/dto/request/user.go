@@ -1,4 +1,4 @@
-// @date 2026-09-18
+// @date 2026-09-17
 // @file user.go
 // @brief File description.
 // @project Ascension
@@ -8,76 +8,85 @@
 package request
 
 import (
-	"errors"
-
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type CreateUser struct {
-	Username  string         `json:"username" binding:"required"`
-	FirstName string         `json:"first_name" binding:"required,max=100"`
-	LastName  string         `json:"last_name" binding:"required,max=100"`
-	Email     string         `json:"email" binding:"required,email"`
-	Password  string         `json:"password" binding:"required"`
-	Role      model.UserRole `json:"role" binding:"required"`
+	Username  model.UserUsername `json:"username" binding:"required"`
+	FirstName string             `json:"first_name" binding:"required"`
+	LastName  string             `json:"last_name" binding:"required"`
+	Email     string             `json:"email" binding:"required"`
+	Password  string             `json:"password" binding:"required"`
+	Role      string             `json:"role" binding:"required"`
 }
 
-func (req *CreateUser) IntoNewUser() (model.NewUser, error) {
-	if err := model.ValidateUsername(req.Username); err != nil {
-		return model.NewUser{}, err
-	}
-	return model.NewUser{
-		Username:  req.Username,
+func (req *CreateUser) IntoUser() (model.User, error) {
+	return model.User{
+		Username:  model.UserUsername(req.Username),
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
-		Email:     req.Email,
-		Password:  []byte(req.Password),
-		Role:      req.Role,
+		Email:     model.NewUserEmail(req.Email),
+		Password:  model.UserPassword(req.Password),
+		Role:      model.UserRole(req.Role),
+		Status:    model.UserStatusActive,
 	}, nil
 }
 
 type UpdateUser struct {
-	Username  *string         `json:"username"`
-	FirstName *string         `json:"first_name" binding:"omitempty,max=100"`
-	LastName  *string         `json:"last_name" binding:"omitempty,max=100"`
-	Email     *string         `json:"email" binding:"omitempty,email"`
-	Password  *string         `json:"password"`
-	Role      *model.UserRole `json:"role"`
+	Username  *string `json:"username"`
+	FirstName *string `json:"first_name"`
+	LastName  *string `json:"last_name"`
+	Email     *string `json:"email"`
+	Password  *string `json:"password"`
+	Role      *string `json:"role"`
+	Status    *string `json:"status"`
 }
 
-func (req *UpdateUser) IntoPartialUser(idStr string) (model.PartialUser, error) {
-	id, err := IntoUUID(idStr)
+func (req *UpdateUser) IntoUserPartial(id string) (model.UserPartial, error) {
+	userID, err := uuid.Parse(id)
 	if err != nil {
-		return model.PartialUser{}, err
+		return model.UserPartial{}, err
+	}
+
+	userPartial := model.UserPartial{
+		ID: userID,
 	}
 
 	if req.Username != nil {
-		if err := model.ValidateUsername(*req.Username); err != nil {
-			return model.PartialUser{}, err
-		}
+		username := model.UserUsername(*req.Username)
+		userPartial.Username = &username
 	}
 
-	var bytePassword []byte
+	if req.FirstName != nil {
+		firstName := *req.FirstName
+		userPartial.FirstName = &firstName
+	}
+
+	if req.LastName != nil {
+		lastName := *req.LastName
+		userPartial.LastName = &lastName
+	}
+
+	if req.Email != nil {
+		email := model.NewUserEmail(*req.Email)
+		userPartial.Email = &email
+	}
+
 	if req.Password != nil {
-		bytePassword = []byte(*(req.Password))
+		password := model.UserPassword(*req.Password)
+		userPartial.Password = &password
 	}
 
-	return model.PartialUser{
-		ID:        id,
-		Username:  req.Username,
-		FirstName: req.FirstName,
-		LastName:  req.LastName,
-		Email:     req.Email,
-		Password:  &bytePassword,
-		Role:      req.Role,
-	}, nil
-}
-
-func IntoUUID(s string) (uuid.UUID, error) {
-	id, err := uuid.Parse(s)
-	if err != nil {
-		return uuid.UUID{}, errors.New("invalid uuid")
+	if req.Role != nil {
+		role := model.UserRole(*req.Role)
+		userPartial.Role = &role
 	}
-	return id, nil
+
+	if req.Status != nil {
+		status := model.UserStatus(*req.Status)
+		userPartial.Status = &status
+	}
+
+	return userPartial, nil
 }

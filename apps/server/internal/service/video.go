@@ -1,8 +1,8 @@
-// @date 2026-09-18
+// @date 2026-03-20
 // @file video.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package service
@@ -13,87 +13,84 @@ import (
 	"net/url"
 	"time"
 
+	"uuid"
+
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/google/uuid"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
 )
 
-type videoStorage interface {
-	PresignedUploadURL(context.Context, string) (*url.URL, time.Time, error)
-	PresignedDownloadURL(context.Context, string) (*url.URL, time.Time, error)
-	FileExist(context.Context, string) error
-	Delete(context.Context, string) error
-	UploadExp() time.Duration
-	DownloadExp() time.Duration
-}
-
-type videoRepository interface {
-	CreateVideoInfo(context.Context, *model.VideoInfo) error
-	GetVideoInfoByUserID(context.Context, uuid.UUID, uuid.UUID) (*model.VideoInfo, error)
-	GetCompletedVideoInfoByUserID(context.Context, uuid.UUID, uuid.UUID) (*model.VideoInfo, error)
-	UpdateVideoInfo(context.Context, *model.PartialVideoInfo) (*model.VideoInfo, error)
-	WithTransaction(context.Context, func(context.Context) error) error
-}
-
 type VideoService struct {
-	storage   videoStorage
-	repo      videoRepository
-	retention time.Duration
+	cfgVideo config.VideoConfig
+	cfgMinIO config.MinIOConfig
+	storage  model.VideoStorage
+	repo     model.VideoRepository
 }
 
-func NewVideoService(storage videoStorage, repo videoRepository, retention time.Duration) VideoService {
-	return VideoService{storage: storage, repo: repo, retention: retention}
+func NewVideoService(cfgVideo config.VideoConfig, cfgMinIO config.MinIOConfig, storage model.VideoStorage, repo model.VideoRepository) VideoService {
+	return VideoService{cfgVideo: cfgVideo, cfgMinIO: cfgMinIO, storage: storage, repo: repo}
 }
 
-func (s *VideoService) GetDownloadURL(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (*model.DownloadVideoURL, error) {
-	videoInfo, err := s.repo.GetCompletedVideoInfoByUserID(ctx, videoID, userID)
+func (s *VideoService) GetDownloadURL(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (model.VideoDownloadURL, error) {
+	video, err := s.repo.GetVideoByFilter(ctx, model.VideoFilter{ID: &videoID, UserID: &userID})
 	if err != nil {
-		return nil, err
+		return model.VideoDownloadURL{}, err
 	}
 
-	url, expiresAt, err := s.storage.PresignedDownloadURL(ctx, videoInfo.ObjectKey)
-	if err != nil {
-		return nil, err
+	if video.Status != model.VideoStatusCompleted {
+		return model.VideoDownloadURL{}, model.ErrVideoUploading
 	}
 
-	return &model.DownloadVideoURL{
+	url, expiresAt, err := s.storage.PresignedDownloadURL(ctx, video.ObjectKey)
+	if err != nil {
+		return model.VideoDownloadURL{}, err
+	}
+
+	return model.VideoDownloadURL{
 		URL:       url,
 		ExpiresAt: expiresAt,
 	}, nil
 }
 
-func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo *model.FileInfo) (*model.UploadVideoURL, error) {
-	videoID, err := uuid.NewV7()
-	if err != nil {
-		return nil, err
+func (s *VideoService) GetUploadURL(ctx context.Context, userID uuid.UUID, videoMetadata model.VideoMetadata, videoConfig model.VideoConfig) (model.VideoUploadURL, error) {
+	if err := videoConfig.Validate(); err != nil {
+		return model.VideoUploadURL{}, fmt.Errorf("validate video info: %w", err)
 	}
+
 	var url *url.URL
 	var expiresAt time.Time
 
-	objectKey := fmt.Sprintf("%s/%s.%s", fileInfo.UserID.String(), videoID.String(), fileInfo.Extension)
+	videoID := uuid.NewV7() // can't rely on repo for this one since we need the id for the objectKey
+
+	objectKey := fmt.Sprintf("%s/%s.%s", userID.String(), videoID.String(), videoMetadata.Extension)
 
 	if err := s.repo.WithTransaction(ctx, func(ctx context.Context) error {
-		if err := s.repo.CreateVideoInfo(ctx, &model.VideoInfo{
-			ID:          videoID,
-			UserID:      fileInfo.UserID,
-			ObjectKey:   objectKey,
-			ContentType: fileInfo.ContentType,
-			Status:      model.VideoStatusPending,
-			SizeBytes:   &fileInfo.Size,
-			ExpiresAt:   time.Now().Add(s.storage.UploadExp()),
+		if err := s.repo.CreateVideo(ctx, model.Video{
+			ID:                 videoID,
+			UserID:             userID,
+			ClimbingSessionID:  videoConfig.ClimbingSessionID,
+			Title:              videoConfig.Title,
+			ObjectKey:          objectKey,
+			Status:             model.VideoStatusPending,
+			Visibility:         videoConfig.Visibility,
+			ContentType:        videoMetadata.ContentType,
+			SizeBytes:          new(videoMetadata.Size),
+			Retained:           videoConfig.Retained,
+			UploadURLExpiresAt: new(time.Now().Add(s.cfgMinIO.UploadExp)),
 		}); err != nil {
 			return err
 		}
 
+		var err error
 		url, expiresAt, err = s.storage.PresignedUploadURL(ctx, objectKey)
 		if err != nil {
 			return err
 		}
 		return nil
 	}); err != nil {
-		return nil, err
+		return model.VideoUploadURL{}, err
 	}
 
-	return &model.UploadVideoURL{
+	return model.VideoUploadURL{
 		VideoID:   videoID,
 		URL:       url,
 		ExpiresAt: expiresAt,
@@ -101,20 +98,28 @@ func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo *model.FileInf
 }
 
 func (s *VideoService) UploadComplete(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) error {
-	videoInfo, err := s.repo.GetVideoInfoByUserID(ctx, videoID, userID)
+	video, err := s.repo.GetVideoByFilter(ctx, model.VideoFilter{ID: &videoID, UserID: &userID})
 	if err != nil {
 		return err
 	}
 
-	if err := s.storage.FileExist(ctx, videoInfo.ObjectKey); err != nil {
+	if err := s.storage.FileExist(ctx, video.ObjectKey); err != nil {
 		return err
 	}
 
-	// A completed video is kept for the legal retention period, unless the user retains it.
-	status := model.VideoStatusCompleted
-	expiresAt := time.Now().Add(s.retention)
-	if _, err := s.repo.UpdateVideoInfo(ctx, &model.PartialVideoInfo{ID: videoID, UserID: userID, Status: &status, ExpiresAt: &expiresAt}); err != nil {
+	// collect missing value for video row
+	//TODO faut installer ffprobe pour cette merde
+
+	if _, err := s.repo.UpdateVideo(ctx, model.VideoPartial{ID: videoID, UserID: userID, Status: new(model.VideoStatusCompleted), UploadURLExpiresAt: new((*time.Time)(nil))}); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (s *VideoService) ClearUploadExpiredVideos(ctx context.Context) error {
+	return s.repo.DeleteVideosUploadExpired(ctx)
+}
+
+func (s *VideoService) ClearExpiredVideos(ctx context.Context) error {
+	return s.repo.DeleteVideosExpired(ctx, s.cfgVideo.Retention)
 }

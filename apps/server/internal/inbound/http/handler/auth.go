@@ -12,20 +12,19 @@ import (
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/request"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/macro"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 )
 
 type AuthHandler struct {
 	s *service.AuthService
-	l *zerolog.Logger
 }
 
-func NewAuthHandler(l *zerolog.Logger, s *service.AuthService) AuthHandler {
-	return AuthHandler{s: s, l: l}
+func NewAuthHandler(s *service.AuthService) AuthHandler {
+	return AuthHandler{s: s}
 }
 
 func (h *AuthHandler) Signup(c *gin.Context) {
@@ -40,9 +39,9 @@ func (h *AuthHandler) Signup(c *gin.Context) {
 		return
 	}
 
-	user, err := h.s.Signup(c.Request.Context(), &form)
+	user, err := h.s.Signup(c.Request.Context(), form)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -61,9 +60,9 @@ func (h *AuthHandler) SignupLogin(c *gin.Context) {
 		return
 	}
 
-	user, tokens, err := h.s.SignupAndLogin(c.Request.Context(), &form)
+	user, tokens, err := h.s.SignupAndLogin(c.Request.Context(), form, utils.ClientInfo(c), req.Remember)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -82,9 +81,9 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	user, tokens, err := h.s.Login(c.Request.Context(), &form)
+	user, tokens, err := h.s.Login(c.Request.Context(), form, utils.ClientInfo(c), req.Remember)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -92,7 +91,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
-	userID, err := utils.GetFromContext[uuid.UUID](c, "userID")
+	user, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -104,8 +103,8 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 		return
 	}
 
-	if err := h.s.Logout(c.Request.Context(), userID, req.Token); err != nil {
-		utils.Error(c, err, h.l)
+	if err := h.s.Logout(c.Request.Context(), user.ID, req.Token); err != nil {
+		utils.Error(c, err)
 		return
 	}
 
@@ -121,7 +120,7 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 
 	accessToken, err := h.s.RefreshAccessToken(c.Request.Context(), req.Token)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 

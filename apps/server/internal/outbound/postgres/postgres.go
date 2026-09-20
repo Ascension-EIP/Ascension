@@ -1,35 +1,37 @@
-// @date 2026-09-06
+// @date 2026-03-14
 // @file postgres.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package postgres
 
 import (
 	"context"
+	"embed"
+	"errors"
 	"fmt"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/rs/zerolog"
 )
 
 type PostgresRepository struct {
 	Pool *pgxpool.Pool
-	l    *zerolog.Logger
 }
 
-func New(l *zerolog.Logger, dsn string, migrationDir string) (PostgresRepository, error) {
+//go:embed migrations/*.sql
+var migrationFS embed.FS
+
+func New(dsn string) (PostgresRepository, error) {
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
-		return PostgresRepository{}, err
+		return PostgresRepository{}, fmt.Errorf("open connection to %s: %w", dsn, err)
 	}
 
 	config.MaxConns = 25
@@ -38,58 +40,33 @@ func New(l *zerolog.Logger, dsn string, migrationDir string) (PostgresRepository
 
 	pool, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
-		return PostgresRepository{}, err
+		return PostgresRepository{}, fmt.Errorf("create pool with config: %w", err)
 	}
 
 	if err := pool.Ping(context.Background()); err != nil {
-		return PostgresRepository{}, err
-	}
-
-	if migrationDir != "" {
-		if err := MigrateDB(dsn, migrationDir); err != nil {
-			return PostgresRepository{}, err
-		}
-		l.Info().Msg("migration completed successfully")
+		return PostgresRepository{}, fmt.Errorf("ping pool: %w", err)
 	}
 
 	return PostgresRepository{Pool: pool}, nil
 }
 
-func ResolveMigrationDir(migrationDir string) string {
-	clean := strings.TrimPrefix(migrationDir, "file://")
-	clean = strings.TrimPrefix(clean, "folder://")
-	clean = strings.TrimPrefix(clean, "dir://")
-	if clean == "" || clean == "true" || clean == "1" {
-		if _, err := os.Stat("migrations"); err == nil {
-			return "migrations"
-		}
-		if _, err := os.Stat("apps/server/migrations"); err == nil {
-			return "apps/server/migrations"
-		}
-		return "migrations"
-	}
-	return clean
-}
-
-func MigrateDB(dsn string, migrationDir string) error {
-	dirPath := ResolveMigrationDir(migrationDir)
-	src, err := NewDirSource(dirPath)
+func (r *PostgresRepository) Migrate(dsn string) error {
+	source, err := iofs.New(migrationFS, "migrations")
 	if err != nil {
-		return fmt.Errorf("cannot create migration source: %w", err)
+		return fmt.Errorf("create iofs: %w", err)
 	}
 
 	m, err := migrate.NewWithSourceInstance(
-		"folder",
-		src,
+		"iofs",
+		source,
 		dsn,
 	)
 	if err != nil {
-		return fmt.Errorf("cannot create migrate instance: %w", err)
+		return fmt.Errorf("create migrator instance: %w", err)
 	}
-	defer m.Close()
 
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		return fmt.Errorf("cannot migrate: %w", err)
+	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return fmt.Errorf("load migration: %w", err)
 	}
 
 	return nil

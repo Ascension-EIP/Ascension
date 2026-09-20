@@ -1,8 +1,8 @@
-// @date 2026-09-06
+// @date 2026-03-18
 // @file analysis.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package handler
@@ -10,26 +10,27 @@ package handler
 import (
 	"net/http"
 
+	"uuid"
+
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/request"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/macro"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 )
 
-type AnalyseHandler struct {
+type AnalysisHandler struct {
 	s *service.AnalysisService
-	l *zerolog.Logger
 }
 
-func NewAnalyseHandler(l *zerolog.Logger, s *service.AnalysisService) AnalyseHandler {
-	return AnalyseHandler{s: s, l: l}
+func NewAnalysisHandler(s *service.AnalysisService) AnalysisHandler {
+	return AnalysisHandler{s: s}
 }
 
-func (h *AnalyseHandler) Create(c *gin.Context) {
-	userID, err := utils.GetFromContext[uuid.UUID](c, "userID")
+func (h *AnalysisHandler) Create(c *gin.Context) {
+	user, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -40,29 +41,30 @@ func (h *AnalyseHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
+	analysisConfig := req.IntoAnalysisConfig()
 
-	analysis, err := h.s.TriggerAnalysis(c.Request.Context(), req.VideoID, userID, req.Type)
+	analysis, err := h.s.TriggerAnalysis(c.Request.Context(), user.ID, analysisConfig)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
 	c.JSON(http.StatusAccepted, response.AnalysisToResponse(analysis))
 }
 
-func (h *AnalyseHandler) GetByID(c *gin.Context) {
+func (h *AnalysisHandler) GetByID(c *gin.Context) {
 	idStr := c.Param("id")
-	id, err := request.IntoUUID(idStr)
+	id, err := uuid.Parse(idStr)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	analysis, err := h.s.GetAnalysis(c.Request.Context(), id)
+	analysis, err := h.s.GetAnalysisByID(c.Request.Context(), id)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, response.AnalysisInfoToResponse(analysis))
+	c.JSON(http.StatusOK, response.AnalysisToResponse(analysis))
 }

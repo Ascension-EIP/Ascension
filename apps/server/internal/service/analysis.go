@@ -1,8 +1,8 @@
-// @date 2026-09-18
+// @date 2026-03-19
 // @file analysis.go
-// @brief Application service orchestrating analysis workflows.
+// @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package service
@@ -12,63 +12,53 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"uuid"
+
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/google/uuid"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
 )
 
-type analysisRepository interface {
-	GetCompletedVideoInfoByUserID(context.Context, uuid.UUID, uuid.UUID) (*model.VideoInfo, error)
-	CreateAnalysis(context.Context, *model.NewAnalysis) (*model.Analysis, error)
-	GetAnalysis(context.Context, uuid.UUID) (*model.Analysis, error)
-	WithTransaction(context.Context, func(context.Context) error) error
-}
-
-type analysisQueue interface {
-	PublishJSONIntoQueueAI(ctx context.Context, body []byte) error
-}
-
 type AnalysisService struct {
-	repo        analysisRepository
-	queue       analysisQueue
-	videoBucket string
+	cfg       config.MinIOConfig
+	analysisR model.AnalysisRepository
+	videoR    model.VideoRepository
+	queue     model.AnalysisQueue
 }
 
-func NewAnalysisService(repo analysisRepository, queue analysisQueue, videoBucket string) AnalysisService {
-	return AnalysisService{repo: repo, queue: queue, videoBucket: videoBucket}
+func NewAnalysisService(cfg config.MinIOConfig, analysisR model.AnalysisRepository, videoR model.VideoRepository, queue model.AnalysisQueue) AnalysisService {
+	return AnalysisService{cfg: cfg, analysisR: analysisR, videoR: videoR, queue: queue}
 }
 
-func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID, userID uuid.UUID, analysisType model.AnalysisType) (*model.Analysis, error) {
-	if analysisType == "" {
-		analysisType = model.AnalysisType2D
+func (s *AnalysisService) TriggerAnalysis(ctx context.Context, userID uuid.UUID, analysisConfig model.AnalysisConfig) (model.Analysis, error) {
+	if err := analysisConfig.Validate(); err != nil {
+		return model.Analysis{}, fmt.Errorf("validate analysisConfig: %w", err)
 	}
 
-	videoInfo, err := s.repo.GetCompletedVideoInfoByUserID(ctx, videoID, userID)
+	video, err := s.videoR.GetVideoByFilter(ctx, model.VideoFilter{ID: &analysisConfig.VideoID, UserID: &userID})
 	if err != nil {
-		return nil, err
+		return model.Analysis{}, err
 	}
 
-	var analysis *model.Analysis
-	if err := s.repo.WithTransaction(ctx, func(ctx context.Context) error {
-		analysis, err = s.repo.CreateAnalysis(ctx, &model.NewAnalysis{
-			VideoID: videoID,
-			Type:    analysisType,
-		})
+	if video.Status != model.VideoStatusCompleted {
+		return model.Analysis{}, model.ErrVideoUploading
+	}
+
+	var analysis model.Analysis
+	if err := s.analysisR.WithTransaction(ctx, func(ctx context.Context) error {
+		analysis, err = s.analysisR.CreateAnalysis(ctx, model.Analysis{VideoID: analysisConfig.VideoID, Type: analysisConfig.Type, Visibility: analysisConfig.Visibility})
 		if err != nil {
 			return err
 		}
 
-		videoURL := fmt.Sprintf("s3://%s/%s", s.videoBucket, videoInfo.ObjectKey)
+		videoURL := fmt.Sprintf("s3://%s/%s", s.cfg.BucketName, video.ObjectKey)
 
+		//TODO change this with gianni new crosslanguage generated dto
 		data, err := json.Marshal(struct {
-			AnalysisID   uuid.UUID `json:"analysis_id"`
-			VideoURL     string    `json:"video_url"`
-			Type         string    `json:"type"`
-			PipelineName string    `json:"pipeline_name,omitempty"`
+			AnalysisID uuid.UUID `json:"analysis_id"`
+			VideoURL   string    `json:"video_url"`
 		}{
-			AnalysisID:   analysis.ID,
-			VideoURL:     videoURL,
-			Type:         string(analysis.Type),
-			PipelineName: string(analysis.Type),
+			AnalysisID: analysis.ID,
+			VideoURL:   videoURL,
 		})
 		if err != nil {
 			return err
@@ -80,16 +70,17 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, videoID uuid.UUID
 
 		return nil
 	}); err != nil {
-		return nil, err
+		return model.Analysis{}, err
 	}
 
 	return analysis, nil
 }
 
-func (s *AnalysisService) GetAnalysis(ctx context.Context, id uuid.UUID) (*model.Analysis, error) {
-	analysis, err := s.repo.GetAnalysis(ctx, id)
+func (s *AnalysisService) GetAnalysisByID(ctx context.Context, videoID uuid.UUID) (model.Analysis, error) {
+	analysis, err := s.analysisR.GetAnalysisByFilter(ctx, model.AnalysisFilter{ID: &videoID})
 	if err != nil {
-		return nil, err
+		return model.Analysis{}, err
 	}
+
 	return analysis, nil
 }

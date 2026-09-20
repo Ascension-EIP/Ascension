@@ -1,8 +1,8 @@
-// @date 2026-09-18
+// @date 2026-03-18
 // @file analysis.go
-// @brief Database transfer object for analyses.
+// @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package dto
@@ -11,41 +11,59 @@ import (
 	"time"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type Analysis struct {
-	ID               uuid.UUID  `db:"id"`
-	VideoID          uuid.UUID  `db:"video_id"`
-	Type             string     `db:"type"`
-	Status           string     `db:"status"`
-	Progress         int        `db:"progress"`
-	Result           *[]byte    `db:"result"`
-	Hints            *[]byte    `db:"hints"`
-	Error            *string    `db:"error"`
-	ProcessingTimeMs *int       `db:"processing_time_ms"`
-	StartedAt        *time.Time `db:"started_at"`
-	CompletedAt      *time.Time `db:"completed_at"`
-	Visibility       string     `db:"visibility"`
-	CreatedAt        time.Time  `db:"created_at"`
-	UpdatedAt        time.Time  `db:"updated_at"`
+	ID               uuid.UUID          `db:"id"`
+	VideoID          uuid.UUID          `db:"video_id"`
+	Type             model.AnalysisType `db:"type"`
+	Status           model.JobStatus    `db:"status"`
+	Visibility       model.Visibility   `db:"visibility"`
+	Result           *map[string]any    `db:"result"`
+	Advice           *string            `db:"advice"`
+	Error            *string            `db:"error"`
+	Progress         int16              `db:"progress"`
+	ProcessingTimeMS *time.Duration     `db:"processing_time_ms"`
+	StartedAt        *time.Time         `db:"started_at"`
+	CompletedAt      *time.Time         `db:"completed_at"`
+	CreatedAt        time.Time          `db:"created_at"`
+	UpdatedAt        time.Time          `db:"updated_at"`
 }
 
-func (a *Analysis) ToAnalysis() *model.Analysis {
-	return &model.Analysis{
+func (a Analysis) ToAnalysis() model.Analysis {
+	return model.Analysis{
 		ID:               a.ID,
 		VideoID:          a.VideoID,
-		Type:             model.AnalysisType(a.Type),
-		Status:           model.AnalysisStatus(a.Status),
-		Progress:         a.Progress,
+		Status:           a.Status,
 		Result:           a.Result,
-		Hints:            a.Hints,
-		Error:            a.Error,
-		ProcessingTimeMs: a.ProcessingTimeMs,
-		StartedAt:        a.StartedAt,
+		Advice:           a.Advice,
+		Progress:         a.Progress,
+		ProcessingTimeMS: a.ProcessingTimeMS,
 		CompletedAt:      a.CompletedAt,
-		Visibility:       a.Visibility,
 		CreatedAt:        a.CreatedAt,
 		UpdatedAt:        a.UpdatedAt,
 	}
 }
+
+// type AnalysisScores struct {
+// 	AnalysisID     uuid.UUID   `db:"analysis_id"`
+// 	OverallScore   float64     `db:"overall_score"`
+// 	TechniqueScore float64     `db:"technique_score"`
+// 	PowerScore     float64     `db:"power_score"`
+// 	EnduranceScore float64     `db:"endurance_score"`
+// 	Details        *[]byte     `db:"details"`
+// 	CreatedAt      time.Time   `db:"created_at"`
+// }
+//
+// func (a AnalysisScores) ToAnalysisScores() model.AnalysisScores {
+// 	return model.AnalysisScores{
+// 		AnalysisID:     a.AnalysisID,
+// 		OverallScore:   a.OverallScore,
+// 		TechniqueScore: a.TechniqueScore,
+// 		PowerScore:     a.PowerScore,
+// 		EnduranceScore: a.EnduranceScore,
+// 		Details:        a.Details,
+// 		CreatedAt:      a.CreatedAt,
+// 	}
+// }

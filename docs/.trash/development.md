@@ -82,13 +82,14 @@ graph TB
 2. **Docker Compose** (v2.0+)
    - Included with Docker Desktop on macOS/Windows
    - Linux: `sudo apt-get install docker-compose-plugin`
-3. **Go Toolchain** (1.26.0+)
+
+3. **Go Toolchain** (1.27.1+)
 
    ```bash
    # Download and install Go from https://go.dev/dl/
    # E.g. Linux installation:
-   wget https://go.dev/dl/go1.26.0.linux-amd64.tar.gz
-   sudo tar -C /usr/local -xzf go1.26.0.linux-amd64.tar.gz
+   wget https://go.dev/dl/go1.27.1.linux-amd64.tar.gz
+   sudo tar -C /usr/local -xzf go1.27.1.linux-amd64.tar.gz
    export PATH=$PATH:/usr/local/go/bin
    ```
 4. **Flutter SDK** (3.16+)

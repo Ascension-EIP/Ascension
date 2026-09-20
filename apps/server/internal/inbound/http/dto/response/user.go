@@ -1,8 +1,8 @@
-// @date 2026-09-18
+// @date 2026-03-11
 // @file user.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package response
@@ -10,31 +10,32 @@ package response
 import "github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 
 type User struct {
-	ID        string `json:"id"`
-	Username  string `json:"username"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Role      string `json:"role"`
-	Status    string `json:"status"`
+	ID        string
+	Username  model.UserUsername
+	FirstName string
+	LastName  string
+	Email     model.UserEmail
+	Role      model.UserRole
+	Status    model.UserStatus
 }
 
-func UserToResponse(user *model.User) *User {
-	return &User{
+func UserToResponse(user model.User) User {
+	return User{
 		ID:        user.ID.String(),
 		Username:  user.Username,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 		Email:     user.Email,
-		Role:      string(user.Role),
-		Status:    string(user.Status),
+		Role:      user.Role,
+		Status:    user.Status,
 	}
 }
 
-func UsersToResponse(users []*model.User) []*User {
-	r := []*User{}
+func UsersToResponse(users []model.User) []User {
+	r := make([]User, 0, len(users))
 	for _, user := range users {
 		r = append(r, UserToResponse(user))
 	}
+
 	return r
 }
