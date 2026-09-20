@@ -68,13 +68,13 @@ func (h *VideoHandler) GetUploadURL(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
-	videoMetadata, videoInfo, err := req.IntoVideoMetadataAndVideoInfo()
+	videoMetadata, videoConfig, err := req.IntoVideoMetadataAndVideoConfig()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
 
-	url, err := h.s.GetUploadURL(c.Request.Context(), user.ID, videoMetadata, videoInfo)
+	url, err := h.s.GetUploadURL(c.Request.Context(), user.ID, videoMetadata, videoConfig)
 	if err != nil {
 		utils.Error(c, err)
 		return

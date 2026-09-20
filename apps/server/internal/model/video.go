@@ -72,14 +72,14 @@ func NewVideoMetadata(contentType string, size int) (VideoMetadata, error) {
 	}, nil
 }
 
-type VideoInfo struct {
+type VideoConfig struct {
 	ClimbingSessionID *uuid.UUID
 	Title             *string
 	Visibility        Visibility
 	Retained          bool
 }
 
-func (v VideoInfo) Validate() error {
+func (v VideoConfig) Validate() error {
 	if err := v.Visibility.Validate(); err != nil {
 		return fmt.Errorf("visibility: %w", err)
 	}
@@ -101,7 +101,7 @@ type Video struct {
 	Height             *int16
 	FPS                *float64
 	ContentType        string
-	DurationMs         *time.Duration
+	DurationMS         *time.Duration
 	SizeBytes          *int
 	Retained           bool
 	UploadURLExpiresAt *time.Time

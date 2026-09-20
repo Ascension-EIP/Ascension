@@ -20,6 +20,7 @@ type (
 		DB       DBConfig       `envPrefix:"POSTGRES_"`
 		MinIO    MinIOConfig    `envPrefix:"MINIO_"`
 		RabbitMQ RabbitMQConfig `envPrefix:"RABBITMQ_"`
+		Video    VideoConfig    `envPrefix:"VIDEO_"`
 		Auth     AuthConfig     `envPrefix:"AUTH_"`
 		HTTP     HTTPConfig
 		Log      LogConfig `envPrefix:"LOG_"`
@@ -52,6 +53,10 @@ type (
 		TLS         bool   `env:"TLS" envDefault:"false"`
 		QueueAI     string `env:"QUEUE_AI" envDefault:"vision.skeleton"`
 		QueueServer string `env:"QUEUE_SERVER" envDefault:"ascension.events"`
+	}
+
+	VideoConfig struct {
+		Retention time.Duration `env:"RETENTION" envDefault:"8760h"`
 	}
 
 	AuthConfig struct {

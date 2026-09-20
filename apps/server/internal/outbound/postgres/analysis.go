@@ -9,7 +9,6 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
@@ -21,8 +20,8 @@ func (r *PostgresRepository) CreateAnalysis(ctx context.Context, analysis model.
 	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx,
-		"INSERT INTO analyses (video_id) VALUES ($1) RETURNING *",
-		analysis.VideoID)
+		"INSERT INTO analyses (video_id, type, visibility) VALUES ($1, $2, $3) RETURNING *",
+		analysis.VideoID, analysis.Type, analysis.Visibility)
 	if err != nil {
 		return model.Analysis{}, dto.Error(err)
 	}
@@ -40,18 +39,10 @@ func (r *PostgresRepository) GetAnalysisByFilter(ctx context.Context, filter mod
 	setParts := []string{}
 	args := []any{}
 
-	if filter.ID != nil {
-		args = append(args, *filter.ID)
-		setParts = append(setParts, fmt.Sprintf("id = $%d", len(args)))
-	}
-	if filter.VideoID != nil {
-		args = append(args, *filter.VideoID)
-		setParts = append(setParts, fmt.Sprintf("video_id = $%d", len(args)))
-	}
-	if filter.Status != nil {
-		args = append(args, *filter.Status)
-		setParts = append(setParts, fmt.Sprintf("status = $%d", len(args)))
-	}
+	setArg(&setParts, &args, "id", filter.ID)
+	setArg(&setParts, &args, "video_id", filter.VideoID)
+	setArg(&setParts, &args, "type", filter.Type)
+	setArg(&setParts, &args, "status", filter.Status)
 
 	query := "SELECT * FROM analyses"
 

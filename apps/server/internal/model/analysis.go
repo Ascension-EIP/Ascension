@@ -13,21 +13,35 @@ import (
 	"uuid"
 )
 
-type AnalysisStatus string
+type AnalysisType string
 
 const (
-	AnalysisStatusPending   AnalysisStatus = "pending"
-	AnalysisStatusCompleted AnalysisStatus = "completed"
+	AnalysisType2D AnalysisType = "2D"
+	AnalysisType3D AnalysisType = "3D"
+)
+
+type JobStatus string
+
+const (
+	JobStatusPending         JobStatus = "pending"
+	JobStatusProcessing      JobStatus = "processing"
+	JobStatusGeneratingHints JobStatus = "generating_hints"
+	JobStatusCompleted       JobStatus = "completed"
+	JobStatusFailed          JobStatus = "failed"
 )
 
 type Analysis struct {
 	ID               uuid.UUID
 	VideoID          uuid.UUID
-	Status           AnalysisStatus
-	ResultJSON       *[]byte
+	Type             AnalysisType
+	Status           JobStatus
+	Visibility       Visibility
+	Progress         int16
+	Result           *map[string]any
 	Advice           *string
-	Progress         int
-	ProcessingTimeMS *int
+	Error            *string
+	ProcessingTimeMS *time.Duration
+	StartedAt        *time.Time
 	CompletedAt      *time.Time
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
@@ -36,5 +50,22 @@ type Analysis struct {
 type AnalysisFilter struct {
 	ID      *uuid.UUID
 	VideoID *uuid.UUID
-	Status  *AnalysisStatus
+	Type    *AnalysisType
+	Status  *JobStatus
 }
+
+type AnalysisConfig struct {
+	VideoID    uuid.UUID
+	Type       AnalysisType
+	Visibility Visibility
+}
+
+// type AnalysisScores struct {
+// 	AnalysisID     uuid.UUID
+// 	OverallScore   float64
+// 	TechniqueScore float64
+// 	PowerScore     float64
+// 	EnduranceScore float64
+// 	Details        *[]byte
+// 	CreatedAt      time.Time
+// }

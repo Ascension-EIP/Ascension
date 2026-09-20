@@ -14,8 +14,8 @@ import (
 
 type CreateUser struct {
 	Username  model.UserUsername `json:"username" binding:"required"`
-	FirstName string             `json:"first_name"`
-	LastName  string             `json:"last_name"`
+	FirstName string             `json:"first_name" binding:"required"`
+	LastName  string             `json:"last_name" binding:"required"`
 	Email     string             `json:"email" binding:"required"`
 	Password  string             `json:"password" binding:"required"`
 	Role      string             `json:"role" binding:"required"`

@@ -23,7 +23,7 @@ func (r *PostgresRepository) CreateVideo(ctx context.Context, video model.Video)
 
 	_, err := tx.Exec(ctx,
 		"INSERT INTO videos (id, user_id, object_key, climbing_session_id, title, visibility, width, height, fps, content_type, duration_ms, size_bytes, retained, status, upload_url_expires_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)",
-		video.ID, video.UserID, video.ObjectKey, video.ClimbingSessionID, video.Title, video.Visibility, video.Width, video.Height, video.FPS, video.ContentType, video.DurationMs, video.SizeBytes, video.Retained, video.Status, video.UploadURLExpiresAt)
+		video.ID, video.UserID, video.ObjectKey, video.ClimbingSessionID, video.Title, video.Visibility, video.Width, video.Height, video.FPS, video.ContentType, video.DurationMS, video.SizeBytes, video.Retained, video.Status, video.UploadURLExpiresAt)
 	if err != nil {
 		return err
 	}

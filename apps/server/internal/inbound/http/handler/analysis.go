@@ -41,8 +41,9 @@ func (h *AnalyseHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
+	analysisConfig := req.IntoAnalysisConfig()
 
-	analysis, err := h.s.TriggerAnalysis(c.Request.Context(), req.VideoID, user.ID)
+	analysis, err := h.s.TriggerAnalysis(c.Request.Context(), user.ID, analysisConfig)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -59,11 +60,11 @@ func (h *AnalyseHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	analysis, err := h.s.GetAnalysis(c.Request.Context(), id)
+	analysis, err := h.s.GetAnalysisByID(c.Request.Context(), id)
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, response.AnalysisInfoToResponse(analysis))
+	c.JSON(http.StatusOK, response.AnalysisToResponse(analysis))
 }

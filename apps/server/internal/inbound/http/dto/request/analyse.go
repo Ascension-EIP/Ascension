@@ -7,8 +7,22 @@
 // @status done
 package request
 
-import "uuid"
+import (
+	"uuid"
+
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+)
 
 type CreateAnalyseRequest struct {
-	VideoID uuid.UUID `json:"video_id"`
+	VideoID    uuid.UUID `json:"video_id" binding:"required"`
+	Type       string    `json:"type" binding:"required"`
+	Visibility string    `json:"visibility" binding:"required"`
+}
+
+func (req CreateAnalyseRequest) IntoAnalysisConfig() model.AnalysisConfig {
+	return model.AnalysisConfig{
+		VideoID:    req.VideoID,
+		Type:       model.AnalysisType(req.Type),
+		Visibility: model.Visibility(req.Visibility),
+	}
 }

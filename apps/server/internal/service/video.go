@@ -20,13 +20,14 @@ import (
 )
 
 type VideoService struct {
-	cfg     config.MinIOConfig
-	storage model.VideoStorage
-	repo    model.VideoRepository
+	cfgVideo config.VideoConfig
+	cfgMinIO config.MinIOConfig
+	storage  model.VideoStorage
+	repo     model.VideoRepository
 }
 
-func NewVideoService(cfg config.MinIOConfig, storage model.VideoStorage, repo model.VideoRepository) VideoService {
-	return VideoService{cfg: cfg, storage: storage, repo: repo}
+func NewVideoService(cfgVideo config.VideoConfig, cfgMinIO config.MinIOConfig, storage model.VideoStorage, repo model.VideoRepository) VideoService {
+	return VideoService{cfgVideo: cfgVideo, cfgMinIO: cfgMinIO, storage: storage, repo: repo}
 }
 
 func (s *VideoService) GetDownloadURL(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (model.VideoDownloadURL, error) {
@@ -50,8 +51,8 @@ func (s *VideoService) GetDownloadURL(ctx context.Context, videoID uuid.UUID, us
 	}, nil
 }
 
-func (s *VideoService) GetUploadURL(ctx context.Context, userID uuid.UUID, videoMetadata model.VideoMetadata, videoInfo model.VideoInfo) (model.VideoUploadURL, error) {
-	if err := videoInfo.Validate(); err != nil {
+func (s *VideoService) GetUploadURL(ctx context.Context, userID uuid.UUID, videoMetadata model.VideoMetadata, videoConfig model.VideoConfig) (model.VideoUploadURL, error) {
+	if err := videoConfig.Validate(); err != nil {
 		return model.VideoUploadURL{}, fmt.Errorf("validate video info: %w", err)
 	}
 
@@ -66,15 +67,15 @@ func (s *VideoService) GetUploadURL(ctx context.Context, userID uuid.UUID, video
 		if err := s.repo.CreateVideo(ctx, model.Video{
 			ID:                 videoID,
 			UserID:             userID,
-			ClimbingSessionID:  videoInfo.ClimbingSessionID,
-			Title:              videoInfo.Title,
+			ClimbingSessionID:  videoConfig.ClimbingSessionID,
+			Title:              videoConfig.Title,
 			ObjectKey:          objectKey,
 			Status:             model.VideoStatusPending,
-			Visibility:         videoInfo.Visibility,
+			Visibility:         videoConfig.Visibility,
 			ContentType:        videoMetadata.ContentType,
 			SizeBytes:          new(videoMetadata.Size),
-			Retained:           videoInfo.Retained,
-			UploadURLExpiresAt: new(time.Now().Add(s.cfg.UploadExp)),
+			Retained:           videoConfig.Retained,
+			UploadURLExpiresAt: new(time.Now().Add(s.cfgMinIO.UploadExp)),
 		}); err != nil {
 			return err
 		}

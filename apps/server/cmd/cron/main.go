@@ -45,7 +45,7 @@ func main() {
 	}
 
 	sessionS := service.NewSessionService(cfg.Auth.Session, &repo)
-	videoS := service.NewVideoService(cfg.MinIO, &storage, &repo)
+	videoS := service.NewVideoService(cfg.Video, cfg.MinIO, &storage, &repo)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()

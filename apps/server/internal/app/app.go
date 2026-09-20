@@ -56,7 +56,7 @@ func Run(cfg config.Config) {
 	sessionS := service.NewSessionService(cfg.Auth.Session, &repo)
 	userS := service.NewUserService(&repo)
 	authS := service.NewAuthService(&jwtS, &sessionS, &userS)
-	videoS := service.NewVideoService(cfg.MinIO, &storage, &repo)
+	videoS := service.NewVideoService(cfg.Video, cfg.MinIO, &storage, &repo)
 	analyseS := service.NewAnalysisService(cfg.MinIO, &repo, &repo, &queue)
 
 	authMW := middleware.AuthMiddleware(&jwtS)

@@ -47,7 +47,7 @@ func (v Video) ToVideo() model.Video {
 		Height:             v.Height,
 		FPS:                v.FPS,
 		ContentType:        v.ContentType,
-		DurationMs:         v.DurationMs,
+		DurationMS:         v.DurationMs,
 		SizeBytes:          v.SizeBytes,
 		Retained:           v.Retained,
 		UploadURLExpiresAt: v.UploadURLExpiresAt,
