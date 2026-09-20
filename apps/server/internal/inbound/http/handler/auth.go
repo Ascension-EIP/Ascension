@@ -60,7 +60,7 @@ func (h *AuthHandler) SignupLogin(c *gin.Context) {
 		return
 	}
 
-	user, tokens, err := h.s.SignupAndLogin(c.Request.Context(), form, req.Remember)
+	user, tokens, err := h.s.SignupAndLogin(c.Request.Context(), form, utils.ClientInfo(c), req.Remember)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -81,7 +81,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	user, tokens, err := h.s.Login(c.Request.Context(), form, req.Remember)
+	user, tokens, err := h.s.Login(c.Request.Context(), form, utils.ClientInfo(c), req.Remember)
 	if err != nil {
 		utils.Error(c, err)
 		return

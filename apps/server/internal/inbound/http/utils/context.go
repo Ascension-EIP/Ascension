@@ -11,7 +11,22 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 )
+
+func ClientInfo(c *gin.Context) model.ClientInfo {
+	var clientInfo model.ClientInfo
+	userAgent := c.GetHeader("User-Agent")
+	if userAgent != "" {
+		clientInfo.UserAgent = &userAgent
+	}
+	ipAddress := c.ClientIP()
+	if ipAddress != "" {
+		clientInfo.IPAddress = &ipAddress
+	}
+	return clientInfo
+}
 
 func GetFromContext[T any](c *gin.Context, key string) (T, error) {
 	var empty T

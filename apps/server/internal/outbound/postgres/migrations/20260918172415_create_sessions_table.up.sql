@@ -8,7 +8,6 @@ CREATE TABLE sessions (
 	revoked_at TIMESTAMPTZ,
     expires_at TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-
 );
 
 CREATE INDEX idx_sessions_user_id  ON sessions(user_id);

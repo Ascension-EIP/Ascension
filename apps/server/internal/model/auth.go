@@ -62,3 +62,8 @@ type AccessToken struct {
 	TokenType string
 	ExpiresIn uint
 }
+
+type ClientInfo struct {
+	UserAgent *string
+	IPAddress *string
+}

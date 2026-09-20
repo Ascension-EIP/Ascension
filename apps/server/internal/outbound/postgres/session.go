@@ -21,8 +21,8 @@ func (r *PostgresRepository) CreateSession(ctx context.Context, session model.Se
 	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx,
-		"INSERT INTO sessions (user_id, token, expires_at) VALUES ($1, $2, $3) RETURNING *",
-		session.UserID, session.Token, session.ExpiresAt)
+		"INSERT INTO sessions (user_id, token_hash, user_agent, ip_address, expires_at) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+		session.UserID, session.TokenHash, session.UserAgent, session.IPAddress, session.ExpiresAt)
 	if err != nil {
 		return model.Session{}, err
 	}
@@ -35,16 +35,16 @@ func (r *PostgresRepository) CreateSession(ctx context.Context, session model.Se
 	return dbSession.ToSession(), nil
 }
 
-func (r *PostgresRepository) GetUserByValidToken(ctx context.Context, token string) (model.User, error) {
+func (r *PostgresRepository) GetUserByValidToken(ctx context.Context, tokenHash string) (model.User, error) {
 	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx, `
 			SELECT u.*
 			FROM sessions s
 			JOIN users u ON u.id = s.user_id
-			WHERE s.token = $1 AND s.expires_at > NOW()
+			WHERE s.token_hash = $1 AND s.expires_at > NOW()
 			LIMIT 1
-		`, token)
+		`, tokenHash)
 	if err != nil {
 		return model.User{}, err
 	}
@@ -57,13 +57,13 @@ func (r *PostgresRepository) GetUserByValidToken(ctx context.Context, token stri
 	return dbUser.ToUser(), nil
 }
 
-func (r *PostgresRepository) DeleteSessionByTokenAndUserID(ctx context.Context, token string, userID uuid.UUID) error {
+func (r *PostgresRepository) DeleteSessionByTokenAndUserID(ctx context.Context, tokenHash string, userID uuid.UUID) error {
 	tx := r.getTx(ctx)
 
 	_, err := tx.Exec(ctx,
-		"DELETE FROM sessions WHERE user_id = $1 AND token = $2",
+		"DELETE FROM sessions WHERE user_id = $1 AND token_hash = $2",
 		userID,
-		token)
+		tokenHash)
 	if err != nil {
 		return err
 	}

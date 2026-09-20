@@ -15,19 +15,27 @@ import (
 )
 
 type Session struct {
-	ID        uuid.UUID `db:"id"`
-	UserID    uuid.UUID `db:"user_id"`
-	Token     string    `db:"token"`
-	ExpiresAt time.Time `db:"expires_at"`
-	CreatedAt time.Time `db:"created_at"`
+	ID         uuid.UUID  `db:"id"`
+	UserID     uuid.UUID  `db:"user_id"`
+	TokenHash  string     `db:"token_hash"`
+	UserAgent  *string    `db:"user_agent"`
+	IPAddress  *string    `db:"ip_address"`
+	LastUsedAt time.Time  `db:"last_used_at"`
+	RevokedAt  *time.Time `db:"revoked_at"`
+	ExpiresAt  time.Time  `db:"expires_at"`
+	CreatedAt  time.Time  `db:"created_at"`
 }
 
 func (v Session) ToSession() model.Session {
 	return model.Session{
-		ID:        v.ID,
-		UserID:    v.UserID,
-		Token:     v.Token,
-		ExpiresAt: v.ExpiresAt,
-		CreatedAt: v.CreatedAt,
+		ID:         v.ID,
+		UserID:     v.UserID,
+		TokenHash:  v.TokenHash,
+		UserAgent:  v.UserAgent,
+		IPAddress:  v.IPAddress,
+		LastUsedAt: v.LastUsedAt,
+		RevokedAt:  v.RevokedAt,
+		ExpiresAt:  v.ExpiresAt,
+		CreatedAt:  v.CreatedAt,
 	}
 }

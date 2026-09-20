@@ -52,7 +52,7 @@ func (s *SessionService) hashSessionToken(token string) (string, error) {
 	return hex.EncodeToString(sum), nil
 }
 
-func (s *SessionService) CreateRefreshToken(ctx context.Context, userID uuid.UUID, remember bool) (model.RefreshToken, error) {
+func (s *SessionService) CreateRefreshToken(ctx context.Context, userID uuid.UUID, clientInfo model.ClientInfo, remember bool) (model.RefreshToken, error) {
 	token, err := s.GenerateSessionToken()
 	if err != nil {
 		return model.RefreshToken{}, fmt.Errorf("create token for new session: %w", err)
@@ -72,7 +72,9 @@ func (s *SessionService) CreateRefreshToken(ctx context.Context, userID uuid.UUI
 
 	_, err = s.repo.CreateSession(ctx, model.Session{
 		UserID:    userID,
-		Token:     hashedToken,
+		TokenHash: hashedToken,
+		UserAgent: clientInfo.UserAgent,
+		IPAddress: clientInfo.IPAddress,
 		ExpiresAt: expiresAt,
 	})
 	if err != nil {

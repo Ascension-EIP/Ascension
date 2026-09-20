@@ -32,7 +32,7 @@ func NewAuthService(jwtS *JWTService, sessionS *SessionService, userS *UserServi
 	}
 }
 
-func (s *AuthService) SignupAndLogin(ctx context.Context, form model.SignupForm, remember bool) (model.User, model.Tokens, error) {
+func (s *AuthService) SignupAndLogin(ctx context.Context, form model.SignupForm, clienInfo model.ClientInfo, remember bool) (model.User, model.Tokens, error) {
 	if err := form.IsValid(); err != nil {
 		return model.User{}, model.Tokens{}, fmt.Errorf("form validation: %w", err)
 	}
@@ -49,7 +49,7 @@ func (s *AuthService) SignupAndLogin(ctx context.Context, form model.SignupForm,
 		return model.User{}, model.Tokens{}, err
 	}
 
-	tokens, err := s.CreateTokens(ctx, user, remember)
+	tokens, err := s.CreateTokens(ctx, user, clienInfo, remember)
 	if err != nil {
 		return user, model.Tokens{}, nil
 	}
@@ -77,7 +77,7 @@ func (s *AuthService) Signup(ctx context.Context, form model.SignupForm) (model.
 	return user, nil
 }
 
-func (s *AuthService) Login(ctx context.Context, form model.LoginForm, remember bool) (model.User, model.Tokens, error) {
+func (s *AuthService) Login(ctx context.Context, form model.LoginForm, clientInfo model.ClientInfo, remember bool) (model.User, model.Tokens, error) {
 	if err := form.IsValid(); err != nil {
 		return model.User{}, model.Tokens{}, fmt.Errorf("form validation: %w", err)
 	}
@@ -104,7 +104,7 @@ func (s *AuthService) Login(ctx context.Context, form model.LoginForm, remember 
 		return model.User{}, model.Tokens{}, model.ErrBadPassword
 	}
 
-	tokens, err := s.CreateTokens(ctx, user, remember)
+	tokens, err := s.CreateTokens(ctx, user, clientInfo, remember)
 	if err != nil {
 		return model.User{}, model.Tokens{}, err
 	}
@@ -112,13 +112,13 @@ func (s *AuthService) Login(ctx context.Context, form model.LoginForm, remember 
 	return user, tokens, nil
 }
 
-func (s *AuthService) CreateTokens(ctx context.Context, user model.User, remember bool) (model.Tokens, error) {
+func (s *AuthService) CreateTokens(ctx context.Context, user model.User, clientInfo model.ClientInfo, remember bool) (model.Tokens, error) {
 	accessToken, err := s.jwtS.CreateAccessToken(ctx, user)
 	if err != nil {
 		return model.Tokens{}, err
 	}
 
-	refreshToken, err := s.sessionS.CreateRefreshToken(ctx, user.ID, remember)
+	refreshToken, err := s.sessionS.CreateRefreshToken(ctx, user.ID, clientInfo, remember)
 	if err != nil {
 		return model.Tokens{}, err
 	}
