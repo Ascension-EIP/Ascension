@@ -18,7 +18,7 @@ import shlex
 
 def run_cmd(args):
     try:
-        return subprocess.check_output(args, stderr=subprocess.DEVNULL).decode("utf-8").strip()
+        return subprocess.check_output(args, stderr=subprocess.DEVNULL).decode("utf-8", errors="replace").strip()
     except subprocess.CalledProcessError:
         return ""
 
@@ -74,7 +74,7 @@ def get_standards_guide():
     repo_root = run_cmd(["git", "rev-parse", "--show-toplevel"])
     if not repo_root:
         return None
-    guide_path = os.path.join(repo_root, "docs/20-engineering/git/git-commit-standards-guide.md")
+    guide_path = os.path.join(repo_root, "docs/engineering/git/git-commit-standards-guide.md")
     if not os.path.exists(guide_path):
         return None
     try:
@@ -194,7 +194,7 @@ Staged changes (git diff --cached):
     
     try:
         with urllib.request.urlopen(req) as response:
-            res_data = json.loads(response.read().decode("utf-8"))
+            res_data = json.loads(response.read().decode("utf-8", errors="replace"))
             
             try:
                 candidates = res_data.get("candidates", [])
@@ -225,7 +225,7 @@ Staged changes (git diff --cached):
     except urllib.error.HTTPError as e:
         print(f"HTTP Error calling Gemini API: {e.code} - {e.reason}", file=sys.stderr)
         try:
-            err_data = json.loads(e.read().decode("utf-8"))
+            err_data = json.loads(e.read().decode("utf-8", errors="replace"))
             print(f"Details: {json.dumps(err_data, indent=2)}", file=sys.stderr)
         except Exception:
             pass
@@ -287,7 +287,7 @@ def main():
             sys.exit(0)
 
     if choice in ("", "y", "yes"):
-        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(mode='w+', encoding='utf-8', delete=False) as temp_file:
             temp_file.write(commit_message)
             temp_path = temp_file.name
         try:
@@ -299,13 +299,13 @@ def main():
             os.remove(temp_path)
     elif choice == "e":
         editor = os.environ.get("EDITOR", "nano")
-        with tempfile.NamedTemporaryFile(mode='w+', suffix='.txt', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(mode='w+', encoding='utf-8', suffix='.txt', delete=False) as temp_file:
             temp_file.write(commit_message)
             temp_path = temp_file.name
         try:
             cmd = shlex.split(editor) + [temp_path]
             subprocess.run(cmd, check=True)
-            with open(temp_path, 'r') as temp_file:
+            with open(temp_path, 'r', encoding='utf-8', errors='replace') as temp_file:
                 edited_message = temp_file.read().strip()
             if not edited_message:
                 print("Commit message is empty. Commit aborted.", file=sys.stderr)

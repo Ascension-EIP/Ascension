@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "forui": {
+      "source": "duobaseio/forui",
+      "sourceType": "github",
+      "skillPath": "skills/forui/SKILL.md",
+      "computedHash": "46d21a5e7d72786d23fa07c43805d5b80c5414b224e847da58cabecef7ab7c2d"
+    }
+  }
+}

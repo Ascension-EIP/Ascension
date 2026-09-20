@@ -1,8 +1,8 @@
-// @date 2026-03-18
+// @date 2026-09-07
 // @file analysis_page.dart
 // @brief File description.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'dart:convert';
@@ -11,7 +11,9 @@ import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:forui/forui.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../../shared/localization/app_localizations.dart';
@@ -269,15 +271,15 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
           unselectedLabelColor: Colors.grey,
           tabs: [
             Tab(
-              icon: const Icon(Icons.person_outline),
+              icon: const Icon(FLucideIcons.user),
               text: l10n.t('analysis.tabSkeleton'),
             ),
             Tab(
-              icon: const Icon(Icons.show_chart),
+              icon: const Icon(FLucideIcons.chartSpline),
               text: l10n.t('analysis.tabAngles'),
             ),
             Tab(
-              icon: const Icon(Icons.analytics_outlined),
+              icon: const Icon(FLucideIcons.chartColumn),
               text: l10n.t('analysis.tabStats'),
             ),
           ],
@@ -343,12 +345,20 @@ class _AnalysisViewPageState extends State<AnalysisViewPage>
                     setState(() => _currentFrame = best);
                   },
                   scrollController: _skeletonScrollCtrl,
+                ).animate().fadeIn(
+                  duration: 300.ms,
+                  curve: Curves.easeOutCubic,
                 ),
-                _AngleChartTab(frames: _frames, accent: accent),
+                _AngleChartTab(frames: _frames, accent: accent)
+                    .animate()
+                    .fadeIn(duration: 300.ms, curve: Curves.easeOutCubic),
                 _StatsTab(
                   frames: _frames,
                   processingMs: widget.processingMs,
                   accent: accent,
+                ).animate().fadeIn(
+                  duration: 300.ms,
+                  curve: Curves.easeOutCubic,
                 ),
               ],
             ),
@@ -499,7 +509,7 @@ class _SkeletonTabState extends State<_SkeletonTab> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.straighten_rounded,
+                          FLucideIcons.ruler,
                           size: 13,
                           color: _showAngles ? widget.accent : Colors.white38,
                         ),
@@ -556,7 +566,7 @@ class _SkeletonTabState extends State<_SkeletonTab> {
                 IconButton(
                   onPressed: widget.onReset,
                   icon: const Icon(
-                    Icons.skip_previous_rounded,
+                    FLucideIcons.skipBack,
                     color: Colors.white70,
                   ),
                   iconSize: 32,
@@ -567,7 +577,7 @@ class _SkeletonTabState extends State<_SkeletonTab> {
                       ? () => widget.onFrameChanged(widget.currentIndex - 1)
                       : null,
                   icon: const Icon(
-                    Icons.chevron_left_rounded,
+                    FLucideIcons.chevronLeft,
                     color: Colors.white70,
                   ),
                   iconSize: 36,
@@ -583,9 +593,7 @@ class _SkeletonTabState extends State<_SkeletonTab> {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      widget.isPlaying
-                          ? Icons.pause_rounded
-                          : Icons.play_arrow_rounded,
+                      widget.isPlaying ? FLucideIcons.pause : FLucideIcons.play,
                       color: Colors.black,
                       size: 30,
                     ),
@@ -597,7 +605,7 @@ class _SkeletonTabState extends State<_SkeletonTab> {
                       ? () => widget.onFrameChanged(widget.currentIndex + 1)
                       : null,
                   icon: const Icon(
-                    Icons.chevron_right_rounded,
+                    FLucideIcons.chevronRight,
                     color: Colors.white70,
                   ),
                   iconSize: 36,
@@ -607,7 +615,7 @@ class _SkeletonTabState extends State<_SkeletonTab> {
                   onPressed: () =>
                       widget.onFrameChanged(widget.frames.length - 1),
                   icon: const Icon(
-                    Icons.skip_next_rounded,
+                    FLucideIcons.skipForward,
                     color: Colors.white70,
                   ),
                   iconSize: 32,
@@ -624,11 +632,7 @@ class _SkeletonTabState extends State<_SkeletonTab> {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.tips_and_updates_rounded,
-                    color: widget.accent,
-                    size: 18,
-                  ),
+                  Icon(FLucideIcons.lightbulb, color: widget.accent, size: 18),
                   const SizedBox(width: 8),
                   Text(
                     l10n.t('analysis.aiTips'),
@@ -1164,26 +1168,26 @@ class _StatsTab extends StatelessWidget {
               _StatRow(
                 l10n.t('analysis.durationAnalyzed'),
                 _fmtMs(durationMs),
-                icon: Icons.timer_outlined,
+                icon: FLucideIcons.timer,
                 accent: accent,
               ),
               _StatRow(
                 l10n.t('analysis.framesAnalyzed'),
                 '${frames.length}',
-                icon: Icons.video_library_outlined,
+                icon: FLucideIcons.video,
                 accent: accent,
               ),
               if (processingMs != null)
                 _StatRow(
                   l10n.t('analysis.aiProcessingTime'),
                   '${(processingMs! / 1000).toStringAsFixed(1)} s',
-                  icon: Icons.memory_outlined,
+                  icon: FLucideIcons.memoryStick,
                   accent: accent,
                 ),
               _StatRow(
                 l10n.t('analysis.detectionRate'),
                 '${detRate.toStringAsFixed(1)} %',
-                icon: Icons.person_search_outlined,
+                icon: FLucideIcons.userSearch,
                 accent: accent,
                 valueColor: detRate > 80
                     ? Colors.greenAccent
@@ -1194,7 +1198,7 @@ class _StatsTab extends StatelessWidget {
               _StatRow(
                 l10n.t('analysis.measuredJoints'),
                 '${jointStats.length} / ${_kAngleJoints.length}',
-                icon: Icons.architecture_outlined,
+                icon: FLucideIcons.bone,
                 accent: accent,
               ),
             ],
@@ -1245,27 +1249,27 @@ class _StatsTab extends StatelessWidget {
                         _StatRow(
                           l10n.t('analysis.minimum'),
                           '${s.min.toStringAsFixed(1)}°',
-                          icon: Icons.arrow_downward_rounded,
+                          icon: FLucideIcons.arrowDown,
                           accent: accent,
                           valueColor: Colors.lightBlueAccent,
                         ),
                         _StatRow(
                           l10n.t('analysis.maximum'),
                           '${s.max.toStringAsFixed(1)}°',
-                          icon: Icons.arrow_upward_rounded,
+                          icon: FLucideIcons.arrowUp,
                           accent: accent,
                           valueColor: Colors.orangeAccent,
                         ),
                         _StatRow(
                           l10n.t('analysis.average'),
                           '${s.avg.toStringAsFixed(1)}°',
-                          icon: Icons.show_chart,
+                          icon: FLucideIcons.chartSpline,
                           accent: accent,
                         ),
                         _StatRow(
                           l10n.t('analysis.amplitude'),
                           '${(s.max - s.min).toStringAsFixed(1)}°',
-                          icon: Icons.swap_vert_rounded,
+                          icon: FLucideIcons.arrowUpDown,
                           accent: accent,
                         ),
                       ],
