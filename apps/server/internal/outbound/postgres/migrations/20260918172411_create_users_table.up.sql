@@ -22,7 +22,7 @@ CREATE TABLE users (
     CONSTRAINT chk_users_username_format
         CHECK (username ~ '^[a-z0-9_]{3,30}$'),
     CONSTRAINT chk_users_deactivation
-        CHECK ((status = 'deactivated') = (deactivated_at IS NOT NULL));
+        CHECK ((status = 'deactivated') = (deactivated_at IS NOT NULL))
 );
 
 CREATE INDEX idx_users_role ON users(role);

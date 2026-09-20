@@ -13,9 +13,11 @@ import (
 )
 
 type JWTClaims struct {
-	UserID    uuid.UUID `json:"user_id"`
-	UserName  UserName  `json:"user_name"`
-	UserEmail UserEmail `json:"user_email"`
-	UserRole  UserRole  `json:"user_role"`
+	UserID        uuid.UUID    `json:"user_id"`
+	UserUsername  UserUsername `json:"user_username"`
+	UserFirstName string       `json:"user_first_name"`
+	UserLastName  string       `json:"user_last_name"`
+	UserEmail     UserEmail    `json:"user_email"`
+	UserRole      UserRole     `json:"user_role"`
 	jwt.RegisteredClaims
 }

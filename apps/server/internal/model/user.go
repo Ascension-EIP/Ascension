@@ -12,11 +12,13 @@ import (
 	"strings"
 	"time"
 	"uuid"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
-type UserName string
+type UserUsername string
 
-func (n UserName) IsValid() error {
+func (n UserUsername) IsValid() error {
 	if len(n) < 6 {
 		return fmt.Errorf("user name too short")
 	}
@@ -49,40 +51,81 @@ func (p UserPassword) IsValid() error {
 	return nil
 }
 
+func (p UserPassword) Hash() ([]byte, error) {
+	hashed, err := bcrypt.GenerateFromPassword(p, bcrypt.DefaultCost)
+	if err != nil {
+		return []byte{}, fmt.Errorf("hash user password: %w", err)
+	}
+
+	return hashed, nil
+}
+
 type UserRole string
 
 const (
 	UserRoleAdmin UserRole = "admin"
 	UserRoleUser  UserRole = "user"
+	UserRoleCoach UserRole = "coach"
+	UserRoleGym   UserRole = "gym"
 )
 
 func (r UserRole) IsValid() error {
 	switch r {
-	case UserRoleAdmin, UserRoleUser:
+	case UserRoleAdmin, UserRoleUser, UserRoleCoach, UserRoleGym:
 		return nil
 	default:
 		return fmt.Errorf("invalid role")
 	}
 }
 
+type UserStatus string
+
+const (
+	UserStatusActive      UserStatus = "active"
+	UserStatusDeactivated UserStatus = "deactivated"
+)
+
+func (r UserStatus) IsValid() error {
+	switch r {
+	case UserStatusActive, UserStatusDeactivated:
+		return nil
+	default:
+		return fmt.Errorf("invalid status")
+	}
+}
+
 type UserFilter struct {
-	ID       *uuid.UUID
-	Name     *UserName
-	Email    *UserEmail
-	Password *UserPassword
-	Role     *UserRole
+	ID               *uuid.UUID
+	Username         *UserUsername
+	FirstName        *string
+	LastName         *string
+	Email            *UserEmail
+	Password         *UserPassword
+	Role             *UserRole
+	Status           *UserStatus
+	StripeCustomerID **string
+	EmailVerifiedAt  **time.Time
+	LastLoginAt      **time.Time
+	DeactivatedAt    **time.Time
 }
 
 type UserPartial struct {
-	ID       uuid.UUID
-	Name     *UserName
-	Email    *UserEmail
-	Password *UserPassword
-	Role     *UserRole
+	ID               uuid.UUID
+	Username         *UserUsername
+	FirstName        *string
+	LastName         *string
+	Email            *UserEmail
+	Password         *UserPassword
+	Role             *UserRole
+	Status           *UserStatus
+	StripeCustomerID **string
+	EmailVerifiedAt  **time.Time
+	LastLoginAt      **time.Time
+	DeactivatedAt    **time.Time
 }
 
 func (u UserPartial) IsValid() error {
-	if err := u.Name.IsValid(); err != nil {
+	if err := u.Username.IsValid(); err != nil {
 		return err
 	}
 
@@ -95,6 +138,10 @@ func (u UserPartial) IsValid() error {
 	}
 
 	if err := u.Role.IsValid(); err != nil {
+		return err
+	}
+
+	if err := u.Status.IsValid(); err != nil {
 		return err
 	}
 
@@ -102,17 +149,24 @@ func (u UserPartial) IsValid() error {
 }
 
 type User struct {
-	ID        uuid.UUID
-	Name      UserName
-	Email     UserEmail
-	Password  UserPassword
-	Role      UserRole
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID               uuid.UUID
+	Username         UserUsername
+	FirstName        string
+	LastName         string
+	Email            UserEmail
+	Password         UserPassword
+	Role             UserRole
+	Status           UserStatus
+	StripeCustomerID *string
+	EmailVerifiedAt  *time.Time
+	LastLoginAt      *time.Time
+	DeactivatedAt    *time.Time
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
 func (u User) IsValid() error {
-	if err := u.Name.IsValid(); err != nil {
+	if err := u.Username.IsValid(); err != nil {
 		return err
 	}
 
@@ -125,6 +179,10 @@ func (u User) IsValid() error {
 	}
 
 	if err := u.Role.IsValid(); err != nil {
+		return err
+	}
+
+	if err := u.Status.IsValid(); err != nil {
 		return err
 	}
 

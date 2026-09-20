@@ -21,7 +21,7 @@ CREATE TABLE analyses (
     CONSTRAINT chk_analyses_completed
         CHECK (status <> 'completed' OR (result IS NOT NULL AND completed_at IS NOT NULL)),
     CONSTRAINT chk_analyses_failed
-        CHECK (status <> 'failed' OR error IS NOT NULL);
+        CHECK (status <> 'failed' OR error IS NOT NULL)
 );
 
 CREATE INDEX idx_analyses_video_created ON analyses(video_id, created_at DESC);

@@ -10,6 +10,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"uuid"
 
@@ -37,10 +38,12 @@ func (s *AuthService) SignupAndLogin(ctx context.Context, form model.SignupForm,
 	}
 
 	user, err := s.userS.CreateUser(ctx, model.User{
-		Name:     form.Name,
-		Email:    form.Email,
-		Password: form.Password,
-		Role:     model.UserRoleUser,
+		Username:  form.Username,
+		FirstName: form.FirstName,
+		LastName:  form.LastName,
+		Email:     form.Email,
+		Password:  form.Password,
+		Role:      model.UserRoleUser,
 	})
 	if err != nil {
 		return model.User{}, model.Tokens{}, err
@@ -60,10 +63,12 @@ func (s *AuthService) Signup(ctx context.Context, form model.SignupForm) (model.
 	}
 
 	user, err := s.userS.CreateUser(ctx, model.User{
-		Name:     form.Name,
-		Email:    form.Email,
-		Password: form.Password,
-		Role:     model.UserRoleUser,
+		Username:  form.Username,
+		FirstName: form.FirstName,
+		LastName:  form.LastName,
+		Email:     form.Email,
+		Password:  form.Password,
+		Role:      model.UserRoleUser,
 	})
 	if err != nil {
 		return model.User{}, err
@@ -77,11 +82,22 @@ func (s *AuthService) Login(ctx context.Context, form model.LoginForm, remember 
 		return model.User{}, model.Tokens{}, fmt.Errorf("form validation: %w", err)
 	}
 
-	user, err := s.userS.GetUserByFilter(ctx, model.UserFilter{
-		Email: &form.Email,
-	})
-	if err != nil {
-		return model.User{}, model.Tokens{}, err
+	var user model.User
+	var err error
+	if strings.Contains(form.Identifier, "@") {
+		user, err = s.userS.GetUserByFilter(ctx, model.UserFilter{
+			Email: new(model.NewUserEmail(form.Identifier)),
+		})
+		if err != nil {
+			return model.User{}, model.Tokens{}, err
+		}
+	} else {
+		user, err = s.userS.GetUserByFilter(ctx, model.UserFilter{
+			Username: new(model.UserUsername(form.Identifier)),
+		})
+		if err != nil {
+			return model.User{}, model.Tokens{}, err
+		}
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password)); err != nil {

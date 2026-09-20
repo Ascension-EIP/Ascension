@@ -12,44 +12,52 @@ import (
 )
 
 type SignupForm struct {
-	Name     string `json:"name" binding:"required"`
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
+	Username  string `json:"username" binding:"required"`
+	FirstName string `json:"first_name" binding:"required"`
+	LastName  string `json:"last_name" binding:"required"`
+	Email     string `json:"email" binding:"required,email"`
+	Password  string `json:"password" binding:"required"`
 }
 
 func (req *SignupForm) IntoSignupForm() (model.SignupForm, error) {
 	return model.SignupForm{
-		Name:     model.UserName(req.Name),
-		Email:    model.NewUserEmail(req.Email),
-		Password: model.UserPassword(req.Password),
+		Username:  model.UserUsername(req.Username),
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Email:     model.NewUserEmail(req.Email),
+		Password:  model.UserPassword(req.Password),
 	}, nil
 }
 
 type SignupLoginForm struct {
-	Name     string `json:"name" binding:"required"`
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
-	Remember bool   `json:"remember"`
+	Username  string `json:"username" binding:"required"`
+	FirstName string `json:"first_name" binding:"required"`
+	LastName  string `json:"last_name" binding:"required"`
+	Email     string `json:"email" binding:"required,email"`
+	Password  string `json:"password" binding:"required"`
+	Remember  bool   `json:"remember"`
 }
 
 func (req *SignupLoginForm) IntoSignupLoginForm() (model.SignupForm, error) {
 	return model.SignupForm{
-		Name:     model.UserName(req.Name),
-		Email:    model.NewUserEmail(req.Email),
-		Password: model.UserPassword(req.Password),
+		Username:  model.UserUsername(req.Username),
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Email:     model.NewUserEmail(req.Email),
+		Password:  model.UserPassword(req.Password),
 	}, nil
 }
 
 type LoginForm struct {
-	Email    string `json:"email" binding:"require,email"`
-	Password string `json:"password" binding:"required"`
-	Remember bool   `json:"remember"`
+	Identifier string `json:"identifier" binding:"require"`
+	Password   string `json:"password" binding:"required"`
+	Remember   bool   `json:"remember"`
 }
 
 func (req *LoginForm) IntoLoginForm() (model.LoginForm, error) {
 	return model.LoginForm{
-		Email:    model.NewUserEmail(req.Email),
-		Password: model.UserPassword(req.Password),
+		Identifier: req.Identifier,
+		Password:   model.UserPassword(req.Password),
 	}, nil
 }
 

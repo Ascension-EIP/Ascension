@@ -13,26 +13,34 @@ import (
 )
 
 type CreateUser struct {
-	Name     model.UserName `json:"name" binding:"required"`
-	Email    string         `json:"email" binding:"required"`
-	Password string         `json:"password" binding:"required"`
-	Role     string         `json:"role" binding:"required"`
+	Username  model.UserUsername `json:"username" binding:"required"`
+	FirstName string             `json:"first_name"`
+	LastName  string             `json:"last_name"`
+	Email     string             `json:"email" binding:"required"`
+	Password  string             `json:"password" binding:"required"`
+	Role      string             `json:"role" binding:"required"`
 }
 
 func (req *CreateUser) IntoUser() (model.User, error) {
 	return model.User{
-		Name:     model.UserName(req.Name),
-		Email:    model.NewUserEmail(req.Email),
-		Password: model.UserPassword(req.Password),
-		Role:     model.UserRole(req.Role),
+		Username:  model.UserUsername(req.Username),
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Email:     model.NewUserEmail(req.Email),
+		Password:  model.UserPassword(req.Password),
+		Role:      model.UserRole(req.Role),
+		Status:    model.UserStatusActive,
 	}, nil
 }
 
 type UpdateUser struct {
-	Name     *string `json:"name"`
-	Email    *string `json:"email"`
-	Password *string `json:"password"`
-	Role     *string `json:"role"`
+	Username  *string `json:"username"`
+	FirstName *string `json:"first_name"`
+	LastName  *string `json:"last_name"`
+	Email     *string `json:"email"`
+	Password  *string `json:"password"`
+	Role      *string `json:"role"`
+	Status    *string `json:"status"`
 }
 
 func (req *UpdateUser) IntoUserPartial(id string) (model.UserPartial, error) {
@@ -45,17 +53,39 @@ func (req *UpdateUser) IntoUserPartial(id string) (model.UserPartial, error) {
 		ID: userID,
 	}
 
-	if req.Name != nil {
-		userPartial.Name = new(model.UserName(*req.Name))
+	if req.Username != nil {
+		username := model.UserUsername(*req.Username)
+		userPartial.Username = &username
 	}
+
+	if req.FirstName != nil {
+		firstName := *req.FirstName
+		userPartial.FirstName = &firstName
+	}
+
+	if req.LastName != nil {
+		lastName := *req.LastName
+		userPartial.LastName = &lastName
+	}
+
 	if req.Email != nil {
-		userPartial.Email = new(model.NewUserEmail(*req.Email))
+		email := model.NewUserEmail(*req.Email)
+		userPartial.Email = &email
 	}
+
 	if req.Password != nil {
-		userPartial.Password = new(model.UserPassword(*req.Password))
+		password := model.UserPassword(*req.Password)
+		userPartial.Password = &password
 	}
+
 	if req.Role != nil {
-		userPartial.Role = new(model.UserRole(*req.Role))
+		role := model.UserRole(*req.Role)
+		userPartial.Role = &role
+	}
+
+	if req.Status != nil {
+		status := model.UserStatus(*req.Status)
+		userPartial.Status = &status
 	}
 
 	return userPartial, nil

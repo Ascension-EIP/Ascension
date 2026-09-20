@@ -8,13 +8,15 @@
 package model
 
 type SignupForm struct {
-	Name     UserName
-	Email    UserEmail
-	Password UserPassword
+	Username  UserUsername
+	FirstName string
+	LastName  string
+	Email     UserEmail
+	Password  UserPassword
 }
 
 func (f SignupForm) IsValid() error {
-	if err := f.Name.IsValid(); err != nil {
+	if err := f.Username.IsValid(); err != nil {
 		return err
 	}
 
@@ -30,12 +32,12 @@ func (f SignupForm) IsValid() error {
 }
 
 type LoginForm struct {
-	Email    UserEmail
-	Password UserPassword
+	Identifier string
+	Password   UserPassword
 }
 
 func (f LoginForm) IsValid() error {
-	if err := f.Email.IsValid(); err != nil {
+	if err := NewUserEmail(f.Identifier).IsValid(); err != nil {
 		return err
 	}
 

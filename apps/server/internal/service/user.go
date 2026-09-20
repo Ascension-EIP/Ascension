@@ -14,7 +14,6 @@ import (
 	"uuid"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
@@ -29,12 +28,6 @@ func (s *UserService) CreateUser(ctx context.Context, user model.User) (model.Us
 	if err := user.IsValid(); err != nil {
 		return model.User{}, fmt.Errorf("user validation: %w", err)
 	}
-
-	hashPassword, err := bcrypt.GenerateFromPassword(user.Password, bcrypt.DefaultCost)
-	if err != nil {
-		return model.User{}, fmt.Errorf("create password hash for new user %v: %w", user.Email, err)
-	}
-	user.Password = hashPassword
 
 	return s.repo.CreateUser(ctx, user)
 }

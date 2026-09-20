@@ -40,12 +40,13 @@ func AuthMiddleware(s *service.JWTService) AuthHandler {
 			if len(roles) != 0 && !slices.Contains(roles, claims.UserRole) {
 				c.AbortWithStatus(http.StatusUnauthorized)
 			}
-
 			c.Set(macro.Me, model.User{
-				ID:    claims.UserID,
-				Name:  claims.UserName,
-				Email: claims.UserEmail,
-				Role:  claims.UserRole,
+				ID:        claims.UserID,
+				Username:  claims.UserUsername,
+				FirstName: claims.UserFirstName,
+				LastName:  claims.UserLastName,
+				Email:     claims.UserEmail,
+				Role:      claims.UserRole,
 			})
 			c.Next()
 		}
