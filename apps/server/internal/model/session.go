@@ -1,6 +1,7 @@
 package model
 
 import (
+	"net/netip"
 	"time"
 
 	"uuid"
@@ -11,7 +12,7 @@ type Session struct {
 	UserID     uuid.UUID
 	TokenHash  string
 	UserAgent  *string
-	IPAddress  *string
+	IPAddress  *netip.Addr
 	LastUsedAt time.Time
 	RevokedAt  *time.Time
 	ExpiresAt  time.Time

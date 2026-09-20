@@ -57,14 +57,14 @@ func Run(cfg config.Config) {
 	userS := service.NewUserService(&repo)
 	authS := service.NewAuthService(&jwtS, &sessionS, &userS)
 	videoS := service.NewVideoService(cfg.Video, cfg.MinIO, &storage, &repo)
-	analyseS := service.NewAnalysisService(cfg.MinIO, &repo, &repo, &queue)
+	analysisS := service.NewAnalysisService(cfg.MinIO, &repo, &repo, &queue)
 
 	authMW := middleware.AuthMiddleware(&jwtS)
 
 	userH := handler.NewUserHandler(&userS)
 	authH := handler.NewAuthHandler(&authS)
 	videoH := handler.NewVideoHandler(&videoS)
-	analyseH := handler.NewAnalyseHandler(&analyseS)
+	analysisH := handler.NewAnalysisHandler(&analysisS)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -76,7 +76,7 @@ func Run(cfg config.Config) {
 		&userH,
 		&authH,
 		&videoH,
-		&analyseH,
+		&analysisH,
 	)
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(cfg.HTTP.Port),

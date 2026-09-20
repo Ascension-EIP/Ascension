@@ -7,6 +7,8 @@
 // @status done
 package model
 
+import "net/netip"
+
 type SignupForm struct {
 	Username  UserUsername
 	FirstName string
@@ -65,5 +67,5 @@ type AccessToken struct {
 
 type ClientInfo struct {
 	UserAgent *string
-	IPAddress *string
+	IPAddress *netip.Addr
 }

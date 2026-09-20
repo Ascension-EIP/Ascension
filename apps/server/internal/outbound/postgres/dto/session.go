@@ -8,22 +8,24 @@
 package dto
 
 import (
+	"net/netip"
 	"time"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"uuid"
+
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 )
 
 type Session struct {
-	ID         uuid.UUID  `db:"id"`
-	UserID     uuid.UUID  `db:"user_id"`
-	TokenHash  string     `db:"token_hash"`
-	UserAgent  *string    `db:"user_agent"`
-	IPAddress  *string    `db:"ip_address"`
-	LastUsedAt time.Time  `db:"last_used_at"`
-	RevokedAt  *time.Time `db:"revoked_at"`
-	ExpiresAt  time.Time  `db:"expires_at"`
-	CreatedAt  time.Time  `db:"created_at"`
+	ID         uuid.UUID   `db:"id"`
+	UserID     uuid.UUID   `db:"user_id"`
+	TokenHash  string      `db:"token_hash"`
+	UserAgent  *string     `db:"user_agent"`
+	IPAddress  *netip.Addr `db:"ip_address"`
+	LastUsedAt time.Time   `db:"last_used_at"`
+	RevokedAt  *time.Time  `db:"revoked_at"`
+	ExpiresAt  time.Time   `db:"expires_at"`
+	CreatedAt  time.Time   `db:"created_at"`
 }
 
 func (v Session) ToSession() model.Session {

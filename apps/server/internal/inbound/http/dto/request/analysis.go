@@ -1,5 +1,5 @@
 // @date 2026-03-18
-// @file analyse.go
+// @file analysis.go
 // @brief File description.
 // @project Ascension
 // @author DimitriLaPoudre <lou.pellegrino@epitech.eu>

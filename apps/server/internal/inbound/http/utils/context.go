@@ -9,6 +9,7 @@ package utils
 
 import (
 	"fmt"
+	"net/netip"
 
 	"github.com/gin-gonic/gin"
 
@@ -21,10 +22,12 @@ func ClientInfo(c *gin.Context) model.ClientInfo {
 	if userAgent != "" {
 		clientInfo.UserAgent = &userAgent
 	}
-	ipAddress := c.ClientIP()
-	if ipAddress != "" {
+	clientIP := c.ClientIP()
+	ipAddress, err := netip.ParseAddr(clientIP)
+	if err == nil {
 		clientInfo.IPAddress = &ipAddress
 	}
+
 	return clientInfo
 }
 

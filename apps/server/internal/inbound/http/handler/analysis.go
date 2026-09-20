@@ -21,15 +21,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type AnalyseHandler struct {
+type AnalysisHandler struct {
 	s *service.AnalysisService
 }
 
-func NewAnalyseHandler(s *service.AnalysisService) AnalyseHandler {
-	return AnalyseHandler{s: s}
+func NewAnalysisHandler(s *service.AnalysisService) AnalysisHandler {
+	return AnalysisHandler{s: s}
 }
 
-func (h *AnalyseHandler) Create(c *gin.Context) {
+func (h *AnalysisHandler) Create(c *gin.Context) {
 	user, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
@@ -52,7 +52,7 @@ func (h *AnalyseHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusAccepted, response.AnalysisToResponse(analysis))
 }
 
-func (h *AnalyseHandler) GetByID(c *gin.Context) {
+func (h *AnalysisHandler) GetByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {

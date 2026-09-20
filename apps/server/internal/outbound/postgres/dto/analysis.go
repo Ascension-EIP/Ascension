@@ -15,16 +15,20 @@ import (
 )
 
 type Analysis struct {
-	ID               uuid.UUID       `db:"id"`
-	VideoID          uuid.UUID       `db:"video_id"`
-	Status           model.JobStatus `db:"status"`
-	Result           *map[string]any `db:"result"`
-	Advice           *string         `db:"advice"`
-	Progress         int16           `db:"progress"`
-	ProcessingTimeMS *time.Duration  `db:"processing_time_ms"`
-	CompletedAt      *time.Time      `db:"completed_at"`
-	CreatedAt        time.Time       `db:"created_at"`
-	UpdatedAt        time.Time       `db:"updated_at"`
+	ID               uuid.UUID          `db:"id"`
+	VideoID          uuid.UUID          `db:"video_id"`
+	Type             model.AnalysisType `db:"type"`
+	Status           model.JobStatus    `db:"status"`
+	Visibility       model.Visibility   `db:"visibility"`
+	Result           *map[string]any    `db:"result"`
+	Advice           *string            `db:"advice"`
+	Error            *string            `db:"error"`
+	Progress         int16              `db:"progress"`
+	ProcessingTimeMS *time.Duration     `db:"processing_time_ms"`
+	StartedAt        *time.Time         `db:"started_at"`
+	CompletedAt      *time.Time         `db:"completed_at"`
+	CreatedAt        time.Time          `db:"created_at"`
+	UpdatedAt        time.Time          `db:"updated_at"`
 }
 
 func (a Analysis) ToAnalysis() model.Analysis {

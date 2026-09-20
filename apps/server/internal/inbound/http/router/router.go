@@ -27,7 +27,7 @@ func New(
 	userH *handler.UserHandler,
 	authH *handler.AuthHandler,
 	videoH *handler.VideoHandler,
-	analyseH *handler.AnalyseHandler,
+	analysisH *handler.AnalysisHandler,
 ) {
 	app.Use(middleware.RequestID())
 	app.Use(middleware.Logger())
@@ -63,8 +63,8 @@ func New(
 
 		analysesGroup := v1.Group("/analysis", middleware.RateLimiter(time.Minute, 10), authMW(model.UserRoleAdmin, model.UserRoleUser))
 		{
-			analysesGroup.POST("/", analyseH.Create)
-			analysesGroup.GET("/:id", analyseH.GetByID)
+			analysesGroup.POST("/", analysisH.Create)
+			analysesGroup.GET("/:id", analysisH.GetByID)
 		}
 	}
 }

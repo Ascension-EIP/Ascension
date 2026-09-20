@@ -30,6 +30,10 @@ func NewAnalysisService(cfg config.MinIOConfig, analysisR model.AnalysisReposito
 }
 
 func (s *AnalysisService) TriggerAnalysis(ctx context.Context, userID uuid.UUID, analysisConfig model.AnalysisConfig) (model.Analysis, error) {
+	if err := analysisConfig.Validate(); err != nil {
+		return model.Analysis{}, fmt.Errorf("validate analysisConfig: %w", err)
+	}
+
 	video, err := s.videoR.GetVideoByFilter(ctx, model.VideoFilter{ID: &analysisConfig.VideoID, UserID: &userID})
 	if err != nil {
 		return model.Analysis{}, err
@@ -41,7 +45,7 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, userID uuid.UUID,
 
 	var analysis model.Analysis
 	if err := s.analysisR.WithTransaction(ctx, func(ctx context.Context) error {
-		analysis, err = s.analysisR.CreateAnalysis(ctx, model.Analysis{VideoID: analysis.VideoID, Type: analysis.Type, Visibility: analysisConfig.Visibility})
+		analysis, err = s.analysisR.CreateAnalysis(ctx, model.Analysis{VideoID: analysisConfig.VideoID, Type: analysisConfig.Type, Visibility: analysisConfig.Visibility})
 		if err != nil {
 			return err
 		}

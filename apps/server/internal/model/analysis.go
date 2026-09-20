@@ -8,6 +8,7 @@
 package model
 
 import (
+	"fmt"
 	"time"
 
 	"uuid"
@@ -16,9 +17,18 @@ import (
 type AnalysisType string
 
 const (
-	AnalysisType2D AnalysisType = "2D"
-	AnalysisType3D AnalysisType = "3D"
+	AnalysisType2D AnalysisType = "2d"
+	AnalysisType3D AnalysisType = "3d"
 )
+
+func (t AnalysisType) Validate() error {
+	switch t {
+	case AnalysisType2D, AnalysisType3D:
+		return nil
+	default:
+		return fmt.Errorf("unknown")
+	}
+}
 
 type JobStatus string
 
@@ -29,6 +39,15 @@ const (
 	JobStatusCompleted       JobStatus = "completed"
 	JobStatusFailed          JobStatus = "failed"
 )
+
+func (s JobStatus) Validate() error {
+	switch s {
+	case JobStatusPending, JobStatusProcessing, JobStatusGeneratingHints, JobStatusCompleted, JobStatusFailed:
+		return nil
+	default:
+		return fmt.Errorf("unknown")
+	}
+}
 
 type Analysis struct {
 	ID               uuid.UUID
@@ -58,6 +77,18 @@ type AnalysisConfig struct {
 	VideoID    uuid.UUID
 	Type       AnalysisType
 	Visibility Visibility
+}
+
+func (c AnalysisConfig) Validate() error {
+	if err := c.Type.Validate(); err != nil {
+		return fmt.Errorf("type: %w", err)
+	}
+
+	if err := c.Visibility.Validate(); err != nil {
+		return fmt.Errorf("visibility: %w", err)
+	}
+
+	return nil
 }
 
 // type AnalysisScores struct {

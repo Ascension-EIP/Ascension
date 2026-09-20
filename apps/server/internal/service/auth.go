@@ -33,25 +33,14 @@ func NewAuthService(jwtS *JWTService, sessionS *SessionService, userS *UserServi
 }
 
 func (s *AuthService) SignupAndLogin(ctx context.Context, form model.SignupForm, clienInfo model.ClientInfo, remember bool) (model.User, model.Tokens, error) {
-	if err := form.Validate(); err != nil {
-		return model.User{}, model.Tokens{}, fmt.Errorf("form validation: %w", err)
-	}
-
-	user, err := s.userS.CreateUser(ctx, model.User{
-		Username:  form.Username,
-		FirstName: form.FirstName,
-		LastName:  form.LastName,
-		Email:     form.Email,
-		Password:  form.Password,
-		Role:      model.UserRoleUser,
-	})
+	user, err := s.Signup(ctx, form)
 	if err != nil {
-		return model.User{}, model.Tokens{}, err
+		return model.User{}, model.Tokens{}, fmt.Errorf("signup: %w", err)
 	}
 
 	tokens, err := s.CreateTokens(ctx, user, clienInfo, remember)
 	if err != nil {
-		return user, model.Tokens{}, nil
+		return user, model.Tokens{}, err
 	}
 
 	return user, tokens, nil
@@ -69,6 +58,7 @@ func (s *AuthService) Signup(ctx context.Context, form model.SignupForm) (model.
 		Email:     form.Email,
 		Password:  form.Password,
 		Role:      model.UserRoleUser,
+		Status:    model.UserStatusActive,
 	})
 	if err != nil {
 		return model.User{}, err
