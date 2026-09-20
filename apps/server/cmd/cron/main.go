@@ -56,6 +56,10 @@ func main() {
 		os.Exit(1)
 	}
 	if err := job.ClearUploadExpiredVideos(c, ctx, &videoS); err != nil {
+		slog.Error("start the job: ClearUploadExpiredVideos", slog.String("err", err.Error()))
+		os.Exit(1)
+	}
+	if err := job.ClearExpiredVideos(c, ctx, &videoS); err != nil {
 		slog.Error("start the job: ClearExpiredVideos", slog.String("err", err.Error()))
 		os.Exit(1)
 	}

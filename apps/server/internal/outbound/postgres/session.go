@@ -9,7 +9,6 @@ package postgres
 
 import (
 	"context"
-	"time"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres/dto"
@@ -74,8 +73,7 @@ func (r *PostgresRepository) DeleteSessionsExpired(ctx context.Context) error {
 	tx := r.getTx(ctx)
 
 	_, err := tx.Exec(ctx,
-		"DELETE FROM sessions WHERE expires_at < $1",
-		time.Now())
+		"DELETE FROM sessions WHERE expires_at < NOW() OR revoked_at < NOW() - INTERVAL '7 days'")
 	if err != nil {
 		return err
 	}

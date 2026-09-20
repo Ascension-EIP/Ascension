@@ -137,8 +137,21 @@ func (r *PostgresRepository) DeleteVideosUploadExpired(ctx context.Context) erro
 	tx := r.getTx(ctx)
 
 	_, err := tx.Exec(ctx,
-		"DELETE FROM videos WHERE upload_url_expires_at < $1 AND status != $2",
-		time.Now(), model.VideoStatusCompleted)
+		"DELETE FROM videos WHERE upload_url_expires_at < NOW() AND status != $1",
+		model.VideoStatusCompleted)
+	if err != nil {
+		return dto.Error(err)
+	}
+
+	return nil
+}
+
+func (r *PostgresRepository) DeleteVideosExpired(ctx context.Context, retainPeriod time.Duration) error {
+	tx := r.getTx(ctx)
+
+	_, err := tx.Exec(ctx,
+		"DELETE FROM videos WHERE status == $1 AND retained == FALSE AND created_at + $2 < NOW()",
+		model.VideoStatusCompleted, retainPeriod)
 	if err != nil {
 		return dto.Error(err)
 	}
