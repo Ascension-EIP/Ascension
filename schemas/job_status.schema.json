@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "JobStatus",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["job_id", "status"],
+  "properties": {
+    "job_id": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "started", "running", "success", "failed"]
+    },
+    "message": { "type": ["string", "null"] }
+  }
+}
