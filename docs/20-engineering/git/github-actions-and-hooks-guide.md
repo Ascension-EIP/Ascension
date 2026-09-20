@@ -1,37 +1,40 @@
-> **Last updated:** 3rd September 2026  
-> **Version:** 1.2  
-> **Authors:** Nicolas TORO  
-> **Status:** Done  
+---
+id: 419577c7-a404-4b04-81be-bf724f521e6b
+---
+
+> **Last updated:** 3rd September 2026\
+> **Version:** 1.2\
+> **Authors:** Nicolas TORO\
+> **Status:** Done\
 > {.is-success}
 
 ---
 
 # GitHub Actions & Hooks Guide
 
-This document describes all the Git hooks, validation scripts, and GitHub Actions workflows used in the Ascension project.
-These mechanisms enforce code quality, naming conventions, and automate the CI/CD pipeline.
+This document describes all the Git hooks, validation scripts, and GitHub Actions workflows used in the Ascension project. These mechanisms enforce code quality, naming conventions, and automate the CI/CD pipeline.
 
 ---
 
 ## Table of Contents
 
-- [GitHub Actions \& Hooks Guide](#github-actions--hooks-guide)
+- [GitHub Actions & Hooks Guide](#github-actions--hooks-guide)
   - [Table of Contents](#table-of-contents)
-  - [1. Overview](#1-overview)
-  - [2. Keywords configuration](#2-keywords-configuration)
-  - [3. Git hooks](#3-git-hooks)
+  - [1\. Overview](#1-overview)
+  - [2\. Keywords configuration](#2-keywords-configuration)
+  - [3\. Git hooks](#3-git-hooks)
     - [3.1 `pre-commit`](#31-pre-commit)
     - [3.2 `commit-msg`](#32-commit-msg)
     - [3.3 `pre-push`](#33-pre-push)
     - [3.4 Enabling hooks locally](#34-enabling-hooks-locally)
-  - [4. Validation scripts](#4-validation-scripts)
+  - [4\. Validation scripts](#4-validation-scripts)
     - [4.1 `check_branch`](#41-check_branch)
     - [4.2 `check_commit`](#42-check_commit)
     - [4.3 `check_push`](#43-check_push)
     - [4.4 `reformat_code`](#44-reformat_code)
     - [4.5 `get_commits_list`](#45-get_commits_list)
     - [4.6 `generate_wiki`](#46-generate_wiki)
-  - [5. GitHub Actions workflows](#5-github-actions-workflows)
+  - [5\. GitHub Actions workflows](#5-github-actions-workflows)
     - [5.1 CI workflow (`ci.yml`)](#51-ci-workflow-ciyml)
     - [5.2 No-CI detection workflow (`detect-no-ci.yml`)](#52-no-ci-detection-workflow-detect-no-ciyml)
     - [5.3 Deploy workflow (`deploy.yml`)](#53-deploy-workflow-deployyml)
@@ -40,11 +43,11 @@ These mechanisms enforce code quality, naming conventions, and automate the CI/C
     - [5.6 VPS deploy workflow (`vps-deploy.yml`)](#56-vps-deploy-workflow-vps-deployyml)
     - [5.7 Docs-to-wiki workflow (`docs-to-wiki.yml`)](#57-docs-to-wiki-workflow-docs-to-wikiyml)
     - [5.8 Gemini PR review workflow (`gemini-pr-review.yml`)](#58-gemini-pr-review-workflow-gemini-pr-reviewyml)
-  - [6. Secrets and variables](#6-secrets-and-variables)
+  - [6\. Secrets and variables](#6-secrets-and-variables)
 
 ---
 
-## 1. Overview
+## 1\. Overview
 
 The Ascension project uses a two-layered enforcement strategy:
 
@@ -87,42 +90,40 @@ Both layers rely on the same shared Python validation scripts located in `.githu
 
 ---
 
-## 2. Keywords configuration
+## 2\. Keywords configuration
 
 **File:** `.github/keywords.txt`
 
-This file contains the list of allowed type keywords used to validate both branch names and commit messages.
-Each non-empty, non-comment line is treated as a valid keyword.
+This file contains the list of allowed type keywords used to validate both branch names and commit messages. Each non-empty, non-comment line is treated as a valid keyword.
 
 Current keywords:
 
-| Keyword    | Description                                    |
-| ---------- | ---------------------------------------------- |
-| `feat`     | New feature                                    |
-| `fix`      | Bug fix                                        |
-| `docs`     | Documentation changes                          |
-| `style`    | Code style / formatting, no logic change       |
-| `refactor` | Code refactoring                               |
-| `test`     | Adding or updating tests                       |
-| `build`    | Build system or dependency changes             |
-| `perf`     | Performance improvements                       |
-| `ci`       | Continuous Integration configuration changes   |
-| `chore`    | Maintenance tasks                              |
-| `revert`   | Reverting a previous commit                    |
-| `add`      | Adding new files                               |
-| `remove`   | Removing files or dead code                    |
-| `rename`   | Renaming files or classes                      |
-| `move`     | Moving files                                   |
-| `merge`    | Merging branches                               |
-| `init`     | Initializing components or project structure   |
-| `details`  | Detailed multi-line commits                    |
+| Keyword | Description |
+| --- | --- |
+| `feat` | New feature |
+| `fix` | Bug fix |
+| `docs` | Documentation changes |
+| `style` | Code style / formatting, no logic change |
+| `refactor` | Code refactoring |
+| `test` | Adding or updating tests |
+| `build` | Build system or dependency changes |
+| `perf` | Performance improvements |
+| `ci` | Continuous Integration configuration changes |
+| `chore` | Maintenance tasks |
+| `revert` | Reverting a previous commit |
+| `add` | Adding new files |
+| `remove` | Removing files or dead code |
+| `rename` | Renaming files or classes |
+| `move` | Moving files |
+| `merge` | Merging branches |
+| `init` | Initializing components or project structure |
+| `details` | Detailed multi-line commits |
 
-> ⚠️ Both the `check_branch` and `check_commit` scripts read this file at runtime.
-> Keeping it up to date is critical — adding a new type here is enough to unlock it everywhere.
+> ⚠️ Both the `check_branch` and `check_commit` scripts read this file at runtime. Keeping it up to date is critical — adding a new type here is enough to unlock it everywhere.
 
 ---
 
-## 3. Git hooks
+## 3\. Git hooks
 
 Git hooks are shell scripts stored in `.github/hooks/`. They are **not** active by default; contributors must enable them manually (see [section 3.4](#34-enabling-hooks-locally)).
 
@@ -181,8 +182,7 @@ pre-push
 
 ### 3.4 Enabling hooks locally
 
-The hooks are stored in `.github/hooks/` instead of `.git/hooks/` so they are tracked by version control.
-To activate them on your local machine, run:
+The hooks are stored in `.github/hooks/` instead of `.git/hooks/` so they are tracked by version control. To activate them on your local machine, run:
 
 ```sh
 git config core.hooksPath .github/hooks
@@ -192,14 +192,13 @@ git config core.hooksPath .github/hooks
 
 ---
 
-## 4. Validation scripts
+## 4\. Validation scripts
 
-All scripts are stored in `.github/scripts/` and are executable Python or Bash scripts.
-They can be invoked both locally (by hooks) and remotely (by GitHub Actions).
+All scripts are stored in `.github/scripts/` and are executable Python or Bash scripts. They can be invoked both locally (by hooks) and remotely (by GitHub Actions).
 
 ### 4.1 `check_branch`
 
-**Language:** Python 3  
+**Language:** Python 3\
 **Usage:** `.github/scripts/check_branch <branch_name>`
 
 Validates that a branch name follows the project conventions:
@@ -213,14 +212,14 @@ The script is GitHub Actions-aware: when run inside a workflow (`GITHUB_ACTIONS=
 
 **Exit codes:**
 
-| Code | Meaning                                  |
-| ---- | ---------------------------------------- |
-| `0`  | Branch is valid                          |
-| `1`  | Branch is invalid or configuration error |
+| Code | Meaning |
+| --- | --- |
+| `0` | Branch is valid |
+| `1` | Branch is invalid or configuration error |
 
 ### 4.2 `check_commit`
 
-**Language:** Python 3  
+**Language:** Python 3\
 **Usage:** `.github/scripts/check_commit "<commit_message>"`
 
 Validates that a commit message follows the Conventional Commits format:
@@ -238,22 +237,21 @@ Like `check_branch`, the script outputs GitHub Actions annotations when run insi
 
 **Exit codes:**
 
-| Code | Meaning                                  |
-| ---- | ---------------------------------------- |
-| `0`  | Commit is valid                          |
-| `1`  | Commit is invalid or configuration error |
+| Code | Meaning |
+| --- | --- |
+| `0` | Commit is valid |
+| `1` | Commit is invalid or configuration error |
 
 ### 4.3 `check_push`
 
-**Language:** Bash  
+**Language:** Bash\
 **Usage:** `.github/scripts/check_push`
 
-A placeholder script intended for additional pre-push validations (e.g., running tests locally before pushing).
-Currently validates branch format using `check_branch`.
+A placeholder script intended for additional pre-push validations (e.g., running tests locally before pushing). Currently validates branch format using `check_branch`.
 
 ### 4.4 `reformat_code`
 
-**Language:** Bash  
+**Language:** Bash\
 **Usage:** `.github/scripts/reformat_code`
 
 Runs the code formatters for each application using the `moon` task runner:
@@ -268,21 +266,21 @@ This script is called automatically by the `pre-commit` hook and can also be run
 
 ### 4.5 `get_commits_list`
 
-**Language:** Bash  
+**Language:** Bash\
 **Usage:** `.github/scripts/get_commits_list`
 
 A utility script that prints the list of commits between `origin/dev` and the current branch.
 
 ### 4.6 `generate_wiki`
 
-**Language:** Python 3  
+**Language:** Python 3\
 **Usage:** `.github/scripts/generate_wiki`
 
 Converts the contents of the `docs/` directory into flat wiki pages in a `wiki/` directory, ready to be published to GitHub Wiki.
 
 ---
 
-## 5. GitHub Actions workflows
+## 5\. GitHub Actions workflows
 
 All workflows are in `.github/workflows/`. They share the following common configuration:
 
@@ -291,75 +289,75 @@ All workflows are in `.github/workflows/`. They share the following common confi
 
 ### 5.1 CI workflow (`ci.yml`)
 
-**Name:** `ascension-ci`  
+**Name:** `ascension-ci`\
 **Triggers:** Every `push` and `pull_request` event (ignoring `docs/**` and `*.md`).
 
 This workflow enforces code quality across all services. It is composed of four jobs:
 
-#### Job: `detect_no_ci`
+Job: `detect_no_ci`
 
 Calls `detect-no-ci.yml` to check if the latest commit message contains a `[no-ci]` skip tag.
 
-#### Job: `check_commit_and_branch`
+Job: `check_commit_and_branch`
 
 Runs if CI is not skipped.
 
-| Step                    | Description                                                  |
-| ----------------------- | ------------------------------------------------------------ |
-| Checkout (full history) | Fetches all history to allow `git log` inspection            |
-| Launch commit checker   | Runs `check_commit` on the latest commit message             |
-| Launch branch checker   | Runs `check_branch` on the current branch (skipped for tags) |
+| Step | Description |
+| --- | --- |
+| Checkout (full history) | Fetches all history to allow `git log` inspection |
+| Launch commit checker | Runs `check_commit` on the latest commit message |
+| Launch branch checker | Runs `check_branch` on the current branch (skipped for tags) |
 
-#### Job: `check_server` (needs: `detect_no_ci`, `check_commit_and_branch`)
+Job: `check_server` (needs: `detect_no_ci`, `check_commit_and_branch`)
 
 Validates the Go server application.
 
-| Step             | Description                                               |
-| ---------------- | --------------------------------------------------------- |
-| Checkout         | Full history + recursive submodules                       |
-| Set up Go        | Installs Go 1.27.1 and caches dependencies                |
-| Install moon     | Sets up the moon task runner                              |
-| Cache moon store | Caches `.moon/cache`                                      |
-| Format check     | `moon run server:format` — fails if code is not formatted |
-| Lint             | `moon run server:lint` — runs `go vet`                    |
-| Build            | `moon run server:build` — compiles server binary          |
-| Test             | `moon run server:test` — runs unit tests                  |
+| Step | Description |
+| --- | --- |
+| Checkout | Full history + recursive submodules |
+| Set up Go | Installs Go 1.27.1 and caches dependencies |
+| Install moon | Sets up the moon task runner |
+| Cache moon store | Caches `.moon/cache` |
+| Format check | `moon run server:format` — fails if code is not formatted |
+| Lint | `moon run server:lint` — runs `go vet` |
+| Build | `moon run server:build` — compiles server binary |
+| Test | `moon run server:test` — runs unit tests |
 
-#### Job: `check_mobile` (needs: `detect_no_ci`, `check_commit_and_branch`)
+Job: `check_mobile` (needs: `detect_no_ci`, `check_commit_and_branch`)
 
 Validates the Flutter mobile application.
 
-| Step                   | Description                                               |
-| ---------------------- | --------------------------------------------------------- |
-| Checkout               | Full history + recursive submodules                       |
-| Set up Flutter         | Installs Flutter 3.47.2 (stable channel) with cache       |
-| Cache pub dependencies | Caches `~/.pub-cache` and `.dart_tool`                    |
-| Install moon           | Sets up the moon task runner                              |
-| Cache moon store       | Caches `.moon/cache`                                      |
-| Format check           | `moon run mobile:format` — fails if code is not formatted |
-| Lint                   | `moon run mobile:lint` — runs `dart analyze`              |
-| Test                   | `moon run mobile:test` — runs unit tests                  |
+| Step | Description |
+| --- | --- |
+| Checkout | Full history + recursive submodules |
+| Set up Flutter | Installs Flutter 3.47.2 (stable channel) with cache |
+| Cache pub dependencies | Caches `~/.pub-cache` and `.dart_tool` |
+| Install moon | Sets up the moon task runner |
+| Cache moon store | Caches `.moon/cache` |
+| Format check | `moon run mobile:format` — fails if code is not formatted |
+| Lint | `moon run mobile:lint` — runs `dart analyze` |
+| Test | `moon run mobile:test` — runs unit tests |
 
-#### Job: `check_ai` (needs: `detect_no_ci`, `check_commit_and_branch`)
+Job: `check_ai` (needs: `detect_no_ci`, `check_commit_and_branch`)
 
 Validates the Python AI application.
 
-| Step                 | Description                                    |
-| -------------------- | ---------------------------------------------- |
-| Checkout             | Full history + recursive submodules            |
-| Install uv           | Sets up `uv` with Python 3.11                  |
-| Install moon         | Sets up the moon task runner                   |
-| Cache moon store     | Caches `.moon/cache`                           |
-| Cache uv environment | Caches `apps/ai/.venv`                         |
-| Install dependencies | `moon run ai:install` — syncs uv dependencies  |
-| Lint                 | `moon run ai:lint` — runs ruff check           |
-| Test                 | `moon run ai:test` — runs pytest               |
+| Step | Description |
+| --- | --- |
+| Checkout | Full history + recursive submodules |
+| Install uv | Sets up `uv` with Python 3.11 |
+| Install moon | Sets up the moon task runner |
+| Cache moon store | Caches `.moon/cache` |
+| Cache uv environment | Caches `apps/ai/.venv` |
+| Install dependencies | `moon run ai:install` — syncs uv dependencies |
+| Lint | `moon run ai:lint` — runs ruff check |
+| Test | `moon run ai:test` — runs pytest |
 
 ---
 
 ### 5.2 No-CI detection workflow (`detect-no-ci.yml`)
 
-**Name:** `ascension-detect-no-ci`  
+**Name:** `ascension-detect-no-ci`\
 **Triggers:** Reusable `workflow_call`.
 
 Detects if the commit message starts with `[no-ci]`, `[skip-ci]`, etc. Outputs `skip=true` to allow calling workflows to skip subsequent jobs.
@@ -368,10 +366,11 @@ Detects if the commit message starts with `[no-ci]`, `[skip-ci]`, etc. Outputs `
 
 ### 5.3 Deploy workflow (`deploy.yml`)
 
-**Name:** `ascension-deploy`  
+**Name:** `ascension-deploy`\
 **Triggers:** Push of a tag matching the pattern `v*` (e.g., `v0.1.0`).
 
 Builds and publishes production artifacts:
+
 - **`build_and_push_server`**: Builds `apps/server/Dockerfile` (Go server) and pushes to GHCR.
 - **`build_and_push_ai`**: Builds `apps/ai/Dockerfile` (Python AI worker) and pushes to GHCR.
 - **`build_and_push_mobile`**: Builds Android APK using Flutter 3.47.2 and uploads build artifact.
@@ -381,8 +380,9 @@ Builds and publishes production artifacts:
 
 ### 5.4 Dev-to-staging workflow (`dev-to-staging.yml`)
 
-**Name:** `ascension-dev-to-staging`  
+**Name:** `ascension-dev-to-staging`\
 **Triggers:**
+
 - Scheduled cron: every Monday at midnight (`0 0 * * 1`).
 - Manual dispatch (`workflow_dispatch`).
 
@@ -392,7 +392,7 @@ Creates or updates an automated Pull Request from `dev` to `staging`, lists incl
 
 ### 5.5 Staging-to-main workflow (`staging-to-main.yml`)
 
-**Name:** `ascension-staging-to-main`  
+**Name:** `ascension-staging-to-main`\
 **Triggers:** Manual dispatch (`workflow_dispatch` with `version_bump` input: `patch`, `minor`, `major`).
 
 1. Merges `staging` into `main`.
@@ -406,8 +406,9 @@ Creates or updates an automated Pull Request from `dev` to `staging`, lists incl
 
 ### 5.6 VPS deploy workflow (`vps-deploy.yml`)
 
-**Name:** `ascension-vps-deploy`  
+**Name:** `ascension-vps-deploy`\
 **Triggers:**
+
 - `workflow_run` after successful completion of `ascension-deploy`.
 
 Connects to the production VPS via SSH/SCP, updates `docker-compose.yml` & `docker-compose.prod.yml`, pulls latest `ascension-server:latest` and `ascension-ai:latest` images from GHCR, and restarts containers in production mode (`--profile prod`).
@@ -416,8 +417,9 @@ Connects to the production VPS via SSH/SCP, updates `docker-compose.yml` & `dock
 
 ### 5.7 Docs-to-wiki workflow (`docs-to-wiki.yml`)
 
-**Name:** `ascension-docs-to-wiki`  
+**Name:** `ascension-docs-to-wiki`\
 **Triggers:**
+
 - `workflow_run` after successful completion of `ascension-staging-to-main`.
 - Manual dispatch (`workflow_dispatch`).
 
@@ -427,8 +429,9 @@ Runs `.github/scripts/generate_wiki` and pushes the flattened Markdown documenta
 
 ### 5.8 Gemini PR review workflow (`gemini-pr-review.yml`)
 
-**Name:** `ascension-gemini-pr-review`  
+**Name:** `ascension-gemini-pr-review`\
 **Triggers:**
+
 - `pull_request` (opened, reopened).
 - `issue_comment` (created with `/gemini-review` or `/review`).
 - Manual dispatch (`workflow_dispatch`).
@@ -437,18 +440,18 @@ Executes `.github/scripts/gemini_pr_review` using Gemini API to perform automate
 
 ---
 
-## 6. Secrets and variables
+## 6\. Secrets and variables
 
 The following secrets and variables must be configured in the GitHub repository settings:
 
-| Name                    | Type     | Used in                                 | Description                                                     |
-| ----------------------- | -------- | --------------------------------------- | --------------------------------------------------------------- |
-| `GITHUB_TOKEN`          | Secret   | `deploy.yml`, `vps-deploy.yml`          | Built-in GitHub token for GHCR auth and GitHub releases         |
-| `APP_ID`                | Secret   | `dev-to-staging.yml`, `staging-to-main.yml`, `gemini-pr-review.yml` | GitHub App ID for scoped token generation |
-| `APP_PRIVATE_KEY`       | Secret   | `dev-to-staging.yml`, `staging-to-main.yml`, `gemini-pr-review.yml` | GitHub App private key for token generation |
-| `MIRROR_SSH_KEY`        | Secret   | `staging-to-main.yml`                   | SSH private key for external mirror repositories                |
-| `MIRROR_REPOSITORY_URL` | Variable | `staging-to-main.yml`                   | Comma-separated list of target repositories to mirror to        |
-| `VPS_HOST`              | Secret   | `vps-deploy.yml`                        | Hostname or IP address of the deployment VPS                    |
-| `VPS_USER`              | Secret   | `vps-deploy.yml`                        | SSH username for deployment VPS                                 |
-| `VPS_SSH_KEY`           | Secret   | `vps-deploy.yml`                        | SSH private key for authenticating on deployment VPS            |
-| `GEMINI_API_KEY`        | Secret   | `gemini-pr-review.yml`                  | API Key for Google Gemini model access                          |
+| Name | Type | Used in | Description |
+| --- | --- | --- | --- |
+| `GITHUB_TOKEN` | Secret | `deploy.yml`, `vps-deploy.yml` | Built-in GitHub token for GHCR auth and GitHub releases |
+| `APP_ID` | Secret | `dev-to-staging.yml`, `staging-to-main.yml`, `gemini-pr-review.yml` | GitHub App ID for scoped token generation |
+| `APP_PRIVATE_KEY` | Secret | `dev-to-staging.yml`, `staging-to-main.yml`, `gemini-pr-review.yml` | GitHub App private key for token generation |
+| `MIRROR_SSH_KEY` | Secret | `staging-to-main.yml` | SSH private key for external mirror repositories |
+| `MIRROR_REPOSITORY_URL` | Variable | `staging-to-main.yml` | Comma-separated list of target repositories to mirror to |
+| `VPS_HOST` | Secret | `vps-deploy.yml` | Hostname or IP address of the deployment VPS |
+| `VPS_USER` | Secret | `vps-deploy.yml` | SSH username for deployment VPS |
+| `VPS_SSH_KEY` | Secret | `vps-deploy.yml` | SSH private key for authenticating on deployment VPS |
+| `GEMINI_API_KEY` | Secret | `gemini-pr-review.yml` | API Key for Google Gemini model access |
