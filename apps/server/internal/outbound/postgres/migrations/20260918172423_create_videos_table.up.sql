@@ -16,7 +16,7 @@ CREATE TABLE videos (
     duration_ms INTERVAL,
     size_bytes  BIGINT,
 	retained BOOLEAN NOT NULL DEFAULT FALSE,
-    expires_at  TIMESTAMPTZ NOT NULL,
+    upload_url_expirates_at TIMESTAMPTZ,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

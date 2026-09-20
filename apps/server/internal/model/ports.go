@@ -38,7 +38,7 @@ type VideoRepository interface {
 	GetVideoByFilter(ctx context.Context, filter VideoFilter) (Video, error)
 	ListVideosByFilter(ctx context.Context, filter VideoFilter) ([]Video, error)
 	UpdateVideo(ctx context.Context, partial VideoPartial) (Video, error)
-	DeleteVideosExpired(ctx context.Context) error
+	DeleteVideosUploadExpired(ctx context.Context) error
 }
 
 type TransactionRepository interface {

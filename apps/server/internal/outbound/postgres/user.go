@@ -53,52 +53,32 @@ func (r *PostgresRepository) CreateUser(ctx context.Context, user model.User) (m
 	return dbUser.ToUser(), nil
 }
 
-func (r *PostgresRepository) GetUserByFilter(ctx context.Context, filter model.UserFilter) (model.User, error) {
-	tx := r.getTx(ctx)
-
+func userFilterQuery(filter model.UserFilter) (string, []any) {
 	setParts := []string{}
 	args := []any{}
 
-	if filter.ID != nil {
-		args = append(args, *filter.ID)
-		setParts = append(setParts, fmt.Sprintf("id = $%d", len(args)))
-	}
-	if filter.Username != nil {
-		args = append(args, *filter.Username)
-		setParts = append(setParts, fmt.Sprintf("username = $%d", len(args)))
-	}
-	if filter.FirstName != nil {
-		args = append(args, *filter.FirstName)
-		setParts = append(setParts, fmt.Sprintf("first_name = $%d", len(args)))
-	}
-	if filter.LastName != nil {
-		args = append(args, *filter.LastName)
-		setParts = append(setParts, fmt.Sprintf("last_name = $%d", len(args)))
-	}
-	if filter.Email != nil {
-		args = append(args, *filter.Email)
-		setParts = append(setParts, fmt.Sprintf("email = $%d", len(args)))
-	}
-	if filter.Password != nil {
-		args = append(args, *filter.Password)
-		setParts = append(setParts, fmt.Sprintf("password_hash = $%d", len(args)))
-	}
-	if filter.Role != nil {
-		args = append(args, *filter.Role)
-		setParts = append(setParts, fmt.Sprintf("role = $%d", len(args)))
-	}
-	if filter.Status != nil {
-		args = append(args, *filter.Status)
-		setParts = append(setParts, fmt.Sprintf("status = $%d", len(args)))
-	}
+	setArg(&setParts, &args, "id", filter.ID)
+	setArg(&setParts, &args, "username", filter.Username)
+	setArg(&setParts, &args, "first_name", filter.FirstName)
+	setArg(&setParts, &args, "last_name", filter.LastName)
+	setArg(&setParts, &args, "email", filter.Email)
+	setArg(&setParts, &args, "password_hash", filter.Password)
+	setArg(&setParts, &args, "role", filter.Role)
+	setArg(&setParts, &args, "status", filter.Status)
 
 	query := "SELECT * FROM users"
-
 	if len(setParts) > 0 {
 		query += " WHERE " + strings.Join(setParts, " AND ")
 	}
 
+	return query, args
+}
+
+func (r *PostgresRepository) GetUserByFilter(ctx context.Context, filter model.UserFilter) (model.User, error) {
+	query, args := userFilterQuery(filter)
 	query += " LIMIT 1"
+
+	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
@@ -117,49 +97,9 @@ func (r *PostgresRepository) GetUserByFilter(ctx context.Context, filter model.U
 }
 
 func (r *PostgresRepository) ListUsersByFilter(ctx context.Context, filter model.UserFilter) ([]model.User, error) {
+	query, args := userFilterQuery(filter)
+
 	tx := r.getTx(ctx)
-
-	setParts := []string{}
-	args := []any{}
-
-	if filter.ID != nil {
-		args = append(args, *filter.ID)
-		setParts = append(setParts, fmt.Sprintf("id = $%d", len(args)))
-	}
-	if filter.Username != nil {
-		args = append(args, *filter.Username)
-		setParts = append(setParts, fmt.Sprintf("username = $%d", len(args)))
-	}
-	if filter.FirstName != nil {
-		args = append(args, *filter.FirstName)
-		setParts = append(setParts, fmt.Sprintf("first_name = $%d", len(args)))
-	}
-	if filter.LastName != nil {
-		args = append(args, *filter.LastName)
-		setParts = append(setParts, fmt.Sprintf("last_name = $%d", len(args)))
-	}
-	if filter.Email != nil {
-		args = append(args, *filter.Email)
-		setParts = append(setParts, fmt.Sprintf("email = $%d", len(args)))
-	}
-	if filter.Password != nil {
-		args = append(args, *filter.Password)
-		setParts = append(setParts, fmt.Sprintf("password_hash = $%d", len(args)))
-	}
-	if filter.Role != nil {
-		args = append(args, *filter.Role)
-		setParts = append(setParts, fmt.Sprintf("role = $%d", len(args)))
-	}
-	if filter.Status != nil {
-		args = append(args, *filter.Status)
-		setParts = append(setParts, fmt.Sprintf("status = $%d", len(args)))
-	}
-
-	query := "SELECT * FROM users"
-
-	if len(setParts) > 0 {
-		query += " WHERE " + strings.Join(setParts, " AND ")
-	}
 
 	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
@@ -178,57 +118,25 @@ func (r *PostgresRepository) ListUsersByFilter(ctx context.Context, filter model
 }
 
 func (r *PostgresRepository) UpdateUser(ctx context.Context, partial model.UserPartial) (model.User, error) {
-	tx := r.getTx(ctx)
-
 	setParts := []string{}
 	args := []any{}
-	argID := 1
 
-	if partial.Username != nil {
-		args = append(args, *partial.Username)
-		setParts = append(setParts, fmt.Sprintf("username = $%d", argID))
-		argID++
-	}
+	setArg(&setParts, &args, "username", partial.Username)
+	setArg(&setParts, &args, "first_name", partial.FirstName)
+	setArg(&setParts, &args, "last_name", partial.LastName)
+	setArg(&setParts, &args, "email", partial.Email)
+	setArg(&setParts, &args, "role", partial.Role)
+	setArg(&setParts, &args, "status", partial.Status)
 
-	if partial.FirstName != nil {
-		args = append(args, *partial.FirstName)
-		setParts = append(setParts, fmt.Sprintf("first_name = $%d", argID))
-		argID++
-	}
-
-	if partial.LastName != nil {
-		args = append(args, *partial.LastName)
-		setParts = append(setParts, fmt.Sprintf("last_name = $%d", argID))
-		argID++
-	}
-
-	if partial.Email != nil {
-		args = append(args, *partial.Email)
-		setParts = append(setParts, fmt.Sprintf("email = $%d", argID))
-		argID++
-	}
-
+	// password_hash needs hashing first (UserPassword is []byte, no Valuer),
+	// so it keeps one guard; every other field is nil-safe through setArg.
 	if partial.Password != nil {
 		passwordHash, err := partial.Password.Hash()
 		if err != nil {
 			return model.User{}, dto.Error(err)
 		}
-
-		args = append(args, passwordHash)
-		setParts = append(setParts, fmt.Sprintf("password_hash = $%d", argID))
-		argID++
-	}
-
-	if partial.Role != nil {
-		args = append(args, *partial.Role)
-		setParts = append(setParts, fmt.Sprintf("role = $%d", argID))
-		argID++
-	}
-
-	if partial.Status != nil {
-		args = append(args, *partial.Status)
-		setParts = append(setParts, fmt.Sprintf("status = $%d", argID))
-		argID++
+		v := any(passwordHash)
+		setArg(&setParts, &args, "password_hash", &v)
 	}
 
 	if len(setParts) == 0 {
@@ -237,10 +145,12 @@ func (r *PostgresRepository) UpdateUser(ctx context.Context, partial model.UserP
 
 	args = append(args, partial.ID)
 
+	tx := r.getTx(ctx)
+
 	query := fmt.Sprintf(
 		"UPDATE users SET %s WHERE id = $%d RETURNING *",
 		strings.Join(setParts, ", "),
-		argID,
+		len(args),
 	)
 
 	rows, err := tx.Query(ctx, query, args...)

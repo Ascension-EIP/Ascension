@@ -15,16 +15,16 @@ type SignupForm struct {
 	Password  UserPassword
 }
 
-func (f SignupForm) IsValid() error {
-	if err := f.Username.IsValid(); err != nil {
+func (f SignupForm) Validate() error {
+	if err := f.Username.Validate(); err != nil {
 		return err
 	}
 
-	if err := f.Email.IsValid(); err != nil {
+	if err := f.Email.Validate(); err != nil {
 		return err
 	}
 
-	if err := f.Password.IsValid(); err != nil {
+	if err := f.Password.Validate(); err != nil {
 		return err
 	}
 
@@ -36,12 +36,12 @@ type LoginForm struct {
 	Password   UserPassword
 }
 
-func (f LoginForm) IsValid() error {
-	if err := NewUserEmail(f.Identifier).IsValid(); err != nil {
+func (f LoginForm) Validate() error {
+	if err := NewUserEmail(f.Identifier).Validate(); err != nil {
 		return err
 	}
 
-	if err := f.Password.IsValid(); err != nil {
+	if err := f.Password.Validate(); err != nil {
 		return err
 	}
 

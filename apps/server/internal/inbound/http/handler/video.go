@@ -8,12 +8,11 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
-	"strconv"
 
 	"uuid"
 
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/request"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/macro"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
@@ -60,63 +59,28 @@ func (h *VideoHandler) GetUploadURL(c *gin.Context) {
 		return
 	}
 
-	ext, err := getVideoExtension(c.Query("content_type"))
+	var req request.VideoUpload
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+	videoMetadata, videoInfo, err := req.IntoVideoMetadataAndVideoInfo()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
 
-	size, err := validateVideoSize(c.Query("size"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	url, err := h.s.GetUploadURL(c.Request.Context(), model.FileInfo{
-		UserID:    user.ID,
-		Extension: ext,
-		Size:      size,
-	})
+	url, err := h.s.GetUploadURL(c.Request.Context(), user.ID, videoMetadata, videoInfo)
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
 	c.JSON(http.StatusOK, response.UploadURLToResponse(url))
-}
-
-func getVideoExtension(contentType string) (string, error) {
-	var allowedContentTypes = map[string]string{
-		"video/mp4":       "mp4",
-		"video/webm":      "webm",
-		"video/quicktime": "mov",
-		"video/x-msvideo": "avi",
-	}
-
-	if contentType == "" {
-		return "", fmt.Errorf("content type missing")
-	}
-
-	ext, ok := allowedContentTypes[contentType]
-	if !ok {
-		return "", fmt.Errorf("content type unsupported: %s", contentType)
-	}
-
-	return ext, nil
-}
-
-func validateVideoSize(s string) (int, error) {
-	if s == "" {
-		return 0, fmt.Errorf("size missing")
-	}
-	size, err := strconv.Atoi(s)
-	if err != nil {
-		return 0, fmt.Errorf("invalid size")
-	}
-	if size > 1*1024*1024*1024 {
-		return 0, fmt.Errorf("file too big: maximum 1GB")
-	}
-	return size, nil
 }
 
 func (h *VideoHandler) UploadComplete(c *gin.Context) {

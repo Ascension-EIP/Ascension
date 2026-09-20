@@ -8,9 +8,9 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-func ClearExpiredVideos(c *cron.Cron, ctx context.Context, video *service.VideoService) error {
+func ClearUploadExpiredVideos(c *cron.Cron, ctx context.Context, video *service.VideoService) error {
 	if _, err := c.AddFunc("0 0 * * *", func() {
-		if err := video.ClearExpiredVideos(ctx); err != nil {
+		if err := video.ClearUploadExpiredVideos(ctx); err != nil {
 			slog.Error("failed to clear expired videos", slog.String("err", err.Error()))
 		}
 	}); err != nil {

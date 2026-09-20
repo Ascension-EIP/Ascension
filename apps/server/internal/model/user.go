@@ -18,12 +18,12 @@ import (
 
 type UserUsername string
 
-func (n UserUsername) IsValid() error {
+func (n UserUsername) Validate() error {
 	if len(n) < 6 {
-		return fmt.Errorf("user name too short")
+		return fmt.Errorf("too short")
 	}
 	if len(n) > 24 {
-		return fmt.Errorf("user name too long")
+		return fmt.Errorf("too long")
 	}
 	return nil
 }
@@ -35,18 +35,18 @@ func NewUserEmail(email string) UserEmail {
 	return UserEmail(strings.ToLower(strings.TrimSpace(email)))
 }
 
-func (e UserEmail) IsValid() error {
+func (e UserEmail) Validate() error {
 	return nil
 }
 
 type UserPassword []byte
 
-func (p UserPassword) IsValid() error {
+func (p UserPassword) Validate() error {
 	if len(p) < 8 {
-		return fmt.Errorf("user password too short")
+		return fmt.Errorf("too short")
 	}
 	if len(p) > 64 {
-		return fmt.Errorf("user password too long")
+		return fmt.Errorf("too long")
 	}
 	return nil
 }
@@ -54,7 +54,7 @@ func (p UserPassword) IsValid() error {
 func (p UserPassword) Hash() ([]byte, error) {
 	hashed, err := bcrypt.GenerateFromPassword(p, bcrypt.DefaultCost)
 	if err != nil {
-		return []byte{}, fmt.Errorf("hash user password: %w", err)
+		return []byte{}, err
 	}
 
 	return hashed, nil
@@ -69,12 +69,12 @@ const (
 	UserRoleGym   UserRole = "gym"
 )
 
-func (r UserRole) IsValid() error {
+func (r UserRole) Validate() error {
 	switch r {
 	case UserRoleAdmin, UserRoleUser, UserRoleCoach, UserRoleGym:
 		return nil
 	default:
-		return fmt.Errorf("invalid role")
+		return fmt.Errorf("unknown")
 	}
 }
 
@@ -85,12 +85,12 @@ const (
 	UserStatusDeactivated UserStatus = "deactivated"
 )
 
-func (r UserStatus) IsValid() error {
+func (r UserStatus) Validate() error {
 	switch r {
 	case UserStatusActive, UserStatusDeactivated:
 		return nil
 	default:
-		return fmt.Errorf("invalid status")
+		return fmt.Errorf("unknown")
 	}
 }
 
@@ -124,25 +124,25 @@ type UserPartial struct {
 	DeactivatedAt    **time.Time
 }
 
-func (u UserPartial) IsValid() error {
-	if err := u.Username.IsValid(); err != nil {
-		return err
+func (u UserPartial) Validate() error {
+	if err := u.Username.Validate(); err != nil {
+		return fmt.Errorf("username: %w", err)
 	}
 
-	if err := u.Email.IsValid(); err != nil {
-		return err
+	if err := u.Email.Validate(); err != nil {
+		return fmt.Errorf("email: %w", err)
 	}
 
-	if err := u.Password.IsValid(); err != nil {
-		return err
+	if err := u.Password.Validate(); err != nil {
+		return fmt.Errorf("password: %w", err)
 	}
 
-	if err := u.Role.IsValid(); err != nil {
-		return err
+	if err := u.Role.Validate(); err != nil {
+		return fmt.Errorf("role: %w", err)
 	}
 
-	if err := u.Status.IsValid(); err != nil {
-		return err
+	if err := u.Status.Validate(); err != nil {
+		return fmt.Errorf("status: %w", err)
 	}
 
 	return nil
@@ -165,25 +165,25 @@ type User struct {
 	UpdatedAt        time.Time
 }
 
-func (u User) IsValid() error {
-	if err := u.Username.IsValid(); err != nil {
-		return err
+func (u User) Validate() error {
+	if err := u.Username.Validate(); err != nil {
+		return fmt.Errorf("username: %w", err)
 	}
 
-	if err := u.Email.IsValid(); err != nil {
-		return err
+	if err := u.Email.Validate(); err != nil {
+		return fmt.Errorf("email: %w", err)
 	}
 
-	if err := u.Password.IsValid(); err != nil {
-		return err
+	if err := u.Password.Validate(); err != nil {
+		return fmt.Errorf("password: %w", err)
 	}
 
-	if err := u.Role.IsValid(); err != nil {
-		return err
+	if err := u.Role.Validate(); err != nil {
+		return fmt.Errorf("role: %w", err)
 	}
 
-	if err := u.Status.IsValid(); err != nil {
-		return err
+	if err := u.Status.Validate(); err != nil {
+		return fmt.Errorf("status: %w", err)
 	}
 
 	return nil

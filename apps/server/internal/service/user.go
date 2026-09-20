@@ -25,7 +25,7 @@ func NewUserService(repo model.UserRepository) UserService {
 }
 
 func (s *UserService) CreateUser(ctx context.Context, user model.User) (model.User, error) {
-	if err := user.IsValid(); err != nil {
+	if err := user.Validate(); err != nil {
 		return model.User{}, fmt.Errorf("user validation: %w", err)
 	}
 
@@ -69,7 +69,7 @@ func (s *UserService) ListUsersByFilter(ctx context.Context, filter model.UserFi
 }
 
 func (s *UserService) UpdateUser(ctx context.Context, partial model.UserPartial) (model.User, error) {
-	if err := partial.IsValid(); err != nil {
+	if err := partial.Validate(); err != nil {
 		return model.User{}, fmt.Errorf("user validation: %w", err)
 	}
 

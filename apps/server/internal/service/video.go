@@ -50,20 +50,31 @@ func (s *VideoService) GetDownloadURL(ctx context.Context, videoID uuid.UUID, us
 	}, nil
 }
 
-func (s *VideoService) GetUploadURL(ctx context.Context, fileInfo model.FileInfo) (model.VideoUploadURL, error) {
+func (s *VideoService) GetUploadURL(ctx context.Context, userID uuid.UUID, videoMetadata model.VideoMetadata, videoInfo model.VideoInfo) (model.VideoUploadURL, error) {
+	if err := videoInfo.Validate(); err != nil {
+		return model.VideoUploadURL{}, fmt.Errorf("validate video info: %w", err)
+	}
+
 	var url *url.URL
 	var expiresAt time.Time
 
 	videoID := uuid.NewV7() // can't rely on repo for this one since we need the id for the objectKey
-	objectKey := fmt.Sprintf("%s/%s.%s", fileInfo.UserID.String(), videoID.String(), fileInfo.Extension)
+
+	objectKey := fmt.Sprintf("%s/%s.%s", userID.String(), videoID.String(), videoMetadata.Extension)
 
 	if err := s.repo.WithTransaction(ctx, func(ctx context.Context) error {
 		if err := s.repo.CreateVideo(ctx, model.Video{
-			ID:        videoID,
-			UserID:    fileInfo.UserID,
-			ObjectKey: objectKey,
-			Status:    model.VideoStatusPending,
-			ExpiresAt: time.Now().Add(s.cfg.UploadExp),
+			ID:                 videoID,
+			UserID:             userID,
+			ClimbingSessionID:  videoInfo.ClimbingSessionID,
+			Title:              videoInfo.Title,
+			ObjectKey:          objectKey,
+			Status:             model.VideoStatusPending,
+			Visibility:         videoInfo.Visibility,
+			ContentType:        videoMetadata.ContentType,
+			SizeBytes:          new(videoMetadata.Size),
+			Retained:           videoInfo.Retained,
+			UploadURLExpiresAt: new(time.Now().Add(s.cfg.UploadExp)),
 		}); err != nil {
 			return err
 		}
@@ -95,12 +106,15 @@ func (s *VideoService) UploadComplete(ctx context.Context, videoID uuid.UUID, us
 		return err
 	}
 
-	if _, err := s.repo.UpdateVideo(ctx, model.VideoPartial{ID: videoID, UserID: userID, Status: new(model.VideoStatusCompleted)}); err != nil {
+	// collect missing value for video row
+	//TODO faut installer ffprobe pour cette merde
+
+	if _, err := s.repo.UpdateVideo(ctx, model.VideoPartial{ID: videoID, UserID: userID, Status: new(model.VideoStatusCompleted), UploadURLExpiresAt: new((*time.Time)(nil))}); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *VideoService) ClearExpiredVideos(ctx context.Context) error {
-	return s.repo.DeleteVideosExpired(ctx)
+func (s *VideoService) ClearUploadExpiredVideos(ctx context.Context) error {
+	return s.repo.DeleteVideosUploadExpired(ctx)
 }

@@ -21,10 +21,9 @@ import (
 func (r *PostgresRepository) CreateVideo(ctx context.Context, video model.Video) error {
 	tx := r.getTx(ctx)
 
-	fmt.Println(video.ObjectKey)
 	_, err := tx.Exec(ctx,
-		"INSERT INTO videos (id, user_id, object_key, status, expires_at) VALUES ($1, $2, $3, $4, $5)",
-		video.ID, video.UserID, video.ObjectKey, video.Status, video.ExpiresAt)
+		"INSERT INTO videos (id, user_id, object_key, climbing_session_id, title, visibility, width, height, fps, content_type, duration_ms, size_bytes, retained, status, upload_url_expires_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)",
+		video.ID, video.UserID, video.ObjectKey, video.ClimbingSessionID, video.Title, video.Visibility, video.Width, video.Height, video.FPS, video.ContentType, video.DurationMs, video.SizeBytes, video.Retained, video.Status, video.UploadURLExpiresAt)
 	if err != nil {
 		return err
 	}
@@ -32,33 +31,28 @@ func (r *PostgresRepository) CreateVideo(ctx context.Context, video model.Video)
 	return nil
 }
 
-func (r *PostgresRepository) GetVideoByFilter(ctx context.Context, filter model.VideoFilter) (model.Video, error) {
+func videoFilterQuery(filter model.VideoFilter) (string, []any) {
 	setParts := []string{}
 	args := []any{}
 
-	if filter.ID != nil {
-		args = append(args, *filter.ID)
-		setParts = append(setParts, fmt.Sprintf("id = $%d", len(args)))
-	}
-	if filter.UserID != nil {
-		args = append(args, *filter.UserID)
-		setParts = append(setParts, fmt.Sprintf("user_id = $%d", len(args)))
-	}
-	if filter.ObjectKey != nil {
-		args = append(args, *filter.ObjectKey)
-		setParts = append(setParts, fmt.Sprintf("object_key = $%d", len(args)))
-	}
-	if filter.Status != nil {
-		args = append(args, *filter.Status)
-		setParts = append(setParts, fmt.Sprintf("status = $%d", len(args)))
-	}
+	setArg(&setParts, &args, "id", filter.ID)
+	setArg(&setParts, &args, "user_id", filter.UserID)
+	setArg(&setParts, &args, "object_key", filter.ObjectKey)
+	setArg(&setParts, &args, "status", filter.Status)
+	setArg(&setParts, &args, "visibility", filter.Visibility)
+	setArg(&setParts, &args, "content_type", filter.ContentType)
+	setArg(&setParts, &args, "retained", filter.Retained)
 
 	query := "SELECT * FROM videos"
-
 	if len(setParts) > 0 {
 		query += " WHERE " + strings.Join(setParts, " AND ")
 	}
 
+	return query, args
+}
+
+func (r *PostgresRepository) GetVideoByFilter(ctx context.Context, filter model.VideoFilter) (model.Video, error) {
+	query, args := videoFilterQuery(filter)
 	query += " LIMIT 1"
 
 	tx := r.getTx(ctx)
@@ -77,31 +71,7 @@ func (r *PostgresRepository) GetVideoByFilter(ctx context.Context, filter model.
 }
 
 func (r *PostgresRepository) ListVideosByFilter(ctx context.Context, filter model.VideoFilter) ([]model.Video, error) {
-	setParts := []string{}
-	args := []any{}
-
-	if filter.ID != nil {
-		args = append(args, *filter.ID)
-		setParts = append(setParts, fmt.Sprintf("id = $%d", len(args)))
-	}
-	if filter.UserID != nil {
-		args = append(args, *filter.UserID)
-		setParts = append(setParts, fmt.Sprintf("user_id = $%d", len(args)))
-	}
-	if filter.ObjectKey != nil {
-		args = append(args, *filter.ObjectKey)
-		setParts = append(setParts, fmt.Sprintf("object_key = $%d", len(args)))
-	}
-	if filter.Status != nil {
-		args = append(args, *filter.Status)
-		setParts = append(setParts, fmt.Sprintf("status = $%d", len(args)))
-	}
-
-	query := "SELECT * FROM videos"
-
-	if len(setParts) > 0 {
-		query += " WHERE " + strings.Join(setParts, " AND ")
-	}
+	query, args := videoFilterQuery(filter)
 
 	tx := r.getTx(ctx)
 
@@ -119,21 +89,24 @@ func (r *PostgresRepository) ListVideosByFilter(ctx context.Context, filter mode
 }
 
 func (r *PostgresRepository) UpdateVideo(ctx context.Context, partial model.VideoPartial) (model.Video, error) {
+	tx := r.getTx(ctx)
+
 	setParts := []string{}
 	args := []any{}
 
-	if partial.ObjectKey != nil {
-		args = append(args, *partial.ObjectKey)
-		setParts = append(setParts, fmt.Sprintf("object_key = $%d", len(args)))
-	}
-	if partial.Status != nil {
-		args = append(args, *partial.Status)
-		setParts = append(setParts, fmt.Sprintf("status = $%d", len(args)))
-	}
-	if partial.ExpiresAt != nil {
-		args = append(args, *partial.ExpiresAt)
-		setParts = append(setParts, fmt.Sprintf("expires_at = $%d", len(args)))
-	}
+	setArg(&setParts, &args, "object_key", partial.ObjectKey)
+	setArg(&setParts, &args, "status", partial.Status)
+	setArg(&setParts, &args, "visibility", partial.Visibility)
+	setArg(&setParts, &args, "content_type", partial.ContentType)
+	setArg(&setParts, &args, "retained", partial.Retained)
+	setArg(&setParts, &args, "upload_url_expires_at", partial.UploadURLExpiresAt)
+	setArg(&setParts, &args, "climbing_session_id", partial.ClimbingSessionID)
+	setArg(&setParts, &args, "title", partial.Title)
+	setArg(&setParts, &args, "width", partial.Width)
+	setArg(&setParts, &args, "height", partial.Height)
+	setArg(&setParts, &args, "fps", partial.FPS)
+	setArg(&setParts, &args, "duration_ms", partial.DurationMs)
+	setArg(&setParts, &args, "size_bytes", partial.SizeBytes)
 
 	if len(setParts) == 0 {
 		return model.Video{}, model.ErrNotFound
@@ -146,8 +119,6 @@ func (r *PostgresRepository) UpdateVideo(ctx context.Context, partial model.Vide
 		strings.Join(setParts, ", "),
 		len(args),
 	)
-
-	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
@@ -162,11 +133,11 @@ func (r *PostgresRepository) UpdateVideo(ctx context.Context, partial model.Vide
 	return video.ToVideo(), nil
 }
 
-func (r *PostgresRepository) DeleteVideosExpired(ctx context.Context) error {
+func (r *PostgresRepository) DeleteVideosUploadExpired(ctx context.Context) error {
 	tx := r.getTx(ctx)
 
 	_, err := tx.Exec(ctx,
-		"DELETE FROM videos WHERE expires_at < $1 AND status != $2",
+		"DELETE FROM videos WHERE upload_url_expires_at < $1 AND status != $2",
 		time.Now(), model.VideoStatusCompleted)
 	if err != nil {
 		return dto.Error(err)
