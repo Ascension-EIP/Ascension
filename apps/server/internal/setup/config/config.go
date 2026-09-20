@@ -1,8 +1,8 @@
-// @date 2026-09-04
+// @date 2026-09-18
 // @file config.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package config
@@ -20,6 +20,7 @@ type (
 		DB       DBConfig       `envPrefix:"POSTGRES_"`
 		MinIO    MinIOConfig    `envPrefix:"MINIO_"`
 		RabbitMQ RabbitMQConfig `envPrefix:"RABBITMQ_"`
+		Video    VideoConfig    `envPrefix:"VIDEO_"`
 		Auth     AuthConfig     `envPrefix:"AUTH_"`
 		HTTP     HTTPConfig
 		Log      LogConfig `envPrefix:"LOG_"`
@@ -43,6 +44,11 @@ type (
 		SSL         bool          `env:"SSL" envDefault:"false"`
 		UploadExp   time.Duration `env:"UPLOAD_EXP" envDefault:"1h"`
 		DownloadExp time.Duration `env:"DOWNLOAD_EXP" envDefault:"1h"`
+	}
+
+	VideoConfig struct {
+		// Retention is how long a completed video is kept when the user does not retain it.
+		Retention time.Duration `env:"RETENTION" envDefault:"8760h"`
 	}
 
 	RabbitMQConfig struct {

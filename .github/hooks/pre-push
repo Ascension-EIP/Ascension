@@ -17,5 +17,4 @@ fi
 .github/scripts/check_branch "$branch"
 .github/scripts/check_push || exit 1
 
-git pull
 exit 0

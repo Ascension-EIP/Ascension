@@ -1,8 +1,8 @@
-# @date 2026-09-06
+# @date 2026-09-18
 # @file coordinator.py
 # @brief Job coordinator orchestrating storage, AI pipelines, database, and messaging.
 # @project Ascension
-# @author Nicolas TORO <nicolas.toro@epitech.eu>
+# @author Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
 """Job coordinator connecting backend infrastructure to AI pipelines."""
@@ -68,6 +68,7 @@ class JobCoordinator:
 
             # 2. Open DB connection for real-time progress
             db_conn = self.db_repo.get_connection()
+            self.db_repo.mark_processing(db_conn, job.analysis_id)
 
             def on_progress(pct: int) -> None:
                 self.db_repo.update_progress(db_conn, job.analysis_id, pct)

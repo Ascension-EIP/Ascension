@@ -1,1 +1,1 @@
-../../docs/engineering/ai/commandes/code-documentation.md
+../commands/code-documentation.md
