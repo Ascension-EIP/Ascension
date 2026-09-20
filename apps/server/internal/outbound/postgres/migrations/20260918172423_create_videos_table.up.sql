@@ -23,7 +23,8 @@ CREATE TABLE videos (
 
 CREATE INDEX idx_videos_user_created ON videos(user_id, created_at DESC);
 CREATE INDEX idx_videos_climbing_session_id ON videos(climbing_session_id);
-CREATE INDEX idx_videos_expiry ON videos(expires_at) WHERE retained = FALSE;
+CREATE INDEX idx_videos_expiry ON videos(created_at) WHERE retained = FALSE;
+CREATE INDEX idx_videos_upload_expiry ON videos(upload_url_expirates_at) WHERE status != 'completed';
 
 CREATE TRIGGER update_videos_updated_at
 	BEFORE UPDATE ON videos

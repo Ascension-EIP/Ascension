@@ -150,7 +150,7 @@ func (r *PostgresRepository) DeleteVideosExpired(ctx context.Context, retainPeri
 	tx := r.getTx(ctx)
 
 	_, err := tx.Exec(ctx,
-		"DELETE FROM videos WHERE status == $1 AND retained == FALSE AND created_at + $2 < NOW()",
+		"DELETE FROM videos WHERE status = $1 AND retained = FALSE AND created_at + $2 < NOW()",
 		model.VideoStatusCompleted, retainPeriod)
 	if err != nil {
 		return dto.Error(err)
