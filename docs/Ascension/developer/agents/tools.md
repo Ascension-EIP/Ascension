@@ -3,7 +3,7 @@ id: 2b9082b6-24f2-4ecc-b1f1-9b57723c49df
 ---
 
 :::success
-**Version:** 1.0\
+**Version:** 1.1\
 **Original language:** English
 :::
 
@@ -40,7 +40,6 @@ The `.agents/` directory is organized into five specialized modules:
 ├── instructions.md                # Master system instructions & project vision
 ├── commands/                      # Slash commands and operational runbooks
 │   ├── commit.md                  # /commit
-│   ├── documentation.md           # /documentation
 │   ├── documentation-files.md     # /documentation-files
 │   ├── code-documentation.md      # /code-documentation
 │   ├── forui-ui-polish.md         # /forui-ui-polish
@@ -79,11 +78,11 @@ Commands are structured task prompts that can be triggered on demand using slash
   - Writes in lowercase imperative mood with no trailing period.
   - Commits locally using `git commit -m` without pushing.
 
-### 3.2 `/documentation`
+### 3.2 `/documentation-files`
 
-- **Source:** `.agents/commands/documentation.md`
+- **Source:** `.agents/commands/documentation-files.md`
 - **Purpose:** Full checklist and auditing protocol for creating or updating Markdown documentation files.
-- **Trigger:** Type `/documentation` when editing docs or creating new guides.
+- **Trigger:** Type `/documentation-files` when editing docs, creating new guides, or reviewing Markdown structure.
 - **Reference Document:** `docs/developer/guidelines/markdown-guidelines.md`
 - **Key Verifications:**
   - Mandatory Densho status header block (`:::success`, `:::warning`, `:::danger`).
@@ -91,13 +90,7 @@ Commands are structured task prompts that can be triggered on demand using slash
   - Horizontal rules (`---`) before every `##` heading.
   - Checks `.docignore` before performing modifications.
 
-### 3.3 `/documentation-files`
-
-- **Source:** `.agents/commands/documentation-files.md`
-- **Purpose:** Fast-path validation protocol focused strictly on markdown file structure and naming conventions.
-- **Trigger:** Type `/documentation-files` for quick structure compliance reviews.
-
-### 3.4 `/code-documentation`
+### 3.3 `/code-documentation`
 
 - **Source:** `.agents/commands/code-documentation.md`
 - **Purpose:** Generates idiomatic code comments and file headers across the monorepo.
@@ -108,7 +101,7 @@ Commands are structured task prompts that can be triggered on demand using slash
   - **Python (**`apps/ai`**):** Google-style docstrings (`"""..."""`).
   - **Safety Check:** Enforces Section 3 of `instructions.md` (never write AI names as file author).
 
-### 3.5 `/forui-ui-polish`
+### 3.4 `/forui-ui-polish`
 
 - **Source:** `.agents/commands/forui-ui-polish.md`
 - **Purpose:** Enforces the Ascension visual polish standards for Flutter development.
@@ -118,7 +111,7 @@ Commands are structured task prompts that can be triggered on demand using slash
   2. **Micro-Interactions:** Declarative entry transitions with `flutter_animate` (fadeIn + slideY).
   3. **Loading States:** Shimmer skeletons via `Skeletonizer` (no full-screen circular progress spinners).
 
-### 3.6 `/graphify`
+### 3.5 `/graphify`
 
 - **Source:** `.agents/commands/graphify.md`
 - **Purpose:** Queries and synchronizes the project's knowledge graph located in `graphify-out/`.
@@ -129,7 +122,7 @@ Commands are structured task prompts that can be triggered on demand using slash
   - Concept explanation: `graphify explain "<concept>"`.
   - Post-change synchronization: `graphify update .`.
 
-### 3.7 `/update-docs`
+### 3.6 `/update-docs`
 
 - **Source:** `.agents/commands/update-docs.md`
 - **Purpose:** Identifies modified source code and automatically brings relevant documentation and knowledge graphs into sync.
@@ -231,7 +224,6 @@ The monorepo provides local stdio MCP server support for **Graphify** via a port
 | --- | --- | --- | --- | --- |
 | **System Instructions** | `.agents/instructions.md` | `GEMINI.md`, `AGENTS.md` | `CLAUDE.md`, `.claude/instructions.md` | `.github/copilot-instructions.md` |
 | **Commit Command** | `.agents/commands/commit.md` | `/commit` (via `workflows/`) | `.claude/commands/commit.md` | `.github/prompts/commit.prompt.md` |
-| **Documentation Command** | `.agents/commands/documentation.md` | `/documentation` | `.claude/commands/documentation.md` | `.github/prompts/documentation.prompt.md` |
 | **Doc Files Command** | `.agents/commands/documentation-files.md` | `/documentation-files` | `.claude/commands/documentation-files.md` | `.github/prompts/documentation-files.prompt.md` |
 | **Code Doc Command** | `.agents/commands/code-documentation.md` | `/code-documentation` | `.claude/commands/code-documentation.md` | `.github/prompts/code-documentation.prompt.md` |
 | **UI Polish Command** | `.agents/commands/forui-ui-polish.md` | `/forui-ui-polish` | `.claude/commands/forui-ui-polish.md` | `.github/prompts/forui-ui-polish.prompt.md` |
@@ -256,7 +248,7 @@ The monorepo provides local stdio MCP server support for **Graphify** via a port
 ### 7.3 Claude Code Integration
 
 - **Project Prompt:** Automatically reads `CLAUDE.md` and `.claude/instructions.md` at session start.
-- **Commands:** Loads slash commands from `.claude/commands/*.md` (e.g., `/commit`, `/documentation`).
+- **Commands:** Loads slash commands from `.claude/commands/*.md` (e.g., `/commit`, `/documentation-files`).
 - **Rules:** Reads modular persistent rules from `.claude/rules/*.md`.
 - **Skills:** Auto-discovers skills from `.claude/skills/`.
 - **MCP:** Discovers project-scoped MCP servers from `.mcp.json` at the repository root.

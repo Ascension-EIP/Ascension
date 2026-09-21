@@ -1,43 +1,80 @@
 ---
 name: documentation-files
-description: "AI Command: Markdown Documentation Files (/documentation-files)"
+description: "Create or update all Markdown documentation files following the project's style guide (/documentation-files)"
 globs: ["*.md"]
 alwaysApply: false
 ---
 
-:::success
-**Version:** 1.1
-**Original language:** English
-:::
+## ⚠️ Mandatory first step
 
----
-
-# AI Command: Documentation Files (`/documentation-files`)
-
-This document serves as an execution protocol for creating and maintaining Markdown documentation files across the project.
-
-
----
-
-## 1\. Command Objective
-
-Ensure all Markdown files created or updated adhere strictly to the repository markdown guidelines (`docs/developer/guidelines/markdown-guidelines.md`).
-
----
-
-## 2\. Guideline Enforcement
-
-Before writing or editing any `.md` file, consult:
+Before writing, editing, or improving **any** Markdown documentation, you MUST read the full project style guide:
 
 ```
 docs/developer/guidelines/markdown-guidelines.md
 ```
 
+Do not skip this step, even if you think you already know the rules. The guidelines are the source of truth — if there is a conflict between your defaults and the guide, the guide wins.
+
 ---
 
-## 3\. Mandatory Structure
+## Checklist — apply to every file you create or modify
 
-- **Header Block**: Every Markdown file must start with a Densho metadata status container (`:::success`, `:::warning`, `:::danger`).
-- **Title**: Single `# Title` heading.
-- **Section Separators**: Horizontal rules (`---`) before every `##` heading.
-- **Kebab-Case Naming**: All markdown filenames must be lowercase kebab-case.
+After reading the guidelines, verify every point below before outputting a file:
+
+- [ ] **Header block** — the file starts with the required Densho status container callout:
+
+  ```markdown
+  :::status
+  **Version:** [X.X]
+  **Original language:** [Language]
+  :::
+  ```
+
+  Each line ends with **two trailing spaces** to produce a Markdown line break.
+  Authorized container statuses:
+  - `:::success` for completed (`Done`) documents, and frozen (`Final`) documents with `DON'T EDIT THIS FILE !` added after original language.
+  - `:::warning` for `In progress` or `Need update` documents.
+  - `:::danger` for `Todo` (planned) documents.
+- [ ] **Horizontal rule after header** — a `---` separator immediately follows the header block.
+- [ ] **Top-level heading** — a single `# Title` heading comes right after the separator.
+- [ ] **Horizontal rule before every** `##` **heading** — a `---` separator is placed before each major section.
+- [ ] **Heading levels are not skipped** — no jumping from `##` to `####`.
+- [ ] **Unordered lists use** `-`, not `*` or `+`.
+- [ ] **Empty line** before and after every code block and between paragraphs.
+- [ ] **Filename is kebab-case** — all lowercase, words separated by hyphens.
+- [ ] **Language is English or French** — as declared in **Original language**.
+
+---
+
+## Files to ignore
+
+Before auditing or mass-updating documentation, check for a `.docignore` file at the root of any directory you are working in. Files and patterns listed there **must not** be modified.
+
+The following files and patterns are **always ignored** — never add a project header or apply these guidelines to them:
+
+- `.github/prompts/*.prompt.md` — Copilot prompt files use their own YAML frontmatter format and must not be reformatted.
+- `.github/agents/*.agent.md` — Copilot agent definition files.
+- `**/.docignore` — the ignore files themselves.
+- Any file explicitly listed inside a `.docignore` file found in the same directory or any parent directory.
+
+### How `.docignore` works
+
+Create a `.docignore` file in any directory (or at the repo root) to exclude specific files from documentation enforcement. Syntax mirrors `.gitignore`:
+
+```
+# Ignore a specific file
+some-file.md
+
+# Ignore all files in a folder
+some-folder/
+
+# Ignore by pattern
+*.generated.md
+```
+
+---
+
+## When updating an existing file
+
+- Bump the patch version (e.g. `1.0` → `1.1`) for content changes, minor version for structural rewrites.
+- Adjust the status container type if the document lifecycle status changes (e.g. `:::warning` → `:::success`).
