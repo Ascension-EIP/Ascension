@@ -71,7 +71,7 @@ tasks:
       - "**/*.go"
       - "go.mod"
       - "go.sum"
-      - "migrations/**/*"
+      - "internal/outbound/postgres/migrations/**/*"
     deps:
       - "install"
 

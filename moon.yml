@@ -7,7 +7,7 @@ tasks:
         go -C apps/server run ./cmd/migrate
       fi
     inputs:
-      - "apps/server/migrations/**/*"
+      - "apps/server/internal/outbound/postgres/migrations/**/*"
     options:
       envFile: true
       outputStyle: "buffer-only-failure"
