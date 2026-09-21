@@ -2,24 +2,16 @@
 id: e29c7028-4874-45d0-9696-2da15c043d9f
 ---
 
-# Files in the folder
+# Files in this folder
 
-## CLIENT NEEDS & FUNCTIONAL SCOPE
+## Kick off EIP
 
-[PDF](./client-needs-func-scope.pdf)
+[kick-off_EIP_PGE4.pptx](./kick-off_EIP_PGE4.pptx)
 
-## CONTEXT, AUDIT & COMPLIANCE
+## Technical Track
 
-[PDF](./context-audit-compliance.pdf)
+[PDF](./G-EIP-600_track_technical.pdf)
 
-## COSTING & TECHNICAL SIZING
+## Technical Track - Student Guide
 
-[PDF](./costs.pdf)
-
-## IMPACTS, RISKS & MITIGATION
-
-[PDF](./impacts-risks.pdf)
-
-## TECHNICAL & FUNCTIONAL SPECIFICATIONS
-
-[PDF](./tech-func-specs.pdf)
+[PDF](./Technical_Track_-_Student_Guide_–_Tech_4.pdf)
