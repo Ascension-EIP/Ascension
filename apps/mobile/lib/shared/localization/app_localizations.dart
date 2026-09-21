@@ -1,4 +1,4 @@
-// @date 2026-09-07
+// @date 2026-09-21
 // @file app_localizations.dart
 // @brief File description.
 // @project Ascension
@@ -238,15 +238,18 @@ class AppLocalizations {
       'video.timeoutError':
           'L\'analyse a dépassé le délai d\'attente (10 min). Vérifiez l\'état du worker et réessayez.',
       'video.errorNotLoggedIn': 'Utilisateur non connecté',
-      'video.promo.1': 'Le mode Premium réduit le temps d\'analyse de 3×.',
-      'video.promo.2': 'Avec Premium, vos analyses passent en tête de file.',
-      'video.promo.3': 'Passez au mode Premium pour seulement 20€/mois.',
+      'video.promo.1':
+          'Mode Premium (20€/mois) : 30 analyses vidéos complètes par mois.',
+      'video.promo.2':
+          'Débloquez le Mode Fantôme avec Premium (30 parcours/mois) pour visualiser la trajectoire optimale.',
+      'video.promo.3':
+          'Créez des routines d\'entraînement illimitées avec les offres Premium et Infinity.',
       'video.promo.4':
-          'Premium : accédez à tout l\'historique de vos sessions.',
+          'Profitez d\'une expérience fluide et sans aucune publicité avec Premium ou Infinity.',
       'video.promo.5':
-          'Comparez vos sessions côte à côte avec le mode Premium.',
+          'Offre Infinity (30€/mois) : 100 analyses, 100 parcours Fantôme et priorité serveur.',
       'video.promo.6':
-          'Premium débloque des statistiques avancées par groupe musculaire.',
+          'Le Mode Fantôme calcule le chemin parfait par cinématique inverse pour votre morphologie.',
       'video.promo.7':
           'Le saviez-vous ? Ascension détecte jusqu\'à 33 points du corps humain.',
       'video.promo.8':
@@ -255,9 +258,9 @@ class AppLocalizations {
       'video.promo.10':
           'Vos données sont stockées de façon sécurisée dans le cloud.',
       'video.promo.11':
-          'Premium : partagez vos analyses avec votre coach en un tap.',
+          'En Freemium, vous bénéficiez de 10 analyses par mois et jusqu\'à 5 routines créées.',
       'video.promo.12':
-          'Premium : recevez des objectifs personnalisés chaque semaine.',
+          'La priorité serveur Infinity place vos analyses en tête de file sur nos workers IA.',
       'video.promo.13':
           'L\'IA Ascension apprend de chaque session pour mieux vous conseiller.',
       'analysis.title': 'Visualisation',
@@ -516,21 +519,28 @@ class AppLocalizations {
       'video.timeoutError':
           'Analysis exceeded timeout (10 min). Check worker status and try again.',
       'video.errorNotLoggedIn': 'User not logged in',
-      'video.promo.1': 'Premium mode reduces analysis time by 3×.',
+      'video.promo.1':
+          'Premium tier (€20/month): 30 full video analyses per month.',
       'video.promo.2':
-          'With Premium, your analyses move to the front of queue.',
-      'video.promo.3': 'Switch to Premium for only €20/month.',
-      'video.promo.4': 'Premium: access your full session history.',
-      'video.promo.5': 'Compare sessions side by side with Premium mode.',
-      'video.promo.6': 'Premium unlocks advanced stats per muscle group.',
+          'Unlock Ghost Mode with Premium (30 tracks/month) to visualize the optimal trajectory.',
+      'video.promo.3':
+          'Create unlimited training routines with Premium and Infinity tiers.',
+      'video.promo.4':
+          'Enjoy a smooth, 100% ad-free experience with Premium or Infinity.',
+      'video.promo.5':
+          'Infinity tier (€30/month): 100 analyses, 100 Ghost Mode runs, and server priority.',
+      'video.promo.6':
+          'Ghost Mode computes the optimal movement path using inverse kinematics.',
       'video.promo.7':
           'Did you know? Ascension can detect up to 33 body points.',
       'video.promo.8':
           'Tip: good lighting improves landmark detection accuracy.',
       'video.promo.9': 'Your progress is analyzed frame by frame.',
       'video.promo.10': 'Your data is securely stored in the cloud.',
-      'video.promo.11': 'Premium: share analyses with your coach in one tap.',
-      'video.promo.12': 'Premium: receive personalized weekly goals.',
+      'video.promo.11':
+          'On Freemium, you enjoy 10 free analyses per month and up to 5 custom routines.',
+      'video.promo.12':
+          'Infinity server priority moves your analyses to the top of the AI worker queue.',
       'video.promo.13':
           'Ascension AI learns from each session to guide you better.',
       'analysis.title': 'Visualization',

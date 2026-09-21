@@ -183,11 +183,11 @@ The system follows an **event-driven architecture** with **CQRS** and **client-s
 
 ## 11\. Business Model
 
-| Tier | Price | Analyses/month | Ghost Mode | Ads | Server Priority |
-| --- | --- | --- | --- | --- | --- |
-| Freemium | Free | 10 | ✗ | ✓ | ✗ |
-| Premium | €20/month | 50 | ✓ | ✗ | ✗ |
-| Infinity | €30/month | Unlimited | ✓ | ✗ | ✓ |
+| Tier | Price | Analyses | Ghost Mode | Max Routines | Ads | Server Priority |
+| --- | --- | --- | --- | --- | --- | --- |
+| Freemium | Free | 10/month | ✗ | 5 | ✓ | ✗ |
+| Premium | €20/month | 30/month | 30/month | Unlimited | ✗ | ✗ |
+| Infinity | €30/month | 100/month | 100/month | Unlimited | ✗ | ✓ |
 
 **Target market:** Individual climbers + partnerships with gyms (Climb Up, Arkose).
 

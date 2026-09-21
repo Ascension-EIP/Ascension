@@ -102,11 +102,11 @@ Le système suit une **architecture événementielle** avec **CQRS** et **rendu 
 
 ## 5. Modèle économique
 
-| Offre    | Prix      | Analyses/mois | Mode Fantôme | Publicités | Priorité serveur |
-|----------|-----------|---------------|--------------|------------|------------------|
-| Freemium | Gratuit   | 10            | ✗            | ✓          | ✗                |
-| Premium  | 20 €/mois | 50            | ✓            | ✗          | ✗                |
-| Infinity | 30 €/mois | Illimité      | ✓            | ✗          | ✓                |
+| Offre    | Prix      | Analyses | Mode Fantôme | Routines max | Publicités | Priorité serveur |
+|----------|-----------|---------------|--------------|--------------|------------|------------------|
+| Freemium | Gratuit   | 10/mois         | ✗            | 5            | ✓          | ✗                |
+| Premium  | 20 €/mois | 30/mois       | 30/mois      | Illimité     | ✗          | ✗                |
+| Infinity | 30 €/mois | 100/mois       | 100/mois     | Illimité     | ✗          | ✓                |
 
 **Marché cible:** Grimpeurs individuels + partenariats avec salles (Climb Up, Arkose).
 

@@ -516,11 +516,11 @@ Authorization: Bearer {token}
 
 ### Subscription Tiers
 
-| Tier | Price | Videos/Month | Ghost Mode | Server Priority | Deep Analysis | Ads |
+| Tier | Price | Videos | Ghost Mode | Max Routines | Server Priority | Ads |
 | --- | --- | --- | --- | --- | --- | --- |
-| **Freemium** | Free | 10 | ❌ | ❌ | ❌ | ✅ |
-| **Premium** | 20€/month | 50 | ✅ | ❌ | ❌ | ❌ |
-| **Infinity** | 30€/month | Unlimited | ✅ | ✅ | ✅ | ❌ |
+| **Freemium** | Free | 10 / month | ❌ | 5 | ❌ | ✅ |
+| **Premium** | 20€/month | 30 / month | 30 / month | Unlimited | ❌ | ❌ |
+| **Infinity** | 30€/month | 100 / month | 100 / month | Unlimited | ✅ | ❌ |
 
 ---
 

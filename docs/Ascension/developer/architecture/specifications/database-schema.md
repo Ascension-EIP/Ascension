@@ -993,6 +993,7 @@ CREATE TABLE subscription_plans (
     monthly_analysis_quota  INTEGER NOT NULL,
     monthly_ghost_quota     INTEGER NOT NULL DEFAULT 0,
     ghost_mode_enabled      BOOLEAN NOT NULL DEFAULT FALSE,
+    max_routines            INTEGER, -- NULL means unlimited routines, 5 for freemium
     video_retention_enabled BOOLEAN NOT NULL DEFAULT FALSE,
     ads_enabled             BOOLEAN NOT NULL DEFAULT TRUE,
     server_priority         BOOLEAN NOT NULL DEFAULT FALSE,
@@ -1007,11 +1008,11 @@ CREATE TABLE subscription_plans (
 
 Seed data:
 
-| code | name | price\_cents | monthly\_analysis\_quota | ghost\_mode\_enabled | ads\_enabled | server\_priority | stripe\_price\_id |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `freemium` | Freemium | 0 | 10 | false | true | false | `NULL` |
-| `premium` | Premium | 2000 | 30 | true | false | false | set in prod |
-| `infinity` | Infinity | 3000 | 100 | true | false | true | set in prod |
+| code | name | price\_cents | monthly\_analysis\_quota | monthly\_ghost\_quota | ghost\_mode\_enabled | max\_routines | ads\_enabled | server\_priority | stripe\_price\_id |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `freemium` | Freemium | 0 | 10 | 0 | false | 5 | true | false | `NULL` |
+| `premium` | Premium | 2000 | 30 | 30 | true | `NULL` (unlimited) | false | false | set in prod |
+| `infinity` | Infinity | 3000 | 100 | 100 | true | `NULL` (unlimited) | false | true | set in prod |
 
 ### 10.2 `subscriptions`
 

@@ -382,9 +382,9 @@ ALTER TABLE users
 
 **Business Rules:**
 
-- Freemium tier: 10 videos/month (with ads)
-- Premium tier: 30 videos/month (20€/month, ghost mode enabled)
-- Infinity tier: 100 videos/month (30€/month, all features + server priority)
+- Freemium tier: 10 videos/month (with ads, no ghost mode, max 5 routines)
+- Premium tier: 30 videos/month (20€/month, ghost mode up to 30 uses/month, unlimited routines)
+- Infinity tier: 100 videos/month (30€/month, ghost mode up to 100 uses/month, unlimited routines + server priority)
 
 ---
 

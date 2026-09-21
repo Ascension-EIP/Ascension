@@ -4,6 +4,7 @@ sort: custom
 order:
   - catalogue-fonctionnalites
   - roadmap-fonctionnelle
+  - tarifs-abonnements
   - action-plan
   - beta-test-plan
   - acceptance-test-plan

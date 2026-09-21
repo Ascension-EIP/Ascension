@@ -6,6 +6,7 @@ CREATE TABLE subscription_plans (
     monthly_analysis_quota   INTEGER NOT NULL,
     monthly_ghost_quota      INTEGER NOT NULL DEFAULT 0,
     ghost_mode_enabled       BOOLEAN NOT NULL DEFAULT FALSE,
+    max_routines             INTEGER,
     video_retention_enabled  BOOLEAN NOT NULL DEFAULT FALSE,
     ads_enabled              BOOLEAN NOT NULL DEFAULT TRUE,
     server_priority          BOOLEAN NOT NULL DEFAULT FALSE,
@@ -24,8 +25,8 @@ CREATE TRIGGER update_subscription_plans_updated_at
 
 -- Stripe price ids differ per environment and are set by an admin.
 INSERT INTO subscription_plans
-    (code, name, price_cents, monthly_analysis_quota, ghost_mode_enabled, ads_enabled, server_priority)
+    (code, name, price_cents, monthly_analysis_quota, monthly_ghost_quota, ghost_mode_enabled, max_routines, ads_enabled, server_priority)
 VALUES
-    ('freemium', 'Freemium', 0,    10,  FALSE, TRUE,  FALSE),
-    ('premium',  'Premium',  2000, 30,  TRUE,  FALSE, FALSE),
-    ('infinity', 'Infinity', 3000, 100, TRUE,  FALSE, TRUE);
+    ('freemium', 'Freemium', 0,    10,  0,   FALSE, 5,    TRUE,  FALSE),
+    ('premium',  'Premium',  2000, 30,  30,  TRUE,  NULL, FALSE, FALSE),
+    ('infinity', 'Infinity', 3000, 100, 100, TRUE,  NULL, FALSE, TRUE);

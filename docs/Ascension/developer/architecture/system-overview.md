@@ -493,9 +493,9 @@ API → DB: Fetch user permissions
 
 ### Authorization Levels
 
-- **Freemium**: 10 analyses/month, with ads, no Ghost Climber
-- **Premium**: 50 analyses/month (20€/month), Ghost Mode enabled
-- **Infinity**: Unlimited analyses (30€/month), all features + server priority
+- **Freemium**: 10 analyses/month, with ads, no Ghost Mode, max 5 routines
+- **Premium**: 30 analyses/month (20€/month), Ghost Mode (30 uses/month), unlimited routines, standard server priority
+- **Infinity**: 100 analyses/month (30€/month), Ghost Mode (100 uses/month), unlimited routines, server priority
 
 ### Data Protection
 

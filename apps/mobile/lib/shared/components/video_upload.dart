@@ -1,4 +1,4 @@
-// @date 2026-09-07
+// @date 2026-09-21
 // @file video_upload.dart
 // @brief File description.
 // @project Ascension
@@ -33,32 +33,32 @@ enum _UploadState { idle, selected, uploading, analysing, done, error }
 
 const List<_PromoMessage> _promoMessages = [
   _PromoMessage(
-    icon: FLucideIcons.rocket,
+    icon: FLucideIcons.sparkles,
     textKey: 'video.promo.1',
     isPromo: true,
   ),
   _PromoMessage(
-    icon: FLucideIcons.bolt,
+    icon: FLucideIcons.rocket,
     textKey: 'video.promo.2',
     isPromo: true,
   ),
   _PromoMessage(
-    icon: FLucideIcons.sparkles,
+    icon: FLucideIcons.trophy,
     textKey: 'video.promo.3',
     isPromo: true,
   ),
   _PromoMessage(
-    icon: FLucideIcons.history,
+    icon: FLucideIcons.sparkles,
     textKey: 'video.promo.4',
     isPromo: true,
   ),
   _PromoMessage(
-    icon: FLucideIcons.arrowLeftRight,
+    icon: FLucideIcons.bolt,
     textKey: 'video.promo.5',
     isPromo: true,
   ),
   _PromoMessage(
-    icon: FLucideIcons.chartColumn,
+    icon: FLucideIcons.trendingUp,
     textKey: 'video.promo.6',
     isPromo: true,
   ),
@@ -73,7 +73,7 @@ const List<_PromoMessage> _promoMessages = [
     isPromo: false,
   ),
   _PromoMessage(
-    icon: FLucideIcons.trendingUp,
+    icon: FLucideIcons.chartColumn,
     textKey: 'video.promo.9',
     isPromo: false,
   ),
@@ -88,7 +88,7 @@ const List<_PromoMessage> _promoMessages = [
     isPromo: true,
   ),
   _PromoMessage(
-    icon: FLucideIcons.trophy,
+    icon: FLucideIcons.bolt,
     textKey: 'video.promo.12',
     isPromo: true,
   ),
