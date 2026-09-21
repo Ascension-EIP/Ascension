@@ -1,3 +1,7 @@
+---
+id: 0069f35f-0ad8-4bf6-8f0b-c3607ff33f1a
+---
+
 :::success
 **Version:** 1.0\
 **Original language:** French
@@ -12,22 +16,22 @@
 ## Table des matières
 
 - [Grille Tarifaire et Offres d'Abonnement Ascension](#grille-tarifaire-et-offres-dabonnement-ascension)
-  - [Table des matières](#table-des-matières)
-  - [1. Vision et modèle économique](#1-vision-et-modèle-économique)
-  - [2. Grille comparative des offres](#2-grille-comparative-des-offres)
-  - [3. Détail des niveaux d'abonnement](#3-détail-des-niveaux-dabonnement)
-    - [3.1 Freemium (Découverte)](#31-freemium-découverte)
+  - [Table des matières](#table-des-mati%C3%A8res)
+  - [1\. Vision et modèle économique](#1-vision-et-mod%C3%A8le-%C3%A9conomique)
+  - [2\. Grille comparative des offres](#2-grille-comparative-des-offres)
+  - [3\. Détail des niveaux d'abonnement](#3-d%C3%A9tail-des-niveaux-dabonnement)
+    - [3.1 Freemium (Découverte)](#31-freemium-d%C3%A9couverte)
     - [3.2 Premium (Progression active)](#32-premium-progression-active)
-    - [3.3 Infinity (Haute performance \& Intensif)](#33-infinity-haute-performance--intensif)
-  - [4. Justification technique et dimensionnement](#4-justification-technique-et-dimensionnement)
-    - [4.1 Coûts de calcul GPU et inférence IA](#41-coûts-de-calcul-gpu-et-inférence-ia)
-    - [4.2 Gestion de la priorité serveur via RabbitMQ](#42-gestion-de-la-priorité-serveur-via-rabbitmq)
+    - [3.3 Infinity (Haute performance & Intensif)](#33-infinity-haute-performance--intensif)
+  - [4\. Justification technique et dimensionnement](#4-justification-technique-et-dimensionnement)
+    - [4.1 Coûts de calcul GPU et inférence IA](#41-co%C3%BBts-de-calcul-gpu-et-inf%C3%A9rence-ia)
+    - [4.2 Gestion de la priorité serveur via RabbitMQ](#42-gestion-de-la-priorit%C3%A9-serveur-via-rabbitmq)
     - [4.3 Stockage objet et bande passante](#43-stockage-objet-et-bande-passante)
-  - [5. Cycle de vie et gestion des quotas](#5-cycle-de-vie-et-gestion-des-quotas)
+  - [5\. Cycle de vie et gestion des quotas](#5-cycle-de-vie-et-gestion-des-quotas)
 
 ---
 
-## 1. Vision et modèle économique
+## 1\. Vision et modèle économique
 
 Le modèle économique d'Ascension repose sur un système d'abonnement SaaS B2C freemium à paliers clairs, conçu pour :
 
@@ -37,10 +41,10 @@ Le modèle économique d'Ascension repose sur un système d'abonnement SaaS B2C 
 
 ---
 
-## 2. Grille comparative des offres
+## 2\. Grille comparative des offres
 
 | Caractéristique | Freemium | Premium | Infinity |
-| :--- | :---: | :---: | :---: |
+| --- | --- | --- | --- |
 | **Tarif mensuel** | **Gratuit (0 €)** | **20 € / mois** | **30 € / mois** |
 | **Analyses vidéo / mois** | **10** | **30** | **100** |
 | **Mode Fantôme (utilisations / mois)** | ❌ *(0)* | **30** | **100** |
@@ -50,7 +54,7 @@ Le modèle économique d'Ascension repose sur un système d'abonnement SaaS B2C 
 
 ---
 
-## 3. Détail des niveaux d'abonnement
+## 3\. Détail des niveaux d'abonnement
 
 ### 3.1 Freemium (Découverte)
 
@@ -84,11 +88,12 @@ L'offre Infinity à **30 € / mois** cible les compétiteurs, grimpeurs quotidi
 
 ---
 
-## 4. Justification technique et dimensionnement
+## 4\. Justification technique et dimensionnement
 
 ### 4.1 Coûts de calcul GPU et inférence IA
 
 Chaque analyse vidéo mobilise un pipeline lourd composé de :
+
 1. Détection de pose et squelettisation 2D (MediaPipe Pose, 33 points-clés par frame).
 2. Reconstruction et correction biomécanique 3D.
 3. Analyse des prises de la voie (OpenCV + PyTorch).
@@ -99,6 +104,7 @@ Plafonner les quotas à **10 (Freemium)**, **30 (Premium)** et **100 (Infinity)*
 ### 4.2 Gestion de la priorité serveur via RabbitMQ
 
 Le backend Go publie les messages de tâches d'analyse dans RabbitMQ :
+
 - Les utilisateurs **Infinity** bénéficient d'un champ de priorité élevée (`Priority: 10`) sur le message AMQP.
 - Les utilisateurs **Freemium** et **Premium** sont traités avec la priorité standard (`Priority: 1`).
 - Cela garantit aux utilisateurs Infinity un temps de retour minimal lors des sessions en direct à la salle d'escalade.
@@ -109,7 +115,7 @@ Les vidéos d'escalade brutes sont directement transférées depuis le smartphon
 
 ---
 
-## 5. Cycle de vie et gestion des quotas
+## 5\. Cycle de vie et gestion des quotas
 
 1. **Compteurs mensuels :** La table `quota_usages` enregistre la consommation réelle (`analyses_count`, `ghosts_count`) sur la période en cours.
 2. **Plafonds stricts :** Le middleware de contrôle (`Quota Middleware`) vérifie avant chaque upload vidéo ou demande de Mode Fantôme que le quota du forfait (`monthly_analysis_quota`, `monthly_ghost_quota`) n'est pas dépassé.
