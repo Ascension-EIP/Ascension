@@ -1,5 +1,5 @@
-// @date 2026-03-14
-// @file auth.go
+// @date 2026-09-20
+// @file session.go
 // @brief File description.
 // @project Ascension
 // @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
