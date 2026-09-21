@@ -5,13 +5,6 @@ globs: ["*.dart", "*.go", "*.py"]
 alwaysApply: false
 ---
 
-:::success
-**Version:** 1.0
-**Original language:** English
-:::
-
----
-
 # AI Command: Code Documentation (`/code-documentation`)
 
 This document serves as an execution protocol for any AI model (Antigravity, Copilot, Claude Code) receiving a request to document source code (`/code-documentation` or `code-documentation`).

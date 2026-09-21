@@ -1,10 +1,3 @@
-:::success
-**Version:** 1.0
-**Original language:** English
-:::
-
----
-
 # AI Instructions - Ascension Project
 
 This file contains the unified, global instructions and context for all AI models and coding assistants (Claude Code, GitHub Copilot, Antigravity) working on the Ascension project.

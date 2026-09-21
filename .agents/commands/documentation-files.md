@@ -26,13 +26,12 @@ After reading the guidelines, verify every point below before outputting a file:
   ```markdown
   :::status
   **Version:** [X.X]
-  **Original language:** [Language]
   :::
   ```
 
   Each line ends with **two trailing spaces** to produce a Markdown line break.
   Authorized container statuses:
-  - `:::success` for completed (`Done`) documents, and frozen (`Final`) documents with `DON'T EDIT THIS FILE !` added after original language.
+  - `:::success` for completed (`Done`) documents, and frozen (`Final`) documents with `DON'T EDIT THIS FILE !` added after the version.
   - `:::warning` for `In progress` or `Need update` documents.
   - `:::danger` for `Todo` (planned) documents.
 - [ ] **Horizontal rule after header** — a `---` separator immediately follows the header block.
@@ -42,7 +41,7 @@ After reading the guidelines, verify every point below before outputting a file:
 - [ ] **Unordered lists use** `-`, not `*` or `+`.
 - [ ] **Empty line** before and after every code block and between paragraphs.
 - [ ] **Filename is kebab-case** — all lowercase, words separated by hyphens.
-- [ ] **Language is English or French** — as declared in **Original language**.
+- [ ] **Language is English or French**.
 
 ---
 

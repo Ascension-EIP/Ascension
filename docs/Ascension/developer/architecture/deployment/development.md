@@ -3,8 +3,7 @@ id: ab77caf4-081b-4c22-8817-d8570baadf55
 ---
 
 :::success
-**Version:** 2.2\
-**Original language:** English
+**Version:** 2.2
 :::
 
 ---
@@ -878,8 +877,7 @@ For faster iteration during development:
 **Last Updated**: 2026-03-03 **Maintainer**: Ascension Development Team
 
 :::success
-**Version:** 2.2\
-**Original language:** English
+**Version:** 2.2
 :::
 
 ---

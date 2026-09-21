@@ -4,7 +4,6 @@ id: ea19f6e9-0ee4-4c28-915c-24bd795db95d
 
 :::success
 **Version:** 1.0\
-**Original language:** French\
 DON'T EDIT THIS FILE !
 :::
 

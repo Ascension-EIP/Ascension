@@ -5,13 +5,6 @@ globs: ["*"]
 alwaysApply: false
 ---
 
-:::success
-**Version:** 1.0
-**Original language:** English
-:::
-
----
-
 # AI Command: Knowledge Graph (`/graphify`)
 
 This document serves as a guide and execution protocol for any AI model (Antigravity, Copilot, Claude Code) performing architectural analysis or codebase research via **Graphify**.

@@ -5,13 +5,6 @@ globs: ["*.md"]
 alwaysApply: false
 ---
 
-:::success
-**Version:** 1.1
-**Original language:** English
-:::
-
----
-
 # AI Command: Update Documentation (`/update-docs`)
 
 This document serves as an execution protocol for inspecting modified features, architecture, or APIs and updating all relevant documentation files accordingly.

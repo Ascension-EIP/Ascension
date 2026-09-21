@@ -3,8 +3,7 @@ id: 96dbe682-aa9e-4c8c-9113-c70112576d5e
 ---
 
 :::success
-**Version:** 1.4\
-**Original language:** English
+**Version:** 1.4
 :::
 
 ---
@@ -40,7 +39,6 @@ Every single Markdown file must start with the following header block using Dens
 ```markdown
 :::status
 **Version:** [X.X]
-**Original language:** [Language]
 :::
 ```
 
@@ -50,7 +48,7 @@ The container status must strictly use one of the authorized container types:
 
 | Status Container | Previous Status Equivalent | Description | Notes |
 | --- | --- | --- | --- |
-| `:::success` | `Done`, `Final` | Completed and validated document. | If the document is frozen/final, append `DON'T EDIT THIS FILE !` on a new line after `Original language`. |
+| `:::success` | `Done`, `Final` | Completed and validated document. | If the document is frozen/final, append `DON'T EDIT THIS FILE !` on a new line after `Version`. |
 | `:::warning` | `In progress`, `Need update` | Work in progress or outdated document needing update. |
  |
 | `:::danger` | `Todo` | Planned document not yet written. |
@@ -64,7 +62,6 @@ Examples
 ```markdown
 :::success
 **Version:** 1.0
-**Original language:** English
 :::
 ```
 
@@ -73,7 +70,6 @@ Examples
 ```markdown
 :::success
 **Version:** 1.0
-**Original language:** English
 DON'T EDIT THIS FILE !
 :::
 ```
@@ -83,7 +79,6 @@ DON'T EDIT THIS FILE !
 ```markdown
 :::warning
 **Version:** 0.2
-**Original language:** English
 :::
 ```
 
@@ -92,7 +87,6 @@ DON'T EDIT THIS FILE !
 ```markdown
 :::danger
 **Version:** 0.1
-**Original language:** English
 :::
 ```
 

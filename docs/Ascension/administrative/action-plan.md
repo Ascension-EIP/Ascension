@@ -3,8 +3,7 @@ id: 6dbad1cf-7a8f-43f8-a5a4-111052513263
 ---
 
 :::success
-**Version:** 1.0\
-**Original language:** French
+**Version:** 1.0
 :::
 
 ---

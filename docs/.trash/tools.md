@@ -3,8 +3,7 @@ id: 8bea3644-9e6b-411d-8d24-ad08cd149b82
 ---
 
 :::success
-**Version:** 1.0\
-**Original language:** English
+**Version:** 1.0
 :::
 
 ---
@@ -180,7 +179,7 @@ Rules provide persistent guidelines that AI assistants load into their context t
 - **Standard:** CommonMark / GitHub Flavored Markdown (GFM).
 - **Enforcements:**
   - Filenames must be `kebab-case`.
-  - Densho status headers must declare version and original language.
+  - Densho status headers must declare version.
   - Horizontal rules before every major heading (`##`).
   - Accessibility constraints (alt text for images, table headers, code fence language tags).
 
