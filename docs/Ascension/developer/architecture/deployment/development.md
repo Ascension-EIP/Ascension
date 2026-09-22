@@ -95,7 +95,7 @@ curl -LsSf [https://astral.sh/uv/install.sh](https://astral.sh/uv/install.sh) | 
 
 uv --version
 
-```
+````
 
 ### Optional Tools
 
@@ -139,7 +139,7 @@ Ascension/                  # Monorepo root
         ├── pubspec.yaml
         └── lib/
             └── main.dart
-```
+````
 
 **Why moonrepo instead of submodules?**
 
@@ -152,7 +152,7 @@ Ascension/                  # Monorepo root
 
 ## Step-by-Step Setup
 
-### 1. Install moon
+### 1\. Install moon
 
 ```bash
 # macOS / Linux
@@ -163,7 +163,7 @@ export PATH="$HOME/.moon/bin:$PATH"
 
 # Verify
 moon --version
-````
+```
 
 ### 2\. Clone Repository
 

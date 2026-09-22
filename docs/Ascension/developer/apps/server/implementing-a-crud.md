@@ -79,7 +79,7 @@ DROP TABLE IF EXISTS posts;
 
 ## Step 2 – Domain model & Port
 
-### 1. Create `internal/model/post.go`
+### 1\. Create `internal/model/post.go`
 
 ```go
 package model
@@ -115,7 +115,7 @@ func (p *NewPost) Validate() error {
 }
 ```
 
-### 2. Add the repository port to `internal/model/ports.go`
+### 2\. Add the repository port to `internal/model/ports.go`
 
 ```go
 type PostRepository interface {

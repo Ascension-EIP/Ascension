@@ -230,7 +230,6 @@ apps/server/
    - Parses configuration via `config.Load()`.
    - Initializes structured logging with `slog`.
    - Calls `app.Run(cfg)` which establishes database pools, runs pending migrations via `repo.Migrate()`, initializes storage and RabbitMQ, wires services and handlers, and starts the Gin HTTP server with graceful shutdown handling.
-
 2. **Cron Worker (`cmd/cron/main.go`)**:
    - Bootstraps dependencies and starts `robfig/cron` to execute periodic database and storage cleanup tasks independently of HTTP traffic.
 

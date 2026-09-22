@@ -83,7 +83,7 @@ All auth endpoints live under `/v1/auth`.
 
 Creates a new user account, hashes the password with bcrypt, creates a refresh session, and issues tokens.
 
-**Rate limit:** 5 req/min.  
+**Rate limit:** 5 req/min.\
 **Authentication:** None.
 
 **Request body:**
@@ -142,7 +142,7 @@ Creates a new user account, hashes the password with bcrypt, creates a refresh s
 
 Authenticates a user via their identifier (email or username) and password.
 
-**Rate limit:** 10 req/min.  
+**Rate limit:** 10 req/min.\
 **Authentication:** None.
 
 **Request body:**
@@ -175,7 +175,7 @@ Authenticates a user via their identifier (email or username) and password.
 
 Revokes the caller's active refresh session.
 
-**Rate limit:** 10 req/min.  
+**Rate limit:** 10 req/min.\
 **Authentication:** Required (`Authorization: Bearer <jwt>`).
 
 **Responses:**
@@ -191,7 +191,7 @@ Revokes the caller's active refresh session.
 
 Generates a new access token using a valid refresh token.
 
-**Rate limit:** 10 req/min.  
+**Rate limit:** 10 req/min.\
 **Authentication:** None.
 
 **Request body:**
@@ -329,7 +329,7 @@ Permanently deletes the specified user.
 
 ## Videos
 
-**Rate limit:** 10 req/min.  
+**Rate limit:** 10 req/min.\
 **Authentication:** Required (`user` or `admin`).
 
 ### GET /v1/videos/upload-url — Get a presigned upload URL
@@ -396,7 +396,7 @@ Generates a time-limited presigned GET URL to stream or download the video.
 
 ## Analyses
 
-**Rate limit:** 10 req/min.  
+**Rate limit:** 10 req/min.\
 **Authentication:** Required (`user` or `admin`).
 
 ### POST /v1/analysis — Trigger an analysis
@@ -503,4 +503,3 @@ Simple unauthenticated liveness check.
 | `422 Unprocessable Entity` | Domain validation rules rejected the input |
 | `429 Too Many Requests` | IP rate limit exceeded |
 | `500 Internal Server Error` | Unexpected internal failure |
-
