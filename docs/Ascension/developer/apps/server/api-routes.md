@@ -3,14 +3,14 @@ id: bfb575e1-a621-48a9-8452-4d113ee0e10e
 ---
 
 :::success
-**Version:** 1.2
+**Version:** 1.3
 :::
 
 ---
 
 # Server API Routes Reference
 
-This document lists every HTTP route exposed by the Ascension backend server, with request/response examples and notes on authentication requirements. No prior Go knowledge is needed to use this reference.
+This document lists every HTTP route exposed by the Ascension backend server, with request/response examples, rate limits, and authentication requirements.
 
 ---
 
@@ -20,7 +20,7 @@ This document lists every HTTP route exposed by the Ascension backend server, wi
 | --- | --- |
 | Local development | `http://localhost:8080` |
 | Docker (Android emulator) | `http://10.0.2.2:8080` |
-| Production | Configured via `SERVER_PORT` env var |
+| Production | Configured via `PORT` environment variable |
 
 All routes are prefixed with `/v1` except `/healthz`.
 
@@ -28,84 +28,93 @@ All routes are prefixed with `/v1` except `/healthz`.
 
 ## Response Format
 
-Successful responses return the data directly as a JSON object (no wrapper envelope for most routes). Errors return a plain text message with the relevant HTTP status code.
-
-Some routes use the `ApiSuccess<T>` envelope:
+- **Successful responses** return the payload directly as a JSON object or array.
+- **Error responses** always return a JSON object with an `error` key matching the `response.Error` struct:
 
 ```json
-{ "field_1": "...", "field_2": "..." }
-```
-
-Error responses are plain strings, e.g.:
-
-```
-"email already exists"
+{
+  "error": "email already exists"
+}
 ```
 
 ---
 
-## Authentication
+## Authentication & Authorization
 
-> **Authentication:** Protected endpoints require a valid JWT bearer token. Public endpoints such as `/healthz` and `/v1/auth/*` do not require authentication.
+Protected endpoints require a valid JWT bearer token in the `Authorization` header:
 
-When authentication is enabled, the expected header is:
-
-```
-Authorization: Bearer <jwt_token>
+```http
+Authorization: Bearer <access_token>
 ```
 
-Two middleware functions exist in `internal/inbound/http/middleware/auth.go`:
+Authentication is enforced via `middleware.AuthMiddleware` (`internal/inbound/http/middleware/auth.go`). The middleware validates the JWT token, checks allowed user roles, and attaches the parsed `model.User` to the Gin context at key `macro.Me` (`"me"`).
 
-| Middleware | What it does |
-| --- | --- |
-| `auth` | Validates the `Authorization: Bearer` header; injects the `User` into request extensions |
-| `admin` | Requires `auth` to have run first; rejects non-admin users with `403 Forbidden` |
+| Access Level | Routes | Required Role |
+| --- | --- | --- |
+| **Public** | `/healthz`, `/v1/auth/signup`, `/v1/auth/login`, `/v1/auth/refresh` | None |
+| **Authenticated** | `DELETE /v1/auth/logout`, `/v1/videos/*`, `/v1/analysis/*` | `user` or `admin` |
+| **Admin Only** | `/v1/users/*` | `admin` |
 
 ---
 
 ## Rate Limiting
 
-A global rate limiter is applied to **all routes**:
+Rate limiting is enforced per client IP via `middleware.RateLimiter`:
 
-- **Limit:** 10 requests per second per IP address.
-- **Excess requests:** receive `429 Too Many Requests`.
-- The limiter state is cleaned up every 60 seconds.
+| Route / Group | Rate Limit |
+| --- | --- |
+| `POST /v1/auth/signup` | 5 requests / minute |
+| `POST /v1/auth/login` | 10 requests / minute |
+| `DELETE /v1/auth/logout` | 10 requests / minute |
+| `PUT /v1/auth/refresh` | 10 requests / minute |
+| `/v1/users/*` | 100 requests / minute |
+| `/v1/videos/*` | 10 requests / minute |
+| `/v1/analysis/*` | 10 requests / minute |
+
+Excess requests receive `429 Too Many Requests`.
 
 ---
 
 ## Auth
 
-All auth endpoints live under `/v1/auth`. They do **not** require an `Authorization` header.
-
-On successful login or registration, the server returns the user info, an access token, and a refresh token.
+All auth endpoints live under `/v1/auth`.
 
 ### POST /v1/auth/signup — Register a new account
 
-Creates a new user account with the `user` role, hashes the password with bcrypt, and logs the user in.
+Creates a new user account, hashes the password with bcrypt, creates a refresh session, and issues tokens.
+
+**Rate limit:** 5 req/min.  
+**Authentication:** None.
 
 **Request body:**
 
 ```json
 {
   "username": "climber42",
-  "email": "climber@example.com",
-  "password": "securepassword"
+  "first_name": "Alex",
+  "last_name": "Honnold",
+  "email": "alex@example.com",
+  "password": "securepassword123",
+  "remember": true
 }
 ```
 
 | Field | Type | Rules |
 | --- | --- | --- |
-| `username` | string | Required |
+| `username` | string | Required, 6–24 characters |
+| `first_name` | string | Required |
+| `last_name` | string | Required |
 | `email` | string | Required, valid email format |
-| `password` | string | Required, minimum 8 characters |
+| `password` | string | Required, 8–64 characters |
+| `remember` | boolean | Optional (extends session expiration) |
 
 **Responses:**
 
 | Status | Meaning | Body |
 | --- | --- | --- |
-| `200 OK` | Account created, token issued | Login Response JSON |
-| `400 Bad Request` | Validation failed | Plain text error |
-| `409 Conflict` | Email/Username already exists | Plain text error |
+| `200 OK` | Account created and user logged in | `LoginResponse` |
+| `400 Bad Request` | Validation failed | `{"error": "<msg>"}` |
+| `409 Conflict` | Email or username already exists | `{"error": "<msg>"}` |
 
 **Example response (200):**
 
@@ -116,10 +125,13 @@ Creates a new user account with the `user` role, hashes the password with bcrypt
   "token_type": "Bearer",
   "expires_in": 900,
   "user": {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "username": "climber42",
-    "email": "climber@example.com",
-    "role": "user"
+    "ID": "018e6e5a-1234-7abc-8def-0123456789ab",
+    "Username": "climber42",
+    "FirstName": "Alex",
+    "LastName": "Honnold",
+    "Email": "alex@example.com",
+    "Role": "user",
+    "Status": "active"
   }
 }
 ```
@@ -128,200 +140,167 @@ Creates a new user account with the `user` role, hashes the password with bcrypt
 
 ### POST /v1/auth/login — Log in
 
-Authenticates a user with email and password.
+Authenticates a user via their identifier (email or username) and password.
+
+**Rate limit:** 10 req/min.  
+**Authentication:** None.
 
 **Request body:**
 
 ```json
 {
-  "email": "climber@example.com",
-  "password": "securepassword"
+  "identifier": "climber42",
+  "password": "securepassword123",
+  "remember": false
 }
 ```
+
+| Field | Type | Rules |
+| --- | --- | --- |
+| `identifier` | string | Required (username or email) |
+| `password` | string | Required |
+| `remember` | boolean | Optional |
 
 **Responses:**
 
 | Status | Meaning | Body |
 | --- | --- | --- |
-| `200 OK` | Authenticated | Login Response JSON |
-| `400 Bad Request` | Validation failed | Plain text error |
-| `401 Unauthorized` | Incorrect credentials | Plain text error |
+| `200 OK` | Successfully authenticated | `LoginResponse` |
+| `400 Bad Request` | Validation failed | `{"error": "<msg>"}` |
+| `401 Unauthorized` | Invalid credentials | `{"error": "<msg>"}` |
 
 ---
 
 ### DELETE /v1/auth/logout — Log out
 
-Logs out the user and invalidates the session token.
+Revokes the caller's active refresh session.
 
-**Responses:**
-
-| Status | Meaning |
-| --- | --- |
-| `200 OK` | Logged out |
-
----
-
-### PUT /v1/auth/refresh — Refresh token
-
-Refreshes the access token using the refresh token.
-
-**Request body:**
-
-```json
-{
-  "token": "refresh_token_string"
-}
-```
+**Rate limit:** 10 req/min.  
+**Authentication:** Required (`Authorization: Bearer <jwt>`).
 
 **Responses:**
 
 | Status | Meaning | Body |
 | --- | --- | --- |
-| `200 OK` | Token refreshed | Access Token Response |
-| `200 OK` | Valid credentials, token returned | `{ "access_token": "<jwt>", "user_id": "<uuid>" }` |
-| `401 Unauthorized` | Wrong email or password | Plain text error |
-| `422 Unprocessable Entity` | Malformed request fields | Plain text error |
+| `200 OK` | Session successfully revoked | empty |
+| `401 Unauthorized` | Missing or invalid token | empty |
+
+---
+
+### PUT /v1/auth/refresh — Refresh access token
+
+Generates a new access token using a valid refresh token.
+
+**Rate limit:** 10 req/min.  
+**Authentication:** None.
+
+**Request body:**
+
+```json
+{
+  "refresh_token": "a1b2c3d4e5f6..."
+}
+```
+
+| Field | Type | Rules |
+| --- | --- | --- |
+| `refresh_token` | string | Required |
+
+**Responses:**
+
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `200 OK` | New access token issued | `AccessTokenResponse` |
+| `400 Bad Request` | Missing token | `{"error": "<msg>"}` |
+| `401 Unauthorized` | Invalid, expired, or revoked refresh token | `{"error": "<msg>"}` |
 
 **Example response (200):**
 
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user_id": "550e8400-e29b-41d4-a716-446655440000"
+  "token_type": "Bearer",
+  "expires_in": 900
 }
 ```
 
 ---
 
-### POST /v1/auth/logout — Log out
+## Users (Admin Only)
 
-Clears the `session_token` cookie. Safe to call even when not logged in.
+All endpoints under `/v1/users` require the `admin` role (`authMW(model.UserRoleAdmin)`).
 
-**No request body.**
-
-**Responses:**
-
-| Status | Meaning | Body |
-| --- | --- | --- |
-| `204 No Content` | Cookie cleared | — |
-
----
-
-## Users
+**Rate limit:** 100 req/min.
 
 ### POST /v1/users — Create a user
-
-Creates a new user account.
 
 **Request body:**
 
 ```json
 {
-  "username": "climber42",
-  "email": "climber@example.com",
-  "password": "securepassword",
-  "role": "user"
+  "username": "coach_john",
+  "first_name": "John",
+  "last_name": "Doe",
+  "email": "john@example.com",
+  "password": "initialpassword123",
+  "role": "coach"
 }
 ```
 
 | Field | Type | Rules |
 | --- | --- | --- |
-| `username` | string | 8–24 characters, `[a-zA-Z0-9_]` only |
-| `email` | string | Must be a valid email address |
-| `password` | string | Minimum 8 characters |
-| `role` | string | `"user"` or `"admin"` |
+| `username` | string | Required, 6–24 characters |
+| `first_name` | string | Required |
+| `last_name` | string | Required |
+| `email` | string | Required, valid email format |
+| `password` | string | Required, 8–64 characters |
+| `role` | string | Required (`"user"`, `"admin"`, `"coach"`, `"gym"`) |
 
 **Responses:**
 
 | Status | Meaning | Body |
 | --- | --- | --- |
-| `201 Created` | User created successfully | `{ "id": "<uuid>" }` |
-| `422 Unprocessable Entity` | Validation failed or email already exists | Plain text error |
-
-**Example response (201):**
-
-```json
-{ "id": "550e8400-e29b-41d4-a716-446655440000" }
-```
+| `201 Created` | User created successfully | `{"id": "<uuid>"}` |
+| `400 Bad Request` | Validation failed | `{"error": "<msg>"}` |
+| `409 Conflict` | Email or username already exists | `{"error": "<msg>"}` |
 
 ---
 
 ### GET /v1/users — List all users
 
-Returns a list of all registered users.
-
-**No request body.**
+Returns all registered users.
 
 **Responses:**
 
 | Status | Meaning | Body |
 | --- | --- | --- |
-| `200 OK` | Success | JSON array of user objects |
-
-**Example response (200):**
-
-```json
-[
-  {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "username": "climber42",
-    "email": "climber@example.com",
-    "role": "user"
-  }
-]
-```
+| `200 OK` | Success | Array of `response.User` |
 
 ---
 
-### GET /v1/users/{id} — Get a user
-
-Returns a single user by their UUID.
-
-**Path parameter:**
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `id` | UUID string | The user's unique identifier |
+### GET /v1/users/:id — Get user by ID
 
 **Responses:**
 
 | Status | Meaning | Body |
 | --- | --- | --- |
-| `200 OK` | User found | User object |
-| `404 Not Found` | No user with this ID | Plain text error |
-| `422 Unprocessable Entity` | `id` is not a valid UUID | Plain text error |
-
-**Example response (200):**
-
-```json
-{
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "username": "climber42",
-  "email": "climber@example.com",
-  "role": "user"
-}
-```
+| `200 OK` | User found | `response.User` |
+| `400 Bad Request` | Invalid UUID format | `{"error": "<msg>"}` |
+| `404 Not Found` | User does not exist | `{"error": "<msg>"}` |
 
 ---
 
-### PUT /v1/users/{id} — Update a user
+### PUT /v1/users/:id — Partially update user
 
-Replaces all fields of an existing user. All fields are required.
-
-**Path parameter:**
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `id` | UUID string | The user's unique identifier |
+Allows updating any subset of a user's fields. All fields in the body are optional.
 
 **Request body:**
 
 ```json
 {
-  "username": "newname",
-  "email": "new@example.com",
-  "password": "newpassword",
-  "role": "user"
+  "first_name": "Jonathan",
+  "role": "admin",
+  "status": "active"
 }
 ```
 
@@ -329,119 +308,163 @@ Replaces all fields of an existing user. All fields are required.
 
 | Status | Meaning | Body |
 | --- | --- | --- |
-| `200 OK` | User updated successfully | `{ "id": "<uuid>" }` |
-| `404 Not Found` | No user with this ID | Plain text error |
-| `422 Unprocessable Entity` | Validation failed | Plain text error |
+| `200 OK` | User updated successfully | `{"id": "<uuid>"}` |
+| `400 Bad Request` | Validation error | `{"error": "<msg>"}` |
+| `404 Not Found` | User does not exist | `{"error": "<msg>"}` |
 
 ---
 
-### DELETE /v1/users/{id} — Delete a user
+### DELETE /v1/users/:id — Delete user
 
-Permanently deletes a user.
-
-**Path parameter:**
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `id` | UUID string | The user's unique identifier |
+Permanently deletes the specified user.
 
 **Responses:**
 
 | Status | Meaning | Body |
 | --- | --- | --- |
-| `200 OK` | User deleted | Empty or confirmation |
-| `404 Not Found` | No user with this ID | Plain text error |
+| `200 OK` | User deleted | empty |
+| `404 Not Found` | User does not exist | `{"error": "<msg>"}` |
 
 ---
 
 ## Videos
 
+**Rate limit:** 10 req/min.  
+**Authentication:** Required (`user` or `admin`).
+
 ### GET /v1/videos/upload-url — Get a presigned upload URL
 
-Generates a presigned URL that the client uses to upload the video file **directly to MinIO** (no proxying through the server).
+Generates a presigned PUT URL allowing direct upload from the mobile client to MinIO/S3.
 
-**Query Parameters:**
+**Request body (JSON):**
 
-| Parameter | Type | Description |
+```json
+{
+  "content_type": "video/mp4",
+  "size": 52428800,
+  "visibility": "private",
+  "climbing_session_id": null,
+  "title": "Send of Sector 4",
+  "retained": false
+}
+```
+
+| Field | Type | Rules |
 | --- | --- | --- |
-| `content_type` | string | Allowed: `video/mp4`, `video/webm`, `video/quicktime`, `video/x-msvideo` |
-| `size` | int | Size in bytes (max 1GB) |
+| `content_type` | string | Required (`video/mp4`, `video/webm`, `video/quicktime`, `video/x-msvideo`) |
+| `size` | int | Required, size in bytes (maximum 1 GB) |
+| `visibility` | string | Required (`"private"`, `"friends"`, `"public"`) |
+| `climbing_session_id` | UUID | Optional parent climbing session ID |
+| `title` | string | Optional video title |
+| `retained` | boolean | Optional flag to bypass the default 7-day deletion policy |
 
 **Responses:**
 
 | Status | Meaning | Body |
 | --- | --- | --- |
-| `200 OK` | URL generated | `{ "video_id": "<uuid>", "upload_url": "<presigned-url>", "expires_at": "<time>" }` |
-| `400 Bad Request` | Missing or invalid params | Plain text error |
-| `500 Internal Server Error` | MinIO presign failed | Plain text error |
+| `200 OK` | Presigned URL generated | `{"video_id": "<uuid>", "upload_url": "<presigned-url>", "expires_at": "<time>"}` |
+| `400 Bad Request` | Validation failed | `{"error": "<msg>"}` |
 
 ---
 
-### PUT /v1/videos/upload-done/{id} — Complete upload
+### PUT /v1/videos/upload-done/:id — Complete upload
 
-Signals that the video upload has been completed by the client.
-
-**Responses:**
-
-| Status | Meaning |
-| --- | --- |
-| `204 No Content` | Upload completed |
-
----
-
-### GET /v1/videos/download-url/{id} — Get download URL
-
-Generates a presigned GET URL to watch or download the video.
+Notifies the server that the mobile client has finished uploading the file to object storage. The server verifies the object in storage, extracts metadata, and marks the video as completed.
 
 **Responses:**
 
 | Status | Meaning | Body |
 | --- | --- | --- |
-| `200 OK` | Download URL ready | `{ "download_url": "<url>", "expires_at": "<time>" }` |
+| `204 No Content` | Upload verified and completed | empty |
+| `400 Bad Request` | Invalid UUID | `{"error": "<msg>"}` |
+| `404 Not Found` | Video not found | `{"error": "<msg>"}` |
 
-**Upload flow:**
+---
 
-```
-1. Client → GET /v1/videos/upload-url?content_type=...&size=... → gets { video_id, upload_url }
-2. Client → PUT <upload_url>            → uploads bytes directly to MinIO
-3. Client → PUT /v1/videos/upload-done/{video_id} → completes upload
-4. Client → POST /v1/analysis           → triggers AI processing
-```
+### GET /v1/videos/download-url/:id — Get download URL
+
+Generates a time-limited presigned GET URL to stream or download the video.
+
+**Responses:**
+
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `200 OK` | Download URL generated | `{"download_url": "<presigned-url>", "expires_at": "<time>"}` |
+| `404 Not Found` | Video not found | `{"error": "<msg>"}` |
 
 ---
 
 ## Analyses
 
+**Rate limit:** 10 req/min.  
+**Authentication:** Required (`user` or `admin`).
+
 ### POST /v1/analysis — Trigger an analysis
 
-Creates an analysis record and publishes a job message to the `vision.skeleton` RabbitMQ queue.
+Creates a pending analysis record and dispatches a job message to the RabbitMQ queue (`vision.skeleton`).
 
 **Request body:**
 
 ```json
-{ "video_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }
+{
+  "video_id": "018e6e5a-1234-7abc-8def-0123456789ab",
+  "type": "2d",
+  "visibility": "private"
+}
 ```
+
+| Field | Type | Rules |
+| --- | --- | --- |
+| `video_id` | UUID string | Required, ID of a completed video |
+| `type` | string | Required (`"2d"` or `"3d"`) |
+| `visibility` | string | Required (`"private"`, `"friends"`, `"public"`) |
 
 **Responses:**
 
 | Status | Meaning | Body |
 | --- | --- | --- |
-| `202 Accepted` | Job queued | `{ "id": "<uuid>", "status": "pending" }` |
-| `404 Not Found` | `video_id` does not exist | Plain text error |
+| `202 Accepted` | Job successfully queued | `AnalysisResponse` |
+| `400 Bad Request` | Validation failed | `{"error": "<msg>"}` |
+| `404 Not Found` | Video does not exist | `{"error": "<msg>"}` |
 
 ---
 
-### GET /v1/analysis/{id} — Get an analysis
+### GET /v1/analysis/:id — Get analysis details & progress
 
-Returns the current state of an analysis.
+Returns the current progress, status, and results of an analysis.
 
 **Responses:**
 
 | Status | Meaning | Body |
 | --- | --- | --- |
-| `200 OK` | Analysis found | `{ "id": "<uuid>", "status": "<status>" }` |
+| `200 OK` | Analysis found | `AnalysisResponse` |
+| `404 Not Found` | Analysis does not exist | `{"error": "<msg>"}` |
 
-**Analysis status lifecycle:**
+**Example response (200):**
+
+```json
+{
+  "id": "018e6e5a-abcd-7ef0-1234-567890abcdef",
+  "video_id": "018e6e5a-1234-7abc-8def-0123456789ab",
+  "type": "2d",
+  "status": "completed",
+  "visibility": "private",
+  "progress": 100,
+  "result": {
+    "fps": 30.0,
+    "width": 1080,
+    "height": 1920,
+    "frames": [...]
+  },
+  "advice": "Keep your hips closer to the wall on hold 4.",
+  "error": null,
+  "processing_time_ms": 14250,
+  "started_at": "2026-09-22T10:15:00Z",
+  "completed_at": "2026-09-22T10:15:14Z"
+}
+```
+
+**Analysis Status Lifecycle:**
 
 ```
 pending → processing → completed
@@ -452,29 +475,32 @@ pending → processing → completed
 
 ## Health
 
-### GET /healthz — Health check
+### GET /healthz — Liveness probe
 
-A simple public liveness probe.
+Simple unauthenticated liveness check.
 
 **Responses:**
 
 | Status | Meaning |
 | --- | --- |
-| `204 No Content` | Server is healthy |
+| `204 No Content` | Server is running and healthy |
 
 ---
 
-## Error Codes Reference
+## HTTP Status Codes Reference
 
-| HTTP Status | Meaning in Ascension |
+| HTTP Status | Ascension Usage |
 | --- | --- |
-| `201 Created` | Resource successfully created |
-| `202 Accepted` | Async job successfully queued |
-| `204 No Content` | Success with no body |
-| `400 Bad Request` | Malformed request |
-| `401 Unauthorized` | Missing or invalid JWT token |
-| `403 Forbidden` | Valid token but insufficient role |
-| `404 Not Found` | Resource does not exist |
-| `422 Unprocessable Entity` | Validation error (bad UUID, invalid field, etc.) |
-| `429 Too Many Requests` | Rate limit exceeded (10 req/s per IP) |
-| `500 Internal Server Error` | Unexpected server-side failure |
+| `200 OK` | Request succeeded with response body |
+| `201 Created` | Resource created successfully |
+| `202 Accepted` | Async task successfully queued for processing |
+| `204 No Content` | Success with no response body |
+| `400 Bad Request` | Request binding or format validation failed |
+| `401 Unauthorized` | Missing, expired, or invalid JWT token |
+| `403 Forbidden` | Valid token but insufficient role privileges |
+| `404 Not Found` | Requested entity not found |
+| `409 Conflict` | Unique constraint violation (duplicate email or username) |
+| `422 Unprocessable Entity` | Domain validation rules rejected the input |
+| `429 Too Many Requests` | IP rate limit exceeded |
+| `500 Internal Server Error` | Unexpected internal failure |
+
