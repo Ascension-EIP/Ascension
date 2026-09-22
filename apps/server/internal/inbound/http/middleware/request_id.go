@@ -1,4 +1,4 @@
-// @date 2026-03-11
+// @date 2026-09-09
 // @file request_id.go
 // @brief File description.
 // @project Ascension
@@ -9,15 +9,12 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 func RequestID() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		requestID := "unknown"
-		if requestUUID, err := uuid.NewV7(); err == nil {
-			requestID = requestUUID.String()
-		}
+		requestID := uuid.NewV7().String()
 		c.Set("request_id", requestID)
 		c.Header("X-Request-ID", requestID)
 		c.Next()

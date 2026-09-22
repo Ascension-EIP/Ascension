@@ -1,4 +1,4 @@
-// @date 2026-03-12
+// @date 2026-09-20
 // @file jwt.go
 // @brief File description.
 // @project Ascension
@@ -18,29 +18,29 @@ import (
 )
 
 type JWTService struct {
-	exp    time.Duration
-	secret string
+	cfg config.JWTConfig
 }
 
 func NewJWTService(cfg config.JWTConfig) JWTService {
 	return JWTService{
-		exp:    cfg.Exp,
-		secret: cfg.Secret,
+		cfg: cfg,
 	}
 }
 
-func (s *JWTService) CreateAccessToken(ctx context.Context, user *model.User) (model.AccessToken, error) {
+func (s *JWTService) CreateAccessToken(ctx context.Context, user model.User) (model.AccessToken, error) {
 	claims := model.JWTClaims{
-		UserID:   user.ID,
-		UserRole: user.Role,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(s.exp)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-		},
+		UserID:        user.ID,
+		UserUsername:  user.Username,
+		UserFirstName: user.FirstName,
+		UserLastName:  user.LastName,
+		UserEmail:     user.Email,
+		UserRole:      user.Role,
+		ExpiresAt:     jwt.NewNumericDate(time.Now().Add(s.cfg.Exp)),
+		IssuedAt:      jwt.NewNumericDate(time.Now()),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenSigned, err := token.SignedString([]byte(s.secret))
+	tokenSigned, err := token.SignedString([]byte(s.cfg.Secret))
 	if err != nil {
 		return model.AccessToken{}, err
 	}
@@ -48,7 +48,7 @@ func (s *JWTService) CreateAccessToken(ctx context.Context, user *model.User) (m
 	return model.AccessToken{
 		Token:     tokenSigned,
 		TokenType: "Bearer",
-		ExpiresIn: uint(s.exp.Seconds()),
+		ExpiresIn: uint(s.cfg.Exp.Seconds()),
 	}, nil
 }
 
@@ -60,7 +60,7 @@ func (s *JWTService) ValidateAccessToken(ctx context.Context, tokenStr string) (
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("invalid jwt algorythm: %v", token.Header["alg"])
 			}
-			return []byte(s.secret), nil
+			return []byte(s.cfg.Secret), nil
 		},
 	)
 	if err != nil {
@@ -69,7 +69,7 @@ func (s *JWTService) ValidateAccessToken(ctx context.Context, tokenStr string) (
 
 	claims, ok := token.Claims.(*model.JWTClaims)
 	if !ok || !token.Valid {
-		return nil, fmt.Errorf("invalid token")
+		return nil, model.ErrInvalidToken
 	}
 
 	return claims, nil

@@ -1,8 +1,8 @@
-# @date 2026-03-12
+# @date 2026-09-17
 # @file worker.py
 # @brief File description.
 # @project Ascension
-# @author Gianni TUERO <gianni.tuero@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+# @author Gianni TUERO <gianni.tuero@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
 """Ascension AI Worker — vision.skeleton pipeline.
@@ -150,7 +150,7 @@ def _update_analysis(
             UPDATE analyses
                SET status            = %s,
                    result_json       = %s,
-                   hints             = %s,
+                   advice            = %s,
                    processing_time_ms = %s,
                    completed_at      = %s,
                    progress          = CASE WHEN %s = 'completed' THEN 100 ELSE progress END

@@ -1,40 +1,62 @@
-// @date 2026-03-19
+// @date 2026-09-20
 // @file auth.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package model
 
-import (
-	"time"
-
-	"github.com/google/uuid"
-)
+import "net/netip"
 
 type SignupForm struct {
-	Name     string
-	Email    string
-	Password []byte
+	Username  UserUsername
+	FirstName string
+	LastName  string
+	Email     UserEmail
+	Password  UserPassword
 }
 
-type SignupLoginForm struct {
-	Name     string
-	Email    string
-	Password []byte
-	Remember bool
+func (f SignupForm) Validate() error {
+	if err := f.Username.Validate(); err != nil {
+		return err
+	}
+
+	if err := f.Email.Validate(); err != nil {
+		return err
+	}
+
+	if err := f.Password.Validate(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type LoginForm struct {
-	Email    string
-	Password []byte
-	Remember bool
+	Identifier string
+	Password   UserPassword
+}
+
+func (f LoginForm) Validate() error {
+	if err := NewUserEmail(f.Identifier).Validate(); err != nil {
+		return err
+	}
+
+	if err := f.Password.Validate(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type Tokens struct {
-	RefreshToken uuid.UUID
+	RefreshToken
 	AccessToken
+}
+
+type RefreshToken struct {
+	SessionToken string
 }
 
 type AccessToken struct {
@@ -43,14 +65,7 @@ type AccessToken struct {
 	ExpiresIn uint
 }
 
-type NewSession struct {
-	UserID    uuid.UUID
-	ExpiresAt time.Time
-}
-
-type Session struct {
-	ID        uuid.UUID
-	UserID    uuid.UUID
-	ExpiresAt time.Time
-	CreatedAt time.Time
+type ClientInfo struct {
+	UserAgent *string
+	IPAddress *netip.Addr
 }

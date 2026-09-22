@@ -1,4 +1,4 @@
-// @date 2026-03-11
+// @date 2026-09-20
 // @file user.go
 // @brief File description.
 // @project Ascension
@@ -9,50 +9,82 @@ package service
 
 import (
 	"context"
+	"fmt"
+
+	"uuid"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 )
 
-type userRepository interface {
-	CreateUser(context.Context, *model.NewUser) (*model.User, error)
-	GetUserByID(context.Context, uuid.UUID) (*model.User, error)
-	ListAllUsers(context.Context) ([]*model.User, error)
-	UpdateUser(context.Context, *model.PartialUser) (*model.User, error)
-	DeleteUser(context.Context, uuid.UUID) error
-}
-
 type UserService struct {
-	r userRepository
+	repo model.UserRepository
 }
 
-func NewUserService(r userRepository) UserService {
-	return UserService{r: r}
+func NewUserService(repo model.UserRepository) UserService {
+	return UserService{repo: repo}
 }
 
-func (s *UserService) CreateUser(c context.Context, user *model.NewUser) (*model.User, error) {
-	hashPassword, err := bcrypt.GenerateFromPassword(user.Password, bcrypt.DefaultCost)
-	if err != nil {
-		return nil, err
+func (s *UserService) CreateUser(ctx context.Context, user model.User) (model.User, error) {
+	if err := user.Validate(); err != nil {
+		return model.User{}, fmt.Errorf("user validation: %w", err)
 	}
-	user.Password = hashPassword
 
-	return s.r.CreateUser(c, user)
+	return s.repo.CreateUser(ctx, user)
 }
 
-func (s *UserService) GetUserByID(c context.Context, id uuid.UUID) (*model.User, error) {
-	return s.r.GetUserByID(c, id)
+func (s *UserService) GetUserByID(ctx context.Context, userID uuid.UUID) (model.User, error) {
+	user, err := s.repo.GetUserByFilter(ctx, model.UserFilter{ID: &userID})
+	if err != nil {
+		return model.User{}, fmt.Errorf("get user with id %v: %w", userID, err)
+	}
+
+	return user, nil
 }
 
-func (s *UserService) ListAllUsers(c context.Context) ([]*model.User, error) {
-	return s.r.ListAllUsers(c)
+func (s *UserService) GetUserByFilter(ctx context.Context, filter model.UserFilter) (model.User, error) {
+	user, err := s.repo.GetUserByFilter(ctx, filter)
+	if err != nil {
+		return model.User{}, fmt.Errorf("get user for filter %v: %w", filter, err)
+	}
+
+	return user, nil
 }
 
-func (s *UserService) UpdateUser(c context.Context, user *model.PartialUser) (*model.User, error) {
-	return s.r.UpdateUser(c, user)
+func (s *UserService) ListAllUsers(ctx context.Context) ([]model.User, error) {
+	users, err := s.repo.ListUsersByFilter(ctx, model.UserFilter{})
+	if err != nil {
+		return []model.User{}, fmt.Errorf("list all users: %w", err)
+	}
+
+	return users, nil
 }
 
-func (s *UserService) DeleteUser(c context.Context, id uuid.UUID) error {
-	return s.r.DeleteUser(c, id)
+func (s *UserService) ListUsersByFilter(ctx context.Context, filter model.UserFilter) ([]model.User, error) {
+	users, err := s.repo.ListUsersByFilter(ctx, filter)
+	if err != nil {
+		return []model.User{}, fmt.Errorf("list users for filter %v: %w", filter, err)
+	}
+
+	return users, nil
+}
+
+func (s *UserService) UpdateUser(ctx context.Context, partial model.UserPartial) (model.User, error) {
+	if err := partial.Validate(); err != nil {
+		return model.User{}, fmt.Errorf("user validation: %w", err)
+	}
+
+	user, err := s.repo.UpdateUser(ctx, partial)
+	if err != nil {
+		return model.User{}, fmt.Errorf("update user %s: %w", partial.ID.String(), err)
+	}
+
+	return user, nil
+}
+
+func (s *UserService) DeleteUser(ctx context.Context, id uuid.UUID) error {
+	if err := s.repo.DeleteUser(ctx, id); err != nil {
+		return fmt.Errorf("delete user %s: %w", id.String(), err)
+	}
+
+	return nil
 }

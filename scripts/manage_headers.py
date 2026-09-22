@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @date 2026-07-16
+# @date 2026-09-21
 # @file manage_headers.py
 # @brief Script to parse, check, and update file headers in the Ascension repository.
 # @project Ascension
@@ -18,8 +18,8 @@ SUPPORTED_EXTENSIONS = ['.go', '.dart', '.py']
 
 # Patterns for Go and Dart (C-style line comments)
 C_LINE_HEADER_RE = re.compile(
-    r'^(\s*//\s*@date.*?\n'
-    r'(?:\s*//\s*@(?:date|file|brief|project|author|copyright|status)\s+.*?\n)*)',
+    r'^(\s*//\s*@date.*?(?:\n|$)'
+    r'(?:\s*//\s*@(?:date|file|brief|project|author|copyright|status)\s+.*?(?:\n|$))*)',
     re.DOTALL
 )
 
@@ -30,8 +30,8 @@ C_HEADER_RE = re.compile(r'^\s*/\*\*(.*?)\*/', re.DOTALL)
 PY_HEADER_RE = re.compile(
     r'^(\s*#!.*?\n)?'
     r'(\s*#\s*-\*-\s*coding:.*?\n)?'
-    r'(\s*#\s*@date.*?\n'
-    r'(?:\s*#\s*@(?:date|file|brief|project|author|copyright|status)\s+.*?\n)*)',
+    r'(\s*#\s*@date.*?(?:\n|$)'
+    r'(?:\s*#\s*@(?:date|file|brief|project|author|copyright|status)\s+.*?(?:\n|$))*)',
     re.DOTALL
 )
 
@@ -50,10 +50,10 @@ PY_PREFIX_RE = re.compile(
     re.DOTALL
 )
 
-def run_cmd(args):
+def run_cmd(args, strip=True):
     try:
         res = subprocess.run(args, capture_output=True, text=True, check=True)
-        return res.stdout.strip()
+        return res.stdout.strip() if strip else res.stdout
     except subprocess.CalledProcessError:
         return None
 
@@ -165,7 +165,7 @@ def get_file_metadata(path, ext, style):
         today = datetime.date.today().strftime('%Y-%m-%d')
         return today, local_user or 'local'
 
-    head_content = run_cmd(['git', 'show', f'HEAD:{path}'])
+    head_content = run_cmd(['git', 'show', f'HEAD:{path}'], strip=False)
     if head_content is None:
         today = datetime.date.today().strftime('%Y-%m-%d')
         return today, local_user or 'modified'
@@ -193,11 +193,12 @@ def get_file_metadata(path, ext, style):
 
     for commit_hash, commit_date, author_info in commits:
         parent_hash = f"{commit_hash}~1"
-        parent_content = run_cmd(['git', 'show', f'{parent_hash}:{path}'])
+        parent_content = run_cmd(['git', 'show', f'{parent_hash}:{path}'], strip=False)
+        is_creation = (parent_content is None)
         if parent_content is None:
             parent_content = ""
 
-        commit_content = run_cmd(['git', 'show', f'{commit_hash}:{path}'])
+        commit_content = run_cmd(['git', 'show', f'{commit_hash}:{path}'], strip=False)
         if commit_content is None:
             continue
 
@@ -211,6 +212,7 @@ def get_file_metadata(path, ext, style):
                 else:
                     resolved_date = commit_date
 
+        if commit_stripped != parent_stripped or is_creation:
             name = author_info.split('<')[0].strip().lower() if '<' in author_info else author_info.strip().lower()
             email = None
             m = re.search(r'<(.*?)>', author_info)
@@ -239,7 +241,10 @@ def get_file_metadata(path, ext, style):
         if has_local_code_mod:
             resolved_date = datetime.date.today().strftime('%Y-%m-%d')
         else:
-            resolved_date = commits[-1][1] if commits else datetime.date.today().strftime('%Y-%m-%d')
+            resolved_date = commits[0][1] if commits else datetime.date.today().strftime('%Y-%m-%d')
+
+    if not authors and commits:
+        authors = [commits[-1][2]]
 
     authors_str = ", ".join(authors) if authors else (local_user or ("unknown" if is_tracked else "local"))
 

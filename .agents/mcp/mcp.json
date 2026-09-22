@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "graphify": {
+      "command": "./.agents/mcp/graphify-mcp.sh"
+    }
+  }
+}
