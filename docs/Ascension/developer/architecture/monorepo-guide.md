@@ -103,7 +103,7 @@ projects:
 # https://moonrepo.dev/docs/config/toolchain
 
 go:
-  version: '1.26.0'
+  version: '1.27.1'
 
 python:
   version: '3.11'
@@ -161,10 +161,10 @@ project:
   description: 'AI service for Ascension'
 
 tasks:
-  install:
+  setup:
     ...
 
-  download-model:
+  install:
     ...
 
   update:
