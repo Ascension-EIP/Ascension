@@ -1,5 +1,5 @@
 ---
-id: 413238de-dd16-4633-b9d6-1b2062339c31
+id: 98502521-89bf-4e54-997d-deb6cfc7ab6a
 ---
 
 :::success
@@ -14,7 +14,7 @@ This benchmark documents the evaluation of mobile technologies for the Ascension
 
 ---
 
-## 1. Context & Architectural Requirements
+## 1\. Context & Architectural Requirements
 
 The Ascension mobile client is the primary interface for climbers. It requires high hardware intimacy and fluid rendering:
 
@@ -40,26 +40,26 @@ flowchart TD
     end
 ```
 
-_Figure: Core architectural layers of the mobile client balancing hardware access with real-time UI rendering._
+*Figure: Core architectural layers of the mobile client balancing hardware access with real-time UI rendering.*
 
 ---
 
-## 2. Team Competencies Baseline
+## 2\. Team Competencies Baseline
 
 At the beginning of the mobile evaluation phase, the team had the following technical profile:
 
-| Technology                  | Team Proficiency Level    | Practical Context                                                   |
-| :-------------------------- | :------------------------ | :------------------------------------------------------------------ |
-| **TypeScript / JavaScript** | Mastered by all 5 members | Deep familiarity with React and modern frontend development.        |
-| **Dart / Flutter**          | No prior experience       | Zero baseline; discovered and evaluated specifically for Ascension. |
-| **Kotlin (Android)**        | No prior experience       | Zero baseline; discovered during platform explorations.             |
-| **Swift (iOS)**             | No prior experience       | Zero baseline; discovered during platform explorations.             |
+| Technology | Team Proficiency Level | Practical Context |
+| --- | --- | --- |
+| **TypeScript / JavaScript** | Mastered by all 5 members | Deep familiarity with React and modern frontend development. |
+| **Dart / Flutter** | No prior experience | Zero baseline; discovered and evaluated specifically for Ascension. |
+| **Kotlin (Android)** | No prior experience | Zero baseline; discovered during platform explorations. |
+| **Swift (iOS)** | No prior experience | Zero baseline; discovered during platform explorations. |
 
 Despite universal mastery of TypeScript—which appeared to favor React Native at first glance—the team prioritized hardware reliability and runtime performance over existing familiarity.
 
 ---
 
-## 3. Compared Solutions
+## 3\. Compared Solutions
 
 1. **Flutter (Dart 3.x + Impeller/Skia)**:
    - Google's UI toolkit compiling ahead-of-time (AOT) to native ARM machine code, rendering directly to an Skia/Impeller canvas without platform UI wrappers.
@@ -70,7 +70,7 @@ Despite universal mastery of TypeScript—which appeared to favor React Native a
 
 ---
 
-## 4. Evaluation Methodology & Test Protocols
+## 4\. Evaluation Methodology & Test Protocols
 
 A standardized 3-screen workflow was implemented on both Flutter and React Native (preserved in the `Ascension-EIP/benchmark` repository):
 
@@ -87,22 +87,22 @@ A standardized 3-screen workflow was implemented on both Flutter and React Nativ
 
 ---
 
-## 5. Comparative Evaluation Matrix
+## 5\. Comparative Evaluation Matrix
 
-| Evaluation Criterion         | Flutter (Dart)                  | React Native (Expo)                 | Dual Native (Kotlin + Swift)      | Winner               |
-| :--------------------------- | :------------------------------ | :---------------------------------- | :-------------------------------- | :------------------- |
-| **Rendering Architecture**   | AOT Compiled (Impeller Canvas)  | Interpreted / JSI Bridge            | Native Platform Views             | **Flutter / Dual Native** |
-| **Camera FPS & Stability**   | Stable 60 FPS, reliable init    | Occasional drops / bridge lag       | Maximum hardware control          | **Flutter / Dual Native** |
-| **Video Playback & Overlay** | Smooth native texture rendering | Codec & video view inconsistencies  | Flawless                          | **Flutter / Dual Native** |
-| **Codebase Maintenance**     | Single unified codebase         | Single unified codebase             | Two completely separate codebases | **Flutter / React Native**     |
-| **Team Existing Expertise**  | Zero (Dart learned in 1 week)   | High (Universal TypeScript mastery) | Zero (Two new languages to learn) | **React Native**     |
-| **Low-Level / FFI Support**  | Direct `dart:ffi` C-interop     | Native modules (JSI/C++ glue)       | Native C/C++ interop              | **Flutter / Dual Native** |
-| **Platform Parity**          | 100% pixel-perfect matching     | Platform-specific styling quirks    | Divergent UI implementations      | **Flutter**          |
-| **App Startup Time**         | Fast (< 1.2s cold start)        | Medium (Hermes bundle parse)        | Instantaneous (< 0.8s)            | **Dual Native**           |
+| Evaluation Criterion | Flutter (Dart) | React Native (Expo) | Dual Native (Kotlin + Swift) | Winner |
+| --- | --- | --- | --- | --- |
+| **Rendering Architecture** | AOT Compiled (Impeller Canvas) | Interpreted / JSI Bridge | Native Platform Views | **Flutter / Dual Native** |
+| **Camera FPS & Stability** | Stable 60 FPS, reliable init | Occasional drops / bridge lag | Maximum hardware control | **Flutter / Dual Native** |
+| **Video Playback & Overlay** | Smooth native texture rendering | Codec & video view inconsistencies | Flawless | **Flutter / Dual Native** |
+| **Codebase Maintenance** | Single unified codebase | Single unified codebase | Two completely separate codebases | **Flutter / React Native** |
+| **Team Existing Expertise** | Zero (Dart learned in 1 week) | High (Universal TypeScript mastery) | Zero (Two new languages to learn) | **React Native** |
+| **Low-Level / FFI Support** | Direct `dart:ffi` C-interop | Native modules (JSI/C++ glue) | Native C/C++ interop | **Flutter / Dual Native** |
+| **Platform Parity** | 100% pixel-perfect matching | Platform-specific styling quirks | Divergent UI implementations | **Flutter** |
+| **App Startup Time** | Fast (< 1.2s cold start) | Medium (Hermes bundle parse) | Instantaneous (< 0.8s) | **Dual Native** |
 
 ---
 
-## 6. Initial Decision: Flutter
+## 6\. Initial Decision: Flutter
 
 Flutter was selected as the foundational framework for Ascension.
 
@@ -116,7 +116,7 @@ Flutter was selected as the foundational framework for Ascension.
 
 ---
 
-## 7. The Native Migration Experiment (Kotlin & Swift)
+## 7\. The Native Migration Experiment (Kotlin & Swift)
 
 ### 7.1 Motivation for the Native Exploration
 

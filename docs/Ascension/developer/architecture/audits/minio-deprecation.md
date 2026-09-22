@@ -1,3 +1,7 @@
+---
+id: 0d620daf-d982-40b5-9e29-7a937b6f9a01
+---
+
 :::success
 **Version:** 1.0
 :::
@@ -10,7 +14,7 @@ This audit documents the state of the **MinIO Community Edition** object storage
 
 ---
 
-## 1. Context
+## 1\. Context
 
 At the inception of engineering work in March 2026, Ascension's architecture was designed around a fundamental principle: the asynchronous, decoupled processing of voluminous climbing videos (ranging from 50 MB to several GB per session).
 
@@ -25,7 +29,7 @@ In this architecture, S3-compatible object storage is a mission-critical system 
 
 ---
 
-## 2. The September 2026 Disruption: Deprecation Findings
+## 2\. The September 2026 Disruption: Deprecation Findings
 
 During the intensive project resumption in September 2026, an infrastructure maintenance and security review revealed a major disruption in the MinIO open-source ecosystem.
 
@@ -51,7 +55,7 @@ flowchart LR
     B --> C
 ```
 
-_Figure 1: Evolution of MinIO between March and September 2026, highlighting the repository archival, proprietary pivot, and Ascension's migration decision._
+*Figure 1: Evolution of MinIO between March and September 2026, highlighting the repository archival, proprietary pivot, and Ascension's migration decision.*
 
 ### 2.1 Causes of the Upstream Abandonment
 
@@ -63,7 +67,7 @@ The archiving of the project stems from a radical strategic pivot by the vendor,
 
 ---
 
-## 3. Impact Analysis and Critical Risks for Ascension
+## 3\. Impact Analysis and Critical Risks for Ascension
 
 Retaining MinIO Community Edition in production in its frozen April 2026 state introduces unacceptable risks to the Ascension project across security, technical reliability, and legal compliance.
 
@@ -78,7 +82,7 @@ Historically, MinIO has been subject to multiple vulnerabilities of **High** to 
 - **IAM Bypass and SSRF Vulnerabilities**: Several flaws discovered across versions allowed abuse of administration endpoints or server-side request forgery against internal networks.
 
 :::warning
-**Absolute Security Veto**: By freezing the source code as of April 25, 2026, MinIO Inc. no longer publishes any security patches for the Community Edition. Any future _Zero-Day_ vulnerability or newly discovered exploit will remain unpatched on our infrastructure, creating a direct attack vector against our users' private data.
+**Absolute Security Veto**: By freezing the source code as of April 25, 2026, MinIO Inc. no longer publishes any security patches for the Community Edition. Any future *Zero-Day* vulnerability or newly discovered exploit will remain unpatched on our infrastructure, creating a direct attack vector against our users' private data.
 :::
 
 ### 3.2 Reliability and Technical Obsolescence Risks
@@ -89,41 +93,38 @@ Historically, MinIO has been subject to multiple vulnerabilities of **High** to 
 
 ### 3.3 Legal Risk and Regulatory Compliance (GDPR & Intellectual Property)
 
-1. **GDPR Compliance (Article 32 - Security of processing)**:
-   The Ascension project processes sensitive personal data: identifiable climber videos, body silhouettes, and biomechanical data from 2D/3D pose extraction. Article 32 of the GDPR requires the data controller to implement technical and organizational measures ensuring a level of security appropriate to the risk, taking into account "the state of the art".
-   Operating a deprecated storage system in production that has been publicly abandoned by its vendor and stripped of security updates constitutes a direct breach of this legal obligation.
-2. **AGPLv3 License Complexity**:
-   MinIO was distributed under the AGPLv3 (_GNU Affero General Public License_). This license imposes strict copyleft requirements whenever the software is modified or interfaced over a network. In a commercial SaaS context (Ascension's Freemium, Premium, and Infinity subscriptions), AGPLv3 presents legal contagion risks for surrounding software components.
+1. **GDPR Compliance (Article 32 - Security of processing)**: The Ascension project processes sensitive personal data: identifiable climber videos, body silhouettes, and biomechanical data from 2D/3D pose extraction. Article 32 of the GDPR requires the data controller to implement technical and organizational measures ensuring a level of security appropriate to the risk, taking into account "the state of the art". Operating a deprecated storage system in production that has been publicly abandoned by its vendor and stripped of security updates constitutes a direct breach of this legal obligation.
+2. **AGPLv3 License Complexity**: MinIO was distributed under the AGPLv3 (*GNU Affero General Public License*). This license imposes strict copyleft requirements whenever the software is modified or interfaced over a network. In a commercial SaaS context (Ascension's Freemium, Premium, and Infinity subscriptions), AGPLv3 presents legal contagion risks for surrounding software components.
 
 ---
 
-## 4. Evaluation of Considered Scenarios
+## 4\. Evaluation of Considered Scenarios
 
 In light of this deprecation, the engineering team evaluated three strategic options:
 
-| Scenario                                         | Description                                                                                                                                | Feasibility | Assessment                                                                                                                                                                          |
-| :----------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- | :---------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1. Status quo (Keep MinIO Community)**         | Continue running the Docker image `minio/minio:RELEASE.2025-09-07T16-13-09Z`.                                                              |     No      | **Unacceptable**: Permanent critical security risk, GDPR non-compliance, accumulating technical debt upon public launch.                                                            |
-| **2. Adopt a community fork (e.g., Silo)**       | Migrate to Silo, a community fork maintaining the `.minio.sys` format and existing configuration.                                          |   Partial   | **Risky long-term**: Although Silo eases immediate migration, it relies on a very young volunteer community with no 3-year viability guarantee. It also retains the AGPLv3 license. |
-| **3. Migrate to a modern Object Storage engine** | Replace MinIO with an actively developed, performant open-source solution suited for our video workload (RustFS, Garage, SeaweedFS, Ceph). |     Yes     | **Recommended**: Eliminates technical debt, restores security coverage, unlocks better performance, and offers a more permissive license.                                           |
+| Scenario | Description | Feasibility | Assessment |
+| --- | --- | --- | --- |
+| **1\. Status quo (Keep MinIO Community)** | Continue running the Docker image `minio/minio:RELEASE.2025-09-07T16-13-09Z`. | No | **Unacceptable**: Permanent critical security risk, GDPR non-compliance, accumulating technical debt upon public launch. |
+| **2\. Adopt a community fork (e.g., Silo)** | Migrate to Silo, a community fork maintaining the `.minio.sys` format and existing configuration. | Partial | **Risky long-term**: Although Silo eases immediate migration, it relies on a very young volunteer community with no 3-year viability guarantee. It also retains the AGPLv3 license. |
+| **3\. Migrate to a modern Object Storage engine** | Replace MinIO with an actively developed, performant open-source solution suited for our video workload (RustFS, Garage, SeaweedFS, Ceph). | Yes | **Recommended**: Eliminates technical debt, restores security coverage, unlocks better performance, and offers a more permissive license. |
 
 ---
 
-## 5. MinIO Risk Evaluation Matrix
+## 5\. MinIO Risk Evaluation Matrix
 
 The table below summarizes the severity of the risks associated with retaining MinIO in the Ascension architecture:
 
-| Risk Dimension             | Triggering Factor                                | Likelihood |  Impact  |    Risk Level    | Engineering Decision                                              |
-| :------------------------- | :----------------------------------------------- | :--------: | :------: | :--------------: | :---------------------------------------------------------------- |
-| **Application Security**   | End of CVE patches, zero-day vulnerabilities     |    High    | Critical | **Unacceptable** | Immediate veto on production deployment.                          |
-| **Data Integrity**         | Potential unpatched metadata corruption          |   Medium   |   High   |    **Major**     | Refusal to entrust user videos to a frozen engine.                |
-| **Software Compatibility** | Evolution of AWS S3 SDKs (Go, Python, Dart)      |    High    |  Medium  |    **Major**     | Risk of parsing errors and intermittent upload failures.          |
-| **GDPR Compliance**        | Biometric data hosted on an unpatched component  |    High    | Critical | **Unacceptable** | Risk of regulatory penalties (CNIL) and EIP compliance violation. |
-| **Intellectual Property**  | AGPLv3 license constraints in cloud environments |   Medium   |  Medium  |   **Moderate**   | Preference for a permissive license (e.g., Apache-2.0).           |
+| Risk Dimension | Triggering Factor | Likelihood | Impact | Risk Level | Engineering Decision |
+| --- | --- | --- | --- | --- | --- |
+| **Application Security** | End of CVE patches, zero-day vulnerabilities | High | Critical | **Unacceptable** | Immediate veto on production deployment. |
+| **Data Integrity** | Potential unpatched metadata corruption | Medium | High | **Major** | Refusal to entrust user videos to a frozen engine. |
+| **Software Compatibility** | Evolution of AWS S3 SDKs (Go, Python, Dart) | High | Medium | **Major** | Risk of parsing errors and intermittent upload failures. |
+| **GDPR Compliance** | Biometric data hosted on an unpatched component | High | Critical | **Unacceptable** | Risk of regulatory penalties (CNIL) and EIP compliance violation. |
+| **Intellectual Property** | AGPLv3 license constraints in cloud environments | Medium | Medium | **Moderate** | Preference for a permissive license (e.g., Apache-2.0). |
 
 ---
 
-## 6. Conclusion and Engineering Decision
+## 6\. Conclusion and Engineering Decision
 
 The technical audit confirms that **MinIO Community Edition cannot under any circumstances remain part of Ascension's technology stack**. Its abandonment by its creators in April 2026 turns what was once a solid foundation into critical technical debt and a major security liability.
 

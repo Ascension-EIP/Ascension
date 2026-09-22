@@ -1,3 +1,7 @@
+---
+id: 083fd41c-212f-4bcc-9911-e53570055da5
+---
+
 :::success
 **Version:** 1.0
 :::
@@ -10,7 +14,7 @@ This benchmark evaluates cloud infrastructure providers for the Ascension platfo
 
 ---
 
-## 1. Context & Infrastructure Workload
+## 1\. Context & Infrastructure Workload
 
 The Ascension backend infrastructure must reliably host five interconnected services:
 
@@ -34,25 +38,25 @@ flowchart TB
     end
 ```
 
-_Figure: Unified containerized topology deployed on a Hetzner Cloud virtual instance._
+*Figure: Unified containerized topology deployed on a Hetzner Cloud virtual instance.*
 
 ---
 
-## 2. Team Competencies Baseline
+## 2\. Team Competencies Baseline
 
 At the beginning of the infrastructure evaluation phase, the team had the following technical profile:
 
-| Domain                               | Team Proficiency Level | Practical Context                                                           |
-| :----------------------------------- | :--------------------- | :-------------------------------------------------------------------------- |
-| **Cloud Infrastructure (AWS / GCP)** | No prior experience    | Zero baseline; discovering cloud provider pricing models and architectures. |
-| **Linux Sysadmin & Docker**          | Basic / Intermediate   | Comfortable deploying multi-container Docker Compose environments locally.  |
-| **Networking & Reverse Proxies**     | Basic knowledge        | Familiar with DNS records, port forwarding, and TLS certificates.           |
+| Domain | Team Proficiency Level | Practical Context |
+| --- | --- | --- |
+| **Cloud Infrastructure (AWS / GCP)** | No prior experience | Zero baseline; discovering cloud provider pricing models and architectures. |
+| **Linux Sysadmin & Docker** | Basic / Intermediate | Comfortable deploying multi-container Docker Compose environments locally. |
+| **Networking & Reverse Proxies** | Basic knowledge | Familiar with DNS records, port forwarding, and TLS certificates. |
 
 With zero institutional ties to proprietary cloud ecosystems (such as AWS proprietary IAM or Lambda), the team prioritized transparent billing, predictability, and sovereign European data compliance.
 
 ---
 
-## 3. Compared Solutions
+## 3\. Compared Solutions
 
 Three cloud hosting providers were evaluated across comparable compute tiers:
 
@@ -65,7 +69,7 @@ Three cloud hosting providers were evaluated across comparable compute tiers:
 
 ---
 
-## 4. Evaluation Methodology & Test Protocols
+## 4\. Evaluation Methodology & Test Protocols
 
 Providers were evaluated across three real-world deployment scenarios corresponding to Ascension's development roadmap:
 
@@ -83,23 +87,23 @@ Providers were evaluated across three real-world deployment scenarios correspond
 
 ---
 
-## 5. Comparative Evaluation Matrix
+## 5\. Comparative Evaluation Matrix
 
-| Criterion                            | Hetzner Cloud (DE/FI)      | OVHcloud (FR)             | AWS (Frankfurt)               | Winner                 |
-| :----------------------------------- | :------------------------- | :------------------------ | :---------------------------- | :--------------------- |
-| **VM (4 vCPU / 8 GB RAM / month)**   | **~15 €** (CX31 tier)      | ~22 €                     | ~60 € (t4g.xlarge / c6g)      | **Hetzner**            |
-| **VM (8 vCPU / 16 GB RAM / month)**  | **~45 €** (CPX41 tier)     | ~65 €                     | ~180 € (c6i.2xlarge)          | **Hetzner**            |
-| **Included Bandwidth / month**       | **20 TB included**         | 100 Mbps unmetered        | 100 GB free tier only         | **Hetzner / OVH**      |
-| **Egress Bandwidth (per TB over)**   | **~1.00 € / TB**           | Flat unmetered rate       | **~90.00 € / TB ($0.09/GB)**  | **Hetzner / OVH**      |
-| **Object Storage (1 TB / month)**    | **~10 €**                  | ~12 €                     | ~23 € (S3 Standard)           | **Hetzner**            |
-| **Datacenter Location & GDPR**       | **Germany / Finland (EU)** | France (EU)               | Ireland / Germany (EU region) | **All GDPR compliant** |
-| **Extraterritorial Jurisdiction**    | European Sovereign entity  | European Sovereign entity | Subject to US CLOUD Act       | **Hetzner / OVH**      |
-| **Management Ergonomics**            | Minimal, modern UI & CLI   | Traditional web manager   | Complex IAM & billing matrix  | **Hetzner**            |
-| **Total MVP Monthly Infrastructure** | **~15 - 30 € / month**     | ~35 - 50 € / month        | ~120 - 250 € / month          | **Hetzner**            |
+| Criterion | Hetzner Cloud (DE/FI) | OVHcloud (FR) | AWS (Frankfurt) | Winner |
+| --- | --- | --- | --- | --- |
+| **VM (4 vCPU / 8 GB RAM / month)** | **~15 €** (CX31 tier) | ~22 € | ~60 € (t4g.xlarge / c6g) | **Hetzner** |
+| **VM (8 vCPU / 16 GB RAM / month)** | **~45 €** (CPX41 tier) | ~65 € | ~180 € (c6i.2xlarge) | **Hetzner** |
+| **Included Bandwidth / month** | **20 TB included** | 100 Mbps unmetered | 100 GB free tier only | **Hetzner / OVH** |
+| **Egress Bandwidth (per TB over)** | **~1.00 € / TB** | Flat unmetered rate | **~90.00 € / TB ($0.09/GB)** | **Hetzner / OVH** |
+| **Object Storage (1 TB / month)** | **~10 €** | ~12 € | ~23 € (S3 Standard) | **Hetzner** |
+| **Datacenter Location & GDPR** | **Germany / Finland (EU)** | France (EU) | Ireland / Germany (EU region) | **All GDPR compliant** |
+| **Extraterritorial Jurisdiction** | European Sovereign entity | European Sovereign entity | Subject to US CLOUD Act | **Hetzner / OVH** |
+| **Management Ergonomics** | Minimal, modern UI & CLI | Traditional web manager | Complex IAM & billing matrix | **Hetzner** |
+| **Total MVP Monthly Infrastructure** | **~15 - 30 € / month** | ~35 - 50 € / month | ~120 - 250 € / month | **Hetzner** |
 
 ---
 
-## 6. Strategic Decision: Hetzner Cloud
+## 6\. Strategic Decision: Hetzner Cloud
 
 **Hetzner Cloud** was selected as the exclusive infrastructure provider for Ascension's development, staging, and production environments.
 

@@ -1,3 +1,7 @@
+---
+id: 2fdde265-b9f9-4b90-9847-8895ac5b04e5
+---
+
 :::success
 **Version:** 1.0
 :::
@@ -10,7 +14,7 @@ This benchmark evaluates database technologies for the Ascension platform. It an
 
 ---
 
-## 1. Context & Data Architecture Requirements
+## 1\. Context & Data Architecture Requirements
 
 The Ascension database must accommodate two distinctly different data models within a single, coherent persistence layer:
 
@@ -41,25 +45,25 @@ flowchart TD
     end
 ```
 
-_Figure: PostgreSQL satisfies both strict relational integrity and high-density JSONB biomechanical telemetry within a single database._
+*Figure: PostgreSQL satisfies both strict relational integrity and high-density JSONB biomechanical telemetry within a single database.*
 
 ---
 
-## 2. Team Competencies Baseline
+## 2\. Team Competencies Baseline
 
 Before initiating the benchmark, the team's database expertise was assessed:
 
-| Database Engine / Paradigm       | Team Proficiency Level         | Practical Context                                                            |
-| :------------------------------- | :----------------------------- | :--------------------------------------------------------------------------- |
-| **Relational (PostgreSQL)**      | Mastered / Used by all members | Production experience in schema design, indexing, and migrations.            |
-| **Relational (MySQL / MariaDB)** | Mastered / Used by all members | Extensive experience in standard web application backends.                   |
-| **Document Store (MongoDB)**     | Mastered / Used by all members | Hands-on background in NoSQL document persistence and aggregation pipelines. |
+| Database Engine / Paradigm | Team Proficiency Level | Practical Context |
+| --- | --- | --- |
+| **Relational (PostgreSQL)** | Mastered / Used by all members | Production experience in schema design, indexing, and migrations. |
+| **Relational (MySQL / MariaDB)** | Mastered / Used by all members | Extensive experience in standard web application backends. |
+| **Document Store (MongoDB)** | Mastered / Used by all members | Hands-on background in NoSQL document persistence and aggregation pipelines. |
 
 Because the entire team was already comfortable across all three database paradigms, the evaluation focused purely on technical fitness for Ascension's hybrid workload rather than team ramp-up time.
 
 ---
 
-## 3. Compared Solutions
+## 3\. Compared Solutions
 
 1. **PostgreSQL 18**:
    - Advanced open-source object-relational database management system known for rock-solid ACID compliance, sophisticated query optimization, and native binary JSON (`JSONB`) indexing.
@@ -70,7 +74,7 @@ Because the entire team was already comfortable across all three database paradi
 
 ---
 
-## 4. Evaluation Methodology & Test Protocols
+## 4\. Evaluation Methodology & Test Protocols
 
 The candidate databases were tested against realistic Ascension workloads:
 
@@ -81,22 +85,22 @@ The candidate databases were tested against realistic Ascension workloads:
 
 ---
 
-## 5. Comparative Evaluation Matrix
+## 5\. Comparative Evaluation Matrix
 
-| Evaluation Criterion               | PostgreSQL                                | MySQL / MariaDB                    | MongoDB                             | Winner                 |
-| :--------------------------------- | :---------------------------------------- | :--------------------------------- | :---------------------------------- | :--------------------- |
-| **Relational Data & ACID**         | Complete ACID, robust constraints         | Complete ACID (InnoDB)             | Multi-document ACID with overhead   | **PostgreSQL / MySQL** |
-| **Complex Multi-Table JOINs**      | Exceptional query optimizer               | Good                               | Weak (Complex `$lookup` stages)     | **PostgreSQL**         |
-| **Unstructured Data (Landmarks)**  | Native `JSONB` with GIN indexing          | Text-based JSON (Limited indexing) | Native BSON (Fast document writes)  | **PostgreSQL / Mongo** |
-| **Index Flexibility**              | B-tree, Hash, GIN, GiST, BRIN             | B-tree, Hash                       | B-tree, Compound, Multikey          | **PostgreSQL**         |
-| **Future AI Vector Search**        | Native `pgvector` extension               | Third-party plugins required       | Atlas Vector Search (Cloud tied)    | **PostgreSQL**         |
-| **Connection Pooling & Footprint** | Efficient (pgbouncer / Go pool)           | Efficient                          | High memory overhead                | **PostgreSQL / MySQL** |
-| **ORM / Driver Ecosystem**         | Universal (Go `pgx`, Rust `SQLx`, Python) | Universal                          | Distinct document driver paradigm   | **PostgreSQL / MySQL** |
-| **Operational Simplicity**         | Standard single container                 | Standard single container          | Requires replica sets for full ACID | **PostgreSQL / MySQL** |
+| Evaluation Criterion | PostgreSQL | MySQL / MariaDB | MongoDB | Winner |
+| --- | --- | --- | --- | --- |
+| **Relational Data & ACID** | Complete ACID, robust constraints | Complete ACID (InnoDB) | Multi-document ACID with overhead | **PostgreSQL / MySQL** |
+| **Complex Multi-Table JOINs** | Exceptional query optimizer | Good | Weak (Complex `$lookup` stages) | **PostgreSQL** |
+| **Unstructured Data (Landmarks)** | Native `JSONB` with GIN indexing | Text-based JSON (Limited indexing) | Native BSON (Fast document writes) | **PostgreSQL / Mongo** |
+| **Index Flexibility** | B-tree, Hash, GIN, GiST, BRIN | B-tree, Hash | B-tree, Compound, Multikey | **PostgreSQL** |
+| **Future AI Vector Search** | Native `pgvector` extension | Third-party plugins required | Atlas Vector Search (Cloud tied) | **PostgreSQL** |
+| **Connection Pooling & Footprint** | Efficient (pgbouncer / Go pool) | Efficient | High memory overhead | **PostgreSQL / MySQL** |
+| **ORM / Driver Ecosystem** | Universal (Go `pgx`, Rust `SQLx`, Python) | Universal | Distinct document driver paradigm | **PostgreSQL / MySQL** |
+| **Operational Simplicity** | Standard single container | Standard single container | Requires replica sets for full ACID | **PostgreSQL / MySQL** |
 
 ---
 
-## 6. Architectural Decision: PostgreSQL
+## 6\. Architectural Decision: PostgreSQL
 
 **PostgreSQL 18** was chosen as the sole primary database for the Ascension platform.
 
