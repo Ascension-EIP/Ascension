@@ -29,10 +29,10 @@ Pour répondre aux besoins spécifiques de chaque public, la documentation du pr
 
 | Documentation | Langue | Public cible | Description |
 | --- | --- | --- | --- |
-| [**Documentation Utilisateur**](./user/readme.md) | Anglais (`en`) | Grimpeurs & Salles partenaires | Guides de prise en main, capture vidéo, compréhension des analyses, Ghost Mode et FAQ. |
-| [**Documentation Développeur**](./developer/readme.md) | Anglais (`en`) | Ingénieurs & Contributeurs | Architecture système, microservices (Mobile, Server, AI), standards Git et spécifications d'API. |
-| [**Documentation Administrative**](./administrative/readme.md) | Français (`fr`) | Référents EIP, Jurys & Équipe | Suivi académique Epitech, livrables RNCP, catalogue de fonctionnalités, roadmap et plans de tests. |
-| [**Ressources & Médias**](./resources/readme.md) | Multi | Tous | Schémas d'architecture Excalidraw, présentations (decks), photographies et assets graphiques. |
+| [**Documentation Utilisateur**](user/readme.md) | Anglais (`en`) | Grimpeurs & Salles partenaires | Guides de prise en main, capture vidéo, compréhension des analyses, Ghost Mode et FAQ. |
+| [**Documentation Développeur**](developer/readme.md) | Anglais (`en`) | Ingénieurs & Contributeurs | Architecture système, microservices (Mobile, Server, AI), standards Git et spécifications d'API. |
+| [**Documentation Administrative**](administrative/readme.md) | Français (`fr`) | Référents EIP, Jurys & Équipe | Suivi académique Epitech, livrables RNCP, catalogue de fonctionnalités, roadmap et plans de tests. |
+| [**Ressources & Médias**](resources/readme.md) | Multi | Tous | Schémas d'architecture Excalidraw, présentations (decks), photographies et assets graphiques. |
 
 :::info
 **Note linguistique :** Les documentations technique (développeur) et produit (utilisateur) sont rédigées intégralement en anglais afin de garantir l'accessibilité internationale du code et du produit. La documentation administrative est maintenue en français pour satisfaire le cadre académique d'Epitech et les jurys francophones.
