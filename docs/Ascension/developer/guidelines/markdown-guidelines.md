@@ -3,7 +3,7 @@ id: 96dbe682-aa9e-4c8c-9113-c70112576d5e
 ---
 
 :::success
-**Version:** 1.4
+**Version:** 1.5
 :::
 
 ---
@@ -32,9 +32,27 @@ All Markdown filenames must follow the **kebab-case** convention:
 
 ---
 
-## 3\. Required Header
+## 3\. Headers & Status Block
 
-Every single Markdown file must start with the following header block using Densho status container callouts:
+### 3.1 Densho Metadata Header (Frontmatter)
+
+The YAML frontmatter header containing file metadata (such as the document `id`) is managed completely and automatically by **Densho**:
+
+```yaml
+---
+id: 49dc5f35-6ba9-4ac3-8532-92c9652da56a
+---
+```
+
+:::danger
+**Strict Frontmatter Rules:**
+- **Never add it manually:** When creating a new Markdown file, do **not** write, copy, or add a YAML frontmatter header (`--- id: ... ---`). Densho generates and attaches it automatically.
+- **Never modify or remove it:** When editing an existing file, do **not** touch, edit, or delete this header. Leave it strictly as is.
+:::
+
+### 3.2 Required Status Callout
+
+Immediately after the Densho frontmatter (or at the very top of a newly created file before Densho processing), every single Markdown file must start with the following header block using Densho status container callouts:
 
 ```markdown
 :::status
@@ -42,31 +60,17 @@ Every single Markdown file must start with the following header block using Dens
 :::
 ```
 
-### 3.1 Status Types
+#### Status Types
 
 The container status must strictly use one of the authorized container types:
 
 | Status Container | Previous Status Equivalent | Description | Notes |
 | --- | --- | --- | --- |
 | `:::success` | `Done`, `Final` | Completed and validated document. | If the document is frozen/final, append `DON'T EDIT THIS FILE !` on a new line after `Version`. |
-| `:::warning` | `In progress`, `Need update` | Work in progress or outdated document needing update. |
- |
-|
+| `:::warning` | `In progress`, `Need update` | Work in progress or outdated document needing update. | |
+| `:::danger` | `Todo` | Planned document not yet written. | |
 
- |
-
- |
-
- |
-
- |
-| `:::danger` | `Todo` | Planned document not yet written. |
-
- |
-
-|
-
-Examples
+#### Examples
 
 **Completed document:**
 
@@ -129,6 +133,12 @@ All documentation must remain accessible on both **GitHub Wiki** and **Densho** 
 - Add language identifiers to fenced code blocks (e.g., ` ```ts `, ` ```bash `) for better assistive parsing.
 - Keep sentence structure simple and concise, and expand uncommon acronyms on first occurrence.
 - For Mermaid diagrams, include a short text summary immediately before or after the diagram.
+
+### 4.4 Diagrams and Visual Representations
+
+- **No Text / ASCII Graphs:** Never use plain text / ASCII art code blocks (` ```text `) to draw graphs, schemas, flowcharts, or architecture diagrams.
+- **Use Mermaid:** Always use **Mermaid** blocks (` ```mermaid `) instead for all diagrams, flowcharts, architecture overviews, timelines, and sequence charts.
+- **Accessibility:** Always include a concise text description or summary immediately before or after the Mermaid diagram to ensure full accessibility.
 
 ---
 
