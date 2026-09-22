@@ -2,7 +2,7 @@
 id: c5bbd73b-f9e8-48e6-8aae-d2d7314fdf09
 sort: custom
 order:
-  - catalogue-fonctionnalites
+  - features-catalog
   - functional-roadmap
   - pricing-subscriptions
   - action-plan
