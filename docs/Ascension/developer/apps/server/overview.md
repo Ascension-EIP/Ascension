@@ -18,7 +18,7 @@ This guide covers everything a new developer needs to start working on the Ascen
 
 - **Go** (toolchain version `1.27` — download from go.dev or use your package manager)
 - **Docker** + **Docker Compose** — for PostgreSQL, RabbitMQ, and MinIO locally
-- **moon** — monorepo task runner (see [Developer Quickstart](page:70bac601-6a07-45fa-9e3e-02ce2ec53ef1))
+- **moon** — monorepo task runner (see [monorepo-guide](../../architecture/monorepo-guide.md))
 
 ---
 
