@@ -8,6 +8,7 @@ order:
   - specifications
   - monorepo-guide
   - system-overview
+  - benchmark
 ---
 
 :::subpages cards 3
