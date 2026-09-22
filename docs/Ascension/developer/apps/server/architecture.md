@@ -36,29 +36,29 @@ This document explains how the Ascension backend server is structured and why it
 
 Hexagonal architecture (also called **Ports & Adapters**) is a way of organizing code so that the core business logic is completely isolated from the outside world (HTTP, databases, message brokers, object storage).
 
-```
-┌────────────────────────────────────────────────────────┐
-│                        OUTSIDE                         │
-│                                                        │
-│   HTTP Requests               PostgreSQL Database      │
-│   (Inbound / Adapters)        (Outbound / Adapters)    │
-│         │                               ▲              │
-│         ▼                               │              │
-│    ┌──────────────────────────────────────────────┐    │
-│    │               DOMAIN (Core)                  │    │
-│    │                                              │    │
-│    │   Models (internal/model)                    │    │
-│    │   Ports / Interfaces (internal/model/ports)  │    │
-│    │   Services (internal/service)                │    │
-│    │                                              │    │
-│    │   Knows NOTHING about Gin or HTTP            │    │
-│    │   Knows NOTHING about SQL queries            │    │
-│    └──────────────────────────────────────────────┘    │
-│         ▲                               │              │
-│         │                               ▼              │
-│   Cron Scheduler                 RabbitMQ / MinIO      │
-│   (cmd/cron & internal/job)      (Outbound / Adapters) │
-└────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph Outside ["OUTSIDE"]
+        HTTP["HTTP Requests<br>(Inbound / Adapters)"]
+        Cron["Cron Scheduler<br>(cmd/cron & internal/job)"]
+
+        DB["PostgreSQL Database<br>(Outbound / Adapters)"]
+        Ext["RabbitMQ / MinIO<br>(Outbound / Adapters)"]
+    end
+
+    subgraph Domain ["DOMAIN (Core)"]
+        direction TB
+        Models["Models (internal/model)"]
+        Ports["Ports / Interfaces (internal/model/ports)"]
+        Services["Services (internal/service)"]
+
+        Note["Knows NOTHING about Gin or HTTP<br>Knows NOTHING about SQL queries"]
+    end
+
+    HTTP -->|Inbound| Domain
+    Cron -->|Inbound| Domain
+    Domain -->|Outbound| DB
+    Domain -->|Outbound| Ext
 ```
 
 **The key rule:** the Domain never imports anything from Inbound or Outbound. It defines *what* it needs through **interfaces** (called "ports" in `internal/model/ports.go`). The Outbound layers (and Inbound callers) implement or consume those ports ("adapters").
