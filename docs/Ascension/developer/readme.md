@@ -80,7 +80,7 @@ Deep-dive into the architectural decisions that power the platform:
 - **Specifications:** Complete PostgreSQL database schemas (ERD) and REST API contracts.
 - **Deployment Guides:** Step-by-step instructions for local development and cloud production deployment.
 
-### 6\. [Applications (`apps`)](apps/readme.md)
+### 6\. [Applications (apps)](apps/readme.md)
 
 Implementation details and dedicated guides for each service in the repository:
 
