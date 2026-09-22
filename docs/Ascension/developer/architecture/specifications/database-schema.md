@@ -1102,42 +1102,42 @@ Business rules:
 ---
 
 ## 11\. Scheduled Jobs (Go Cron Worker & SQL Definitions)
- 
+
 Background maintenance jobs can be executed either via a dedicated Go background worker (`apps/server/cmd/cron/main.go` using `robfig/cron/v3` and `internal/job/`) or natively inside PostgreSQL via `pg_cron`.
- 
+
 In the Ascension backend architecture, scheduled database cleaning jobs are implemented in `apps/server/cmd/cron` and `internal/job/` (e.g. `PruneExpiredSessionsJob`, `PruneAbandonedUploadsJob`, `PruneExpiredVideosJob`, `PruneOldQuotaUsagesJob`).
- 
+
 For reference or standalone database deployments, the equivalent SQL schedules using `pg_cron` are:
- 
+
 ```sql
 CREATE EXTENSION IF NOT EXISTS pg_cron;
- 
+
 -- Expired or revoked refresh sessions, daily at 00:00
 SELECT cron.schedule('clean-expired-sessions', '0 0 * * *', $$
     DELETE FROM sessions
      WHERE expires_at < NOW()
         OR revoked_at < NOW() - INTERVAL '7 days';
 $$);
- 
+
 -- Abandoned uploads (presigned URL expired, never confirmed), hourly
 SELECT cron.schedule('clean-abandoned-uploads', '0 * * * *', $$
     DELETE FROM videos
      WHERE status = 'pending' AND expires_at < NOW();
 $$);
- 
+
 -- Legally expired videos not retained by the user, daily at 02:00
 SELECT cron.schedule('clean-expired-videos', '0 2 * * *', $$
     DELETE FROM videos
      WHERE status = 'completed' AND retained = FALSE AND expires_at < NOW();
 $$);
- 
+
 -- Quota counters older than 24 months, monthly
 SELECT cron.schedule('clean-old-quota-usages', '0 3 1 * *', $$
     DELETE FROM quota_usages
      WHERE period_start < DATE_TRUNC('month', NOW()) - INTERVAL '24 months';
 $$);
 ```
- 
+
 Storage objects are not deleted by the database queries alone. When `clean-abandoned-uploads` or `clean-expired-videos` prunes rows, the Go server/cron worker reconciliation job or S3 bucket lifecycle rules purge the corresponding object keys from MinIO/S3.
 
 ---
@@ -1219,11 +1219,11 @@ SELECT v.*
 ---
 
 ## 13\. Applied Migrations & Schema Evolution
- 
+
 The full data model specified in this document has been partitioned and applied via versioned migrations in `apps/server/migrations/` (and mirrored in `apps/server/internal/outbound/postgres/migrations/`).
- 
+
 The migration history evolved from the initial prototype schema (`20260905000001` to `20260905000005`) to the complete modular suite implemented on 2026-09-18 (`20260918172358` through `20260918222653`):
- 
+
 | Migration File Prefix | Feature / Domain | Content & Changes Applied |
 | --- | --- | --- |
 | `20260918172358` | Base Enums & Extensions | Core PostgreSQL extensions (`uuid-ossp`, `pgcrypto`) and enum types (`user_role`, `job_status`, `visibility`, `video_status`, `body_zone`, `hold_type`, etc.). |
@@ -1237,7 +1237,7 @@ The migration history evolved from the initial prototype schema (`20260905000001
 | `20260918221841` – `20260918222129` | Coaching & Training | Tables `goals`, `training_programs`, `training_program_sessions`, `exercises`, and `training_logs`. |
 | `20260918222236` – `20260918222340` | Social & Community | Tables `friendships` and `follows`. |
 | `20260918222453` – `20260918222653` | Subscriptions & Quotas | Tables `subscription_plans`, `subscriptions`, `subscription_events`, and `quota_usages`. |
- 
+
 All tables conform to the foreign key constraints, indexes, and check constraints detailed in sections 3 through 10.
 
 ---
