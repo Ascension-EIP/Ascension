@@ -47,7 +47,7 @@ Ascension follows an **event-driven, decoupled architecture** managed as a monor
 
 The developer documentation is organized into six core modules:
 
-### 1\. [Glossary](./glossary.md)
+### 1\. [glossary](glossary.md)
 
 Shared domain vocabulary bridging climbing fundamentals (*beta*, *crux*, *crimp*, *sloper*), biomechanical metrics (center of mass, joint angles, center of gravity), and system architecture concepts.
 
