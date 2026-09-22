@@ -76,15 +76,15 @@ Parties prenantes externes :
 
 ### 2.1 Stack visée
 
-| Couche          | Technologie                                         | Rôle principal                                     |
-| --------------- | --------------------------------------------------- | -------------------------------------------------- |
-| Mobile          | Flutter / Dart                                      | Expérience utilisateur, rendu 3D, parcours complet |
-| API             | Go (Gin)                                            | Orchestration, sécurité, contrats API              |
-| IA              | Python (MediaPipe, OpenCV, PyTorch, pipeline SAM3D) | Analyse biomécanique, détection prises, conseils   |
-| Broker          | RabbitMQ                                            | Traitement asynchrone fiable                       |
-| Base de données | PostgreSQL                                          | Stockage métier et résultats                       |
-| Stockage objet  | MinIO (S3 compatible)                               | Upload vidéo et artefacts                          |
-| CI/CD           | Moonrepo + pipelines CI                             | Qualité, tests, build, release                     |
+| Couche | Technologie | Rôle principal |
+| --- | --- | --- |
+| Mobile | Flutter / Dart | Expérience utilisateur, rendu 3D, parcours complet |
+| API | Go (Gin) | Orchestration, sécurité, contrats API |
+| IA | Python (MediaPipe, OpenCV, PyTorch, pipeline SAM3D) | Analyse biomécanique, détection prises, conseils |
+| Broker | RabbitMQ | Traitement asynchrone fiable |
+| Base de données | PostgreSQL | Stockage métier et résultats |
+| Stockage objet | MinIO (S3 compatible) | Upload vidéo et artefacts |
+| CI/CD | Moonrepo + pipelines CI | Qualité, tests, build, release |
 
 ### 2.2 Méthode de travail technique
 
@@ -112,27 +112,27 @@ Ce plan couvre le pilotage des blocs suivants :
 
 ### 2.4 User stories de référence
 
-| ID    | User story                                                                | Critère d’acceptation                                           |
-| ----- | ------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| US-01 | En tant que grimpeur, je crée un compte et me connecte.                   | Je peux accéder à l’application sans blocage.                   |
-| US-02 | En tant que grimpeur, je configure mon profil morphologique.              | Mes données sont sauvegardées et réutilisées dans les analyses. |
-| US-03 | En tant que grimpeur, j’envoie une vidéo et je lance une analyse.         | Une analyse est créée avec statut visible.                      |
-| US-04 | En tant que grimpeur, je consulte un résultat clair.                      | Je reçois des indicateurs et conseils compréhensibles.          |
-| US-05 | En tant que grimpeur, je visualise ma montée en 3D.                       | Le rendu est stable et manipulable.                             |
-| US-06 | En tant que grimpeur, j’utilise le mode fantôme pour comparer ma montée.  | Les écarts de trajectoire sont lisibles et exploitables.        |
-| US-07 | En tant qu’équipe technique, je mesure la performance des flux critiques. | Les KPI sont enregistrés, comparés et améliorés.                |
+| ID | User story | Critère d’acceptation |
+| --- | --- | --- |
+| US-01 | En tant que grimpeur, je crée un compte et me connecte. | Je peux accéder à l’application sans blocage. |
+| US-02 | En tant que grimpeur, je configure mon profil morphologique. | Mes données sont sauvegardées et réutilisées dans les analyses. |
+| US-03 | En tant que grimpeur, j’envoie une vidéo et je lance une analyse. | Une analyse est créée avec statut visible. |
+| US-04 | En tant que grimpeur, je consulte un résultat clair. | Je reçois des indicateurs et conseils compréhensibles. |
+| US-05 | En tant que grimpeur, je visualise ma montée en 3D. | Le rendu est stable et manipulable. |
+| US-06 | En tant que grimpeur, j’utilise le mode fantôme pour comparer ma montée. | Les écarts de trajectoire sont lisibles et exploitables. |
+| US-07 | En tant qu’équipe technique, je mesure la performance des flux critiques. | Les KPI sont enregistrés, comparés et améliorés. |
 
 ### 2.5 Milestones planifiés
 
 Le plan contient 5 milestones, comme recommandé dans les consignes G-EIP-600.
 
-| Milestone                          | Période cible                        | Objectifs                                                                                                    |
-| ---------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| M1 - Lancement opérationnel        | Septembre 2026 -> Mi-octobre 2026    | Lancer l’exécution: backlog final, registre des risques actif, CI/CD stabilisé, suivi d’équipe opérationnel. |
-| M2 - Stabilisation technique       | Mi-octobre 2026 -> Fin novembre 2026 | Sécuriser le socle API/IA, fiabiliser upload et analyse asynchrone, réduire les incidents bloquants.         |
-| M3 - Parcours produit complet v1   | Décembre 2026 -> Mi-janvier 2027     | Valider le parcours principal de bout en bout (compte, profil, upload, analyse, restitution).                |
-| M4 - Valeur démontrable GreenLight | Mi-janvier 2027 -> Fin mars 2027     | Stabiliser la reconstruction 3D et le mode fantôme MVP, améliorer accessibilité et lisibilité des résultats. |
-| M5 - Finalisation GreenLight       | Avril 2027 -> Juillet 2027           | Campagne de tests finale, optimisation performance, preuves techniques consolidées, dossier GreenLight prêt. |
+| Milestone | Période cible | Objectifs |
+| --- | --- | --- |
+| M1 - Lancement opérationnel | Septembre 2026 -> Mi-octobre 2026 | Lancer l’exécution: backlog final, registre des risques actif, CI/CD stabilisé, suivi d’équipe opérationnel. |
+| M2 - Stabilisation technique | Mi-octobre 2026 -> Fin novembre 2026 | Sécuriser le socle API/IA, fiabiliser upload et analyse asynchrone, réduire les incidents bloquants. |
+| M3 - Parcours produit complet v1 | Décembre 2026 -> Mi-janvier 2027 | Valider le parcours principal de bout en bout (compte, profil, upload, analyse, restitution). |
+| M4 - Valeur démontrable GreenLight | Mi-janvier 2027 -> Fin mars 2027 | Stabiliser la reconstruction 3D et le mode fantôme MVP, améliorer accessibilité et lisibilité des résultats. |
+| M5 - Finalisation GreenLight | Avril 2027 -> Juillet 2027 | Campagne de tests finale, optimisation performance, preuves techniques consolidées, dossier GreenLight prêt. |
 
 ### 2.6 Definition of Done transversale
 
