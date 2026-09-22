@@ -1,3 +1,7 @@
+---
+id: d6df5f06-9ec3-4369-8e32-75830bdb5533
+---
+
 :::success
 **Version:** 1.0
 :::
@@ -10,7 +14,7 @@ This benchmark documents the evaluation of object storage solutions for the Asce
 
 ---
 
-## 1. Context & Architectural Requirements
+## 1\. Context & Architectural Requirements
 
 Object storage represents a critical foundational pillar for Ascension, hosting raw high-definition climbing video footage (50 MB to 2 GB per ascent), extracted frame sequences, annotated analysis videos, and 3D biomechanical datasets.
 
@@ -35,25 +39,25 @@ sequenceDiagram
     Worker->>Storage: Fetch Video for Analysis (Presigned GET)
 ```
 
-_Figure: Direct client-to-storage presigned upload workflow eliminating API server proxy bottlenecks._
+*Figure: Direct client-to-storage presigned upload workflow eliminating API server proxy bottlenecks.*
 
 ---
 
-## 2. Team Competencies Baseline
+## 2\. Team Competencies Baseline
 
 Prior to implementing object storage, the team's familiarity with storage technologies was as follows:
 
-| Technology Domain               | Team Proficiency Level   | Practical Context                                                           |
-| :------------------------------ | :----------------------- | :-------------------------------------------------------------------------- |
-| **Object Storage Systems**      | No prior experience      | Zero baseline; discovered and evaluated specifically for Ascension.         |
-| **AWS S3 API Specifications**   | No prior experience      | Familiar with REST APIs, but no prior experience administering S3 clusters. |
-| **Linux Storage & Filesystems** | Basic sysadmin knowledge | Capable of managing Docker volumes and Linux mountpoints.                   |
+| Technology Domain | Team Proficiency Level | Practical Context |
+| --- | --- | --- |
+| **Object Storage Systems** | No prior experience | Zero baseline; discovered and evaluated specifically for Ascension. |
+| **AWS S3 API Specifications** | No prior experience | Familiar with REST APIs, but no prior experience administering S3 clusters. |
+| **Linux Storage & Filesystems** | Basic sysadmin knowledge | Capable of managing Docker volumes and Linux mountpoints. |
 
 Because the team had no pre-existing bias toward any storage vendor, the selection was driven entirely by objective benchmarks, API fidelity, and operational simplicity.
 
 ---
 
-## 3. Part 1: Initial Benchmark & MinIO Selection
+## 3\. Part 1: Initial Benchmark & MinIO Selection
 
 At the project's inception, three primary storage strategies were evaluated:
 
@@ -66,14 +70,14 @@ At the project's inception, three primary storage strategies were evaluated:
 
 ### Initial Comparative Matrix
 
-| Criterion                 | MinIO Community                | Local File System (NFS)          | AWS S3 Managed               | Winner             |
-| :------------------------ | :----------------------------- | :------------------------------- | :--------------------------- | :----------------- |
-| **S3 API Compatibility**  | **100% S3 Strict Standard**    | None (Custom REST required)      | 100% Native Standard         | **MinIO / AWS S3** |
-| **Presigned URL Uploads** | **Native Presigned PUT/GET**   | Requires API proxying            | Native Presigned PUT/GET     | **MinIO / AWS S3** |
-| **Infrastructure Cost**   | **Free / Self-hosted**         | Free / Self-hosted               | High (Egress & storage fees) | **MinIO / Local**  |
-| **Operational Overhead**  | Low (Single Docker container)  | Very Low                         | Zero (Fully managed)         | **AWS S3 / Local** |
-| **Vendor Lock-in**        | Zero (Standard S3 client SDKs) | High (Tied to custom filesystem) | Moderate (AWS ecosystem)     | **MinIO**          |
-| **Direct Video Seeking**  | Native HTTP Range support      | Dependent on web server setup    | Native HTTP Range support    | **MinIO / AWS S3** |
+| Criterion | MinIO Community | Local File System (NFS) | AWS S3 Managed | Winner |
+| --- | --- | --- | --- | --- |
+| **S3 API Compatibility** | **100% S3 Strict Standard** | None (Custom REST required) | 100% Native Standard | **MinIO / AWS S3** |
+| **Presigned URL Uploads** | **Native Presigned PUT/GET** | Requires API proxying | Native Presigned PUT/GET | **MinIO / AWS S3** |
+| **Infrastructure Cost** | **Free / Self-hosted** | Free / Self-hosted | High (Egress & storage fees) | **MinIO / Local** |
+| **Operational Overhead** | Low (Single Docker container) | Very Low | Zero (Fully managed) | **AWS S3 / Local** |
+| **Vendor Lock-in** | Zero (Standard S3 client SDKs) | High (Tied to custom filesystem) | Moderate (AWS ecosystem) | **MinIO** |
+| **Direct Video Seeking** | Native HTTP Range support | Dependent on web server setup | Native HTTP Range support | **MinIO / AWS S3** |
 
 ### Initial Decision
 
@@ -81,7 +85,7 @@ At the project's inception, three primary storage strategies were evaluated:
 
 ---
 
-## 4. The Upstream Deprecation Event
+## 4\. The Upstream Deprecation Event
 
 On **April 25, 2026**, the upstream MinIO Community Edition repository was officially **archived and marked as deprecated** by its maintainers, who ceased releasing open-source updates and security patches.
 
@@ -95,7 +99,7 @@ Consequently, the engineering team launched a rigorous replacement audit to tran
 
 ---
 
-## 5. Part 2: Replacement Audit & Benchmark
+## 5\. Part 2: Replacement Audit & Benchmark
 
 Four modern open-source S3 storage technologies were evaluated as potential replacements for MinIO:
 
@@ -110,20 +114,20 @@ Four modern open-source S3 storage technologies were evaluated as potential repl
 
 ### Replacement Evaluation Matrix
 
-| Evaluation Criterion          | RustFS                         | Garage                       | SeaweedFS                      | Ceph (RGW)                     | Winner                 |
-| :---------------------------- | :----------------------------- | :--------------------------- | :----------------------------- | :----------------------------- | :--------------------- |
-| **Primary Design Focus**      | Dedicated S3 Object Store      | Geo-distributed edge storage | Billions of small objects      | Enterprise unified storage     | **RustFS**             |
-| **Implementation Language**   | **Rust**                       | Rust                         | Go                             | C++                            | **RustFS / Garage**    |
-| **Licensing**                 | **Apache-2.0**                 | AGPLv3                       | Apache-2.0                     | LGPL                           | **RustFS / SeaweedFS** |
-| **Sequential Video I/O**      | **High throughput streaming**  | Moderate                     | Chunk-reassembly overhead      | High                           | **RustFS / Ceph**      |
-| **RAM Footprint (Baseline)**  | **150 - 300 MB**               | 100 - 250 MB                 | 200 - 400 MB                   | 2 - 4+ GB per daemon           | **Garage / RustFS**    |
-| **Operational Complexity**    | **Low (Single binary/Docker)** | Low (Single binary)          | Medium (Master, Volume, Filer) | Extremely High (MON, OSD, RGW) | **RustFS / Garage**    |
-| **S3 Signature V4 Fidelity**  | **Strict / Comprehensive**     | Good (Minor policy gaps)     | Dependent on Filer layer       | Strict / Complete              | **RustFS / Ceph**      |
-| **Active Maintenance (2026)** | **Very Active**                | Active                       | Active                         | Very Active                    | **All**                |
+| Evaluation Criterion | RustFS | Garage | SeaweedFS | Ceph (RGW) | Winner |
+| --- | --- | --- | --- | --- | --- |
+| **Primary Design Focus** | Dedicated S3 Object Store | Geo-distributed edge storage | Billions of small objects | Enterprise unified storage | **RustFS** |
+| **Implementation Language** | **Rust** | Rust | Go | C++ | **RustFS / Garage** |
+| **Licensing** | **Apache-2.0** | AGPLv3 | Apache-2.0 | LGPL | **RustFS / SeaweedFS** |
+| **Sequential Video I/O** | **High throughput streaming** | Moderate | Chunk-reassembly overhead | High | **RustFS / Ceph** |
+| **RAM Footprint (Baseline)** | **150 - 300 MB** | 100 - 250 MB | 200 - 400 MB | 2 - 4+ GB per daemon | **Garage / RustFS** |
+| **Operational Complexity** | **Low (Single binary/Docker)** | Low (Single binary) | Medium (Master, Volume, Filer) | Extremely High (MON, OSD, RGW) | **RustFS / Garage** |
+| **S3 Signature V4 Fidelity** | **Strict / Comprehensive** | Good (Minor policy gaps) | Dependent on Filer layer | Strict / Complete | **RustFS / Ceph** |
+| **Active Maintenance (2026)** | **Very Active** | Active | Active | Very Active | **All** |
 
 ---
 
-## 6. Strategic Migration Decision: RustFS
+## 6\. Strategic Migration Decision: RustFS
 
 **RustFS** was selected as the successor to MinIO across all environments.
 

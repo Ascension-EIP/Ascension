@@ -1,3 +1,7 @@
+---
+id: f117d95a-5200-4101-b8ec-a2d4d2ec0419
+---
+
 :::success
 **Version:** 1.0
 :::
@@ -10,7 +14,7 @@ This benchmark documents the evaluation of message queuing systems for the Ascen
 
 ---
 
-## 1. Context & Architectural Requirements
+## 1\. Context & Architectural Requirements
 
 Ascension's computer vision and biomechanical analysis cannot execute synchronously within the user's HTTP request-response cycle. Each climbing video analysis involves extracting 33 landmarks across hundreds of frames, consuming 10 to 60 seconds of dedicated compute time.
 
@@ -30,26 +34,26 @@ flowchart TD
     Workers -->|"On Failure: basic_nack"| DLQ[("Dead Letter Queue (DLQ)")]
 ```
 
-_Figure: RabbitMQ asynchronous task queue with explicit acknowledgments and automated dead-letter routing._
+*Figure: RabbitMQ asynchronous task queue with explicit acknowledgments and automated dead-letter routing.*
 
 ---
 
-## 2. Team Competencies Baseline
+## 2\. Team Competencies Baseline
 
 Before conducting the broker benchmark, the team's message queuing experience was assessed:
 
-| Technology Domain             | Team Proficiency Level   | Practical Context                                                         |
-| :---------------------------- | :----------------------- | :------------------------------------------------------------------------ |
-| **RabbitMQ (AMQP)**           | No prior experience      | Zero baseline; discovered and evaluated specifically for Ascension.       |
-| **Redis (Pub/Sub & Streams)** | No prior experience      | Used Redis occasionally as a simple key-value cache.                      |
-| **Apache Kafka**              | No prior experience      | Studied distributed event streaming theoretically in academic coursework. |
-| **NATS**                      | No prior experience      | Zero baseline; discovered during lightweight broker research.             |
+| Technology Domain | Team Proficiency Level | Practical Context |
+| --- | --- | --- |
+| **RabbitMQ (AMQP)** | No prior experience | Zero baseline; discovered and evaluated specifically for Ascension. |
+| **Redis (Pub/Sub & Streams)** | No prior experience | Used Redis occasionally as a simple key-value cache. |
+| **Apache Kafka** | No prior experience | Studied distributed event streaming theoretically in academic coursework. |
+| **NATS** | No prior experience | Zero baseline; discovered during lightweight broker research. |
 
 Because the team had no pre-existing allegiance to any message queuing technology, the evaluation was governed strictly by operational simplicity, protocol reliability, and fault tolerance.
 
 ---
 
-## 3. Compared Solutions
+## 3\. Compared Solutions
 
 Four messaging architectures were evaluated:
 
@@ -64,7 +68,7 @@ Four messaging architectures were evaluated:
 
 ---
 
-## 4. Evaluation Methodology & Test Protocols
+## 4\. Evaluation Methodology & Test Protocols
 
 The brokers were tested against Ascension's failure modes and processing dynamics:
 
@@ -75,22 +79,22 @@ The brokers were tested against Ascension's failure modes and processing dynamic
 
 ---
 
-## 5. Comparative Evaluation Matrix
+## 5\. Comparative Evaluation Matrix
 
-| Evaluation Criterion         | RabbitMQ (AMQP)                       | Redis Streams                     | Apache Kafka                       | NATS JetStream            | Winner               |
-| :--------------------------- | :------------------------------------ | :-------------------------------- | :--------------------------------- | :------------------------ | :------------------- |
-| **Primary Architecture**     | Smart broker, dumb consumer           | In-memory key-value log           | Dumb broker, smart consumer        | Lightweight streaming     | **RabbitMQ**         |
-| **Target Workload**          | **Heavy asynchronous task queues**    | Fast caching & ephemeral events   | Hyperscale streaming (100k+ msg/s) | Microsecond microservices | **RabbitMQ**         |
-| **Delivery Guarantees**      | **At-least-once (Manual ACK/NACK)**   | At-least-once via Consumer Groups | At-least-once (Offset tracking)    | At-least-once             | **RabbitMQ / Kafka** |
-| **Dead Letter Handling**     | **Native Dead Letter Exchange (DLX)** | Manual application logic required | Complex DLQ implementation         | Basic dead-lettering      | **RabbitMQ**         |
-| **Backpressure / Prefetch**  | **Native `basic_qos(prefetch=1)`**    | Manual consumer offset pulling    | Partition-based assignment         | Pull consumer limits      | **RabbitMQ**         |
-| **RAM Footprint (Baseline)** | **60 - 120 MB**                       | 15 - 40 MB                        | 500 MB - 1.5 GB (JVM / ZooKeeper)  | 20 - 50 MB                | **Redis / NATS**     |
-| **Operational Simplicity**   | **Single container, instant setup**   | Single container, instant setup   | Complex multi-container clustering | Single lightweight binary | **RabbitMQ / Redis** |
-| **Client Ecosystem**         | `amqp091-go` (Go) & `pika` (Python)   | Native Redis clients in Go & Py   | Segmented client libraries         | Go native, Python client  | **RabbitMQ / Redis** |
+| Evaluation Criterion | RabbitMQ (AMQP) | Redis Streams | Apache Kafka | NATS JetStream | Winner |
+| --- | --- | --- | --- | --- | --- |
+| **Primary Architecture** | Smart broker, dumb consumer | In-memory key-value log | Dumb broker, smart consumer | Lightweight streaming | **RabbitMQ** |
+| **Target Workload** | **Heavy asynchronous task queues** | Fast caching & ephemeral events | Hyperscale streaming (100k+ msg/s) | Microsecond microservices | **RabbitMQ** |
+| **Delivery Guarantees** | **At-least-once (Manual ACK/NACK)** | At-least-once via Consumer Groups | At-least-once (Offset tracking) | At-least-once | **RabbitMQ / Kafka** |
+| **Dead Letter Handling** | **Native Dead Letter Exchange (DLX)** | Manual application logic required | Complex DLQ implementation | Basic dead-lettering | **RabbitMQ** |
+| **Backpressure / Prefetch** | **Native `basic_qos(prefetch=1)`** | Manual consumer offset pulling | Partition-based assignment | Pull consumer limits | **RabbitMQ** |
+| **RAM Footprint (Baseline)** | **60 - 120 MB** | 15 - 40 MB | 500 MB - 1.5 GB (JVM / ZooKeeper) | 20 - 50 MB | **Redis / NATS** |
+| **Operational Simplicity** | **Single container, instant setup** | Single container, instant setup | Complex multi-container clustering | Single lightweight binary | **RabbitMQ / Redis** |
+| **Client Ecosystem** | `amqp091-go` (Go) & `pika` (Python) | Native Redis clients in Go & Py | Segmented client libraries | Go native, Python client | **RabbitMQ / Redis** |
 
 ---
 
-## 6. Architectural Decision: RabbitMQ
+## 6\. Architectural Decision: RabbitMQ
 
 **RabbitMQ** was selected as the exclusive message broker for the Ascension platform.
 

@@ -46,6 +46,7 @@ id: 49dc5f35-6ba9-4ac3-8532-92c9652da56a
 
 :::danger
 **Strict Frontmatter Rules:**
+
 - **Never add it manually:** When creating a new Markdown file, do **not** write, copy, or add a YAML frontmatter header (`--- id: ... ---`). Densho generates and attaches it automatically.
 - **Never modify or remove it:** When editing an existing file, do **not** touch, edit, or delete this header. Leave it strictly as is.
 :::
@@ -60,17 +61,20 @@ Immediately after the Densho frontmatter (or at the very top of a newly created 
 :::
 ```
 
-#### Status Types
+Status Types
 
 The container status must strictly use one of the authorized container types:
 
 | Status Container | Previous Status Equivalent | Description | Notes |
 | --- | --- | --- | --- |
 | `:::success` | `Done`, `Final` | Completed and validated document. | If the document is frozen/final, append `DON'T EDIT THIS FILE !` on a new line after `Version`. |
-| `:::warning` | `In progress`, `Need update` | Work in progress or outdated document needing update. | |
-| `:::danger` | `Todo` | Planned document not yet written. | |
+| `:::warning` | `In progress`, `Need update` | Work in progress or outdated document needing update. |
+ |
+| `:::danger` | `Todo` | Planned document not yet written. |
 
-#### Examples
+ |
+
+Examples
 
 **Completed document:**
 

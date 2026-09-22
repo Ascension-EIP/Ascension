@@ -16,7 +16,7 @@ id: 2f73e756-4920-4208-ae1e-6928976f81ec
 
 ### 1.1 Scope
 
-This document is the single source of truth for the PostgreSQL 18 data model of Ascension. It covers every feature of the [feature catalogue](../../../administrative/catalogue-fonctionnalites.md) (F01 to F16), including the ATP-phase features, so that the schema is complete from the start. Tables that are not needed yet are still specified here and will be created by migrations when their feature is implemented.
+This document is the single source of truth for the PostgreSQL 18 data model of Ascension. It covers every feature of the [feature catalogue](../../../administrative/features-catalog.md) (F01 to F16), including the ATP-phase features, so that the schema is complete from the start. Tables that are not needed yet are still specified here and will be created by migrations when their feature is implemented.
 
 The migrations in `apps/server/internal/outbound/postgres/migrations/` (migrations 20260918172358 through 20260918222653) implement the complete schema specified in this document. Section 13 summarizes the applied schema evolution.
 
@@ -1245,5 +1245,5 @@ All tables conform to the foreign key constraints, indexes, and check constraint
 **Related**:
 
 - [API Specification](api-specification.md)
-- [Feature catalogue](../../../administrative/catalogue-fonctionnalites.md)
+- [Feature catalogue](../../../administrative/features-catalog.md)
 - [System Overview](../system-overview.md)

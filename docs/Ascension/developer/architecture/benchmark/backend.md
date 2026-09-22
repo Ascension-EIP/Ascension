@@ -1,3 +1,7 @@
+---
+id: 5a0e4758-2030-4bda-a5c8-6dde1303550a
+---
+
 :::success
 **Version:** 1.0
 :::
@@ -10,7 +14,7 @@ This benchmark evaluates the primary backend technologies considered for the Asc
 
 ---
 
-## 1. Context & Architectural Requirements
+## 1\. Context & Architectural Requirements
 
 The Ascension API Gateway serves as the central orchestration layer connecting mobile clients, object storage, PostgreSQL, RabbitMQ, and Python AI workers. Its primary responsibilities include:
 
@@ -27,26 +31,26 @@ flowchart TD
     Gateway --> Storage["MinIO / RustFS\n(Presigned S3 Tokens)"]
 ```
 
-_Figure: The API Gateway acts as the central orchestrator routing requests, presigned tokens, and asynchronous tasks._
+*Figure: The API Gateway acts as the central orchestrator routing requests, presigned tokens, and asynchronous tasks.*
 
 ---
 
-## 2. Team Competencies Baseline
+## 2\. Team Competencies Baseline
 
 Before conducting the prototype benchmarks, the team's familiarity with backend languages was assessed as follows:
 
-| Language / Stack          | Team Proficiency Level         | Practical Context                                                                         |
-| :------------------------ | :----------------------------- | :---------------------------------------------------------------------------------------- |
-| **Python**                | Mastered by all 5 members      | Core academic and machine learning background.                                            |
-| **TypeScript**            | Mastered by all 5 members      | Full-stack web and Node.js project experience.                                            |
-| **Databases (SQL/NoSQL)** | Mastered / Used by all members | Production experience with PostgreSQL, MySQL, and MongoDB.                                |
-| **Go**                    | Partial team experience        | Lou had strong working knowledge; Nicolas had foundational knowledge; others discovering. |
-| **Rust**                  | Partial team experience        | Lou had solid knowledge; Gianni had basic knowledge; others discovering.                  |
-| **Other Systems**         | No prior experience            | Zero baseline; required pure discovery and evaluation.                                    |
+| Language / Stack | Team Proficiency Level | Practical Context |
+| --- | --- | --- |
+| **Python** | Mastered by all 5 members | Core academic and machine learning background. |
+| **TypeScript** | Mastered by all 5 members | Full-stack web and Node.js project experience. |
+| **Databases (SQL/NoSQL)** | Mastered / Used by all members | Production experience with PostgreSQL, MySQL, and MongoDB. |
+| **Go** | Partial team experience | Lou had strong working knowledge; Nicolas had foundational knowledge; others discovering. |
+| **Rust** | Partial team experience | Lou had solid knowledge; Gianni had basic knowledge; others discovering. |
+| **Other Systems** | No prior experience | Zero baseline; required pure discovery and evaluation. |
 
 ---
 
-## 3. Compared Solutions
+## 3\. Compared Solutions
 
 Three major server ecosystems were evaluated:
 
@@ -59,7 +63,7 @@ Three major server ecosystems were evaluated:
 
 ---
 
-## 4. Evaluation Methodology & Test Protocols
+## 4\. Evaluation Methodology & Test Protocols
 
 To ensure objective and directly comparable results, identical minimal services were implemented across candidates (preserved in the `Ascension-EIP/benchmark` repository):
 
@@ -76,23 +80,23 @@ To ensure objective and directly comparable results, identical minimal services 
 
 ---
 
-## 5. Comparative Evaluation Matrix
+## 5\. Comparative Evaluation Matrix
 
-| Evaluation Criterion             | Rust (Axum)                    | Go (Gin)                    | Node.js (Fastify)               | Winner           |
-| :------------------------------- | :----------------------------- | :-------------------------- | :------------------------------ | :--------------- |
-| **Peak Throughput (req/s)**      | 105,000+ req/s                 | 58,000+ req/s               | 28,000 req/s                    | **Rust**         |
-| **Idle Memory Usage**            | 12 - 25 MB                     | 25 - 45 MB                  | 85 - 140 MB                     | **Rust**         |
-| **Memory Under Load (1k conns)** | 94 MB                          | 180 MB                      | 420 MB                          | **Rust**         |
-| **Latency Stability (p99)**      | < 2 ms (No GC)                 | 8 - 15 ms (Minor GC)        | 25 - 50 ms (V8 GC)              | **Rust**         |
-| **Compilation Speed**            | Slow (35 - 90s incremental)    | Instantaneous (< 2s)        | Fast (TypeScript transpilation) | **Go**           |
-| **Team Onboarding & Velocity**   | Very steep learning curve      | Very fast onboarding        | Immediate                       | **Go / Node.js** |
-| **Concurrency Model**            | Tokio async / futures          | Goroutines (`go func()`)    | Event loop (Single-threaded)    | **Go**           |
-| **Type Safety & Reliability**    | Absolute (Compile-time)        | Strong (Static)             | Good (TypeScript compile-time)  | **Rust**         |
-| **Ecosystem & ORM Ergonomics**   | Verbose / Complex async traits | Straightforward (GORM/SQLx) | Highly mature (Prisma/TypeORM)  | **Go / Node.js** |
+| Evaluation Criterion | Rust (Axum) | Go (Gin) | Node.js (Fastify) | Winner |
+| --- | --- | --- | --- | --- |
+| **Peak Throughput (req/s)** | 105,000+ req/s | 58,000+ req/s | 28,000 req/s | **Rust** |
+| **Idle Memory Usage** | 12 - 25 MB | 25 - 45 MB | 85 - 140 MB | **Rust** |
+| **Memory Under Load (1k conns)** | 94 MB | 180 MB | 420 MB | **Rust** |
+| **Latency Stability (p99)** | < 2 ms (No GC) | 8 - 15 ms (Minor GC) | 25 - 50 ms (V8 GC) | **Rust** |
+| **Compilation Speed** | Slow (35 - 90s incremental) | Instantaneous (< 2s) | Fast (TypeScript transpilation) | **Go** |
+| **Team Onboarding & Velocity** | Very steep learning curve | Very fast onboarding | Immediate | **Go / Node.js** |
+| **Concurrency Model** | Tokio async / futures | Goroutines (`go func()`) | Event loop (Single-threaded) | **Go** |
+| **Type Safety & Reliability** | Absolute (Compile-time) | Strong (Static) | Good (TypeScript compile-time) | **Rust** |
+| **Ecosystem & ORM Ergonomics** | Verbose / Complex async traits | Straightforward (GORM/SQLx) | Highly mature (Prisma/TypeORM) | **Go / Node.js** |
 
 ---
 
-## 6. Initial Decision: Rust (Axum)
+## 6\. Initial Decision: Rust (Axum)
 
 At the conclusion of the initial benchmark phase, **Rust + Axum + PostgreSQL** was initially selected.
 
@@ -104,7 +108,7 @@ At the conclusion of the initial benchmark phase, **Rust + Axum + PostgreSQL** w
 
 ---
 
-## 7. The Prototype Reality & Production Pivot to Go
+## 7\. The Prototype Reality & Production Pivot to Go
 
 ### 7.1 The Two-Week Prototype Sprint Friction
 
