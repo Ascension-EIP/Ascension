@@ -26,7 +26,7 @@ All Markdown filenames must follow the **kebab-case** convention:
 
 ## 3\. Headers & Status Block
 
-### 3.1 Densho Metadata Header (Frontmatter) — Do Not Add or Modify
+### 3.1 Densho Metadata Header (Frontmatter)
 
 The YAML frontmatter header containing file metadata (such as the document `id`) is managed completely and automatically by **Densho**:
 
