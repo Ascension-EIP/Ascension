@@ -51,7 +51,7 @@ The developer documentation is organized into six core modules:
 
 Shared domain vocabulary bridging climbing fundamentals (*beta*, *crux*, *crimp*, *sloper*), biomechanical metrics (center of mass, joint angles, center of gravity), and system architecture concepts.
 
-### 2\. [Guidelines](./guidelines/readme.md)
+### 2\. [G](./guidelines/readme.md)
 
 Engineering standards and formatting conventions enforced across the repository, including:
 
