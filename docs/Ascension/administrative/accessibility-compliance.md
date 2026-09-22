@@ -3,197 +3,99 @@ id: 58c87ea5-d7f8-48f2-b7fc-85501b4444b5
 ---
 
 :::success
-**Version:** 1.0
+**Version:** 1.1
 :::
 
 ---
 
-# Accessibility Compliance Statement
+# Déclaration de conformité à l'accessibilité
 
-This document explains how Ascension documentation is structured to meet accessibility expectations and remain usable when automatically published to both **GitHub Wiki** and **Wiki.js**.
-
----
-
-## Scope
-
-This statement applies to Markdown documentation located under `docs/` and published through the project documentation workflow.
-
-It covers:
-
-- source Markdown authoring rules,
-- renderer compatibility for GitHub Wiki and Wiki.js,
-- accessibility controls expected during authoring and review.
+Ce document explique comment la documentation d'Ascension est structurée pour répondre aux exigences d'accessibilité et rester exploitable lors de sa publication automatique sur **GitHub Wiki** et **Densho**.
 
 ---
 
-## Publication Context
+## Périmètre
 
-Documentation is authored once and then distributed to two targets:
+Cette déclaration s'applique à la documentation Markdown située sous `docs/` et publiée via le flux de travail de documentation du projet.
 
-- **GitHub Wiki** (generated pages from `docs/`),
-- **Wiki.js** (native Markdown rendering).
+Elle couvre :
 
-Because both targets parse Markdown differently in edge cases, accessibility requirements are defined using renderer-safe patterns (headings, lists, links, alt text, and plain-language structure) that remain accessible in both environments.
-
----
-
-## Reference Standards
-
-The documentation process is aligned with the following references:
-
-- **WCAG 2.1 Level AA** principles (Perceivable, Operable, Understandable, Robust),
-- **CommonMark / GFM** syntax constraints for consistent parsing,
-- project-level Markdown conventions in `docs/start-here/guidelines/markdown-guidelines.md`.
-
-This is a documentation conformance statement for Markdown content quality; it does not replace a full external legal accessibility audit of every downstream rendered page.
+- les règles de rédaction des sources Markdown,
+- la compatibilité des moteurs de rendu pour GitHub Wiki et Densho,
+- les contrôles d'accessibilité attendus lors de la rédaction et de la revue.
 
 ---
 
-## Applied Accessibility Rules
+## Contexte de publication
 
-The project guideline enforces accessibility-oriented authoring rules, including:
+La documentation est rédigée une seule fois puis distribuée vers deux cibles :
 
-- hierarchical headings with no skipped levels,
-- descriptive links (no ambiguous "click here" phrasing),
-- meaningful alternative text for informative images,
-- no color-only meaning without text equivalent,
-- explicit header rows in tables,
-- fenced code blocks with language identifiers,
-- concise and clear wording,
-- text summaries accompanying Mermaid diagrams.
+- **GitHub Wiki** (pages générées à partir de `docs/`),
+- **Densho** (rendu Markdown natif).
 
-These rules are selected specifically because they survive the automated publication flow and remain understandable with assistive technologies.
+Comme ces deux cibles peuvent interpréter le Markdown différemment sur certains cas particuliers, les exigences d'accessibilité sont définies à l'aide de motifs compatibles avec les deux moteurs (niveaux de titres, listes, liens, textes alternatifs et structure en langage clair) qui restent accessibles dans les deux environnements.
 
 ---
 
-## How Compliance Is Demonstrated
+## Normes de référence
 
-Compliance is demonstrated through a **rules + process** model:
+Le processus de documentation s'aligne sur les références suivantes :
 
-1. Authors follow the Markdown guideline before committing documentation changes.
-2. Reviews check accessibility criteria as part of documentation quality.
-3. Rendered output is validated on both GitHub Wiki and Wiki.js for readability and structure preservation.
+- les principes **WCAG 2.1 Niveau AA** (Perceptible, Utilisable, Compréhensible, Robuste),
+- les contraintes syntaxiques **CommonMark / GFM** pour un parsing cohérent,
+- les conventions Markdown du projet définies dans `docs/developer/guidelines/markdown-guidelines.md`.
 
-In practice, this proves that accessibility is embedded in the authoring lifecycle rather than added at the end.
+Il s'agit d'une déclaration de conformité de la qualité du contenu Markdown ; elle ne remplace pas un audit d'accessibilité juridique externe complet de chaque page rendue en aval.
 
 ---
 
-## Evidence and Governance
+## Règles d'accessibilité appliquées
 
-Primary evidence artifacts:
+Le guide du projet impose des règles de rédaction orientées accessibilité, notamment :
 
-- `docs/start-here/guidelines/markdown-guidelines.md` (normative writing rules),
-- `docs/readme.md` (publication process and wiki synchronization references),
-- this compliance statement as an explicit accessibility rationale.
+- une hiérarchie stricte des titres sans saut de niveau,
+- des liens descriptifs (pas de formulation ambiguë du type « cliquer ici »),
+- un texte alternatif significatif pour les images informatives,
+- aucune utilisation de la couleur seule pour transmettre du sens sans équivalent textuel,
+- des lignes d'en-tête explicites dans les tableaux,
+- des blocs de code clôturés avec indication du langage,
+- une rédaction concise et claire,
+- des résumés textuels accompagnant les diagrammes Mermaid.
 
-Governance principles:
+Ces règles ont été spécifiquement choisies car elles résistent au flux de publication automatisé et restent compréhensibles avec les technologies d'assistance.
 
-- accessibility is a release quality criterion for documentation updates,
-- accessibility regressions in documentation must be corrected before final validation,
-- new documentation templates must preserve these accessibility constraints.
+---
+
+## Modalités de démonstration de la conformité
+
+La conformité est démontrée à travers un modèle combinant **règles et processus** :
+
+1. Les auteurs suivent le guide Markdown avant de commiter des modifications de documentation.
+2. Les revues vérifient les critères d'accessibilité au même titre que la qualité de la documentation.
+3. Le rendu est validé à la fois sur GitHub Wiki et sur Densho afin de s'assurer de la lisibilité et de la préservation de la structure.
+
+En pratique, cela prouve que l'accessibilité est intégrée dès le cycle de rédaction plutôt qu'ajoutée a posteriori.
+
+---
+
+## Preuves et gouvernance
+
+Artefacts de preuve principaux :
+
+- `docs/developer/guidelines/markdown-guidelines.md` (règles de rédaction normatives),
+- `docs/readme.md` (processus de publication et synchronisation du wiki),
+- cette déclaration de conformité en tant que justification explicite de la démarche d'accessibilité.
+
+Principes de gouvernance :
+
+- l'accessibilité est un critère de qualité pour la validation des mises à jour de documentation,
+- toute régression d'accessibilité constatée dans la documentation doit être corrigée avant validation finale,
+- les nouveaux modèles de documentation doivent obligatoirement respecter ces contraintes d'accessibilité.
 
 ---
 
 ## Conclusion
 
-Ascension documentation is maintained with explicit accessibility rules, a shared review process, and publication-aware Markdown conventions.
+La documentation d'Ascension est maintenue avec des règles d'accessibilité explicites, un processus de revue partagé et des conventions Markdown adaptées à la publication multi-cible.
 
-As a result, the documentation corpus is structured to respect accessibility best practices across both GitHub Wiki and Wiki.js publication targets.
-
-:::success
-**Version:** 1.0
-:::
-
----
-
-# Documentation Accessibility Compliance Statement
-
-This document explains how Ascension documentation is structured to meet accessibility expectations and remain usable when automatically published to both **GitHub Wiki** and **Wiki.js**.
-
----
-
-## Scope
-
-This statement applies to Markdown documentation located under `docs/` and published through the project documentation workflow.
-
-It covers:
-
-- source Markdown authoring rules,
-- renderer compatibility for GitHub Wiki and Wiki.js,
-- accessibility controls expected during authoring and review.
-
----
-
-## Publication Context
-
-Documentation is authored once and then distributed to two targets:
-
-- **GitHub Wiki** (generated pages from `docs/`),
-- **Wiki.js** (native Markdown rendering).
-
-Because both targets parse Markdown differently in edge cases, accessibility requirements are defined using renderer-safe patterns (headings, lists, links, alt text, and plain-language structure) that remain accessible in both environments.
-
----
-
-## Reference Standards
-
-The documentation process is aligned with the following references:
-
-- **WCAG 2.1 Level AA** principles (Perceivable, Operable, Understandable, Robust),
-- **CommonMark / GFM** syntax constraints for consistent parsing,
-- project-level Markdown conventions in `docs/start-here/guidelines/markdown-guidelines.md`.
-
-This is a documentation conformance statement for Markdown content quality; it does not replace a full external legal accessibility audit of every downstream rendered page.
-
----
-
-## Applied Accessibility Rules
-
-The project guideline enforces accessibility-oriented authoring rules, including:
-
-- hierarchical headings with no skipped levels,
-- descriptive links (no ambiguous "click here" phrasing),
-- meaningful alternative text for informative images,
-- no color-only meaning without text equivalent,
-- explicit header rows in tables,
-- fenced code blocks with language identifiers,
-- concise and clear wording,
-- text summaries accompanying Mermaid diagrams.
-
-These rules are selected specifically because they survive the automated publication flow and remain understandable with assistive technologies.
-
----
-
-## How Compliance Is Demonstrated
-
-Compliance is demonstrated through a **rules + process** model:
-
-1. Authors follow the Markdown guideline before committing documentation changes.
-2. Reviews check accessibility criteria as part of documentation quality.
-3. Rendered output is validated on both GitHub Wiki and Wiki.js for readability and structure preservation.
-
-In practice, this proves that accessibility is embedded in the authoring lifecycle rather than added at the end.
-
----
-
-## Evidence and Governance
-
-Primary evidence artifacts:
-
-- `docs/start-here/guidelines/markdown-guidelines.md` (normative writing rules),
-- `docs/readme.md` (publication process and wiki synchronization references),
-- this compliance statement as an explicit accessibility rationale.
-
-Governance principles:
-
-- accessibility is a release quality criterion for documentation updates,
-- accessibility regressions in documentation must be corrected before final validation,
-- new documentation templates must preserve these accessibility constraints.
-
----
-
-## Conclusion
-
-Ascension documentation is maintained with explicit accessibility rules, a shared review process, and publication-aware Markdown conventions.
-
-As a result, the documentation corpus is structured to respect accessibility best practices across both GitHub Wiki and Wiki.js publication targets.
+Par conséquent, le corpus documentaire est structuré pour respecter les meilleures pratiques d'accessibilité sur les deux cibles de publication, GitHub Wiki et Densho.
