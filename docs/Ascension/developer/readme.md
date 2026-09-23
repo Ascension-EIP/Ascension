@@ -58,7 +58,7 @@ Engineering standards and formatting conventions enforced across the repository,
 - [Markdown Guidelines](guidelines/markdown-guidelines.md): Heading hierarchy, status containers, Prettier rules, and accessibility standards.
 - Code quality bars, testing expectations, and linting guidelines.
 
-### 3\. [Git & GitHub Standards](git/readme.md)
+### 3\. [Git \& GitHub Standards](git/readme.md)
 
 Team collaboration conventions and automated developer workflows:
 
@@ -67,7 +67,7 @@ Team collaboration conventions and automated developer workflows:
 - **Issue Tracking:** GitHub issue labeling and template standards.
 - **Automation:** GitHub Actions CI/CD workflows and automated pre-commit hooks.
 
-### 4\. [AI Agents & Tooling](agents/readme.md)
+### 4\. [AI Agents \& Tooling](agents/readme.md)
 
 Pre-prompts, system configurations, and tool integrations for AI coding assistants (Claude Code, GitHub Copilot, Antigravity) supporting the Ascension project.
 
