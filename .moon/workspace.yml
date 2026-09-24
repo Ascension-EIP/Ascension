@@ -9,6 +9,7 @@ projects:
   new_ai: 'apps/new_ai'
   server: 'apps/server'
   mobile: 'apps/mobile'
+  new_mobile: 'apps/new_mobile'
 
 vcs:
   client: 'git'
