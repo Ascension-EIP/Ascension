@@ -4,7 +4,6 @@ id: ab1bb167-f7de-4c8e-9b2b-fbab148ade5d
 
 :::success
 **Version:** 1.1\
-**Original language:** English\
 DON'T EDIT THIS FILE !
 :::
 

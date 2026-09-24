@@ -4,8 +4,6 @@ id: 2f73e756-4920-4208-ae1e-6928976f81ec
 
 :::success
 **Version:** 2.1
-
-**Original language:** English
 :::
 
 ---
@@ -18,9 +16,9 @@ id: 2f73e756-4920-4208-ae1e-6928976f81ec
 
 ### 1.1 Scope
 
-This document is the single source of truth for the PostgreSQL 18 data model of Ascension. It covers every feature of the [feature catalogue](../../../administrative/catalogue-fonctionnalites.md) (F01 to F16), including the ATP-phase features, so that the schema is complete from the start. Tables that are not needed yet are still specified here and will be created by migrations when their feature is implemented.
+This document is the single source of truth for the PostgreSQL 18 data model of Ascension. It covers every feature of the [feature catalogue](../../../administrative/features-catalog.md) (F01 to F16), including the ATP-phase features, so that the schema is complete from the start. Tables that are not needed yet are still specified here and will be created by migrations when their feature is implemented.
 
-The current migrations in `apps/server/migrations/` implement only a subset of this schema. Section 13 lists the differences to apply.
+The migrations in `apps/server/internal/outbound/postgres/migrations/` (migrations 20260918172358 through 20260918222653) implement the complete schema specified in this document. Section 13 summarizes the applied schema evolution.
 
 ### 1.2 Conventions
 
@@ -1103,7 +1101,13 @@ Business rules:
 
 ---
 
-## 11\. Scheduled Jobs (pg\_cron)
+## 11\. Scheduled Jobs (Go Cron Worker & SQL Definitions)
+
+Background maintenance jobs can be executed either via a dedicated Go background worker (`apps/server/cmd/cron/main.go` using `robfig/cron/v3` and `internal/job/`) or natively inside PostgreSQL via `pg_cron`.
+
+In the Ascension backend architecture, scheduled database cleaning jobs are implemented in `apps/server/cmd/cron` and `internal/job/` (e.g. `PruneExpiredSessionsJob`, `PruneAbandonedUploadsJob`, `PruneExpiredVideosJob`, `PruneOldQuotaUsagesJob`).
+
+For reference or standalone database deployments, the equivalent SQL schedules using `pg_cron` are:
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS pg_cron;
@@ -1134,7 +1138,7 @@ SELECT cron.schedule('clean-old-quota-usages', '0 3 1 * *', $$
 $$);
 ```
 
-Storage objects are not deleted by pg\_cron. An S3 bucket lifecycle rule expires objects whose key matches a deleted row, or the Go server runs a reconciliation job that lists object keys absent from `videos` and `routes` and removes them.
+Storage objects are not deleted by the database queries alone. When `clean-abandoned-uploads` or `clean-expired-videos` prunes rows, the Go server/cron worker reconciliation job or S3 bucket lifecycle rules purge the corresponding object keys from MinIO/S3.
 
 ---
 
@@ -1214,25 +1218,32 @@ SELECT v.*
 
 ---
 
-## 13\. Migration Delta From Current Schema
+## 13\. Applied Migrations & Schema Evolution
 
-The migrations in `apps/server/migrations/` (20260905000001 to 20260905000005) differ from this specification as follows. These changes require a coordinated update of the Go models and DTOs (`apps/server/internal/model`, `apps/server/internal/outbound/postgres/dto`) and of the AI worker (`apps/ai/src/infrastructure/database.py`).
+The full data model specified in this document has been partitioned and applied via versioned migrations in `apps/server/migrations/` (and mirrored in `apps/server/internal/outbound/postgres/migrations/`).
 
-| Table | Change |
-| --- | --- |
-| `users` | Replace `name` with `first_name`, `last_name`, `username`. Rename `password` to `password_hash`. Convert `role` from `TEXT` to the `user_role` enum. Add `status`, `email_verified_at`, `last_login_at`, `deactivated_at`, `stripe_customer_id`, email and username `CHECK`s. |
-| `sessions` | Add `token_hash` (the session `id` is no longer the refresh token), `user_agent`, `ip_address`, `last_used_at`, `revoked_at`. |
-| `videos` | Drop `bucket`. Rename `size` to `size_bytes`, `duration` to `duration_ms`. Convert `status` to the `video_status` enum. Add `climbing_session_id`, `title`, `content_type`, `width`, `height`, `fps`, `retained`, `visibility`. Make `object_key` unique. |
-| `analyses` | Convert `status` from `TEXT` to `job_status` (adds `processing` and `generating_hints`, already written by the worker). Rename `processing_time` to `processing_time_ms`. Convert `hints` from `TEXT` to `JSONB`. Add `started_at`, `visibility`, progress and consistency `CHECK`s. Drop `uq_analyses_video_id_type` and the two redundant indexes; keep one index on `(video_id, created_at DESC)`. |
-| pg\_cron | Split `clean-expired-upload` into `clean-abandoned-uploads` and `clean-expired-videos`; add `clean-old-quota-usages`. |
-| New | All enums of section 3.1 and the tables `user_profiles`, `user_body_constraints`, `tutorial_progress`, `gyms`, `climbing_sessions`, `analysis_scores`, `routes`, `holds`, `ghosts`, `ghost_holds`, `comparisons`, `goals`, `training_programs`, `training_program_sessions`, `exercises`, `training_logs`, `friendships`, `follows`, `subscription_plans`, `subscriptions`, `subscription_events`, `quota_usages`. |
+The migration history evolved from the initial prototype schema (`20260905000001` to `20260905000005`) to the complete modular suite implemented on 2026-09-18 (`20260918172358` through `20260918222653`):
 
-Recommended migration order: enums and shared trigger, then `users` and `sessions` changes, then `gyms` and `climbing_sessions`, then `videos` and `analyses` changes, then each feature group in the order of the sections above.
+| Migration File Prefix | Feature / Domain | Content & Changes Applied |
+| --- | --- | --- |
+| `20260918172358` | Base Enums & Extensions | Core PostgreSQL extensions (`uuid-ossp`, `pgcrypto`) and enum types (`user_role`, `job_status`, `visibility`, `video_status`, `body_zone`, `hold_type`, etc.). |
+| `20260918174541` | Shared Trigger | `trigger_set_updated_at` function for automatic `updated_at` timestamp management across all tables. |
+| `20260918174719` – `20260918175402` | Core Auth & Users | Tables `users` (with `first_name`, `last_name`, `username`, `password_hash`, `role`), `sessions` (with `token_hash`, `user_agent`, `ip_address`, `revoked_at`), `user_profiles`, and `user_body_constraints`. |
+| `20260918182744` – `20260918183049` | Onboarding & Gyms | Tables `tutorial_progress` and `gyms`. |
+| `20260918183204` – `20260918183601` | Sessions & Videos | Tables `climbing_sessions` and `videos` (with `object_key`, `size_bytes`, `duration_ms`, `content_type`, `fps`, `visibility`, `retained`). |
+| `20260918183756` – `20260918184024` | Analyses & Scores | Tables `analyses` (with `status` enum, `processing_time_ms`, `result` JSONB, `hints` JSONB) and `analysis_scores`. |
+| `20260918184203` – `20260918184715` | Routes & Holds | Tables `routes` and `holds` (with classification, coordinates, polygon points). |
+| `20260918184918` – `20260918185521` | Ghosts & Comparisons | Tables `ghosts`, `ghost_holds`, and `comparisons` (with metrics and trajectory comparison data). |
+| `20260918221841` – `20260918222129` | Coaching & Training | Tables `goals`, `training_programs`, `training_program_sessions`, `exercises`, and `training_logs`. |
+| `20260918222236` – `20260918222340` | Social & Community | Tables `friendships` and `follows`. |
+| `20260918222453` – `20260918222653` | Subscriptions & Quotas | Tables `subscription_plans`, `subscriptions`, `subscription_events`, and `quota_usages`. |
+
+All tables conform to the foreign key constraints, indexes, and check constraints detailed in sections 3 through 10.
 
 ---
 
 **Related**:
 
 - [API Specification](api-specification.md)
-- [Feature catalogue](../../../administrative/catalogue-fonctionnalites.md)
+- [Feature catalogue](../../../administrative/features-catalog.md)
 - [System Overview](../system-overview.md)

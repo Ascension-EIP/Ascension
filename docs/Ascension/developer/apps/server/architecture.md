@@ -3,8 +3,7 @@ id: 8a400878-485e-480a-b6c4-a7bc4cd0e4be
 ---
 
 :::success
-**Version:** 1.1\
-**Original language:** English
+**Version:** 1.2
 :::
 
 ---
@@ -19,60 +18,77 @@ This document explains how the Ascension backend server is structured and why it
 
 | Technology | Role |
 | --- | --- |
-| **Go** | Programming language |
-| **Gin** | HTTP web framework |
-| **pgx/v5** | Database driver/pool to talk to PostgreSQL |
+| **Go (1.27)** | Programming language |
+| **Gin (1.12.0)** | HTTP web framework |
+| **pgx/v5 (5.10.0)** | PostgreSQL driver & connection pool (`pgxpool`) |
 | **Goroutines** | Concurrency handling |
-| **PostgreSQL** | The database |
-| **JSON** | Native json tag support in structs |
-| **UUID** | Google UUID package for Go |
+| **PostgreSQL 18** | Relational database with JSONB document support |
+| **RabbitMQ 4.x** | AMQP message broker for asynchronous job dispatching |
+| **MinIO** | S3-compatible object storage for videos and frames |
+| **robfig/cron/v3** | Cron scheduler for background cleanup tasks |
+| **golang-migrate/v4** | Database schema migrations engine |
+| **log/slog** | Standard library structured logger |
+| **caarlos0/env/v11** | Type-safe environment configuration parser |
 
 ---
 
 ## What is Hexagonal Architecture?
 
-Hexagonal architecture (also called **Ports & Adapters**) is a way of organizing code so that the core business logic is completely isolated from the outside world (HTTP, databases, etc.).
+Hexagonal architecture (also called **Ports & Adapters**) is a way of organizing code so that the core business logic is completely isolated from the outside world (HTTP, databases, message brokers, object storage).
 
-Think of it like this:
+```mermaid
+graph TD
+    subgraph Outside ["OUTSIDE"]
+        HTTP["HTTP Requests<br>(Inbound / Adapters)"]
+        Cron["Cron Scheduler<br>(cmd/cron & internal/job)"]
 
+        DB["PostgreSQL Database<br>(Outbound / Adapters)"]
+        Ext["RabbitMQ / MinIO<br>(Outbound / Adapters)"]
+    end
+
+    subgraph Domain ["DOMAIN (Core)"]
+        direction TB
+        Models["Models (internal/model)"]
+        Ports["Ports / Interfaces (internal/model/ports)"]
+        Services["Services (internal/service)"]
+
+        Note["Knows NOTHING about Gin or HTTP<br>Knows NOTHING about SQL queries"]
+    end
+
+    HTTP -->|Inbound| Domain
+    Cron -->|Inbound| Domain
+    Domain -->|Outbound| DB
+    Domain -->|Outbound| Ext
 ```
-┌──────────────────────────────────────┐
-│               OUTSIDE                │
-│                                      │
-│   HTTP Requests        Database      │
-│   (Inbound)            (Outbound)    │
-│         │                   ▲        │
-│         ▼                   │        │
-│    ┌─────────────────────────────┐   │
-│    │         DOMAIN (Core)       │   │
-│    │   Pure business logic only  │   │
-│    │   Knows NOTHING about HTTP  │   │
-│    │   Knows NOTHING about SQL   │   │
-│    └─────────────────────────────┘   │
-└──────────────────────────────────────┘
-```
 
-**The key rule:** the Domain never imports anything from Inbound or Outbound. It only defines *what* it needs through **traits** (called "ports"). The Inbound and Outbound layers implement those traits ("adapters").
+**The key rule:** the Domain never imports anything from Inbound or Outbound. It defines *what* it needs through **interfaces** (called "ports" in `internal/model/ports.go`). The Outbound layers (and Inbound callers) implement or consume those ports ("adapters").
 
 **Why?**
 
-- The core business logic is completely isolated from HTTP routers, database queries, and message brokers.
-- The domain layer defines **interfaces** (ports) for repositories and services.
-- The inbound and outbound layers implement these interfaces (adapters).
+- The core business logic is completely isolated and unit-testable without spinning up databases or HTTP servers.
+- The domain layer defines interfaces for repositories, queues, and storages.
+- The outbound and inbound layers implement these interfaces as concrete adapters.
 
 ---
 
-## The three layers of the server
+## The layers of the server
 
 ### Domain (the core)
 
 **Location:** `internal/model/` and `internal/service/`
 
-This is the heart of the application. It contains:
+This is the heart of the application:
 
-- **Models** – The data structures that represent your business entities (e.g., `User`, `Video`, `Analysis`).
-- **Interfaces** – Go interfaces (ports) defined directly in services (e.g., `userRepository` in `internal/service/user.go`) describing what database operations are required.
-- **Service** – The concrete implementation of business services. It orchestrates the business workflows (e.g. hashing passwords, calling repositories, publishing RabbitMQ events).
+- **Models** (`internal/model/`) – The data structures representing business entities (`User`, `Video`, `Analysis`, `Session`, `JWT`). Each model includes its domain validation logic (`Validate()`).
+- **Ports** (`internal/model/ports.go`) – Go interfaces defining what the domain expects from infrastructure:
+  - `UserRepository`: user persistence operations (Create, Get, List, Update, Delete).
+  - `SessionRepository`: refresh token session persistence and revocation.
+  - `VideoRepository`: video metadata persistence and expiration updates.
+  - `AnalysisRepository`: analysis job tracking, progress, and result persistence.
+  - `VideoStorage`: presigned URL generation and object storage management.
+  - `AnalysisQueue`: publishing analysis jobs to RabbitMQ.
+  - `TransactionManager`: atomic transactional execution boundaries.
+- **Services** (`internal/service/`) – Concrete business logic implementations (`UserService`, `AuthService`, `VideoService`, `AnalysisService`, `JWTService`, `SessionService`). Services orchestrate workflows, validate constraints, hash passwords, and invoke ports.
 
 ---
 
@@ -80,79 +96,71 @@ This is the heart of the application. It contains:
 
 **Location:** `internal/inbound/http/`
 
-This layer is responsible for:
+Responsible for:
 
-1. **Listening** for incoming HTTP requests on a TCP port.
-2. **Routing** requests to the right handler function using the Gin router.
-3. **Parsing** the JSON request body into DTO structs.
-4. **Validating** those structs.
-5. **Calling** the Domain service.
-6. **Formatting** the result as a JSON HTTP response.
-
-Key folders/files:
-
-| Path | Role |
-| --- | --- |
-| `internal/inbound/http/router/router.go` | Wires up the Gin router, middleware, and routes |
-| `internal/inbound/http/handler/` | Controllers/handlers for each resource (e.g. `user.go`, `auth.go`) |
-| `internal/inbound/http/middleware/` | Rate limiters, JWT authorization, recovery, and logging middleware |
+1. **Listening** for incoming HTTP requests on a TCP port via Gin.
+2. **Routing** requests to handlers (`internal/inbound/http/router/router.go`).
+3. **Parsing & Validating** JSON bodies and parameters into DTO structs (`internal/inbound/http/dto/request/`).
+4. **Enforcing Middlewares** (`internal/inbound/http/middleware/`): Request ID, Logger, Recovery, Rate Limiting, and JWT role-based Auth.
+5. **Invoking** Domain services and formatting domain outputs into JSON responses (`internal/inbound/http/dto/response/`).
 
 ---
 
-### Outbound (adapters)
+### Outbound (Infrastructure adapters)
 
 **Location:** `internal/outbound/`
 
-This layer is responsible for persisting data and communicating with external systems. It contains:
+Implements the domain ports defined in `internal/model/ports.go`:
 
-| Path | Role |
-| --- | --- |
-| `internal/outbound/postgres/` | Implements database repositories using pgx |
-| `internal/outbound/rabbitmq/` | Client for publishing and consuming queue events |
-| `internal/outbound/minio/` | Client for generating presigned upload/download URLs |
+| Package | Role | Port Implemented |
+| --- | --- | --- |
+| `internal/outbound/postgres/` | PostgreSQL adapter using `pgxpool` | `UserRepository`, `SessionRepository`, `VideoRepository`, `AnalysisRepository`, `TransactionManager` |
+| `internal/outbound/rabbitmq/` | RabbitMQ adapter using `amqp091-go` | `AnalysisQueue` |
+| `internal/outbound/minio/` | S3-compatible adapter using `minio-go/v7` | `VideoStorage` |
 
 ---
 
-Here is what happens step-by-step when a client sends `POST /v1/users`:
+### Scheduled Jobs (Cron layer)
+
+**Location:** `internal/job/` and `cmd/cron/`
+
+Background maintenance workers orchestrated via `robfig/cron/v3`:
+
+- `ClearExpiredSessions`: Purges expired or revoked refresh sessions daily.
+- `ClearUploadExpiredVideos`: Cleans up abandoned presigned video uploads hourly.
+- `ClearExpiredVideos`: Purges completed videos that have passed retention and were not marked `retained`.
+
+---
+
+## Step-by-step Request Flow Example (`POST /v1/auth/signup`)
 
 ```
 Client
   │
-  │  POST /v1/users  { "username": "...", "email": "...", ... }
+  │  POST /v1/auth/signup  { "username": "...", "email": "...", "password": "...", "first_name": "...", "last_name": "..." }
   ▼
 Gin Router  (internal/inbound/http/router/router.go)
-  │
-  │  routes to Create handler
+  │  Matches route, applies RateLimiter(1m, 5)
   ▼
-Handler: UserHandler.Create()  (internal/inbound/http/handler/user.go)
-  │
-  │  1. Binds JSON body → SignupLoginForm DTO
-  │  2. Validates fields (checks email pattern, password length)
-  │  3. Converts to domain model
+Handler: AuthHandler.SignupLogin()  (internal/inbound/http/handler/auth.go)
+  │  1. Binds JSON body → request.SignupLoginForm
+  │  2. Converts DTO to model.SignupForm
   ▼
-Service: UserService.CreateUser()  (internal/service/user.go)
-  │
-  │  1. Hashes user password using bcrypt
-  │  2. Calls s.r.CreateUser(...)  (interface call)
+Service: AuthService.SignupLogin()  (internal/service/auth.go)
+  │  1. Invokes UserService.CreateUser() → hashes password with bcrypt
+  │  2. Calls UserRepository.CreateUser() (via port)
+  │  3. Issues JWT access token via JWTService
+  │  4. Creates refresh session via SessionService
   ▼
-Repository: UserRepository.CreateUser()  (internal/outbound/postgres/user.go)
-  │
-  │  1. Executes INSERT INTO users ... using pgxpool
-  │  2. Returns User struct on success or error on failure
+Repository: PostgresRepository.CreateUser()  (internal/outbound/postgres/user.go)
+  │  Executes INSERT INTO users ... using pgxpool
   ▼
-Service  (back in user.go)
-  │
-  │  Returns created User and nil error
-  ▼
-Handler  (back in user.go)
-  │
-  │  1. Maps User → response.User DTO
-  │  2. Serializes DTO to JSON and returns HTTP 201
+Handler
+  │  Maps domain models → response.LoginResponse
+  │  Serializes DTO to JSON and returns HTTP 200 OK
   ▼
 Client
 ```
-
-> **Notice** that each layer only knows about the *next* layer's **trait** (interface), not its concrete type. The handler knows about `UserService` (a trait). The service knows about `UserRepository` (a trait). This is the "ports & adapters" pattern in action.
 
 ---
 
@@ -161,58 +169,81 @@ Client
 ```
 apps/server/
 ├── cmd/
-│   └── server/
-│       └── main.go                     # Entry point: wires everything together
-├── go.mod                              # Go module definition
+│   ├── server/
+│   │   └── main.go                     # API HTTP server entry point
+│   ├── cron/
+│   │   └── main.go                     # Background cron runner entry point
+│   └── migrate/
+│       └── main.go                     # Database migration CLI tool
+├── go.mod                              # Go module definition (Go 1.27)
 ├── go.sum                              # Go dependency checksums
-├── migrations/                         # SQL migration files (run on startup)
+├── Dockerfile                          # Multi-stage production container build
+├── moon.yml                            # moon monorepo task configuration
+├── migrations/                         # SQL migration files (.up.sql / .down.sql)
 └── internal/
     ├── app/
-    │   └── app.go                      # Application orchestrator / runner
-    ├── model/                          # Domain models (entities & value objects)
+    │   └── app.go                      # Dependency injection and server lifecycle
+    ├── job/                            # Background cron jobs (sessions, videos)
+    │   ├── clear_expired_session.go
+    │   ├── clear_expired_video.go
+    │   └── clear_upload_expired_video.go
+    ├── model/                          # Domain entities, validation rules, and ports
     │   ├── analysis.go
     │   ├── auth.go
+    │   ├── error.go
+    │   ├── jwt.go
+    │   ├── ports.go                    # Central domain port interfaces
+    │   ├── session.go
     │   ├── user.go
     │   └── video.go
-    ├── service/                        # Domain services (business logic & port definitions)
+    ├── service/                        # Domain services (business logic)
     │   ├── analysis.go
     │   ├── auth.go
+    │   ├── jwt.go
+    │   ├── session.go
     │   ├── user.go
     │   └── video.go
     ├── inbound/                        # HTTP controllers / adapters
     │   └── http/
-    │       ├── dto/                    # Data Transfer Objects for request/response binding
+    │       ├── dto/
+    │       │   ├── request/            # Request binding structs & validation
+    │       │   └── response/           # Output response structs
     │       ├── handler/                # Gin router handlers (controllers)
-    │       ├── middleware/             # Gin middleware (auth, recovery, logger)
-    │       └── router/                 # Router configuration
-    └── outbound/                       # Adapters for database, message queue, and object storage
-        ├── postgres/                   # PostgreSQL storage repository (pgx implementation)
-        ├── rabbitmq/                   # RabbitMQ message broker client
-        └── minio/                      # MinIO (S3) file storage client
+    │       ├── macro/                  # Context and parameter key constants
+    │       ├── middleware/             # Gin middlewares (auth, logger, rate_limit, recovery, request_id)
+    │       ├── router/                 # Router configuration and route groups
+    │       └── utils/                  # Context helpers and standardized error formatting
+    ├── outbound/                       # Infrastructure adapters
+    │   ├── postgres/                   # PostgreSQL storage repository (pgx implementation)
+    │   ├── rabbitmq/                   # RabbitMQ message broker adapter
+    │   └── minio/                      # MinIO / S3 object storage adapter
+    └── setup/
+        ├── config/                     # Environment configuration loader
+        └── logger/                     # Structured logger constructor (slog)
 ```
 
 ---
 
-## The entry point: `main.go`
+## Entry Points
 
-`main.go` is the place where everything is wired together:
+1. **API Server (`cmd/server/main.go`)**:
+   - Parses configuration via `config.Load()`.
+   - Initializes structured logging with `slog`.
+   - Calls `app.Run(cfg)` which establishes database pools, runs pending migrations via `repo.Migrate()`, initializes storage and RabbitMQ, wires services and handlers, and starts the Gin HTTP server with graceful shutdown handling.
+2. **Cron Worker (`cmd/cron/main.go`)**:
+   - Bootstraps dependencies and starts `robfig/cron` to execute periodic database and storage cleanup tasks independently of HTTP traffic.
 
-1. Loads configuration (`config.Load()`).
-2. Creates the postgres repository connection (`postgres.New()`).
-3. Creates the domain services, injecting the repository.
-4. Initializes the Gin HTTP server router and runs it.
+Database schema migrations are applied automatically at server startup or on demand via `moon run server:migrate` using the official `golang-migrate` CLI.
 
 ---
 
-## Configuration: `config.go`
+## Configuration
 
-The server reads its configuration from environment variables.
+The server parses all environment variables through `internal/setup/config/config.go` with domain-specific prefixes:
 
-| Variable | Required | Default | Description |
-| --- | --- | --- | --- |
-| `DB_NAME` | ✅ Yes | — | Database name |
-| `DB_USER` | ✅ Yes | — | Database user |
-| `DB_PASS` | ✅ Yes | — | Database password |
-| `DB_HOST` | ❌ No | `localhost` | Database host |
-| `DB_PORT` | ❌ No | `5432` | Database port |
-| `DB_MIGRATION` | ❌ No | — | Migrations directory |
+- `POSTGRES_*` : Database host, port, database name (`POSTGRES_DB`), user, password, and SSL parameters.
+- `MINIO_*` : Object storage endpoint, credentials, bucket name, and URL expiration durations.
+- `RABBITMQ_*` : Message broker host, port, user, password, TLS, and queue names.
+- `AUTH_*` : JWT and session secret keys and expiration durations.
+- `PORT` & `HTTPS` : HTTP server listener configuration.
+- `LOG_LEVEL` & `LOG_PRETTY` : Logging verbosity and formatting.

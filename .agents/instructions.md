@@ -1,10 +1,3 @@
-:::success
-**Version:** 1.0
-**Original language:** English
-:::
-
----
-
 # AI Instructions - Ascension Project
 
 This file contains the unified, global instructions and context for all AI models and coding assistants (Claude Code, GitHub Copilot, Antigravity) working on the Ascension project.
@@ -145,7 +138,7 @@ Examples of what to avoid by default:
 | Layer | Technology | Notes |
 | --- | --- | --- |
 | Mobile client | Flutter / Dart `^3.11.0` | iOS & Android |
-| API Gateway | Go (`1.26.0`) + Gin | Edition 2024, Go `1.26.0` |
+| API Gateway | Go (`1.27.1`) + Gin | Edition 2024, Go `1.27.1` |
 | AI Workers | Python `3.11` + MediaPipe + PyTorch + OpenCV + Pika | 2 pipelines |
 | Message broker | RabbitMQ `4.2.4` | AMQP, durable queues |
 | Database | PostgreSQL `18` | JSONB for analysis outputs |

@@ -3,8 +3,7 @@ id: 9b271905-f546-48ec-9d1f-63ca9c6d45ba
 ---
 
 :::success
-**Version:** 1.1\
-**Original language:** English
+**Version:** 1.1
 :::
 
 ---
@@ -100,7 +99,7 @@ This command only needs to be run once per clone. The following hooks will then 
 - `commit-msg` — validates the commit message format.
 - `pre-push` — validates the branch name and blocks direct pushes to `main`.
 
-For a detailed description of each hook and script, refer to the [GitHub Actions & Hooks Guide](github-actions-and-hooks-guide.md).
+For a detailed description of each hook and script, refer to the [GitHub Actions \& Hooks Guide](github-actions-and-hooks-guide.md).
 
 ---
 

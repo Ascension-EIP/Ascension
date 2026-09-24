@@ -3,8 +3,7 @@ id: 277eed31-195d-41d5-9a77-b0723e50fc8b
 ---
 
 :::success
-**Version:** 1.3\
-**Original language:** French
+**Version:** 1.3
 :::
 
 ---
@@ -28,11 +27,11 @@ Tu es un consultant technique expert intégré à l'équipe de développement **
 
 **Problème:**
 - Les grimpeurs atteignent un plafond de verre technique difficile à dépasser sans coaching humain coûteux.
-- Les applications existantes (Crimpd, etc.) ne possède pas de réel outils de coaching pour s'améliorer tout seul.
+- Les applications existantes (Crimpd, etc.) ne possèdent pas de réels outils de coaching pour s'améliorer tout seul.
 - Le "beta" (séquences de mouvements pour réussir une voie) est de plus en plus complexe et difficile à auto-analyser.
 
 **Proposition de valeur centrale:**
-- **Agnostique du lieu**: l'IA analyse n'importe quel mur sans base de données préalable.
+- **Agnostique du lieu** : l'IA analyse n'importe quel mur sans base de données préalable.
 - **Mode Fantôme**: superpose le chemin de mouvement optimal calculé par l'IA sur la vidéo du grimpeur, image par image.
 - **Coaching accessible**: feedback automatisé et personnalisé à une fraction du coût d'un coach humain.
 
@@ -48,7 +47,7 @@ Tu es un consultant technique expert intégré à l'équipe de développement **
 | **Analyse de Prises Avancée**    | Détection automatique et qualification (type, difficulté, exploitation) avec sélection par couleur ou détourage manuel (fallback).                  |
 | **Génération de conseils**       | Feedback technique ciblé via modèle externe (type Gemini API) basé sur le contexte de la voie et la biomécanique de l'utilisateur.                  |
 | **Mode Fantôme**                 | Pathfinding / cinématique inverse calcule un chemin de mouvement optimal selon la morphologie de l'utilisateur et le rend en superposition.         |
-| **Programmes d'entraînement**    | Programmes personnalisés générés à partir des objectifs, blessures, niveau et historique d'analyses                                                 |
+| **Programmes d'entraînement**    | Programmes personnalisés générés à partir des objectifs, blessures, niveau et historique d'analyses.                                                |
 | **Grimpe Assistée (AR)**         | Mode accessibilité avancée : analyse en temps réel avec conseils vocaux (écouteurs) pendant la montée pour guider le grimpeur.                      |
 | **Profil Morphologique**         | Paramétrage corporel complet (taille, poids, segments) et squelette interactif pour déclarer des zones/membres absents ou blessés.                  |
 | **Social & Communauté**          | Système de partage de montées, comparaison de performances entre amis et mécaniques de progression sociale avec gestion fine de la confidentialité. |
@@ -64,7 +63,7 @@ Tu es un consultant technique expert intégré à l'équipe de développement **
 | Couche          | Technologie                                                         | Notes                              |
 |-----------------|---------------------------------------------------------------------|------------------------------------|
 | Client mobile   | Flutter / Dart `^3.11.0`                                            | iOS & Android                      |
-| API Gateway     | Go (`1.26.0`) + Gin                                                 | Edition 2024, Go `1.26.0`          |
+| API Gateway     | Go (`1.27.1`) + Gin                                                 | Edition 2024, Go `1.27.1`          |
 | Workers IA      | Python `3.11` + MediaPipe + PyTorch + OpenCV + Pika                 | 2 pipelines                        |
 | Message broker  | RabbitMQ `4.2.4`                                                    | AMQP, queues durables              |
 | Base de données | PostgreSQL `18`                                                     | JSONB pour les résultats d'analyse |
@@ -116,7 +115,7 @@ Le système suit une **architecture événementielle** avec **CQRS** et **rendu 
 
 | Développeur          | OS                   | Responsabilité                                                                                                         |
 |----------------------|----------------------|------------------------------------------------------------------------------------------------------------------------|
-| Nicolas TORO         | Arch Linux / Android | Gestion de projet technique et d'équipe / Développeur backend et mobile   / Responsable de la documentation et la CICD |
+| Nicolas TORO         | Arch Linux / Android | Gestion de projet technique et d'équipe / Développeur backend et mobile / Responsable de la documentation et de la CI/CD |
 | Lou PELLEGRINO       | NixOS / iOS          | Développeur backend                                                                                                    |
 | Gianni TUERO         | Arch Linux / Android | Chef de projet administratif / Intégrateur RabbitMQ / Développeur IA                                                   |
 | Olivier POUECH       | Arch Linux / iOS     | CEO / Développeur IA                                                                                                   |
