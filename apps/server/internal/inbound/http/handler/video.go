@@ -64,10 +64,6 @@ func (h *VideoHandler) GetUploadURL(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
-	if err != nil {
-		c.JSON(http.StatusBadRequest, response.NewError(err))
-		return
-	}
 	videoMetadata, videoConfig, err := req.IntoVideoMetadataAndVideoConfig()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
@@ -103,4 +99,49 @@ func (h *VideoHandler) UploadComplete(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+func (h *VideoHandler) GetVideo(c *gin.Context) {
+	user, err := utils.GetFromContext[model.User](c, macro.Me)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	id := c.Param("id")
+	videoID, err := uuid.Parse(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+
+	video, err := h.s.GetVideoByUserID(c.Request.Context(), videoID, user.ID)
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, response.VideoToResponse(video))
+}
+
+func (h *VideoHandler) ListVideos(c *gin.Context) {
+	user, err := utils.GetFromContext[model.User](c, macro.Me)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	var query request.PaginationQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+
+	videos, err := h.s.ListVideosByUserID(c.Request.Context(), user.ID, query.IntoPagination())
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, response.VideosToResponse(videos))
 }

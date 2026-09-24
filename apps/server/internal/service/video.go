@@ -123,3 +123,21 @@ func (s *VideoService) ClearUploadExpiredVideos(ctx context.Context) error {
 func (s *VideoService) ClearExpiredVideos(ctx context.Context) error {
 	return s.repo.DeleteVideosExpired(ctx, s.cfgVideo.Retention)
 }
+
+func (s *VideoService) GetVideoByUserID(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (model.Video, error) {
+	video, err := s.repo.GetVideoByFilter(ctx, model.VideoFilter{ID: &videoID, UserID: &userID})
+	if err != nil {
+		return model.Video{}, fmt.Errorf("get video by filter from db: %w", err)
+	}
+
+	return video, nil
+}
+
+func (s *VideoService) ListVideosByUserID(ctx context.Context, userID uuid.UUID, pagination model.Pagination) ([]model.Video, error) {
+	videos, err := s.repo.ListVideosByFilter(ctx, model.VideoFilter{UserID: &userID}, pagination)
+	if err != nil {
+		return nil, fmt.Errorf("list videos by filter from db: %w", err)
+	}
+
+	return videos, nil
+}
