@@ -53,6 +53,7 @@ func main() {
 
 	sessionS := service.NewSessionService(cfg.Auth.Session, &repo)
 	videoS := service.NewVideoService(cfg.Video, cfg.MinIO, &storage, &repo)
+	quotaUsageS := service.NewQuotaUsageService(&repo)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -68,6 +69,10 @@ func main() {
 	}
 	if err := job.ClearExpiredVideos(c, ctx, &videoS); err != nil {
 		slog.Error("start the job: ClearExpiredVideos", slog.String("err", err.Error()))
+		os.Exit(1)
+	}
+	if err := job.ClearOldQuotaUsage(c, ctx, &quotaUsageS); err != nil {
+		slog.Error("start the job: ClearOldQuotaUsage", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
 	c.Start()

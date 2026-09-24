@@ -54,6 +54,10 @@ type VideoRepository interface {
 	DeleteVideosExpired(ctx context.Context, retainPeriod time.Duration) error
 }
 
+type QuotaUsageRepository interface {
+	DeleteOldQuotaUsage(ctx context.Context) error
+}
+
 type TransactionRepository interface {
 	WithTransaction(ctx context.Context, fn func(context.Context) error) error
 }
