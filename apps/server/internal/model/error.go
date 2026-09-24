@@ -35,6 +35,7 @@ var (
 
 	// -- Video -- //
 	ErrVideoUploading = errors.New("video is uploading")
+	ErrVideoNotFound  = errors.New("video not found")
 
 	ErrUnknown = errors.New("unknown error")
 )

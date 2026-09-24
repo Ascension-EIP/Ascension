@@ -72,7 +72,7 @@ type Migrator interface {
 type VideoStorage interface {
 	PresignedUploadURL(context.Context, string) (*url.URL, time.Time, error)
 	PresignedDownloadURL(context.Context, string) (*url.URL, time.Time, error)
-	FileExist(context.Context, string) error
+	FileExist(context.Context, string) (bool, error)
 	Delete(context.Context, string) error
 }
 

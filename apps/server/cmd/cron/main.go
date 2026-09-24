@@ -15,8 +15,8 @@ import (
 	"syscall"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/job"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/minio"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/rustfs"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/logger"
@@ -45,14 +45,14 @@ func main() {
 		slog.Info("migration completed successfully")
 	}
 
-	storage, err := minio.New(cfg.MinIO)
+	storage, err := rustfs.New(cfg.Storage)
 	if err != nil {
 		slog.Error("failed to create a new minio storage", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
 
 	sessionS := service.NewSessionService(cfg.Auth.Session, &repo)
-	videoS := service.NewVideoService(cfg.Video, cfg.MinIO, &storage, &repo)
+	videoS := service.NewVideoService(cfg.Video, cfg.Storage, &storage, &repo)
 	quotaUsageS := service.NewQuotaUsageService(&repo)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)

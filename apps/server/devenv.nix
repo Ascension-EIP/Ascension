@@ -47,9 +47,11 @@
       port = 5432;
     };
 
-    minio = {
+    rustfs = {
       enable = true;
-      package = pkgs.minio;
+      port = 9000;
+      consoleEnable = true;
+      consolePort = 9001;
       accessKey = "accesskey";
       secretKey = "secretkey";
     };

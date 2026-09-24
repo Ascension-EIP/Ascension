@@ -21,12 +21,12 @@ import (
 
 type VideoService struct {
 	cfgVideo config.VideoConfig
-	cfgMinIO config.MinIOConfig
+	cfgMinIO config.StorageConfig
 	storage  model.VideoStorage
 	repo     model.VideoRepository
 }
 
-func NewVideoService(cfgVideo config.VideoConfig, cfgMinIO config.MinIOConfig, storage model.VideoStorage, repo model.VideoRepository) VideoService {
+func NewVideoService(cfgVideo config.VideoConfig, cfgMinIO config.StorageConfig, storage model.VideoStorage, repo model.VideoRepository) VideoService {
 	return VideoService{cfgVideo: cfgVideo, cfgMinIO: cfgMinIO, storage: storage, repo: repo}
 }
 
@@ -103,8 +103,12 @@ func (s *VideoService) UploadComplete(ctx context.Context, videoID uuid.UUID, us
 		return err
 	}
 
-	if err := s.storage.FileExist(ctx, video.ObjectKey); err != nil {
-		return err
+	if ok, err := s.storage.FileExist(ctx, video.ObjectKey); !ok {
+		if err == nil {
+			return model.ErrVideoNotFound
+		} else {
+			return err
+		}
 	}
 
 	// collect missing value for video row

@@ -19,13 +19,13 @@ import (
 )
 
 type AnalysisService struct {
-	cfg       config.MinIOConfig
+	cfg       config.StorageConfig
 	analysisR model.AnalysisRepository
 	videoR    model.VideoRepository
 	queue     model.AnalysisQueue
 }
 
-func NewAnalysisService(cfg config.MinIOConfig, analysisR model.AnalysisRepository, videoR model.VideoRepository, queue model.AnalysisQueue) AnalysisService {
+func NewAnalysisService(cfg config.StorageConfig, analysisR model.AnalysisRepository, videoR model.VideoRepository, queue model.AnalysisQueue) AnalysisService {
 	return AnalysisService{cfg: cfg, analysisR: analysisR, videoR: videoR, queue: queue}
 }
 

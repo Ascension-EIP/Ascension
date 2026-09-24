@@ -20,9 +20,9 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/handler"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/middleware"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/router"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/minio"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/rabbitmq"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/rustfs"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
 	"github.com/gin-gonic/gin"
@@ -41,12 +41,12 @@ func Run(cfg config.Config) {
 		slog.Info("migration completed successfully")
 	}
 
-	storage, err := minio.New(cfg.MinIO)
+	storage, err := rustfs.New(cfg.Storage)
 	if err != nil {
 		slog.Error("failed to create a new minio storage", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
-	queue, err := rabbitmq.New(cfg.RabbitMQ)
+	queue, err := rabbitmq.New(cfg.Queue)
 	if err != nil {
 		slog.Error("failed to create a new rabbitmq queue", slog.String("err", err.Error()))
 		os.Exit(1)
@@ -57,8 +57,8 @@ func Run(cfg config.Config) {
 	userS := service.NewUserService(&repo)
 	userProfileS := service.NewUserProfileService(&repo)
 	authS := service.NewAuthService(&jwtS, &sessionS, &userS, &userProfileS, &repo)
-	videoS := service.NewVideoService(cfg.Video, cfg.MinIO, &storage, &repo)
-	analysisS := service.NewAnalysisService(cfg.MinIO, &repo, &repo, &queue)
+	videoS := service.NewVideoService(cfg.Video, cfg.Storage, &storage, &repo)
+	analysisS := service.NewAnalysisService(cfg.Storage, &repo, &repo, &queue)
 
 	authMW := middleware.AuthMiddleware(&jwtS)
 
