@@ -1,4 +1,4 @@
-# @date 2026-09-18
+# @date 2026-09-27
 # @file __init__.py
 # @brief File description.
 # @project Ascension
@@ -29,7 +29,7 @@ def main() -> None:
     try:
         load_dotenv()
 
-        # start_consuming() est bloquant : il doit être appelé en dernier.
+        # start_consuming() is blocking: it must be called last.
         db.connect()
         storage.connect()
         broker.setup_config().connect().setup_channel().start_consuming()

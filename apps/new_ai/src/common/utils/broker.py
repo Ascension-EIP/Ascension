@@ -1,4 +1,4 @@
-# @date 2026-09-17
+# @date 2026-09-27
 # @file broker.py
 # @brief File description.
 # @project Ascension
@@ -14,11 +14,11 @@ from common.utils.logger import log
 
 
 def payload_validity(func: Callable[..., Any]) -> Callable[..., Any]:
-    """Décode le corps JSON avant d'appeler le consommateur.
+    """Decode the JSON body before calling the consumer.
 
-    Le callback enveloppé est appelé avec ``(channel, method, properties,
-    payload)`` : le dernier argument est le JSON désérialisé, pas les octets
-    bruts transmis par pika.
+    The wrapped callback is called with ``(channel, method, properties,
+    payload)``: the last argument is the deserialized JSON, not the raw bytes
+    sent by pika.
     """
 
     @functools.wraps(func)
@@ -26,8 +26,8 @@ def payload_validity(func: Callable[..., Any]) -> Callable[..., Any]:
         try:
             payload = json.loads(body.decode("utf-8"))
         except (json.JSONDecodeError, UnicodeDecodeError) as e:
-            log.error("Échec du pré-traitement (JSON invalide): %s", e)
-            # Rejet immédiat si le prérequis échoue
+            log.error("Pre-processing failed (invalid JSON): %s", e)
+            # Reject immediately when the prerequisite fails
             ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
             return None
 
