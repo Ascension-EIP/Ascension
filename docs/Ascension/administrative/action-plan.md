@@ -3,8 +3,7 @@ id: 6dbad1cf-7a8f-43f8-a5a4-111052513263
 ---
 
 :::success
-**Version:** 1.0\
-**Original language:** French
+**Version:** 1.1
 :::
 
 ---
@@ -13,7 +12,7 @@ id: 6dbad1cf-7a8f-43f8-a5a4-111052513263
 
 ---
 
-## 1\. Context
+## 1\. Contexte
 
 ### 1.1 Origine du projet
 
@@ -73,15 +72,15 @@ Parties prenantes externes :
 
 ---
 
-## 2\. Technical Specifications
+## 2\. Spécifications techniques
 
 ### 2.1 Stack visée
 
 | Couche | Technologie | Rôle principal |
 | --- | --- | --- |
-| Mobile | Flutter / Dart | Expérience utilisateur, rendu 3D, parcours complet |
+| Mobile | Flutter / Dart | Expérience utilisateur, interface fluide, accessibilité, parcours complet |
 | API | Go (Gin) | Orchestration, sécurité, contrats API |
-| IA | Python (MediaPipe, OpenCV, PyTorch, pipeline SAM3D) | Analyse biomécanique, détection prises, conseils |
+| IA | Python (MediaPipe, OpenCV, PyTorch, modèle 3D en phase avancée) | Analyse biomécanique, détection prises, conseils |
 | Broker | RabbitMQ | Traitement asynchrone fiable |
 | Base de données | PostgreSQL | Stockage métier et résultats |
 | Stockage objet | MinIO (S3 compatible) | Upload vidéo et artefacts |
@@ -91,25 +90,31 @@ Parties prenantes externes :
 
 Méthode choisie : cycles courts, mesurables, et orientés preuves.
 
-Règles de pilotage :
+Règles de pilotage et cadence :
 
-- backlog unique et priorisé,
-- sprint et suivi réguliers,
+- charge prévue : **2 jours de travail par semaine** (capacité indicative d'environ 90 jours sur la période BTP),
+- rythme de pilotage : **1 sprint + 1 suivi environs toutes les 6 semaines**,
+- backlog unique et priorisé sur GitHub Project,
 - revue risques + revue qualité à chaque cycle,
-- décisions techniques toujours documentées,
+- décisions techniques toujours documentées (veille, benchmarks, PoC),
 - boucle continue : mesurer -> tester -> optimiser -> re-mesurer.
 
 ### 2.3 Périmètre fonctionnel suivi dans ce plan
 
-Ce plan couvre le pilotage des blocs suivants :
+Ce plan couvre le pilotage des blocs ciblés pour le jalon **GreenLight (BTP)** :
 
-- authentification et gestion du profil,
-- upload et analyse IA asynchrone,
-- restitution biomécanique et score,
-- expérience 3D,
-- mode fantôme (MVP puis enrichi),
-- accessibilité mobile,
-- robustesse backend, CI/CD et observabilité.
+- authentification et configuration du profil morphologique (avec possibilité de reprise ultérieure),
+- onboarding guidé au premier lancement et tutoriels rejouables depuis les paramètres,
+- upload vidéo et analyse IA 2D asynchrone (MediaPipe Pose, format biomécanique standardisé),
+- restitution biomécanique, score global et suivi de progression dans le temps,
+- conseils techniques personnalisés via modèle externe (type Gemini ou équivalent API),
+- mode fantôme MVP (comparaison sur vidéo réelle et génération via photo de voie avec sélection manuelle des prises en mode custom),
+- dimension communautaire et partage (partage d'analyses, comparaison de performances entre amis, contrôle fin de la visibilité),
+- coach personnel et programmes d'entraînement (objectifs de progression, séances types personnalisées, journalisation des entraînements),
+- accessibilité numérique mobile forte (objectifs WCAG 2.2 AA),
+- robustesse backend (migration Go finalisée), CI/CD et observabilité.
+
+*(Note : l'extraction de posture via modèle 3D, l'expérience 3D mobile interactive, la détection automatique avancée des prises, la grimpe assistée AR/audio temps réel et le cycle business complet sont planifiés pour l'ATP).*
 
 ### 2.4 User stories de référence
 
@@ -117,11 +122,15 @@ Ce plan couvre le pilotage des blocs suivants :
 | --- | --- | --- |
 | US-01 | En tant que grimpeur, je crée un compte et me connecte. | Je peux accéder à l’application sans blocage. |
 | US-02 | En tant que grimpeur, je configure mon profil morphologique. | Mes données sont sauvegardées et réutilisées dans les analyses. |
-| US-03 | En tant que grimpeur, j’envoie une vidéo et je lance une analyse. | Une analyse est créée avec statut visible. |
-| US-04 | En tant que grimpeur, je consulte un résultat clair. | Je reçois des indicateurs et conseils compréhensibles. |
-| US-05 | En tant que grimpeur, je visualise ma montée en 3D. | Le rendu est stable et manipulable. |
-| US-06 | En tant que grimpeur, j’utilise le mode fantôme pour comparer ma montée. | Les écarts de trajectoire sont lisibles et exploitables. |
-| US-07 | En tant qu’équipe technique, je mesure la performance des flux critiques. | Les KPI sont enregistrés, comparés et améliorés. |
+| US-03 | En tant que nouvel utilisateur, je découvre l'app via un onboarding guidé et peux rejouer les tutoriels. | L'onboarding s'affiche au premier lancement et les tutoriels sont accessibles depuis les paramètres. |
+| US-04 | En tant que grimpeur, j’envoie une vidéo de grimpe et je lance une analyse. | Une analyse est créée avec statut et progression visibles jusqu'au résultat final. |
+| US-05 | En tant que grimpeur, je consulte un résultat biomécanique clair, mon score global et mes conseils. | Je reçois des indicateurs, un score de séance et des recommandations personnalisées compréhensibles. |
+| US-06 | En tant que grimpeur, je sélectionne les prises de ma voie en mode custom sur photo pour générer le fantôme MVP. | Les prises sélectionnées manuellement sont prises en compte pour calculer la trajectoire optimale. |
+| US-07 | En tant que grimpeur, je visualise la bêta calculée sur photo. | La bêta est affichée clairement et progressivement sur la photo. |
+| US-08 | En tant que grimpeur, je définis mes objectifs et génère des routines d'entraînement personnalisées. | Des séances types adaptées à mon profil sont proposées et je peux consigner mes entraînements. |
+| US-09 | En tant que grimpeur, je partage mes analyses et compare mes performances avec mes amis selon mes choix de confidentialité. | Le partage respecte les droits choisis (privé, amis, public) et l'accès ami est instantané. |
+| US-10 | En tant qu'utilisateur ayant des besoins d'accessibilité, je navigue confortablement dans l'application. | L'application respecte les contrastes, la mise à l'échelle des textes et le guidage par lecteur d'écran. |
+| US-11 | En tant qu’équipe technique, je mesure la performance des flux critiques et la fiabilité système. | Les KPI (temps d'analyse, latence API, stabilité, score accessibilité) sont suivis et optimisés. |
 
 ### 2.5 Milestones planifiés
 
@@ -129,11 +138,11 @@ Le plan contient 5 milestones, comme recommandé dans les consignes G-EIP-600.
 
 | Milestone | Période cible | Objectifs |
 | --- | --- | --- |
-| M1 - Lancement opérationnel | Septembre 2026 -> Mi-octobre 2026 | Lancer l’exécution: backlog final, registre des risques actif, CI/CD stabilisé, suivi d’équipe opérationnel. |
-| M2 - Stabilisation technique | Mi-octobre 2026 -> Fin novembre 2026 | Sécuriser le socle API/IA, fiabiliser upload et analyse asynchrone, réduire les incidents bloquants. |
-| M3 - Parcours produit complet v1 | Décembre 2026 -> Mi-janvier 2027 | Valider le parcours principal de bout en bout (compte, profil, upload, analyse, restitution). |
-| M4 - Valeur démontrable GreenLight | Mi-janvier 2027 -> Fin mars 2027 | Stabiliser la reconstruction 3D et le mode fantôme MVP, améliorer accessibilité et lisibilité des résultats. |
-| M5 - Finalisation GreenLight | Avril 2027 -> Juillet 2027 | Campagne de tests finale, optimisation performance, preuves techniques consolidées, dossier GreenLight prêt. |
+| M1 - Lancement opérationnel | Septembre 2026 -> Mi-octobre 2026 | Lancer l’exécution : backlog final, registre des risques actif, CI/CD stabilisé, suivi d'équipe opérationnel et amorce de la finalisation Rust → Go. |
+| M2 - Stabilisation technique | Mi-octobre 2026 -> Fin novembre 2026 | Sécuriser le socle API Go et l'IA 2D (MediaPipe), fiabiliser upload S3 et broker RabbitMQ. |
+| M3 - Parcours produit complet v1 | Décembre 2026 -> Mi-janvier 2027 | Valider le parcours principal de bout en bout (compte, profil morpho avec reprise, onboarding, tutoriels, upload, analyse 2D, restitution biomécanique et score). |
+| M4 - Valeur démontrable GreenLight | Mi-janvier 2027 -> Fin mars 2027 | Livrer le mode fantôme MVP (génération photo avec prises custom), les routines de base, le partage/communauté, la comparaison entre utilisateurs et l'accessibilité mobile forte. |
+| M5 - Finalisation GreenLight | Avril 2027 -> Juillet 2027 | Campagne de tests beta BTP, optimisation performance et accessibilité, consolidation des preuves techniques (benchmarks, revues experts), dossier GreenLight prêt. |
 
 ### 2.6 Definition of Done transversale
 
@@ -148,12 +157,7 @@ Une fonctionnalité est considérée "done" quand :
 
 ---
 
-## 3\. Non-Technical Specifications
-
-Dans cette section, nous gardons uniquement les deux topics optionnels choisis pour Ascension:
-
-- Collaborate with technical experts.
-- Measure, test, and optimize technical performance.
+## 3\. Spécifications non techniques
 
 ### 3.1 Mentorat et gouvernance
 
@@ -165,7 +169,7 @@ Le mentorat est intégré dans le fonctionnement courant :
 
 Le mentor sert de support stratégique, de garde-fou méthodologique, et de relais d’expérience.
 
-### 3.2 Topic mandatory - Evaluate and integrate new technologies
+### 3.2 Objectif obligatoire - Evaluate and integrate new technologies
 
 **Intention**
 
@@ -178,12 +182,12 @@ Le mentor sert de support stratégique, de garde-fou méthodologique, et de rela
 - POC ciblés pour valider ou invalider une option,
 - décision formalisée après mesure.
 
-**Objectif mesurable**
+**Mesurable**
 
 - au moins 1 benchmark structuré par grand chantier (IA, backend, mobile),
 - au moins 1 POC à impact décisionnel documenté.
 
-### 3.3 Topic mandatory - Structure, document, and harden the project's technical architecture
+### 3.3 Objectif obligatoire - Structure, document, and harden the project's technical architecture
 
 **Intention**
 
@@ -196,12 +200,12 @@ Bâtir une architecture logicielle robuste, modulaire, sécurisée et entièreme
 - durcir la sécurité applicative (authentification JWT, validation des entrées, gestion sécurisée des secrets d'environnement) et fiabiliser la gestion d'erreurs,
 - couvrir l’ensemble des modules critiques (API, algorithmes IA, services réseau mobile) par des tests unitaires et d’intégration.
 
-**Objectif mesurable**
+**Mesurable**
 
 - 100 % des composants disposent d’un README structuré et de pipelines de tests CI au vert,
 - couverture de tests et conformité aux standards validées avant chaque livraison de jalon.
 
-### 3.4 Topic optional - Collaborate with technical experts
+### 3.4 Objectif optionnel - Collaborate with technical experts
 
 **Intention**
 
@@ -214,12 +218,12 @@ Améliorer la qualité des choix techniques en sollicitant des retours externes 
 - organiser des sessions de feedback ciblées,
 - intégrer les retours dans les décisions d’architecture.
 
-**Objectif mesurable**
+**Mesurable**
 
 - au moins 2 revues externes significatives,
 - traçabilité des actions issues des retours.
 
-### 3.5 Topic optional - Measure, test, and optimize technical performance
+### 3.5 Objectif optionnel - Measure, test, and optimize technical performance
 
 **Intention**
 
@@ -232,7 +236,7 @@ Piloter les optimisations techniques sur des mesures concrètes et vérifiables.
 - implémenter des optimisations ciblées,
 - mesurer à nouveau et documenter l’impact réel.
 
-**Objectif mesurable**
+**Mesurable**
 
 - chaque campagne d’optimisation doit produire un avant/après chiffré,
 - les résultats doivent être visibles dans un tableau de suivi partagé.

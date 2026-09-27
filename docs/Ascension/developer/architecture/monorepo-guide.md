@@ -3,8 +3,7 @@ id: 159ee3ac-6376-46bf-b459-dbb45c3fe71c
 ---
 
 :::success
-**Version:** 2.5\
-**Original language:** English
+**Version:** 2.5
 :::
 
 ---
@@ -104,7 +103,7 @@ projects:
 # https://moonrepo.dev/docs/config/toolchain
 
 go:
-  version: '1.26.0'
+  version: '1.27.1'
 
 python:
   version: '3.11'
@@ -162,10 +161,10 @@ project:
   description: 'AI service for Ascension'
 
 tasks:
-  install:
+  setup:
     ...
 
-  download-model:
+  install:
     ...
 
   update:

@@ -5,13 +5,6 @@ globs: ["*.md"]
 alwaysApply: false
 ---
 
-:::success
-**Version:** 1.1
-**Original language:** English
-:::
-
----
-
 # AI Command: Update Documentation (`/update-docs`)
 
 This document serves as an execution protocol for inspecting modified features, architecture, or APIs and updating all relevant documentation files accordingly.
@@ -27,13 +20,13 @@ This document serves as an execution protocol for inspecting modified features, 
 
 ---
 
-## 1\. Command Objective
+## 1. Command Objective
 
 Keep documentation in sync with codebase changes after implementing features, refactoring, or updating configurations.
 
 ---
 
-## 2\. Workflow
+## 2. Workflow
 
 1. Identify modified code files or features.
 2. Search `docs/` for relevant architecture, guide, or API documentation.

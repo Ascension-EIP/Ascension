@@ -3,8 +3,7 @@ id: ff864812-b4c3-4506-bb44-acefe8422a84
 ---
 
 :::success
-**Version:** 1.0\
-**Original language:** English
+**Version:** 1.1
 :::
 
 ---
@@ -12,147 +11,124 @@ id: ff864812-b4c3-4506-bb44-acefe8422a84
 # Swagger / OpenAPI
 
 :::info
-**Migration Status:** The Ascension backend was migrated from Rust to Go. The automatic OpenAPI documentation via `utoipa` is a feature of the legacy Rust backend and is currently **planned but not yet active** on the Go/Gin backend server. This document serves as a reference of the previous Rust implementation and the planned Go swagger documentation.
+**Migration Status:** The Ascension backend was migrated from Rust to Go. OpenAPI / Swagger documentation will be integrated using **swaggo/swag** and **gin-swagger**. This document details the planned integration steps, annotations, and commands for the Go/Gin server.
 :::
 
-This document explains how to access the interactive API documentation (Swagger UI) for the Ascension backend, and how to keep the spec up-to-date when adding new routes.
+This document explains how to annotate routes and generate interactive API documentation (Swagger UI) for the Ascension Go backend.
 
 ---
 
-## Accessing Swagger UI
+## Target Swagger UI Endpoint
+
+Once enabled in the Gin router, Swagger UI will be accessible at:
 
 | Environment | URL |
 | --- | --- |
-| Local dev | [http://localhost:3000/swagger-ui](http://localhost:3000/swagger-ui) |
-| Staging | `https://<staging-host>/swagger-ui` |
-
-Start the server normally (`go run ./cmd/server` or `docker compose up server`) and open the URL above in your browser.
-
----
-
-## OpenAPI JSON endpoint
-
-The raw OpenAPI v3 JSON spec is served at:
-
-```
-GET /api-docs/openapi.json
-```
-
-You can import this URL directly into Postman, Insomnia, or any other tool that supports OpenAPI.
+| Local dev | [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html) |
+| Staging | `https://<staging-host>/swagger/index.html` |
+| OpenAPI JSON | `http://localhost:8080/swagger/doc.json` |
 
 ---
 
-## Route groups (tags)
+## Route Groups (Tags)
 
-| Tag | Base path | Description |
+| Tag | Base Path | Description |
 | --- | --- | --- |
-| Auth | `/v1/auth` | Register, login, logout |
-| Users | `/v1/users` | User CRUD |
-| Videos | `/v1/videos` | Pre-signed upload URL |
-| Analyses | `/v1/analyses` | AI pose-analysis jobs |
+| **Auth** | `/v1/auth` | User registration, authentication, token refresh, and logout |
+| **Users** | `/v1/users` | Administrative user CRUD management |
+| **Videos** | `/v1/videos` | Presigned upload/download URLs and upload confirmation |
+| **Analysis** | `/v1/analysis` | Triggering and polling asynchronous AI pose extraction jobs |
+| **Health** | `/healthz` | Unauthenticated liveness probe |
 
 ---
 
-## How it worked (Rust Legacy)
+## Go / Gin Implementation with Swag
 
-In the Rust codebase, we used `utoipa` to generate the OpenAPI spec directly from Rust source annotations, mounting it in Axum:
+The Go ecosystem uses [swaggo/swag](https://github.com/swaggo/swag) to parse declarative comments on handlers and structs, and [gin-swagger](https://github.com/swaggo/gin-swagger) to serve the UI.
 
-```rust
-#[derive(OpenApi)]
-#[openapi(paths(...), components(schemas(...)), tags(...))]
-pub struct ApiDoc;
-```
+### Step 1 – General API Annotations (`cmd/server/main.go`)
 
----
-
-## Planned Go Implementation
-
-For the Go/Gin backend, Swagger UI will be integrated using **swaggo/swag**. Once implemented, routes will be documented using Go comments above handler functions:
+Add the root documentation annotations above the `main` package or function:
 
 ```go
-// @Summary Create a user
-// @Description Creates a new user record
-// @Tags Users
-// @Accept json
-// @Produce json
-// @Param request body request.SignupLoginForm true "User signup details"
-// @Success 201 {object} response.LoginResponse
-// @Router /v1/auth/signup [post]
+// @title Ascension API
+// @version 1.0
+// @description High-level climbing coach AI backend API.
+// @host localhost:8080
+// @BasePath /v1
+
+// @securityDefinitions.apikey Bearer
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
 ```
 
 ---
 
-## Adding a new route to the spec
+### Step 2 – Annotate Handler Functions
 
-Follow these four steps every time you add a handler.
+Place declarative `@Summary`, `@Tags`, `@Param`, and `@Success`/`@Failure` annotations directly above each handler method in `internal/inbound/http/handler/`:
 
-### 1\. Annotate request/response structs
-
-Derive `ToSchema` on every struct that appears in the request body or response body:
-
-```rust
-use utoipa::ToSchema;
-
-#[derive(Deserialize, ToSchema)]
-pub struct MyRequest {
-    pub field: String,
+```go
+// Create handles analysis creation
+// @Summary Trigger a video analysis
+// @Description Queues a new video for 2D/3D skeleton and hold analysis
+// @Tags Analysis
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param request body request.CreateAnalyseRequest true "Analysis parameters"
+// @Success 202 {object} response.AnalysisResponse
+// @Failure 400 {object} response.Error
+// @Failure 401 {object} response.Error
+// @Failure 404 {object} response.Error
+// @Router /analysis [post]
+func (h *AnalysisHandler) Create(c *gin.Context) {
+    // ...
 }
+```
 
-#[derive(Serialize, ToSchema)]
-pub struct MyResponse {
-    pub id: uuid::Uuid,
+---
+
+### Step 3 – Document Request & Response DTO Structs
+
+All structs in `internal/inbound/http/dto/request/` and `dto/response/` should define explicit `json` and `binding` tags. Swag infers the OpenAPI schema directly from them:
+
+```go
+type CreateAnalyseRequest struct {
+    VideoID    uuid.UUID `json:"video_id" binding:"required" example:"018e6e5a-1234-7abc-8def-0123456789ab"`
+    Type       string    `json:"type" binding:"required" example:"2d" enums:"2d,3d"`
+    Visibility string    `json:"visibility" binding:"required" example:"private" enums:"private,friends,public"`
 }
 ```
 
-### 2\. Annotate the handler function
+---
 
-Place `#[utoipa::path]` directly above the handler:
+### Step 4 – Generate Docs and Serve Swagger UI
 
-```rust
-#[utoipa::path(
-    post,                              // HTTP method
-    path = "/v1/my-resource",
-    request_body = MyRequest,          // omit for GET
-    responses(
-        (status = 201, description = "Created", body = MyResponse),
-        (status = 422, description = "Validation error"),
-    ),
-    tag = "MyTag"                      // matches a tag name in ApiDoc
-)]
-pub async fn my_handler(…) -> … { … }
+1. Install `swag` CLI:
+
+```bash
+go install github.com/swaggo/swag/cmd/swag@latest
 ```
 
-For path parameters, use the `params` key:
+2. Generate documentation files (`docs/swagger/`):
 
-```rust
-#[utoipa::path(
-    get,
-    path = "/v1/my-resource/{id}",
-    params(
-        ("id" = Uuid, Path, description = "Resource UUID"),
-    ),
-    …
-)]
+```bash
+swag init -g cmd/server/main.go -o ./docs/swagger
 ```
 
-### 3\. Register in `ApiDoc`
+3. Mount the handler in `internal/inbound/http/router/router.go`:
 
-Open `apps/server/src/inbound/http.rs` and add the handler and schemas to the `#[openapi(…)]` attribute:
+```go
+import (
+    swaggerFiles "github.com/swaggo/files"
+    ginSwagger "github.com/swaggo/gin-swagger"
+    _ "github.com/Ascension-EIP/Ascension/apps/server/docs/swagger"
+)
 
-```rust
-#[openapi(
-    paths(
-        // … existing paths …
-        handlers::my_module::my_handler::my_handler,   // ← add this
-    ),
-    components(schemas(
-        // … existing schemas …
-        MyRequest, MyResponse,                          // ← add these
-    )),
-)]
-pub struct ApiDoc;
+// Inside router.New:
+app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 ```
 
-### 4\. Verify
-
-Run the server and open `/swagger-ui`. Your new endpoint should appear under the correct tag group. If it is missing, check that the module path in `paths(…)` matches the actual Rust module hierarchy.
+4. Verify by navigating to `http://localhost:8080/swagger/index.html`.

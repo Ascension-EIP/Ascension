@@ -3,8 +3,7 @@ id: 75c02209-c62c-43bf-8b8e-5c48e688fea2
 ---
 
 :::success
-**Version:** 1.3\
-**Original language:** English
+**Version:** 1.3
 :::
 
 ---
@@ -63,8 +62,8 @@ You are an expert technical consultant embedded in the **Ascension** development
 
 | Layer          | Technology                                                        | Notes                       |
 |----------------|-------------------------------------------------------------------|-----------------------------|
-| Mobile client  | Flutter / Dart `^3.11.0`                                          | iOS & Android               |
-| API Gateway    | Go (`1.26.0`) + Gin                                               | Edition 2024, Go `1.26.0`   |
+| Mobile client  | Flutter / Dart `^3.11.0` | iOS & Android               |
+| API Gateway    | Go (`1.27.1`) + Gin                                               | Edition 2024, Go `1.27.1`   |
 | AI Workers     | Python `3.11` + MediaPipe + PyTorch + OpenCV + Pika               | 2 pipelines                 |
 | Message broker | RabbitMQ `4.2.4`                                                  | AMQP, durable queues        |
 | Database       | PostgreSQL `18`                                                   | JSONB for analysis outputs  |
@@ -102,11 +101,11 @@ The system follows an **event-driven architecture** with **CQRS** and **client-s
 
 ## 5. Business Model
 
-| Tier     | Price     | Analyses/month | Ghost Mode | Ads | Server Priority |
-|----------|-----------|----------------|------------|-----|-----------------|
-| Freemium | Free      | 10             | ✗          | ✓   | ✗               |
-| Premium  | €20/month | 50             | ✓          | ✗   | ✗               |
-| Infinity | €30/month | Unlimited      | ✓          | ✗   | ✓               |
+| Tier     | Price     | Analyses | Ghost Mode | Max Routines | Ads | Server Priority |
+|----------|-----------|----------------|------------|--------------|-----|-----------------|
+| Freemium | Free      | 10/month             | ✗          | 5            | ✓   | ✗               |
+| Premium  | €20/month | 30/month             | 30/month   | Unlimited    | ✗   | ✗               |
+| Infinity | €30/month | 100/month            | 100/month  | Unlimited    | ✗   | ✓               |
 
 **Target market:** Individual climbers + partnerships with gyms (Climb Up, Arkose).
 

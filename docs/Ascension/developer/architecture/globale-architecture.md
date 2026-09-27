@@ -3,8 +3,7 @@ id: 66bf5d80-e1b4-457e-9fee-c1988ad5a22c
 ---
 
 :::success
-**Version:** 1.5\
-**Original language:** English
+**Version:** 1.5
 :::
 
 ---
@@ -46,7 +45,7 @@ Before diving into implementation, review these key documents:
 
 ### 📊 Part 2: Data & API Modeling
 
-3. [Database Schema & ERD](specifications/database-schema.md) - Complete data model
+3. [Database Schema \& ERD](specifications/database-schema.md) - Complete data model
    - Entity-Relationship Diagram (Mermaid)
    - PostgreSQL schema with triggers and indexes
    - Sample queries and migration strategy

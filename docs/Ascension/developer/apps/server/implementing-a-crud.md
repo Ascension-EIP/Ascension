@@ -3,8 +3,7 @@ id: 9dc0698f-5c49-4b7f-b42e-bef9c9b4e7c8
 ---
 
 :::success
-**Version:** 2.0\
-**Original language:** English
+**Version:** 2.1
 :::
 
 ---
@@ -22,55 +21,65 @@ We will use a hypothetical **Post** resource as our example.
 For a resource called `Post`, you will create or extend the following files:
 
 ```
+migrations/
+├── <timestamp>_create_posts_table.up.sql     # PostgreSQL up migration
+└── <timestamp>_create_posts_table.down.sql   # PostgreSQL down migration
+
 internal/
 ├── model/
-│   └── post.go            # Structs representing the database record and value rules
+│   ├── post.go             # Entity structs, validation methods, and DTO conversion
+│   └── ports.go            # PostRepository interface definition
 ├── service/
-│   └── post.go            # Business logic and repository port interface
+│   └── post.go             # Business logic orchestration
 ├── outbound/
 │   └── postgres/
-│       └── post.go        # pgx database operations
+│       └── post.go         # pgxpool SQL queries and scanning
 └── inbound/
     └── http/
+        ├── dto/
+        │   ├── request/post.go   # JSON request binding models
+        │   └── response/post.go  # JSON response serializing models
         ├── handler/
-        │   └── post.go    # Gin handlers for HTTP routes
+        │   └── post.go     # Gin HTTP handler methods
         └── router/
-            └── router.go  # Register route endpoints
+            └── router.go   # Route registration and middleware attachment
 ```
 
 ---
 
 ## Step 1 – SQL migration
 
-Create a new file in `migrations/` named with the current timestamp and a descriptive name:
+Create a migration pair in `apps/server/migrations/` (or run `moon run server:migrate` to verify):
 
-```
-migrations/20260305000000_create_posts_table.sql
-```
-
-Write your `CREATE TABLE` statement:
+**`migrations/20260922000000_create_posts_table.up.sql`**:
 
 ```sql
 CREATE TABLE posts (
-    id          UUID        PRIMARY KEY,
+    id          UUID        PRIMARY KEY DEFAULT uuidv7(),
     title       TEXT        NOT NULL,
     content     TEXT        NOT NULL,
-    author_id   UUID        NOT NULL REFERENCES users(id),
-    created_at  TIMESTAMP   NOT NULL DEFAULT NOW(),
-    updated_at  TIMESTAMP   NOT NULL DEFAULT NOW()
+    author_id   UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TRIGGER update_posts_updated_at
 BEFORE UPDATE ON posts
 FOR EACH ROW
-EXECUTE FUNCTION set_updated_at();
+EXECUTE FUNCTION update_updated_at_column();
+```
+
+**`migrations/20260922000000_create_posts_table.down.sql`**:
+
+```sql
+DROP TABLE IF EXISTS posts;
 ```
 
 ---
 
-## Step 2 – Domain models
+## Step 2 – Domain model & Port
 
-Create `internal/model/post.go`. Define the core entity struct and validation:
+### 1\. Create `internal/model/post.go`
 
 ```go
 package model
@@ -78,14 +87,17 @@ package model
 import (
 	"fmt"
 	"strings"
-	"github.com/google/uuid"
+	"time"
+	"uuid"
 )
 
 type Post struct {
-	ID       uuid.UUID `json:"id"`
-	Title    string    `json:"title"`
-	Content  string    `json:"content"`
-	AuthorID uuid.UUID `json:"author_id"`
+	ID        uuid.UUID `json:"id"`
+	Title     string    `json:"title"`
+	Content   string    `json:"content"`
+	AuthorID  uuid.UUID `json:"author_id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type NewPost struct {
@@ -103,43 +115,48 @@ func (p *NewPost) Validate() error {
 }
 ```
 
+### 2\. Add the repository port to `internal/model/ports.go`
+
+```go
+type PostRepository interface {
+	CreatePost(ctx context.Context, p *NewPost) (*Post, error)
+	GetPostByID(ctx context.Context, id uuid.UUID) (*Post, error)
+}
+```
+
 ---
 
-## Step 3 – Service and Repository Port
+## Step 3 – Service layer
 
-Create `internal/service/post.go`. The service contains the business logic. It declares what database operations it needs using a local repository interface (port):
+Create `internal/service/post.go`:
 
 ```go
 package service
 
 import (
 	"context"
+	"uuid"
+
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/google/uuid"
 )
 
-type postRepository interface {
-	CreatePost(context.Context, *model.NewPost) (*model.Post, error)
-	GetPostByID(context.Context, uuid.UUID) (*model.Post, error)
-}
-
 type PostService struct {
-	r postRepository
+	repo model.PostRepository
 }
 
-func NewPostService(r postRepository) PostService {
-	return PostService{r: r}
+func NewPostService(repo model.PostRepository) PostService {
+	return PostService{repo: repo}
 }
 
 func (s *PostService) Create(ctx context.Context, newPost *model.NewPost) (*model.Post, error) {
 	if err := newPost.Validate(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %s", model.ErrInvalidInput, err.Error())
 	}
-	return s.r.CreatePost(ctx, newPost)
+	return s.repo.CreatePost(ctx, newPost)
 }
 
 func (s *PostService) GetByID(ctx context.Context, id uuid.UUID) (*model.Post, error) {
-	return s.r.GetPostByID(ctx, id)
+	return s.repo.GetPostByID(ctx, id)
 }
 ```
 
@@ -147,36 +164,54 @@ func (s *PostService) GetByID(ctx context.Context, id uuid.UUID) (*model.Post, e
 
 ## Step 4 – Outbound adapter (PostgreSQL)
 
-Create `internal/outbound/postgres/post.go`. Implement the `postRepository` interface using `pgxpool`:
+Create `internal/outbound/postgres/post.go` implementing `model.PostRepository`:
 
 ```go
 package postgres
 
 import (
 	"context"
+	"uuid"
+
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/google/uuid"
 )
 
-func (r PostgresRepository) CreatePost(ctx context.Context, p *model.NewPost) (*model.Post, error) {
-	id := uuid.New()
-	query := `INSERT INTO posts (id, title, content, author_id) VALUES ($1, $2, $3, $4)`
-	_, err := r.Pool.Exec(ctx, query, id, p.Title, p.Content, p.AuthorID)
+func (r *PostgresRepository) CreatePost(ctx context.Context, p *model.NewPost) (*model.Post, error) {
+	query := `
+		INSERT INTO posts (title, content, author_id)
+		VALUES ($1, $2, $3)
+		RETURNING id, title, content, author_id, created_at, updated_at
+	`
+	var post model.Post
+	err := r.Pool.QueryRow(ctx, query, p.Title, p.Content, p.AuthorID).Scan(
+		&post.ID,
+		&post.Title,
+		&post.Content,
+		&post.AuthorID,
+		&post.CreatedAt,
+		&post.UpdatedAt,
+	)
 	if err != nil {
 		return nil, err
 	}
-	return &model.Post{
-		ID:       id,
-		Title:    p.Title,
-		Content:  p.Content,
-		AuthorID: p.AuthorID,
-	}, nil
+	return &post, nil
 }
 
-func (r PostgresRepository) GetPostByID(ctx context.Context, id uuid.UUID) (*model.Post, error) {
-	query := `SELECT id, title, content, author_id FROM posts WHERE id = $1`
+func (r *PostgresRepository) GetPostByID(ctx context.Context, id uuid.UUID) (*model.Post, error) {
+	query := `
+		SELECT id, title, content, author_id, created_at, updated_at
+		FROM posts
+		WHERE id = $1
+	`
 	var post model.Post
-	err := r.Pool.QueryRow(ctx, query, id).Scan(&post.ID, &post.Title, &post.Content, &post.AuthorID)
+	err := r.Pool.QueryRow(ctx, query, id).Scan(
+		&post.ID,
+		&post.Title,
+		&post.Content,
+		&post.AuthorID,
+		&post.CreatedAt,
+		&post.UpdatedAt,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -188,29 +223,29 @@ func (r PostgresRepository) GetPostByID(ctx context.Context, id uuid.UUID) (*mod
 
 ## Step 5 – Inbound handlers (HTTP)
 
-Create `internal/inbound/http/handler/post.go`. This controller binds requests, invokes the service, and formats responses:
+Create `internal/inbound/http/handler/post.go`:
 
 ```go
 package handler
 
 import (
 	"net/http"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/request"
+	"uuid"
+
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/macro"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 )
 
 type PostHandler struct {
 	s *service.PostService
-	l *zerolog.Logger
 }
 
-func NewPostHandler(l *zerolog.Logger, s *service.PostService) PostHandler {
-	return PostHandler{s: s, l: l}
+func NewPostHandler(s *service.PostService) PostHandler {
+	return PostHandler{s: s}
 }
 
 type CreatePostRequest struct {
@@ -219,7 +254,7 @@ type CreatePostRequest struct {
 }
 
 func (h *PostHandler) Create(c *gin.Context) {
-	userID, err := utils.GetFromContext[uuid.UUID](c, "userID")
+	user, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -227,19 +262,19 @@ func (h *PostHandler) Create(c *gin.Context) {
 
 	var req CreatePostRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
 
 	newPost := &model.NewPost{
 		Title:    req.Title,
 		Content:  req.Content,
-		AuthorID: userID,
+		AuthorID: user.ID,
 	}
 
 	post, err := h.s.Create(c.Request.Context(), newPost)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+		utils.Error(c, err)
 		return
 	}
 
@@ -255,13 +290,15 @@ func (h *PostHandler) Create(c *gin.Context) {
 
 ```go
 func New(
+	app *gin.Engine,
+	cfg config.Config,
+	authMW middleware.AuthHandler,
 	// ... handlers ...
 	postH *handler.PostHandler,
 ) {
 	// ...
-	postsGroup := v1.Group("/posts")
+	postsGroup := v1.Group("/posts", middleware.RateLimiter(time.Minute, 60), authMW(model.UserRoleUser, model.UserRoleAdmin))
 	{
-		postsGroup.Use(authMW, userMW)
 		postsGroup.POST("/", postH.Create)
 	}
 }
@@ -270,11 +307,17 @@ func New(
 2. Wire the dependencies in `internal/app/app.go`:
 
 ```go
-postService := service.NewPostService(repo)
-postHandler := handler.NewPostHandler(l, &postService)
+postService := service.NewPostService(&repo)
+postHandler := handler.NewPostHandler(&postService)
 
 router.New(
-	// ... handlers ...
+	app,
+	cfg,
+	authMW,
+	&userH,
+	&authH,
+	&videoH,
+	&analysisH,
 	&postHandler,
 )
 ```
@@ -283,8 +326,8 @@ router.New(
 
 ## Step 7 – Unit tests
 
-Write unit tests for the service using Go testing framework by mocking the repository layer or writing mock repository adapters. Run tests with:
-
 ```bash
+moon run server:test
+# or
 go test ./internal/service/...
 ```

@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS holds;
+
+DROP TYPE IF EXISTS hold_source;
+DROP TYPE IF EXISTS hold_type;

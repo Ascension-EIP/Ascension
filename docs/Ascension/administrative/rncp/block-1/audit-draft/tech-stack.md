@@ -4,7 +4,6 @@ id: 626320d5-faec-4110-b269-1eb5d3458721
 
 :::success
 **Version:** 1.0\
-**Original language:** English\
 DON'T EDIT THIS FILE !
 :::
 

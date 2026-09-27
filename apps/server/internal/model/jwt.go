@@ -1,4 +1,4 @@
-// @date 2026-03-11
+// @date 2026-09-20
 // @file jwt.go
 // @brief File description.
 // @project Ascension
@@ -9,11 +9,15 @@ package model
 
 import (
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type JWTClaims struct {
-	UserID   uuid.UUID `json:"user_id"`
-	UserRole UserRole  `json:"user_role"`
+	UserID        uuid.UUID    `json:"user_id"`
+	UserUsername  UserUsername `json:"user_username"`
+	UserFirstName string       `json:"user_first_name"`
+	UserLastName  string       `json:"user_last_name"`
+	UserEmail     UserEmail    `json:"user_email"`
+	UserRole      UserRole     `json:"user_role"`
 	jwt.RegisteredClaims
 }

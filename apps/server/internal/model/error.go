@@ -1,4 +1,4 @@
-// @date 2026-03-11
+// @date 2026-09-12
 // @file error.go
 // @brief File description.
 // @project Ascension
@@ -22,8 +22,19 @@ import "errors"
 // )
 
 var (
-	ErrEmailDuplicate = errors.New("email already exists")
-	ErrUserNotFound   = errors.New("user not found")
-	ErrBadPassword    = errors.New("incorrect password")
-	ErrUnknown        = errors.New("unknown error")
+	ErrEmailDuplicated = errors.New("email already exists")
+	ErrUserNotFound    = errors.New("user not found")
+	ErrBadPassword     = errors.New("incorrect password")
+
+	ErrInvalidToken = errors.New("invalid token")
+
+	ErrInvalidInput = errors.New("invalid input")
+	ErrConflict     = errors.New("conflict")
+	ErrNotFound     = errors.New("not found")
+	ErrInternalDB   = errors.New("internal database error")
+
+	// -- Video -- //
+	ErrVideoUploading = errors.New("video is uploading")
+
+	ErrUnknown = errors.New("unknown error")
 )

@@ -3,8 +3,7 @@ id: 377a22cf-18e4-47b5-8e2e-f8979c75c582
 ---
 
 :::success
-**Version:** 1.0\
-**Original language:** French
+**Version:** 1.0
 :::
 
 ---

@@ -1,4 +1,4 @@
-// @date 2026-03-11
+// @date 2026-09-20
 // @file context.go
 // @brief File description.
 // @project Ascension
@@ -9,9 +9,27 @@ package utils
 
 import (
 	"fmt"
+	"net/netip"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 )
+
+func ClientInfo(c *gin.Context) model.ClientInfo {
+	var clientInfo model.ClientInfo
+	userAgent := c.GetHeader("User-Agent")
+	if userAgent != "" {
+		clientInfo.UserAgent = &userAgent
+	}
+	clientIP := c.ClientIP()
+	ipAddress, err := netip.ParseAddr(clientIP)
+	if err == nil {
+		clientInfo.IPAddress = &ipAddress
+	}
+
+	return clientInfo
+}
 
 func GetFromContext[T any](c *gin.Context, key string) (T, error) {
 	var empty T

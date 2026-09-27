@@ -1,4 +1,4 @@
-// @date 2026-03-11
+// @date 2026-09-09
 // @file logger.go
 // @brief File description.
 // @project Ascension
@@ -8,53 +8,54 @@
 package middleware
 
 import (
-	"strconv"
+	"log/slog"
+	"net/url"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
 )
 
-func Logger(l *zerolog.Logger) gin.HandlerFunc {
+func Logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 
 		c.Next()
 
 		path := c.Request.URL.Path
-		query := c.Request.URL.RawQuery
+		rawQuery := c.Request.URL.RawQuery
 		method := c.Request.Method
 		clientIP := c.ClientIP()
+		userAgent := c.Request.UserAgent()
+
+		query, _ := url.ParseQuery(rawQuery)
+
 		latency := time.Since(start)
 		status := c.Writer.Status()
 
-		if query != "" {
-			path = path + "?" + query
-		}
-
-		var event *zerolog.Event
+		var level slog.Level
 		switch {
 		case status >= 500:
-			event = l.Error()
+			level = slog.LevelError
 		case status >= 400:
-			event = l.Warn()
+			level = slog.LevelInfo
 		default:
-			event = l.Info()
+			level = slog.LevelInfo
 		}
 
-		requestID, exists := c.Get("request_id")
-		if !exists {
-			requestID = "unknown"
-		}
-
-		event.
-			Str("request_id", requestID.(string)).
-			Str("ip", clientIP).
-			Str("method", method).
-			Str("path", path).
-			Str("status", strconv.Itoa(status)).
-			Str("latency", latency.String()).
-			Msg("")
-
+		slog.LogAttrs(c.Request.Context(), level, "request_completed",
+			slog.Group(
+				"request",
+				slog.String("method", method),
+				slog.String("path", path),
+				slog.Any("params", query),
+				slog.String("ip", clientIP),
+				slog.String("user_agent", userAgent),
+			),
+			slog.Group(
+				"response",
+				slog.Int("status", status),
+				slog.Duration("latency", latency),
+			),
+		)
 	}
 }

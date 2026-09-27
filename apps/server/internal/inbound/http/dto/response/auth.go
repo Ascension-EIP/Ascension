@@ -14,18 +14,16 @@ import (
 type LoginResponse struct {
 	RefreshToken string `json:"refresh_token"`
 	AccessTokenResponse
-	User *User `json:"user"`
+	User User `json:"user"`
 }
 
-func TokensUserToResponse(tokens *model.Tokens, user *model.User) *LoginResponse {
-	return &LoginResponse{
-		RefreshToken: tokens.RefreshToken,
-		AccessTokenResponse: AccessTokenResponse{
-			AccessToken: tokens.Token,
-			TokenType:   tokens.TokenType,
-			ExpiresIn:   tokens.ExpiresIn,
-		},
-		User: UserToResponse(user),
+func TokensUserToResponse(tokens model.Tokens, user model.User) LoginResponse {
+	return LoginResponse{
+		RefreshToken: tokens.SessionToken,
+		AccessToken:  tokens.Token,
+		TokenType:    tokens.TokenType,
+		ExpiresIn:    tokens.ExpiresIn,
+		User:         UserToResponse(user),
 	}
 }
 
@@ -35,8 +33,8 @@ type AccessTokenResponse struct {
 	ExpiresIn   uint   `json:"expires_in"`
 }
 
-func AccessTokenToResponse(token *model.AccessToken) *AccessTokenResponse {
-	return &AccessTokenResponse{
+func AccessTokenToResponse(token model.AccessToken) AccessTokenResponse {
+	return AccessTokenResponse{
 		AccessToken: token.Token,
 		TokenType:   token.TokenType,
 		ExpiresIn:   token.ExpiresIn,
