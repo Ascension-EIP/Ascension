@@ -1,4 +1,4 @@
-// @date 2026-09-25
+// @date 2026-09-29
 // @file auth_interceptor.dart
 // @brief File description.
 // @project Ascension
@@ -25,8 +25,8 @@ class AuthInterceptor extends QueuedInterceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final isAuthEndpoint = options.path.contains('/auth/login') ||
-        options.path.contains('/auth/register');
+    final isAuthEndpoint = options.path.contains('/v1/auth/login') ||
+        options.path.contains('/v1/auth/signup');
 
     if (!isAuthEndpoint) {
       final token = await storage.getAccessToken();
@@ -55,7 +55,7 @@ class AuthInterceptor extends QueuedInterceptor {
             ),
           );
 
-          final refreshResponse = await refreshDio.post<Map<String, dynamic>>(
+          final refreshResponse = await refreshDio.put<Map<String, dynamic>>(
             ApiEndpoints.refreshToken,
             data: {'refresh_token': refreshToken},
           );
