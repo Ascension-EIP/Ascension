@@ -1,4 +1,4 @@
-// @date 2026-09-25
+// @date 2026-09-29
 // @file app_router.dart
 // @brief File description.
 // @project Ascension
@@ -10,9 +10,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:new_mobile/features/auth/presentation/controllers/auth_state.dart';
 import 'package:new_mobile/features/auth/presentation/screens/login_screen.dart';
+import 'package:new_mobile/features/auth/presentation/screens/register_screen.dart';
+import 'package:new_mobile/features/auth/presentation/screens/welcome_screen.dart';
 import 'package:new_mobile/features/climb_session/presentation/screens/home_screen.dart';
 import 'package:new_mobile/features/climb_session/presentation/screens/sessions_screen.dart';
 import 'package:new_mobile/features/profile/presentation/screens/profile_screen.dart';
+import 'package:new_mobile/features/profile/presentation/screens/settings_screen.dart';
 import 'package:new_mobile/features/training/presentation/screens/training_screen.dart';
 import 'package:new_mobile/routing/routes.dart';
 import 'package:new_mobile/routing/shell/app_shell.dart';
@@ -47,11 +50,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      final isAuthRoute = state.matchedLocation == AppRoute.login.path ||
+      final isAuthRoute = state.matchedLocation == AppRoute.welcome.path ||
+          state.matchedLocation == AppRoute.login.path ||
           state.matchedLocation == AppRoute.register.path;
 
       if (!authState.isAuthenticated && !isAuthRoute) {
-        return AppRoute.login.path;
+        return AppRoute.welcome.path;
       }
 
       if (authState.isAuthenticated && isAuthRoute) {
@@ -63,6 +67,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       // Auth routes (outside the navigation shell)
       GoRoute(
+        path: AppRoute.welcome.path,
+        name: AppRoute.welcome.name,
+        builder: (context, state) => const WelcomeScreen(),
+      ),
+      GoRoute(
         path: AppRoute.login.path,
         name: AppRoute.login.name,
         builder: (context, state) => const LoginScreen(),
@@ -70,7 +79,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoute.register.path,
         name: AppRoute.register.name,
-        builder: (context, state) => const LoginScreen(),
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoute.settings.path,
+        name: AppRoute.settings.name,
+        builder: (context, state) => const SettingsScreen(),
       ),
 
       // Main application tabs (4 tabs: Home, Sessions, Training, Profile)
