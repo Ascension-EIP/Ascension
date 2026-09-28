@@ -1,4 +1,4 @@
-// @date 2026-09-25
+// @date 2026-09-29
 // @file api_endpoints.dart
 // @brief File description.
 // @project Ascension
@@ -10,10 +10,10 @@ class ApiEndpoints {
   ApiEndpoints._();
 
   // Auth
-  static const String login = '/auth/login';
-  static const String register = '/auth/register';
-  static const String refreshToken = '/auth/refresh';
-  static const String logout = '/auth/logout';
+  static const String login = '/v1/auth/login';
+  static const String signup = '/v1/auth/signup';
+  static const String refreshToken = '/v1/auth/refresh';
+  static const String logout = '/v1/auth/logout';
 
   // User & Profile
   static const String currentUser = '/users/me';
