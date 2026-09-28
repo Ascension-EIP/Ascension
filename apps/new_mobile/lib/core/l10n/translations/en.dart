@@ -1,4 +1,4 @@
-// @date 2026-09-25
+// @date 2026-09-29
 // @file en.dart
 // @brief File description.
 // @project Ascension
@@ -26,14 +26,29 @@ const Map<String, String> enTranslations = {
   // Auth
   'auth.login': 'Sign In',
   'auth.register': 'Sign Up',
+  'auth.signIn': 'Sign In',
+  'auth.signUp': 'Sign Up',
+  'auth.slogan': 'Visualise the invisible!',
+  'auth.forgotPassword': 'Forgot password?',
+  'auth.identifier': 'Email or Username',
   'auth.email': 'Email',
   'auth.password': 'Password',
   'auth.confirmPassword': 'Confirm password',
   'auth.firstName': 'First name',
   'auth.lastName': 'Last name',
   'auth.username': 'Username',
-  'auth.tagline': 'AI Biomechanical Coaching',
   'auth.logout': 'Sign Out',
+  'auth.noAccount': "Don't have an account?",
+  'auth.hasAccount': 'Already have an account?',
+  'auth.rememberMe': 'Remember me',
+  'auth.passwordsDoNotMatch': 'Passwords do not match',
+  'auth.invalidEmail': 'Please enter a valid email address',
+  'auth.requiredField': 'This field is required',
+
+  // Settings
+  'settings.title': 'Settings',
+  'settings.account': 'Account',
+  'settings.logout': 'Sign Out',
 
   // Home
   'home.title': 'Dashboard',
