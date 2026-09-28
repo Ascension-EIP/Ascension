@@ -1,4 +1,4 @@
-// @date 2026-09-25
+// @date 2026-09-29
 // @file result.dart
 // @brief File description.
 // @project Ascension
@@ -31,6 +31,20 @@ sealed class Result<T> {
     return switch (this) {
       Success(:final data) => success(data),
       Error(:final failure) => error(failure),
+    };
+  }
+
+  Result<R> map<R>(R Function(T data) transform) {
+    return switch (this) {
+      Success(:final data) => Success(transform(data)),
+      Error(:final failure) => Error(failure),
+    };
+  }
+
+  Result<R> flatMap<R>(Result<R> Function(T data) transform) {
+    return switch (this) {
+      Success(:final data) => transform(data),
+      Error(:final failure) => Error(failure),
     };
   }
 }
