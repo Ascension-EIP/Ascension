@@ -21,6 +21,7 @@ Do not skip this step, even if you think you already know the rules. The guideli
 
 After reading the guidelines, verify every point below before outputting a file:
 
+- [ ] **Densho frontmatter header** — do **not** add, touch, or modify the YAML frontmatter header (`--- id: ... ---`); it is managed automatically by Densho.
 - [ ] **Header block** — the file starts with the required Densho status container callout:
 
   ```markdown
@@ -40,6 +41,7 @@ After reading the guidelines, verify every point below before outputting a file:
 - [ ] **Heading levels are not skipped** — no jumping from `##` to `####`.
 - [ ] **Unordered lists use** `-`, not `*` or `+`.
 - [ ] **Empty line** before and after every code block and between paragraphs.
+- [ ] **Diagrams use Mermaid** — always use ` ```mermaid ` for all diagrams, charts, and schemas; never use text / ASCII art (` ```text `).
 - [ ] **Filename is kebab-case** — all lowercase, words separated by hyphens.
 - [ ] **Language is English or French**.
 

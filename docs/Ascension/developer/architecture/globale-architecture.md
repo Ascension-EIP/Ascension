@@ -45,7 +45,7 @@ Before diving into implementation, review these key documents:
 
 ### 📊 Part 2: Data & API Modeling
 
-3. [Database Schema & ERD](specifications/database-schema.md) - Complete data model
+3. [Database Schema \& ERD](specifications/database-schema.md) - Complete data model
    - Entity-Relationship Diagram (Mermaid)
    - PostgreSQL schema with triggers and indexes
    - Sample queries and migration strategy

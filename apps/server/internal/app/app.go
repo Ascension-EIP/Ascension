@@ -55,7 +55,8 @@ func Run(cfg config.Config) {
 	jwtS := service.NewJWTService(cfg.Auth.JWT)
 	sessionS := service.NewSessionService(cfg.Auth.Session, &repo)
 	userS := service.NewUserService(&repo)
-	authS := service.NewAuthService(&jwtS, &sessionS, &userS)
+	userProfileS := service.NewUserProfileService(&repo)
+	authS := service.NewAuthService(&jwtS, &sessionS, &userS, &userProfileS, &repo)
 	videoS := service.NewVideoService(cfg.Video, cfg.MinIO, &storage, &repo)
 	analysisS := service.NewAnalysisService(cfg.MinIO, &repo, &repo, &queue)
 
@@ -65,6 +66,7 @@ func Run(cfg config.Config) {
 	authH := handler.NewAuthHandler(&authS)
 	videoH := handler.NewVideoHandler(&videoS)
 	analysisH := handler.NewAnalysisHandler(&analysisS)
+	userProfileH := handler.NewUserProfileHandler(&userProfileS)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -77,6 +79,7 @@ func Run(cfg config.Config) {
 		&authH,
 		&videoH,
 		&analysisH,
+		&userProfileH,
 	)
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(cfg.HTTP.Port),

@@ -3,7 +3,7 @@ id: 2b9082b6-24f2-4ecc-b1f1-9b57723c49df
 ---
 
 :::success
-**Version:** 1.1
+**Version:** 1.2
 :::
 
 ---
@@ -43,7 +43,8 @@ The `.agents/` directory is organized into five specialized modules:
 │   ├── code-documentation.md      # /code-documentation
 │   ├── forui-ui-polish.md         # /forui-ui-polish
 │   ├── graphify.md                # /graphify
-│   └── update-docs.md             # /update-docs
+│   ├── update-docs.md             # /update-docs
+│   └── gemini-review.md           # /gemini-review
 ├── rules/                         # Enforced ambient and path-scoped rules
 │   ├── markdown.md                # Repository Markdown style guide
 │   ├── forui-ui-polish.md         # Symlink -> ../commands/forui-ui-polish.md
@@ -126,6 +127,17 @@ Commands are structured task prompts that can be triggered on demand using slash
 - **Source:** `.agents/commands/update-docs.md`
 - **Purpose:** Identifies modified source code and automatically brings relevant documentation and knowledge graphs into sync.
 - **Trigger:** Type `/update-docs` prior to opening pull requests.
+
+### 3.7 `/gemini-review`
+
+- **Source:** `.agents/commands/gemini-review.md`
+- **Purpose:** Audits, filters, and plans fixes from Gemini automated code review comments on Pull Requests.
+- **Trigger:** Type `/gemini-review` after Gemini posts a review on a PR.
+- **Behavior:**
+  - Inspects real codebase context at the targeted lines to detect hallucinations, missing context, and rule conflicts.
+  - Classifies each comment as `✅ Retenu (Valide)`, `⚠️ À adapter (Partiellement valide)`, or `❌ Rejeté (Invalide / Hallucination)`.
+  - Generates a structured Implementation Plan with technical rationales and expected impact.
+  - **Blocks and waits for explicit user confirmation** before applying any code modifications.
 
 ---
 
@@ -228,6 +240,7 @@ The monorepo provides local stdio MCP server support for **Graphify** via a port
 | **UI Polish Command** | `.agents/commands/forui-ui-polish.md` | `/forui-ui-polish` | `.claude/commands/forui-ui-polish.md` | `.github/prompts/forui-ui-polish.prompt.md` |
 | **Graphify Command** | `.agents/commands/graphify.md` | `/graphify` | `.claude/commands/graphify.md` | `.github/prompts/graphify.prompt.md` |
 | **Update Docs Command** | `.agents/commands/update-docs.md` | `/update-docs` | `.claude/commands/update-docs.md` | `.github/prompts/update-docs.prompt.md` |
+| **Gemini Review Command** | `.agents/commands/gemini-review.md` | `/gemini-review` | `.claude/commands/gemini-review.md` | `.github/prompts/gemini-review.prompt.md` |
 | **Markdown Rule** | `.agents/rules/markdown.md` | `.agents/rules/markdown.md` | `.claude/rules/markdown.md` | `.github/instructions/markdown.instructions.md` |
 | **UI Polish Rule** | `.agents/rules/forui-ui-polish.md` | `.agents/rules/forui-ui-polish.md` | `.claude/rules/forui-ui-polish.md` | `.github/instructions/forui-ui-polish.instructions.md` |
 | **Code Doc Rule** | `.agents/rules/code-documentation.md` | `.agents/rules/code-documentation.md` | `.claude/rules/code-documentation.md` | `.github/instructions/code-documentation.instructions.md` |

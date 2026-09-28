@@ -22,13 +22,13 @@ This document serves as an execution protocol for any AI model (Antigravity, Cop
 
 ---
 
-## 1\. Command Objective
+## 1. Command Objective
 
 Standardize and update inline code documentation across the Ascension monorepo (Flutter/Dart in `apps/mobile`, Go in `apps/server`, Python in `apps/ai`).
 
 ---
 
-## 2\. File Headers
+## 2. File Headers
 
 Every newly created or substantially modified source file should include a clean header describing its role and scope.
 
@@ -43,7 +43,7 @@ Every newly created or substantially modified source file should include a clean
 
 ---
 
-## 3\. Code Comments (DartDoc / GoDoc / Docstrings)
+## 3. Code Comments (DartDoc / GoDoc / Docstrings)
 
 Every exported class, interface, method, and function must be documented in English using the idiomatic syntax of its language:
 
@@ -53,7 +53,7 @@ Every exported class, interface, method, and function must be documented in Engl
 
 ---
 
-## 4\. Formatting and Linting
+## 4. Formatting and Linting
 
 After completing code documentation updates:
 

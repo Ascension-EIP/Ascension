@@ -274,7 +274,7 @@ Validates the Go server application.
 | Step | Description |
 | --- | --- |
 | Checkout | Full history + recursive submodules |
-| Set up Go | Installs Go 1.26.0 and caches dependencies |
+| Set up Go | Installs Go 1.27.1 and caches dependencies |
 | Install moon | Sets up the moon task runner |
 | Cache moon store | Caches `.moon/cache` |
 | Format check | `moon run server:format` — fails if code is not formatted |

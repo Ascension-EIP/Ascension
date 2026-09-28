@@ -15,6 +15,7 @@
   # https://devenv.sh/packages/
   packages = [
     pkgs.air
+    pkgs.quicktype
   ];
 
   # https://devenv.sh/languages/
@@ -90,6 +91,11 @@
 
   scripts.clean.exec = ''
     rm -rf bin
+  '';
+
+  scripts.schemas-generate.exec = ''
+    	quicktype --src-lang schema $DEVENV_ROOT/../../schemas/*.schema.json \
+            -o $DEVENV_ROOT/internal/shared/models.go --lang go --just-types-and-package --package shared
   '';
 
   # https://devenv.sh/basics/

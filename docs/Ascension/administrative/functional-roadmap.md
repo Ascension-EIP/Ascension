@@ -3,7 +3,7 @@ id: 7a707c09-90d2-4066-8648-3b86c3fb4c73
 ---
 
 :::success
-**Version:** 1.3
+**Version:** 1.4
 :::
 
 ---
@@ -83,10 +83,12 @@ Construire et livrer tout ce qui est attendu par le BTP pour arriver au GreenLig
 
 - Terminer la migration **Rust → Go** pour qu'elle soit stable et propre pendant l'exécution.
 - Finaliser la **refonte mobile prioritaire** si elle n'était pas terminée en septembre 2026.
-- Refaire l'IA de pose autour de **SAM3D** avec une base saine.
-- Produire un fichier de sortie standardisé (biomécanique + posture) et garder la logique de conseils via modèle externe (type Gemini ou équivalent API).
-- Ajouter une expérience **3D mobile** lisible (rotation, zoom, déplacement) avec des performances correctes sur Android/iOS cibles.
-- Livrer un **mode fantôme MVP** fonctionnel de bout en bout, incluant le mode custom où l'utilisateur entoure les prises à utiliser.
+- Consolider l'**IA de pose 2D** (MediaPipe Pose) pour extraire de manière fiable les 33 landmarks corporels et calculer les angles et indicateurs clés.
+- Produire un fichier de sortie standardisé (biomécanique + posture) et intégrer la génération de **conseils techniques personnalisés** via modèle externe (type Gemini ou équivalent API).
+- Livrer un **score global et le suivi de progression** pour donner une lecture immédiate de la grimpe et de l'historique de sessions.
+- Développer la **dimension communautaire et le partage** (partage d'analyses et de montées, comparaison de performances entre amis, gestion fine de la confidentialité : privé, amis, public).
+- Mettre en place le **coach personnel et les programmes d'entraînement** (définition d'objectifs de progression, génération de séances types personnalisées et journalisation des entraînements).
+- Livrer un **mode fantôme MVP** fonctionnel de bout en bout, incluant le mode custom où l'utilisateur entoure manuellement les prises à utiliser (sur photo de la voie).
 - Assurer un **parcours utilisateur complet** (auth, profil, upload, analyse, résultats, historique minimal), y compris le paramétrage corporel et la reprise plus tard depuis le profil.
 - Ajouter un **onboarding guidé** au premier lancement et des tutoriels rejouables depuis les paramètres.
 - Appliquer une **accessibilité mobile forte** (contraste, taille, focus, labels, tests manuels guidés, checks automatisables, suivi WCAG 2.2 AA).
@@ -166,14 +168,16 @@ Transformer le MVP en version alpha solide et testable à plus grande échelle, 
 
 ### Priorités de travail
 
+- Reconstruire l'**IA de pose autour d'un modèle 3D** afin d'extraire la posture 3D complète et de générer un format biomécanique standardisé enrichi.
+- Développer l'**expérience 3D mobile** interactive (scène 3D manipulable au doigt : rotation, zoom, déplacement) avec des performances fluides sur Android et iOS.
 - Livrer un **mode fantôme complet** avec meilleure fidélité de comparaison et workflow de sélection des prises plus avancé:
   - Détection automatique des prises avec sélection par clic.
   - Fallback manuel si une prise n'est pas détectée.
   - Choix de mode: Custom (manuel) ou Couleur détectée (rouge, bleu, etc.).
 - Développer une **IA avancée de lecture des prises** (type, difficulté, exploitation) pour enrichir les conseils.
-- Construire la **dimension communautaire** (comparaison entre amis, partage, progression sociale, paramètres de confidentialité).
-- Déployer la **dimension coach** (suivi, objectifs, recommandations) et le mode de grimpe assistée en temps réel avec conseils vocaux, plus contraintes de sécurité/latence/fallback.
-- Mettre en place des **fondations business** complètes (abonnements, premium, règles d'éligibilité, cycle complet de paiement, instrumentation activation/rétention/conversion/churn/usage).
+- Enrichir la **dimension communautaire** (statistiques comparatives avancées, interactions sociales élargies, badges) et la **dimension coach** (programmes d'entraînement adaptatifs, suivi longitudinal multi-analyses).
+- Déployer le mode de **grimpe assistée en temps réel** avec conseils vocaux (AR + audio), incluant les contraintes de sécurité, de latence et de gestion des pertes de tracking.
+- Mettre en place des **fondations business** complètes (abonnements Freemium, Premium, Infinity, règles d'éligibilité et quotas, cycle complet de paiement, instrumentation activation/rétention/conversion/churn/usage).
 - Continuer les revues techniques périodiques (performance, architecture, sécurité) avec corrections documentées.
 
 ### Livrables attendus

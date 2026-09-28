@@ -205,7 +205,7 @@ All computer-vision tasks that rely on MediaPipe Pose and image processing:
 | Step | Queue | Input | Output | Description |
 | --- | --- | --- | --- | --- |
 | 1\. Hold Detection | `vision.hold_detection` | Photo of the route | JSON hold map (positions + types) | User photographs the wall, AI detects and classifies holds (crimp, sloper, jug…). User can manually correct misclassified holds before proceeding. |
-| 2\. Skeleton Extraction | `vision.skeleton` | Video + hold map | JSON per-frame skeleton data | MediaPipe Pose extracts 33 keypoints per frame → computes joint angles, center of gravity, weight distribution, segment tensions. Returns the full skeleton timeline as JSON to the Rust API. |
+| 2\. Skeleton Extraction | `vision.skeleton` | Video + hold map | JSON per-frame skeleton data | MediaPipe Pose extracts 33 keypoints per frame → computes joint angles, center of gravity, weight distribution, segment tensions. Returns the full skeleton timeline as JSON to the Go API. |
 | 3\. Analysis & Advice | `vision.advice` | Skeleton JSON + hold map | JSON advice payload | Combines skeleton data with hold context to generate targeted coaching advice (e.g., "hip too far from wall on move 3", "match hands before flagging"). |
 | 4\. Ghost Mode | `vision.ghost` | Skeleton JSON + hold map + user morphology | JSON ghost overlay data | Computes an optimal movement path (pathfinding / inverse kinematics) for the user's body proportions. Output is a frame-by-frame ghost skeleton that the Flutter client renders as an overlay. |
 
