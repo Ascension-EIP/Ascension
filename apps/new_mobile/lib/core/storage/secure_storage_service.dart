@@ -1,4 +1,4 @@
-// @date 2026-09-25
+// @date 2026-09-29
 // @file secure_storage_service.dart
 // @brief File description.
 // @project Ascension
@@ -19,10 +19,8 @@ class SecureStorageService {
     required String accessToken,
     required String refreshToken,
   }) async {
-    await Future.wait([
-      _storage.write(key: StorageKeys.accessToken, value: accessToken),
-      _storage.write(key: StorageKeys.refreshToken, value: refreshToken),
-    ]);
+    await _storage.write(key: StorageKeys.accessToken, value: accessToken);
+    await _storage.write(key: StorageKeys.refreshToken, value: refreshToken);
   }
 
   Future<String?> getAccessToken() => _storage.read(key: StorageKeys.accessToken);
@@ -35,12 +33,10 @@ class SecureStorageService {
   Future<String?> getUserId() => _storage.read(key: StorageKeys.userId);
 
   Future<void> clearAuthData() async {
-    await Future.wait([
-      _storage.delete(key: StorageKeys.accessToken),
-      _storage.delete(key: StorageKeys.refreshToken),
-      _storage.delete(key: StorageKeys.userId),
-      _storage.delete(key: StorageKeys.userEmail),
-    ]);
+    await _storage.delete(key: StorageKeys.accessToken);
+    await _storage.delete(key: StorageKeys.refreshToken);
+    await _storage.delete(key: StorageKeys.userId);
+    await _storage.delete(key: StorageKeys.userEmail);
   }
 }
 
