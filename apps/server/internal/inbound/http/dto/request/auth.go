@@ -1,8 +1,8 @@
-// @date 2026-09-20
+// @date 2026-09-29
 // @file auth.go
 // @brief File description.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package request
@@ -49,7 +49,7 @@ func (req *SignupLoginForm) IntoSignupLoginForm() (model.SignupForm, error) {
 }
 
 type LoginForm struct {
-	Identifier string `json:"identifier" binding:"require"`
+	Identifier string `json:"identifier" binding:"required"`
 	Password   string `json:"password" binding:"required"`
 	Remember   bool   `json:"remember"`
 }
