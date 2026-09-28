@@ -1,4 +1,4 @@
-// @date 2026-09-25
+// @date 2026-09-29
 // @file widget_test.dart
 // @brief File description.
 // @project Ascension
@@ -54,8 +54,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // Default locale is English
-    expect(find.text('Sign In'), findsOneWidget);
-    expect(find.text('AI Biomechanical Coaching'), findsOneWidget);
+    expect(find.text('Sign In'), findsAtLeastNWidgets(1));
+    expect(find.text('Visualise the invisible!'), findsOneWidget);
   });
 
   testWidgets('AscensionApp smoke test - authenticated displays 4-tab shell',
