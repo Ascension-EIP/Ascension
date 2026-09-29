@@ -303,6 +303,11 @@ void main() {
       await tester.enterText(textFields.at(1), 'Hon');
       await tester.pumpAndSettle();
       expect(find.text('alex_hon'), findsOneWidget);
+
+      await tester.enterText(textFields.at(0), 'Élodie');
+      await tester.enterText(textFields.at(1), 'Chloë');
+      await tester.pumpAndSettle();
+      expect(find.text('elodie_chloe'), findsOneWidget);
     });
 
     testWidgets('validates required fields on submit', (tester) async {

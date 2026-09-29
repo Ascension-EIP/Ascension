@@ -37,6 +37,7 @@ dependencies:
   json_annotation: ^4.9.0
   intl: ^0.20.2
   equatable: ^2.0.8
+  diacritic: ^0.1.6
 
 dev_dependencies:
   flutter_test:

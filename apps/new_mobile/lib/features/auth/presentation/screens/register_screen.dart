@@ -5,6 +5,7 @@
 // @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
@@ -71,13 +72,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   /// Normalizes a string by stripping accents and non-alphanumeric chars.
   static String _normalize(String input) {
-    const withAccents = 'àáâãäåèéêëìíîïòóôõöùúûüýÿñçÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝŸÑÇ';
-    const withoutAccents = 'aaaaaaeeeeiiiiooooouuuuyyncAAAAAAEEEEIIIIOOOOOUUUUYYNC';
-    var text = input;
-    for (var i = 0; i < withAccents.length; i++) {
-      text = text.replaceAll(withAccents[i], withoutAccents[i]);
-    }
-    return text.toLowerCase().replaceAll(RegExp(r'[\s\-]+'), '_').replaceAll(RegExp(r'[^a-z0-9_]'), '');
+    return removeDiacritics(input)
+        .toLowerCase()
+        .replaceAll(RegExp(r'[\s\-]+'), '_')
+        .replaceAll(RegExp(r'[^a-z0-9_]'), '');
   }
 
   void _onNameChanged() {
