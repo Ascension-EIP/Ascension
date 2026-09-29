@@ -1,11 +1,10 @@
-// @date 2026-09-25
+// @date 2026-09-29
 // @file auth_screens_test.dart
 // @brief Widget tests for WelcomeScreen, LoginScreen and RegisterScreen.
 // @project Ascension
 // @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -26,14 +25,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class FakeAuthRepository implements AuthRepository {
   Result<AuthSession>? loginResult;
-  Result<AuthSession>? signupResult;
+  Result<AuthSession>? registerResult;
 
   String? lastLoginIdentifier;
   String? lastLoginPassword;
-  String? lastSignupUsername;
-  String? lastSignupFirstName;
-  String? lastSignupLastName;
-  String? lastSignupEmail;
+  String? lastRegisterUsername;
+  String? lastRegisterFirstName;
+  String? lastRegisterLastName;
+  String? lastRegisterEmail;
 
   @override
   Future<Result<AuthSession>> login({
@@ -62,7 +61,7 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<Result<AuthSession>> signup({
+  Future<Result<AuthSession>> register({
     required String username,
     required String firstName,
     required String lastName,
@@ -70,11 +69,11 @@ class FakeAuthRepository implements AuthRepository {
     required String password,
     bool remember = true,
   }) async {
-    lastSignupUsername = username;
-    lastSignupFirstName = firstName;
-    lastSignupLastName = lastName;
-    lastSignupEmail = email;
-    return signupResult ??
+    lastRegisterUsername = username;
+    lastRegisterFirstName = firstName;
+    lastRegisterLastName = lastName;
+    lastRegisterEmail = email;
+    return registerResult ??
         const Success(
           AuthSession(
             accessToken: 'dummy_acc',
@@ -326,7 +325,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('This field is required'), findsAtLeastNWidgets(2));
-      expect(fakeRepo.lastSignupUsername, isNull);
+      expect(fakeRepo.lastRegisterUsername, isNull);
     });
 
     testWidgets('validates password mismatch and invalid email format', (tester) async {
@@ -389,10 +388,10 @@ void main() {
       await tester.tap(signUpButton);
       await tester.pumpAndSettle();
 
-      expect(fakeRepo.lastSignupFirstName, equals('Alex'));
-      expect(fakeRepo.lastSignupLastName, equals('Hon'));
-      expect(fakeRepo.lastSignupUsername, equals('alex_hon'));
-      expect(fakeRepo.lastSignupEmail, equals('alex@climber.com'));
+      expect(fakeRepo.lastRegisterFirstName, equals('Alex'));
+      expect(fakeRepo.lastRegisterLastName, equals('Hon'));
+      expect(fakeRepo.lastRegisterUsername, equals('alex_hon'));
+      expect(fakeRepo.lastRegisterEmail, equals('alex@climber.com'));
     });
   });
 }

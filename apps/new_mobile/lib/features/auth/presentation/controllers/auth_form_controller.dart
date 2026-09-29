@@ -1,6 +1,6 @@
 // @date 2026-09-29
 // @file auth_form_controller.dart
-// @brief Controller managing authentication forms (login & signup).
+// @brief Controller managing authentication forms (login & register).
 // @project Ascension
 // @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
@@ -55,7 +55,7 @@ class AuthFormController extends AutoDisposeAsyncNotifier<void> {
   }
 
   /// Performs user registration and automatic sign in.
-  Future<bool> signup({
+  Future<bool> register({
     required String username,
     required String firstName,
     required String lastName,
@@ -66,7 +66,7 @@ class AuthFormController extends AutoDisposeAsyncNotifier<void> {
     state = const AsyncLoading();
 
     try {
-      final result = await _repository.signup(
+      final result = await _repository.register(
         username: username.trim(),
         firstName: firstName.trim(),
         lastName: lastName.trim(),

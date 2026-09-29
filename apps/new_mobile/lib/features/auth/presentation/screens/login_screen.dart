@@ -183,7 +183,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ? null
                               : () => context.goNamed(AppRoute.register.name),
                           child: Text(
-                            context.tr('auth.signUp'),
+                            context.tr('auth.register'),
                             style: context.theme.typography.body.sm.copyWith(
                               color: context.theme.colors.primary,
                               fontWeight: FontWeight.bold,

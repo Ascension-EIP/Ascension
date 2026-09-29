@@ -26,7 +26,7 @@ class AuthInterceptor extends QueuedInterceptor {
     RequestInterceptorHandler handler,
   ) async {
     final isAuthEndpoint = options.path.contains('/v1/auth/login') ||
-        options.path.contains('/v1/auth/signup');
+        options.path.contains('/v1/auth/register');
 
     if (!isAuthEndpoint) {
       final token = await storage.getAccessToken();

@@ -51,7 +51,7 @@ Authentication is enforced via `middleware.AuthMiddleware` (`internal/inbound/ht
 
 | Access Level | Routes | Required Role |
 | --- | --- | --- |
-| **Public** | `/healthz`, `/v1/auth/signup`, `/v1/auth/login`, `/v1/auth/refresh` | None |
+| **Public** | `/healthz`, `/v1/auth/register`, `/v1/auth/login`, `/v1/auth/refresh` | None |
 | **Authenticated** | `DELETE /v1/auth/logout`, `/v1/videos/*`, `/v1/analysis/*` | `user` or `admin` |
 | **Admin Only** | `/v1/users/*` | `admin` |
 
@@ -63,7 +63,7 @@ Rate limiting is enforced per client IP via `middleware.RateLimiter`:
 
 | Route / Group | Rate Limit |
 | --- | --- |
-| `POST /v1/auth/signup` | 5 requests / minute |
+| `POST /v1/auth/register` | 5 requests / minute |
 | `POST /v1/auth/login` | 10 requests / minute |
 | `DELETE /v1/auth/logout` | 10 requests / minute |
 | `PUT /v1/auth/refresh` | 10 requests / minute |
@@ -79,7 +79,7 @@ Excess requests receive `429 Too Many Requests`.
 
 All auth endpoints live under `/v1/auth`.
 
-### POST /v1/auth/signup — Register a new account
+### POST /v1/auth/register — Register a new account
 
 Creates a new user account, hashes the password with bcrypt, creates a refresh session, and issues tokens.
 

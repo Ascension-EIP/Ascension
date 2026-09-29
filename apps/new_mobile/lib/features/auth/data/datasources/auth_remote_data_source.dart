@@ -19,7 +19,7 @@ abstract class AuthRemoteDataSource {
     bool remember = true,
   });
 
-  Future<Result<AuthResponseModel>> signup({
+  Future<Result<AuthResponseModel>> register({
     required String username,
     required String firstName,
     required String lastName,
@@ -56,7 +56,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<Result<AuthResponseModel>> signup({
+  Future<Result<AuthResponseModel>> register({
     required String username,
     required String firstName,
     required String lastName,
@@ -65,7 +65,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     bool remember = true,
   }) async {
     final result = await _apiClient.post<dynamic>(
-      ApiEndpoints.signup,
+      ApiEndpoints.register,
       data: {
         'username': username,
         'first_name': firstName,

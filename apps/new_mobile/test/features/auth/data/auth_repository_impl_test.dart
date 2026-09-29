@@ -1,11 +1,10 @@
-// @date 2026-09-25
+// @date 2026-09-29
 // @file auth_repository_impl_test.dart
 // @brief Unit tests for AuthRepositoryImpl.
 // @project Ascension
 // @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
-
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:new_mobile/core/errors/failures.dart';
@@ -18,7 +17,7 @@ import 'package:new_mobile/features/auth/data/repositories/auth_repository_impl.
 
 class MockRemoteDataSource implements AuthRemoteDataSource {
   Result<AuthResponseModel>? loginResult;
-  Result<AuthResponseModel>? signupResult;
+  Result<AuthResponseModel>? registerResult;
   Result<void>? logoutResult;
   String? loggedOutRefreshToken;
 
@@ -31,7 +30,7 @@ class MockRemoteDataSource implements AuthRemoteDataSource {
       loginResult!;
 
   @override
-  Future<Result<AuthResponseModel>> signup({
+  Future<Result<AuthResponseModel>> register({
     required String username,
     required String firstName,
     required String lastName,
@@ -39,7 +38,7 @@ class MockRemoteDataSource implements AuthRemoteDataSource {
     required String password,
     bool remember = true,
   }) async =>
-      signupResult!;
+      registerResult!;
 
   @override
   Future<Result<void>> logout({required String refreshToken}) async {
@@ -140,11 +139,11 @@ void main() {
     });
   });
 
-  group('AuthRepositoryImpl.signup', () {
-    test('persists tokens and user ID when signup succeeds', () async {
-      remoteDataSource.signupResult = const Success(sampleResponse);
+  group('AuthRepositoryImpl.register', () {
+    test('persists tokens and user ID when register succeeds', () async {
+      remoteDataSource.registerResult = const Success(sampleResponse);
 
-      final result = await repository.signup(
+      final result = await repository.register(
         username: 'climber42',
         firstName: 'Adam',
         lastName: 'Ondra',

@@ -143,7 +143,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         _confirmPasswordError != null;
 
     if (!hasErrors) {
-      ref.read(authFormControllerProvider.notifier).signup(
+      ref.read(authFormControllerProvider.notifier).register(
             username: _usernameController.text.trim(),
             firstName: _firstNameController.text.trim(),
             lastName: _lastNameController.text.trim(),
@@ -161,7 +161,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     return FScaffold(
       header: FHeader.nested(
-        title: Text(context.tr('auth.signUp')),
+        title: Text(context.tr('auth.register')),
         prefixes: [
           FHeaderAction.back(
             onPress: isLoading ? null : () => context.goNamed(AppRoute.welcome.name),
@@ -275,7 +275,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               ),
                             )
                           : null,
-                      child: Text(context.tr('auth.signUp')),
+                      child: Text(context.tr('auth.register')),
                     ),
                     const SizedBox(height: 20),
                     // Bottom link to Sign In

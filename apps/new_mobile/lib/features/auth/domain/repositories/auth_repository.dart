@@ -17,8 +17,8 @@ abstract class AuthRepository {
     bool remember = true,
   });
 
-  /// Signs up a new user and automatically logs them in.
-  Future<Result<AuthSession>> signup({
+  /// Registers a new user and automatically logs them in.
+  Future<Result<AuthSession>> register({
     required String username,
     required String firstName,
     required String lastName,

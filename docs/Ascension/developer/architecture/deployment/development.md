@@ -628,7 +628,7 @@ curl -i http://localhost:8080/healthz
 ### 2\. User Registration
 
 ```bash
-curl -X POST http://localhost:8080/v1/auth/signup \
+curl -X POST http://localhost:8080/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "first_name": "Test",

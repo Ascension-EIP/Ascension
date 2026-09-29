@@ -44,7 +44,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Result<AuthSession>> signup({
+  Future<Result<AuthSession>> register({
     required String username,
     required String firstName,
     required String lastName,
@@ -52,7 +52,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     bool remember = true,
   }) async {
-    final result = await remoteDataSource.signup(
+    final result = await remoteDataSource.register(
       username: username,
       firstName: firstName,
       lastName: lastName,

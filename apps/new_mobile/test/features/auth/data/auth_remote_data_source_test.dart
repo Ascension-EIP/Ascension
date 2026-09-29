@@ -1,11 +1,10 @@
-// @date 2026-09-25
+// @date 2026-09-29
 // @file auth_remote_data_source_test.dart
 // @brief Unit tests for AuthRemoteDataSource.
 // @project Ascension
 // @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
-
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:new_mobile/core/constants/api_endpoints.dart';
@@ -112,8 +111,8 @@ void main() {
     });
   });
 
-  group('AuthRemoteDataSource.signup', () {
-    test('sends POST to /v1/auth/signup and parses response correctly', () async {
+  group('AuthRemoteDataSource.register', () {
+    test('sends POST to /v1/auth/register and parses response correctly', () async {
       fakeApiClient.responseData = {
         'access_token': 'jwt_signup_access',
         'refresh_token': 'jwt_signup_refresh',
@@ -128,7 +127,7 @@ void main() {
         },
       };
 
-      final result = await dataSource.signup(
+      final result = await dataSource.register(
         username: 'newbie',
         firstName: 'New',
         lastName: 'Climber',
@@ -137,7 +136,7 @@ void main() {
       );
 
       expect(result.isSuccess, isTrue);
-      expect(fakeApiClient.lastPath, equals(ApiEndpoints.signup));
+      expect(fakeApiClient.lastPath, equals(ApiEndpoints.register));
       final session = result.dataOrNull!;
       expect(session.accessToken, equals('jwt_signup_access'));
       expect(session.user.username, equals('newbie'));

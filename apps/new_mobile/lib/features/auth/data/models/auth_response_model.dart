@@ -8,7 +8,7 @@
 import 'package:new_mobile/features/auth/data/models/user_model.dart';
 import 'package:new_mobile/features/auth/domain/entities/auth_session.dart';
 
-/// DTO for login/signup response from Go backend.
+/// DTO for login/register response from Go backend.
 class AuthResponseModel extends AuthSession {
   const AuthResponseModel({
     required super.accessToken,

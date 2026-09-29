@@ -78,7 +78,7 @@ class WelcomeScreen extends StatelessWidget {
                   FButton(
                     variant: FButtonVariant.outline,
                     onPress: () => context.goNamed(AppRoute.register.name),
-                    child: Text(context.tr('auth.signUp')),
+                    child: Text(context.tr('auth.register')),
                   ),
                   const SizedBox(height: 32),
                 ],

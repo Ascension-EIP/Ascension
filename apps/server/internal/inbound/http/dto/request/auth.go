@@ -11,25 +11,7 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 )
 
-type SignupForm struct {
-	Username  string `json:"username" binding:"required"`
-	FirstName string `json:"first_name" binding:"required"`
-	LastName  string `json:"last_name" binding:"required"`
-	Email     string `json:"email" binding:"required,email"`
-	Password  string `json:"password" binding:"required"`
-}
-
-func (req *SignupForm) IntoSignupForm() (model.SignupForm, error) {
-	return model.SignupForm{
-		Username:  model.UserUsername(req.Username),
-		FirstName: req.FirstName,
-		LastName:  req.LastName,
-		Email:     model.NewUserEmail(req.Email),
-		Password:  model.UserPassword(req.Password),
-	}, nil
-}
-
-type SignupLoginForm struct {
+type RegisterForm struct {
 	Username  string `json:"username" binding:"required"`
 	FirstName string `json:"first_name" binding:"required"`
 	LastName  string `json:"last_name" binding:"required"`
@@ -38,8 +20,8 @@ type SignupLoginForm struct {
 	Remember  bool   `json:"remember"`
 }
 
-func (req *SignupLoginForm) IntoSignupLoginForm() (model.SignupForm, error) {
-	return model.SignupForm{
+func (req *RegisterForm) IntoRegisterForm() (model.RegisterForm, error) {
+	return model.RegisterForm{
 		Username:  model.UserUsername(req.Username),
 		FirstName: req.FirstName,
 		LastName:  req.LastName,

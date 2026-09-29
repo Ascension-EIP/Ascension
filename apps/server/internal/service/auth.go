@@ -1,8 +1,8 @@
-// @date 2026-09-24
+// @date 2026-09-29
 // @file auth.go
 // @brief File description.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package service
@@ -36,23 +36,9 @@ func NewAuthService(jwtS *JWTService, sessionS *SessionService, userS *UserServi
 	}
 }
 
-func (s *AuthService) SignupAndLogin(ctx context.Context, form model.SignupForm, clienInfo model.ClientInfo, remember bool) (model.User, model.Tokens, error) {
-	user, err := s.Signup(ctx, form)
-	if err != nil {
-		return model.User{}, model.Tokens{}, fmt.Errorf("signup: %w", err)
-	}
-
-	tokens, err := s.CreateTokens(ctx, user, clienInfo, remember)
-	if err != nil {
-		return user, model.Tokens{}, err
-	}
-
-	return user, tokens, nil
-}
-
-func (s *AuthService) Signup(ctx context.Context, form model.SignupForm) (model.User, error) {
+func (s *AuthService) Register(ctx context.Context, form model.RegisterForm, clientInfo model.ClientInfo, remember bool) (model.User, model.Tokens, error) {
 	if err := form.Validate(); err != nil {
-		return model.User{}, fmt.Errorf("form validation: %w", err)
+		return model.User{}, model.Tokens{}, fmt.Errorf("form validation: %w", err)
 	}
 
 	var user model.User
@@ -80,10 +66,15 @@ func (s *AuthService) Signup(ctx context.Context, form model.SignupForm) (model.
 
 		return nil
 	}); err != nil {
-		return model.User{}, fmt.Errorf("transaction: %w", err)
+		return model.User{}, model.Tokens{}, fmt.Errorf("transaction: %w", err)
 	}
 
-	return user, nil
+	tokens, err := s.CreateTokens(ctx, user, clientInfo, remember)
+	if err != nil {
+		return user, model.Tokens{}, err
+	}
+
+	return user, tokens, nil
 }
 
 func (s *AuthService) Login(ctx context.Context, form model.LoginForm, clientInfo model.ClientInfo, remember bool) (model.User, model.Tokens, error) {

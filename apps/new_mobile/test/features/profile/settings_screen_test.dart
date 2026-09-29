@@ -1,11 +1,10 @@
-// @date 2026-09-28
+// @date 2026-09-29
 // @file settings_screen_test.dart
 // @brief Widget tests for ProfileScreen settings action and SettingsScreen logout.
 // @project Ascension
 // @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -17,7 +16,6 @@ import 'package:new_mobile/core/utils/result.dart';
 import 'package:new_mobile/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:new_mobile/features/auth/domain/entities/auth_session.dart';
 import 'package:new_mobile/features/auth/domain/repositories/auth_repository.dart';
-import 'package:new_mobile/features/auth/presentation/controllers/auth_state.dart';
 import 'package:new_mobile/features/profile/presentation/screens/profile_screen.dart';
 import 'package:new_mobile/features/profile/presentation/screens/settings_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,7 +32,7 @@ class FakeAuthRepository implements AuthRepository {
       throw UnimplementedError();
 
   @override
-  Future<Result<AuthSession>> signup({
+  Future<Result<AuthSession>> register({
     required String username,
     required String firstName,
     required String lastName,
