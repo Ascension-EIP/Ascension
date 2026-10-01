@@ -85,7 +85,6 @@ tasks:
     outputs:
       - 'coverage.xml'
     options:
-      allowFailure: true
       cache: false
     deps:
       - 'install'
