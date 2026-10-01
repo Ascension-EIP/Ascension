@@ -5,22 +5,22 @@ description = "Ascension AI Worker"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "boto3>=1.43.34",
+    "boto3>=1.43.105",
     "decord>=0.6.0",
     "dotenv>=0.9.9",
     "google>=3.0.0",
     "google-generativeai>=0.8.6",
-    "mediapipe>=0.10.35",
-    "opencv-python>=4.13.0.92",
-    "pika>=1.4.1",
-    "psycopg2-binary>=2.9.12",
+    "mediapipe>=1.0.1",
+    "opencv-python>=5.0.0.93",
+    "pika>=1.4.4",
+    "psycopg2-binary>=2.9.13",
     "pytest>=9.1.1",
-    "ruff>=0.15.18",
+    "ruff>=0.16.9",
     "scipy>=1.17.1",
-    "ultralytics>=8.4.144",
+    "ultralytics>=8.4.166",
 ]
 
 [dependency-groups]
 dev = [
-    "ipykernel>=7.3.0",
+    "ipykernel>=7.4.0",
 ]
