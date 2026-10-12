@@ -19,16 +19,20 @@ import (
 )
 
 type AuthService struct {
-	jwtS     *JWTService
-	sessionS *SessionService
-	userS    *UserService
+	jwtS         *JWTService
+	sessionS     *SessionService
+	userS        *UserService
+	userProfileS *UserProfileService
+	repoT        model.TransactionRepository
 }
 
-func NewAuthService(jwtS *JWTService, sessionS *SessionService, userS *UserService) AuthService {
+func NewAuthService(jwtS *JWTService, sessionS *SessionService, userS *UserService, userProfileS *UserProfileService, repoT model.TransactionRepository) AuthService {
 	return AuthService{
-		jwtS:     jwtS,
-		sessionS: sessionS,
-		userS:    userS,
+		jwtS:         jwtS,
+		sessionS:     sessionS,
+		userS:        userS,
+		userProfileS: userProfileS,
+		repoT:        repoT,
 	}
 }
 
@@ -51,17 +55,32 @@ func (s *AuthService) Signup(ctx context.Context, form model.SignupForm) (model.
 		return model.User{}, fmt.Errorf("form validation: %w", err)
 	}
 
-	user, err := s.userS.CreateUser(ctx, model.User{
-		Username:  form.Username,
-		FirstName: form.FirstName,
-		LastName:  form.LastName,
-		Email:     form.Email,
-		Password:  form.Password,
-		Role:      model.UserRoleUser,
-		Status:    model.UserStatusActive,
-	})
-	if err != nil {
-		return model.User{}, err
+	var user model.User
+	if err := s.repoT.WithTransaction(ctx, func(ctx context.Context) error {
+		var err error
+
+		user, err = s.userS.CreateUser(ctx, model.User{
+			Username:  form.Username,
+			FirstName: form.FirstName,
+			LastName:  form.LastName,
+			Email:     form.Email,
+			Password:  form.Password,
+			Role:      model.UserRoleUser,
+			Status:    model.UserStatusActive,
+		})
+		if err != nil {
+			return fmt.Errorf("create user: %w", err)
+		}
+
+		if _, err := s.userProfileS.CreateUserProfile(ctx, model.UserProfile{
+			UserID: user.ID,
+		}); err != nil {
+			return fmt.Errorf("create user profile: %w", err)
+		}
+
+		return nil
+	}); err != nil {
+		return model.User{}, fmt.Errorf("transaction: %w", err)
 	}
 
 	return user, nil

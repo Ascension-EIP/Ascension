@@ -22,13 +22,13 @@ This document serves as a guide and execution protocol for any AI model (Antigra
 
 ---
 
-## 1\. Command Objective
+## 1. Command Objective
 
 Allows the AI to analyze the monorepo architecture by querying the pre-generated knowledge graph in `graphify-out/`. This reduces hallucinations and replaces heavy global searches with targeted, token-efficient subgraphs.
 
 ---
 
-## 2\. Graph Query Protocols
+## 2. Graph Query Protocols
 
 When `graphify-out/graph.json` exists, the AI must prioritize querying the graph using the most appropriate method:
 
@@ -40,7 +40,7 @@ When `graphify-out/graph.json` exists, the AI must prioritize querying the graph
 
 ---
 
-## 3\. Automatic Update (Post-Modifications)
+## 3. Automatic Update (Post-Modifications)
 
 After modifying code or documentation files during a session, the AI must keep the graph synchronized by executing the following command at the repository root:
 
@@ -52,7 +52,7 @@ graphify update .
 
 ---
 
-## 4\. Setup and Reset
+## 4. Setup and Reset
 
 If the graph needs to be rebuilt or reset, execute the graphify extraction command:
 

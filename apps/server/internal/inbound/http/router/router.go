@@ -28,6 +28,7 @@ func New(
 	authH *handler.AuthHandler,
 	videoH *handler.VideoHandler,
 	analysisH *handler.AnalysisHandler,
+	profileH *handler.ProfileHandler,
 ) {
 	app.Use(middleware.RequestID())
 	app.Use(middleware.Logger())
@@ -36,16 +37,9 @@ func New(
 	app.GET("/healthz", func(c *gin.Context) { c.Status(http.StatusNoContent) })
 
 	v1 := app.Group("/v1")
-	{
-		authGroup := v1.Group("/auth")
-		{
-			authGroup.POST("/signup", middleware.RateLimiter(time.Minute, 5), authH.SignupLogin)
-			authGroup.POST("/login", middleware.RateLimiter(time.Minute, 10), authH.Login)
-			authGroup.DELETE("/logout", middleware.RateLimiter(time.Minute, 10), authMW(), authH.Logout)
-			authGroup.PUT("/refresh", middleware.RateLimiter(time.Minute, 10), authH.RefreshToken)
-		}
 
-		usersGroup := v1.Group("/users", middleware.RateLimiter(time.Minute, 100), authMW(model.UserRoleAdmin))
+	{
+		usersGroup := v1.Group("/users", authMW(model.UserRoleAdmin))
 		{
 			usersGroup.POST("/", userH.Create)
 			usersGroup.GET("/", userH.List)
@@ -54,17 +48,31 @@ func New(
 			usersGroup.DELETE("/:id", userH.Delete)
 		}
 
-		videosGroup := v1.Group("/videos", middleware.RateLimiter(time.Minute, 10), authMW(model.UserRoleAdmin, model.UserRoleUser))
+		authGroup := v1.Group("/auth")
+		{
+			authGroup.POST("/signup", middleware.RateLimiter(time.Minute, 5), authH.SignupLogin)
+			authGroup.POST("/login", middleware.RateLimiter(time.Minute, 10), authH.Login)
+			authGroup.DELETE("/logout", middleware.RateLimiter(time.Minute, 10), authMW(), authH.Logout)
+			authGroup.PUT("/refresh", middleware.RateLimiter(time.Minute, 10), authH.RefreshToken)
+		}
+
+		videosGroup := v1.Group("/videos", middleware.RateLimiter(time.Minute, 10), authMW())
 		{
 			videosGroup.GET("/upload-url", videoH.GetUploadURL)
 			videosGroup.PUT("/upload-done/:id", videoH.UploadComplete)
 			videosGroup.GET("/download-url/:id", videoH.GetDownloadURL)
 		}
 
-		analysesGroup := v1.Group("/analysis", middleware.RateLimiter(time.Minute, 10), authMW(model.UserRoleAdmin, model.UserRoleUser))
+		analysesGroup := v1.Group("/analysis", middleware.RateLimiter(time.Minute, 10), authMW())
 		{
 			analysesGroup.POST("/", analysisH.Create)
 			analysesGroup.GET("/:id", analysisH.GetByID)
+		}
+
+		profileGroup := v1.Group("/profile", middleware.RateLimiter(time.Minute, 10), authMW())
+		{
+			profileGroup.GET("", profileH.GetMyProfile)
+			profileGroup.PUT("", profileH.UpdateMyProfile)
 		}
 	}
 }

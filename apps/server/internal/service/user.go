@@ -29,7 +29,12 @@ func (s *UserService) CreateUser(ctx context.Context, user model.User) (model.Us
 		return model.User{}, fmt.Errorf("user validation: %w", err)
 	}
 
-	return s.repo.CreateUser(ctx, user)
+	user, err := s.repo.CreateUser(ctx, user)
+	if err != nil {
+		return model.User{}, fmt.Errorf("create user: %w", err)
+	}
+
+	return user, nil
 }
 
 func (s *UserService) GetUserByID(ctx context.Context, userID uuid.UUID) (model.User, error) {
