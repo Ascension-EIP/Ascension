@@ -3,7 +3,7 @@ id: adc007ee-64c3-4a37-884b-07b65e0f2782
 ---
 
 :::success
-**Version:** 1.1
+**Version:** 1.2
 :::
 
 ---
@@ -170,7 +170,7 @@ Ce document distingue aussi ce qui est :
 
 **Niveau de maturité dans la roadmap**
 
-- Base MVP, amélioration de l'analyse 2D, puis reconstruction autour de d'un modèle 3D en BTP.
+- Base MVP, amélioration de l'analyse 2D en BTP, puis reconstruction autour d'un modèle 3D en ATP.
 
 ---
 

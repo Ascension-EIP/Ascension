@@ -28,7 +28,7 @@ Important:
 
 ---
 
-## 1) Methode et constats
+## 1\) Methode et constats
 
 Sources utilisees:
 
@@ -46,7 +46,7 @@ Constats majeurs:
 
 ---
 
-## 2) Actions sur les issues existantes
+## 2\) Actions sur les issues existantes
 
 ---
 
@@ -141,7 +141,7 @@ Action:
 
 ---
 
-## 3) Nouvelles issues manquantes (hors migration Go)
+## 3\) Nouvelles issues manquantes (hors migration Go)
 
 Format: titre + labels + corps en anglais, directement reutilisable.
 
@@ -282,7 +282,7 @@ Propagate a correlation ID through API requests, RabbitMQ jobs, AI processing lo
 
 ---
 
-## 4) Backlog complet de migration backend Rust -> Go
+## 4\) Backlog complet de migration backend Rust -> Go
 
 Principe:
 
@@ -610,7 +610,7 @@ After successful cutover, archive/remove obsolete Rust backend paths and update 
 
 ---
 
-## 5) Ordre d'execution recommande
+## 5\) Ordre d'execution recommande
 
 1. Nettoyage backlog existant: fermer/editer les issues obsoletes (`#31`, `#35`, `#42`, `#47`, `#142`, mise a jour de `#34`, `#40`, `#44`, `#45`, `#46`, `#58`, `#59`, `#62`).
 2. Ouvrir les nouvelles issues transverses de qualite (`NEW-01` a `NEW-06`).
@@ -619,7 +619,7 @@ After successful cutover, archive/remove obsolete Rust backend paths and update 
 
 ---
 
-## 6) Commandes `gh` utiles (a executer manuellement)
+## 6\) Commandes `gh` utiles (a executer manuellement)
 
 Exemples:
 
@@ -637,11 +637,12 @@ gh issue create --repo Ascension-EIP/Ascension \
   --label "type:feature" \
   --label "priority:p1" \
   --body-file /path/to/prepared-issue-body.md
+
 ```
 
 ---
 
-## 7) Validation finale attendue
+## 7\) Validation finale attendue
 
 Definition de "backlog sain" apres application de ce document:
 

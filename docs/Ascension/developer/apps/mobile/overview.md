@@ -66,6 +66,7 @@ apps/mobile/
 ├── android/                  # Android-specific config
 ├── ios/                      # iOS-specific config
 └── test/                     # Unit & widget tests
+
 ```
 
 ---
@@ -86,6 +87,7 @@ moon run mobile:test
 
 # Lint
 moon run mobile:lint
+
 ```
 
 ### Moon Tasks Reference
@@ -124,6 +126,7 @@ features/<name>/
 └── presentation/
     └── pages/
         └── <name>_page.dart    # The screen widget
+
 ```
 
 As features grow, a feature folder may also contain:
@@ -136,6 +139,7 @@ features/<name>/
     ├── pages/      # Screen widgets
     ├── widgets/    # Feature-specific sub-widgets
     └── bloc/       # State management (when added)
+
 ```
 
 ### Shared Layer
@@ -204,6 +208,7 @@ Pick video
   → POST /v1/analyses  (trigger analysis)
   → Poll GET /v1/analyses/{id} every 5 s until status = completed / failed
   → Navigate to AnalysisPage with result data
+
 ```
 
 States visible to the user:
@@ -284,6 +289,7 @@ All HTTP calls to the Go backend go through `ApiService` (`lib/core/network/api_
 
 ```dart
 final api = ApiService(); // always the same instance
+
 ```
 
 ### Backend URL Configuration
@@ -328,6 +334,7 @@ All methods throw an `Exception` on non-2xx responses.
 │                                                                  │
 │  6. Navigate to AnalysisPage with result_json                    │
 │└──────────────────────────────────────────────────────────────────┘
+
 ```
 
 The video is **never proxied through the Go server**. It goes directly from the device to MinIO using the presigned URL. The Go server only creates the database record and returns the URL.
@@ -357,6 +364,7 @@ Tests live in `apps/mobile/test/`. Run them with:
 moon run mobile:test
 # or
 flutter test
+
 ```
 
 Currently the test suite uses Flutter's standard `flutter_test` framework. Widget tests can be written using `testWidgets(...)`.

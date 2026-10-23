@@ -22,119 +22,213 @@ This document describes the Ascension REST API for video analysis, route visuali
 
 ## Authentication
 
-### Register
+### Register (Sign Up)
 
 ```http
-POST /auth/register
+POST /v1/auth/signup
 Content-Type: application/json
 
 {
   "email": "user@example.com",
-  "password": "securepassword",
+  "password": "SecurePassword123!",
   "first_name": "John",
-  "last_name": "Doe"
+  "last_name": "Doe",
+  "username": "johndoe"
 }
+
 ```
 
-**Response (201)**:
+**Response (201 Created)**:
 
 ```json
 {
   "user": {
-    "id": "uuid",
+    "id": "0191e4b8-7a8f-7c11-9a4f-123456789abc",
+    "first_name": "John",
+    "last_name": "Doe",
+    "username": "johndoe",
     "email": "user@example.com",
-    "subscription_tier": "freemium"
+    "role": "user",
+    "created_at": "2026-03-01T12:00:00Z",
+    "updated_at": "2026-03-01T12:00:00Z"
   },
-  "access_token": "jwt_token"
+  "access_token": "eyJhbGciOiJIUzI1NiIsIn...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsIn..."
 }
+
 ```
 
 ### Login
 
+Accepts either `email` or `username` via the `identifier` field:
+
 ```http
-POST /auth/login
+POST /v1/auth/login
 Content-Type: application/json
 
 {
-  "email": "user@example.com",
-  "password": "securepassword"
+  "identifier": "user@example.com",
+  "password": "SecurePassword123!"
 }
+
 ```
 
-**Response (200)**:
+**Response (200 OK)**:
 
 ```json
 {
-  "access_token": "jwt_token",
   "user": {
-    "id": "uuid",
+    "id": "0191e4b8-7a8f-7c11-9a4f-123456789abc",
+    "first_name": "John",
+    "last_name": "Doe",
+    "username": "johndoe",
     "email": "user@example.com",
-    "subscription_tier": "freemium"
-  }
+    "role": "user",
+    "created_at": "2026-03-01T12:00:00Z",
+    "updated_at": "2026-03-01T12:00:00Z"
+  },
+  "access_token": "eyJhbGciOiJIUzI1NiIsIn...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsIn..."
 }
+
 ```
+
+### Refresh Token
+
+```http
+POST /v1/auth/refresh
+Content-Type: application/json
+
+{
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsIn..."
+}
+
+```
+
+**Response (200 OK)**:
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsIn...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsIn..."
+}
+
+```
+
+### Logout
+
+```http
+DELETE /v1/auth/logout
+Authorization: Bearer <access_token>
+
+```
+
+**Response (204 No Content)**: Empty body
 
 ---
 
-## Video Analysis (Skeleton Detection)
+## Video Management & Analysis
 
-### 1\. Request Upload URL
+### 1\. Request Video Upload URL
 
-Get a presigned URL to upload a climbing video directly to storage.
+Request a presigned URL to upload a climbing video directly to object storage.
 
 ```http
-POST /analysis/video/request-upload
-Authorization: Bearer {token}
-Content-Type: application/json
+GET /v1/videos/upload-url?content_type=video/mp4&size=52428800
+Authorization: Bearer <access_token>
 
-{
-  "file_name": "my-climb.mp4",
-  "file_size": 52428800
-}
 ```
 
-**Response (200)**:
+**Response (200 OK)**:
 
 ```json
 {
-  "video_id": "uuid",
-  "upload_url": "https://s3.../presigned-url",
-  "expires_at": "2026-02-16T10:45:00Z"
+  "id": "0191e4b8-7a8f-7c11-9a4f-123456789abc",
+  "upload_url": "https://minio:9000/videos/...",
+  "expires_at": "2026-03-01T12:15:00Z"
 }
+
 ```
 
-### 2\. Start Video Analysis
+### 2\. Confirm Video Upload
 
-Analyze a video to extract skeleton keypoints and joint angles.
+Notify the backend that the client has finished uploading the file to storage:
 
 ```http
-POST /analysis/video/start
-Authorization: Bearer {token}
+PUT /v1/videos/upload-done/{video_id}
+Authorization: Bearer <access_token>
+
+```
+
+**Response (204 No Content)**: Empty body
+
+### 3\. List & Get Videos
+
+```http
+GET /v1/videos
+Authorization: Bearer <access_token>
+
+```
+
+**Response (200 OK)**:
+
+```json
+[
+  {
+    "id": "0191e4b8-7a8f-7c11-9a4f-123456789abc",
+    "user_id": "0191e4b8-7a8f-7c11-9a4f-abcdef123456",
+    "object_key": "raw/user-id/video.mp4",
+    "status": "ready",
+    "size_bytes": 52428800,
+    "duration_ms": 45000,
+    "created_at": "2026-03-01T12:00:00Z"
+  }
+]
+
+```
+
+### 4\. Start Video Analysis
+
+Enqueues an asynchronous analysis job with the specified analysis `type` (`2d`, `3d`, `hold`, `advice`) and `visibility` (`private`, `friends`, `gym`, `public`).
+
+```http
+POST /v1/analysis
+Authorization: Bearer <access_token>
 Content-Type: application/json
 
 {
-  "video_id": "uuid"
+  "video_id": "0191e4b8-7a8f-7c11-9a4f-123456789abc",
+  "type": "2d",
+  "visibility": "private"
 }
+
 ```
 
-**Response (202)**:
+**Response (201 Created)**:
 
 ```json
 {
-  "analysis_id": "uuid",
+  "id": "0191e4b8-7a8f-7c11-9a4f-987654321def",
+  "video_id": "0191e4b8-7a8f-7c11-9a4f-123456789abc",
   "status": "pending",
-  "estimated_time_seconds": 30
+  "type": "2d",
+  "visibility": "private",
+  "created_at": "2026-03-01T12:00:00Z"
 }
+
 ```
 
-### 3\. Get Analysis Result
+### 5\. Get Analysis Result
+
+Poll the status or fetch results of a specific analysis:
 
 ```http
-GET /analysis/video/{analysis_id}
-Authorization: Bearer {token}
+GET /v1/analysis/{analysis_id}
+Authorization: Bearer <access_token>
+
 ```
 
-**Response (200)**:
+**Response (200 OK)**:
 
 ```json
 {
@@ -162,6 +256,7 @@ Authorization: Bearer {token}
     ]
   }
 }
+
 ```
 
 ---
@@ -181,6 +276,7 @@ Content-Type: application/json
   "file_name": "route-photo.jpg",
   "file_size": 2048000
 }
+
 ```
 
 **Response (200)**:
@@ -190,6 +286,7 @@ Content-Type: application/json
   "route_id": "uuid",
   "upload_url": "https://s3.../presigned-url"
 }
+
 ```
 
 ### 2\. Generate Ghost
@@ -204,6 +301,7 @@ Content-Type: application/json
 {
   "route_id": "uuid"
 }
+
 ```
 
 **Response (202)**:
@@ -213,6 +311,7 @@ Content-Type: application/json
   "ghost_id": "uuid",
   "status": "processing"
 }
+
 ```
 
 ### 3\. Get Ghost Result
@@ -220,6 +319,7 @@ Content-Type: application/json
 ```http
 GET /analysis/ghost/{ghost_id}
 Authorization: Bearer {token}
+
 ```
 
 **Response (200)**:
@@ -238,6 +338,7 @@ Authorization: Bearer {token}
     }
   ]
 }
+
 ```
 
 ---
@@ -257,6 +358,7 @@ Content-Type: application/json
   "video_analysis_id": "uuid",
   "ghost_id": "uuid"
 }
+
 ```
 
 **Response (200)**:
@@ -276,6 +378,7 @@ Content-Type: application/json
     ]
   }
 }
+
 ```
 
 ---
@@ -295,6 +398,7 @@ Content-Type: application/json
   "file_name": "wall.jpg",
   "file_size": 3145728
 }
+
 ```
 
 **Response (200)**:
@@ -304,6 +408,7 @@ Content-Type: application/json
   "image_id": "uuid",
   "upload_url": "https://s3.../presigned-url"
 }
+
 ```
 
 ### 2\. Detect Holds
@@ -318,6 +423,7 @@ Content-Type: application/json
 {
   "image_id": "uuid"
 }
+
 ```
 
 **Response (200)**:
@@ -340,6 +446,7 @@ Content-Type: application/json
     }
   ]
 }
+
 ```
 
 ### 3\. Correct Hold Type
@@ -354,6 +461,7 @@ Content-Type: application/json
 {
   "type": "sloper"
 }
+
 ```
 
 **Response (200)**:
@@ -365,6 +473,7 @@ Content-Type: application/json
   "position": {"x": 150, "y": 200},
   "manually_corrected": true
 }
+
 ```
 
 **Hold Types**:
@@ -396,6 +505,7 @@ Content-Type: application/json
   "focus_areas": ["technique", "strength"],
   "training_days_per_week": 3
 }
+
 ```
 
 **Response (201)**:
@@ -431,6 +541,7 @@ Content-Type: application/json
     }
   }
 }
+
 ```
 
 ### 2\. Get Routine
@@ -440,6 +551,7 @@ Retrieve the current training routine.
 ```http
 GET /coaching/routine
 Authorization: Bearer {token}
+
 ```
 
 **Response (200)**:
@@ -459,6 +571,7 @@ Authorization: Bearer {token}
     "friday": { "completed": false }
   }
 }
+
 ```
 
 ### 3\. Log Training Session
@@ -476,6 +589,7 @@ Content-Type: application/json
   "duration_minutes": 90,
   "notes": "Felt strong today, completed all exercises"
 }
+
 ```
 
 **Response (201)**:
@@ -485,33 +599,48 @@ Content-Type: application/json
   "session_id": "uuid",
   "logged_at": "2026-02-16T18:30:00Z"
 }
+
 ```
 
 ---
 
-## User Profile & Subscription
+## User Profile & Management
 
-### Get Profile
+### Get Current User Profile
 
 ```http
-GET /users/me
-Authorization: Bearer {token}
+GET /v1/users/me
+Authorization: Bearer <access_token>
+
 ```
 
-**Response (200)**:
+**Response (200 OK)**:
 
 ```json
 {
-  "id": "uuid",
-  "email": "user@example.com",
+  "id": "0191e4b8-7a8f-7c11-9a4f-123456789abc",
   "first_name": "John",
   "last_name": "Doe",
-  "subscription_tier": "premium",
-  "monthly_quota": 30,
-  "quota_used": 12,
-  "created_at": "2026-01-01T00:00:00Z"
+  "username": "johndoe",
+  "email": "user@example.com",
+  "role": "user",
+  "created_at": "2026-03-01T12:00:00Z",
+  "updated_at": "2026-03-01T12:00:00Z"
 }
+
 ```
+
+### User Management (Admin Only)
+
+Administrative endpoints to manage users require the `admin` role:
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `GET` | `/v1/users` | List all users (paginated) |
+| `POST` | `/v1/users` | Create user directly |
+| `GET` | `/v1/users/{id}` | Get user by ID |
+| `PUT` | `/v1/users/{id}` | Update user details |
+| `DELETE` | `/v1/users/{id}` | Delete user |
 
 ### Subscription Tiers
 
@@ -542,6 +671,7 @@ Analysis Progress
     "stage": "skeleton_detection"
   }
 }
+
 ```
 
 Analysis Complete
@@ -554,6 +684,7 @@ Analysis Complete
     "status": "completed"
   }
 }
+
 ```
 
 ---

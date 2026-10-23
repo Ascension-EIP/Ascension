@@ -13,10 +13,6 @@ tasks:
     inputs:
       - 'pubspec.yaml'
       - 'pubspec.lock'
-    deps:
-      - 'root:setup'
-    #options:
-    #  outputStyle: "buffer-only-failure"
 
   update:
     command: 'flutter'

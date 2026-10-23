@@ -7,22 +7,20 @@ project:
   description: 'AI service for Ascension'
 
 tasks:
-  install:
-    command: 'uv'
-    args: ['sync']
-    inputs:
-      - 'pyproject.toml'
-      - 'uv.lock'
-    deps:
-      - 'root:setup'
-
-  download-model:
+  setup:
     command: 'bash'
     args: ['scripts/download-model.sh']
     inputs:
       - 'scripts/download-model.sh'
     outputs:
       - 'resources/pose_landmarker_full.task'
+
+  install:
+    command: 'uv'
+    args: ['sync']
+    inputs:
+      - 'pyproject.toml'
+      - 'uv.lock'
 
   update:
     command: 'uv'
