@@ -42,6 +42,7 @@ The YAML frontmatter header containing file metadata (such as the document `id`)
 ---
 id: 49dc5f35-6ba9-4ac3-8532-92c9652da56a
 ---
+
 ```
 
 :::danger
@@ -59,6 +60,7 @@ Immediately after the Densho frontmatter (or at the very top of a newly created 
 :::status
 **Version:** [X.X]
 :::
+
 ```
 
 Status Types
@@ -79,6 +81,7 @@ Examples
 :::success
 **Version:** 1.0
 :::
+
 ```
 
 **Final / Frozen document:**
@@ -88,6 +91,7 @@ Examples
 **Version:** 1.0
 DON'T EDIT THIS FILE !
 :::
+
 ```
 
 **Work in progress or needing update:**
@@ -96,6 +100,7 @@ DON'T EDIT THIS FILE !
 :::warning
 **Version:** 0.2
 :::
+
 ```
 
 **To-do / stub document:**
@@ -104,6 +109,7 @@ DON'T EDIT THIS FILE !
 :::danger
 **Version:** 0.1
 :::
+
 ```
 
 ---
