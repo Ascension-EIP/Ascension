@@ -47,6 +47,7 @@ C4Context
     Rel(ascension, hetzner_s3, "Stores / retrieves videos and JSON results", "S3 API / HTTPS")
     Rel(ascension, rabbitmq, "Publishes and consumes analysis jobs", "AMQP")
     Rel(ascension, apn_fcm, "Sends analysis-complete push notifications", "HTTPS")
+
 ```
 
 ---
@@ -76,6 +77,7 @@ C4Container
     Rel(worker, storage, "Reads raw videos / Writes results", "S3 API")
     Rel(worker, db, "Writes analysis results (JSONB)", "TCP / SQLAlchemy")
     Rel(api, mobile, "Push real-time status via WebSocket", "WSS")
+
 ```
 
 ---
@@ -117,6 +119,7 @@ C4Component
     Rel(auth, db, "Read/Write users and sessions")
     Rel(analysis, storage, "Generate presigned URLs")
     Rel(ws, mobile, "Push progress/completion events")
+
 ```
 
 ---
@@ -158,6 +161,7 @@ sequenceDiagram
     API-->>User: { status: completed, result: { frames: [...] } }
 
     Note over User: Flutter CustomPainter renders<br/>skeleton overlay locally (no re-encode)
+
 ```
 
 ---
@@ -172,6 +176,7 @@ Every protected endpoint requires a signed JWT token in the `Authorization` head
 
 ```http
 Authorization: Bearer <jwt_access_token>
+
 ```
 
 Tokens are issued on `POST /auth/login` and `POST /auth/register`. They are signed with a server-side secret (HS256), carry a short expiry (1 h), and are verified by the **Auth Handler** in the Rust API before any handler executes.
@@ -258,6 +263,7 @@ graph TB
     style PG fill:#f0f0f0,color:#000
     style Rabbit fill:#ffe1e1,color:#000
     style MinIO fill:#e1ffe1,color:#000
+
 ```
 
 ---
@@ -502,6 +508,7 @@ erDiagram
         timestamp expires_at
         timestamp created_at
     }
+
 ```
 
 ---
@@ -569,6 +576,7 @@ App
     ├── 📤 Upload (Video Analysis)
     ├── 📊 Stats (Progress & History)
     └── 👤 Profile (Settings & Subscription)
+
 ```
 
 ---
@@ -622,6 +630,7 @@ Tap "Choisir une vidéo"
     → API notified → job dispatched to RabbitMQ
     → WebSocket "analysis:completed" event received
     → Redirect to Stats screen with new result highlighted
+
 ```
 
 **Quota display:** Remaining analyses shown (e.g. "8 / 10 analyses restantes ce mois").
@@ -670,6 +679,7 @@ Flow A — First-time Video Analysis
 → Loading state (WebSocket polling)
 → [Stats] → New analysis card highlighted
 → Tap analysis → Skeleton overlay player
+
 ```
 
 Flow B — Ghost Mode Comparison (Premium)
@@ -680,6 +690,7 @@ Flow B — Ghost Mode Comparison (Premium)
 → [Stats] → Select climb video → "Comparer au Ghost"
 → Ghost overlay rendered client-side via CustomPainter
 → Deviation score + per-frame annotations displayed
+
 ```
 
 Flow C — Degraded Mode (Network Loss During Upload)
@@ -692,6 +703,7 @@ Flow C — Degraded Mode (Network Loss During Upload)
 → If analysis job fails server-side: status = "failed"
 → WebSocket delivers failure event
 → User notified → Manual retry button displayed
+
 ```
 
 ---

@@ -90,6 +90,7 @@ sequenceDiagram
         Server-->>Mobile: 200 OK {id, status, progress, result_json, hints, processing_time_ms}
     end
     Mobile->>Mobile: Rendu local du squelette 2D/3D superposé à la vidéo originale
+
 ```
 
 ---
@@ -114,6 +115,7 @@ Cette section détaille chaque appel réseau effectué par l'application Flutter
       "email": "climber@example.com",
       "password": "securepassword"
     }
+
     ```
   - Traitement du retour dans `register_page.dart` :
 
@@ -125,6 +127,7 @@ Cette section détaille chaque appel réseau effectué par l'application Flutter
       username: _usernameController.text.trim(),
       email: _emailController.text.trim(),
     );
+
     ```
 - **Attente Backend Go actuel** :
   - Route enregistrée : `POST /v1/auth/signup` (gérée par `authH.SignupLogin`)
@@ -137,6 +140,7 @@ Cette section détaille chaque appel réseau effectué par l'application Flutter
         Password string `json:"password" binding:"required,min=8"`
         Remember bool   `json:"remember"`
     }
+
     ```
   - Réponse produite (`response.TokensUserToResponse`) :
 
@@ -153,6 +157,7 @@ Cette section détaille chaque appel réseau effectué par l'application Flutter
         "Role": "user"
       }
     }
+
     ```
 - **Écarts et Conséquences bloquantes** :
   1. **Route 404** : Le mobile appelle `/v1/auth/register`, le serveur écoute sur `/v1/auth/signup`.
@@ -174,6 +179,7 @@ Cette section détaille chaque appel réseau effectué par l'application Flutter
       userId: data['user_id'] as String, // <-- Crash ici
       email: _emailController.text.trim(),
     );
+
     ```
 - **Attente Backend Go actuel** :
   - Route : `POST /v1/auth/login`
@@ -213,6 +219,7 @@ Cette section détaille chaque appel réseau effectué par l'application Flutter
         usersGroup.Use(authMW, adminMW) // <-- Requiert le rôle admin !
         usersGroup.GET("/:id", userH.GetByID)
     }
+
     ```
 - **Écarts et Conséquences bloquantes** :
   1. **Absence de header** `Authorization` **(401 Unauthorized)** : La requête mobile est rejetée dès `authMW`.
@@ -242,12 +249,14 @@ Cette section détaille chaque appel réseau effectué par l'application Flutter
       "filename": "video.mp4",
       "user_id": "uuid"
     }
+
     ```
   - Champs extraits de la réponse :
 
     ```dart
     final videoId = urlData['video_id'] as String;
     final uploadUrl = urlData['upload_url'] as String;
+
     ```
 - **Attente Backend Go actuel** :
   - Route : `GET /v1/videos/upload-url` (avec `authMW` et `userMW`)
@@ -263,6 +272,7 @@ Cette section détaille chaque appel réseau effectué par l'application Flutter
       "upload_url": "http://minio:9000/videos/...",
       "expires_at": "2026-09-05T12:00:00Z"
     }
+
     ```
 - **Écarts et Conséquences bloquantes** :
   1. **401 Unauthorized** : Le mobile n'envoie pas le token JWT.
@@ -284,6 +294,7 @@ Cette section détaille chaque appel réseau effectué par l'application Flutter
 
   ```go
   videoInfo, err := s.repo.GetCompletedVideoInfoByUserID(ctx, videoID, userID)
+
   ```
 
   Puisque `upload-done` n'a pas été appelé, le statut en base vaut toujours `pending`. Le backend refuse donc de créer l'analyse et renvoie une erreur 404/400.
@@ -306,6 +317,7 @@ Cette section détaille chaque appel réseau effectué par l'application Flutter
 
     ```dart
     final analysisId = analysisData['analysis_id'] as String;
+
     ```
 - **Attente Backend Go actuel** :
   - Route : `POST /v1/analysis/` (au **singulier**, protégé par `authMW` et `userMW`)
@@ -317,6 +329,7 @@ Cette section détaille chaque appel réseau effectué par l'application Flutter
       "id": "uuid",
       "status": "pending"
     }
+
     ```
 - **Écarts et Conséquences bloquantes** :
   1. **Route 404 (Pluriel vs Singulier)** : `/v1/analyses` vs `/v1/analysis`.
@@ -344,6 +357,7 @@ Cette section détaille chaque appel réseau effectué par l'application Flutter
       "id": "uuid",
       "status": "pending"
     }
+
     ```
 - **Écarts et Conséquences bloquantes** :
   1. **Route 404** : `/v1/analyses/:id` vs `/v1/analysis/:id`.
@@ -380,6 +394,7 @@ Il s'agit de **l'anomalie bloquante la plus critique** du système de files :
 
   ```go
   QueueAI string `env:"QUEUE_AI" envDefault:"vision.skeleton"`
+
   ```
 
   Le serveur déclare et publie ses messages dans la queue `vision.skeleton`.
@@ -387,6 +402,7 @@ Il s'agit de **l'anomalie bloquante la plus critique** du système de files :
 
   ```python
   queue_skeleton="ascension.skeleton"  # Valeur codée en dur !
+
   ```
 
   Le worker écoute et consomme la queue `ascension.skeleton`.
@@ -401,6 +417,7 @@ Il s'agit de **l'anomalie bloquante la plus critique** du système de files :
     "analysis_id": "550e8400-e29b-41d4-a716-446655440000",
     "video_url": "s3://videos/user-uuid/video-uuid.mp4"
   }
+
   ```
 - **Ce qu'attend le Worker IA Python** (`apps/ai/src/core/models.py`) :
 
@@ -411,6 +428,7 @@ Il s'agit de **l'anomalie bloquante la plus critique** du système de files :
       analysis_id: str
       video_url: str
       pipeline_name: str | None = None
+
   ```
 - **Impact** : Le champ `job_id` n'est pas fourni par le serveur Go. Le worker utilise alors le fallback par défaut `"unknown"`. L'identifiant de job devient introuvable dans les logs et la traçabilité est rompue.
 
@@ -427,6 +445,7 @@ Il s'agit de **l'anomalie bloquante la plus critique** du système de files :
       "status": "completed",
       "processing_time_ms": 4520
     }
+
     ```
 - **Côté Backend Go** : Le backend déclare bien l'exchange `ascension.events` au démarrage, mais **ne lie aucune file et ne consomme aucun message**. Le cycle événementiel est donc à sens unique : le backend n'écoute pas la fin des travaux de l'IA.
 
@@ -451,6 +470,7 @@ Puisque le backend n'écoute pas les messages de fin sur RabbitMQ, **le Worker I
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   );
+
   ```
 - **Dans le code du Worker IA (**`apps/ai/src/infrastructure/database.py`**)** : Toutes les requêtes SQL ciblent la table au **pluriel** :
 
@@ -458,6 +478,7 @@ Puisque le backend n'écoute pas les messages de fin sur RabbitMQ, **le Worker I
   cur.execute("UPDATE analyses SET status = %s, updated_at = NOW() WHERE id = %s", (status, analysis_id))
   cur.execute("UPDATE analyses SET progress = %s, updated_at = NOW() WHERE id = %s", (progress, analysis_id))
   cur.execute("UPDATE analyses SET status = 'completed', result_json = %s, hints = %s ... WHERE id = %s", ...)
+
   ```
 - **Conséquence** : Dès que le worker tente d'enregistrer la progression ou le résultat, PostgreSQL lève une exception fatale : `psycopg2.errors.UndefinedTable: relation "analyses" does not exist`.
 
@@ -557,6 +578,7 @@ Pour transformer ce prototype désynchronisé en une application de niveau produ
          "hints": "markdown...",
          "processing_time_ms": 3200
        }
+
        ```
      - Le Backend Go consomme cet événement, met à jour sa propre base PostgreSQL, et prévient le client.
    - *Alternative Pragmatiste Immédiate* :
@@ -598,6 +620,7 @@ Voici la feuille de route ordonnée des interventions techniques à mener pour r
     ALTER TABLE analyses ADD COLUMN IF NOT EXISTS hints TEXT;
     CREATE INDEX IF NOT EXISTS idx_analyses_video_id ON analyses(video_id);
     CREATE INDEX IF NOT EXISTS idx_analyses_status ON analyses(status);
+
     ```
 - [ ] **Corriger le trigger** `000004_create_videos_table.up.sql` :
   - Remplacer `BEFORE UPDATE ON users` par `BEFORE UPDATE ON videos`.
@@ -634,6 +657,7 @@ Voici la feuille de route ordonnée des interventions techniques à mener pour r
         Email string `json:"email"`
         Role  string `json:"role"`
     }
+
     ```
 - [ ] **Corriger** `response.LoginResponse` :
   - Ajouter le champ racine `UserID: user.ID.String()` (`json:"user_id"`) pour garantir la compatibilité ascendante avec le client mobile.
@@ -654,6 +678,7 @@ Voici la feuille de route ordonnée des interventions techniques à mener pour r
         CreatedAt        time.Time            `json:"created_at"`
         CompletedAt      *time.Time           `json:"completed_at,omitempty"`
     }
+
     ```
 - [ ] **Ajouter la route d'historique** `GET /v1/analyses` :
   - Permettre à un utilisateur de récupérer ses analyses passées directement depuis PostgreSQL.

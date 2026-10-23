@@ -142,4 +142,5 @@ This framework means every technical change must be critically analyzed, documen
 ---
 
 You now have full context for the Ascension project. Answer all questions and complete all tasks using this information. When writing code, respect the current stack choices. When giving recommendations, align with the architectural principles described above.
+
 ````

@@ -180,6 +180,7 @@ moon run :test
 
 # 7. Run tests on affected projects only (recommended in CI)
 moon run :test --affected
+
 ```
 
 ---

@@ -41,7 +41,7 @@ graph TD
     subgraph Outside ["OUTSIDE"]
         HTTP["HTTP Requests<br>(Inbound / Adapters)"]
         Cron["Cron Scheduler<br>(cmd/cron & internal/job)"]
-
+        
         DB["PostgreSQL Database<br>(Outbound / Adapters)"]
         Ext["RabbitMQ / MinIO<br>(Outbound / Adapters)"]
     end
@@ -51,7 +51,7 @@ graph TD
         Models["Models (internal/model)"]
         Ports["Ports / Interfaces (internal/model/ports)"]
         Services["Services (internal/service)"]
-
+        
         Note["Knows NOTHING about Gin or HTTP<br>Knows NOTHING about SQL queries"]
     end
 
@@ -160,6 +160,7 @@ Handler
   │  Serializes DTO to JSON and returns HTTP 200 OK
   ▼
 Client
+
 ```
 
 ---
@@ -220,6 +221,7 @@ apps/server/
     └── setup/
         ├── config/                     # Environment configuration loader
         └── logger/                     # Structured logger constructor (slog)
+
 ```
 
 ---

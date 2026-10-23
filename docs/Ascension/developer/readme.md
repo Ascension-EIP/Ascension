@@ -107,6 +107,7 @@ docker compose up -d
 moon run server:dev     # Starts Go API
 moon run ai:dev         # Starts Python AI workers
 moon run mobile:dev     # Launches Flutter mobile app
+
 ```
 
 ---

@@ -121,6 +121,7 @@ graph TD
     APIServer -->|"10. WebSocket Notification"| MobileApp
     MobileApp -->|"11. Fetch Analysis JSON"| APIServer
     APIServer -->|"12. Retrieve JSON"| Database
+
 ```
 
 ---
@@ -173,6 +174,7 @@ architecture/
     ├── api-gateway.md                 # Go API server details
     ├── ai-workers.md                  # Python AI workers details
     └── message-queue.md               # RabbitMQ queue patterns
+
 ```
 
 ---
@@ -208,6 +210,7 @@ Ascension/                      # Monorepo root
         ├── moon.yml
         ├── pubspec.yaml
         └── lib/
+
 ```
 
 **Benefits**:

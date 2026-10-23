@@ -290,6 +290,7 @@ graph TB
     style W2 fill:#fff4e1
     style Wn fill:#fff4e1
     style Nginx fill:#f9f
+
 ```
 
 ### Annotations architecture
@@ -376,6 +377,7 @@ Chaque choix découle directement du benchmark réalisé :
 │ recommendations TEXT│
 │ created_at          │
 └─────────────────────┘
+
 ```
 
 ### Cohérence avec backlog
@@ -467,6 +469,7 @@ sequenceDiagram
     W->>A: Webhook Analysis Complete
     A->>WS: Push Notification
     WS-->>M: Votre analyse est prete !
+
 ```
 
 ### API Endpoints principaux
@@ -557,6 +560,7 @@ Hetzner    ████████ 96€
 OVH        ████████████ 140€
 DO         ██████████████████ 207€
 AWS        ███████████████████████████████ 312€
+
 ```
 
 ### Justification choix Hetzner
@@ -654,11 +658,12 @@ Légende :
   █ ÉLEVÉ (10-14) : Orange
   █ MODÉRÉ (5-9) : Jaune
   █ FAIBLE (<= 4) : Vert
+
 ```
 
 ### Top 10 risques identifiés
 
-| # | Risque | Catégorie | Prob. | Impact | Criticité | Couleur |
+| \# | Risque | Catégorie | Prob. | Impact | Criticité | Couleur |
 | --- | --- | --- | --- | --- | --- | --- |
 | **1** | Précision ML insuffisante (MediaPipe générique) | Technique | 4 | 5 | **20** | 🔴 |
 | **12** | RGPD - Données biométriques (vidéos corpo) | Légal | 3 | 5 | **15** | 🔴 |

@@ -44,6 +44,7 @@ Par conséquent :
 │ • Alignement    │ • Données compl.│ • Roadmap SAM 3D   │ • Cycle upload     │
 │   Mobile/IA     │ • Fix bugs SQL  │ • BDD analyses     │ • Dashboard Home   │
 └─────────────────┴─────────────────┴────────────────────┴────────────────────┘
+
 ```
 
 ---
@@ -109,6 +110,7 @@ Lors du passage de l'ancien serveur Rust (Axum) au serveur Go (Gin), plusieurs f
 
      ```sql
      CREATE TRIGGER update_videos_updated_at BEFORE UPDATE ON users FOR EACH ROW ...
+
      ```
 
      Le trigger s'attache à la table `users` au lieu de `videos`.
@@ -143,6 +145,7 @@ apps/ai/src/
 ├── worker.py          # Démon RabbitMQ principal (écoute vision.skeleton)
 ├── ai_mediapipe.py    # [ACTIF] Pipeline 3D MediaPipe + Google Gemini
 └── ai_sam3d.py        # [SOMMEIL] Pipeline SAM 3D Body + MHR-70 (554 lignes)
+
 ```
 
 - **Pipeline MediaPipe (**`ai_mediapipe.py`**) - Opérationnel** :
@@ -207,6 +210,7 @@ L'interface actuelle est jugée **austère, peu attrayante et datée** ("moche")
 │   ou orange électrique│   avec bordures fines │   haute précision           │
 │ • Contrastes forts    │ • Micro-interactions  │ • Visualisation 3D fluide   │
 └───────────────────────┴───────────────────────┴─────────────────────────────┘
+
 ```
 
 Écrans cibles de la refonte graphique :
@@ -240,6 +244,7 @@ L'interface actuelle est jugée **austère, peu attrayante et datée** ("moche")
 
     ```dart
     'Authorization': 'Bearer $token'
+
     ```
 - **Gestion du rafraîchissement silencieux des tokens** :
   - Si une requête renvoie `401 Unauthorized`, appeler automatiquement `PUT /v1/auth/refresh` avec le `refresh_token` pour obtenir un nouvel `access_token` avant de rejouer la requête d'origine.
@@ -291,6 +296,7 @@ flowchart TD
     Phase 1 --> Phase 2
     Phase 2 --> Phase 3
     Phase 3 --> Phase 4
+
 ```
 
 ### Phase 1 : Rétablissement du Flux de Bout en Bout (Court Terme)
