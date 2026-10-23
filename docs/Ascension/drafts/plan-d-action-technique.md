@@ -56,11 +56,11 @@ L'analyse comparative révèle des ruptures de contrat bloquantes entre le clien
 
 | Domaine | Implémentation Mobile (`api_service.dart`) | Implémentation Backend Go (`router.go`) | Statut / Conséquence |
 | --- | --- | --- | --- |
-| **Inscription** | `POST /v1/auth/register`<br>Body: `{username, email, password}` | `POST /v1/auth/signup`<br>Body: `{name, email, password}` | **404 Not Found** (Route inexistante sur le serveur) |
+| **Inscription** | `POST /v1/auth/register`\<br>Body: `{username, email, password}` | `POST /v1/auth/signup`\<br>Body: `{name, email, password}` | **404 Not Found** (Route inexistante sur le serveur) |
 | **Headers d'Auth** | Aucun en-tête `Authorization` transmis sur les requêtes protégées | `authMW` vérifie `Authorization: Bearer <token>` sur `/users`, `/videos`, `/analysis` | **401 Unauthorized** systématique sur toutes les routes métier |
-| **Demande d'Upload** | `POST /v1/videos/upload-url`<br>Body: `{"filename", "user_id"}` | `GET /v1/videos/upload-url?content_type=...&size=...` | **405 Method Not Allowed** (Méthode POST refusée) |
-| **Validation Upload** | Étape non appelée par le Mobile | `PUT /v1/videos/upload-done/:id`<br>Vérifie l'objet dans MinIO et passe le statut à `completed` | **Blocage analyse** : la vidéo reste `pending`, le backend refuse de lancer l'IA |
-| **Déclenchement IA** | `POST /v1/analyses`<br>Attend `analysis_id` dans la réponse | `POST /v1/analysis/`<br>Retourne `{id, status}` | **404 Not Found** (Pluriel vs singulier) + champ d'ID divergent |
+| **Demande d'Upload** | `POST /v1/videos/upload-url`\<br>Body: `{"filename", "user_id"}` | `GET /v1/videos/upload-url?content_type=...&size=...` | **405 Method Not Allowed** (Méthode POST refusée) |
+| **Validation Upload** | Étape non appelée par le Mobile | `PUT /v1/videos/upload-done/:id`\<br>Vérifie l'objet dans MinIO et passe le statut à `completed` | **Blocage analyse** : la vidéo reste `pending`, le backend refuse de lancer l'IA |
+| **Déclenchement IA** | `POST /v1/analyses`\<br>Attend `analysis_id` dans la réponse | `POST /v1/analysis/`\<br>Retourne `{id, status}` | **404 Not Found** (Pluriel vs singulier) + champ d'ID divergent |
 | **Lecture Analyse** | `GET /v1/analyses/:id` | `GET /v1/analysis/:id` | **404 Not Found** (Pluriel vs singulier) |
 | **Host MinIO** | Upload direct sur l'URL présignée MinIO (`http://minio:9000/...`) | URL présignée construite avec l'endpoint interne Docker | **Échec réseau mobile** : un smartphone ou émulateur ne résout pas `minio` |
 

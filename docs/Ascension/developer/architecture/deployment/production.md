@@ -120,10 +120,7 @@ graph TB
 | **Domain** | DNS | `.com` domain | 1€/month (12€/year) |
 | **SSL** | TLS Certificates | Let's Encrypt via Cloudflare | 0€ |
 | **Monitoring** | Prometheus + Grafana + Loki | Self-hosted on Srv-API | 0€ |
-|
- |
-
- | **Total (MVP)** | **96€/month** |
+|  |  | **Total (MVP)** | **96€/month** |
 
 ### GPU Machine (AI Workers — Optional Upgrade)
 

@@ -68,11 +68,8 @@ The container status must strictly use one of the authorized container types:
 | Status Container | Previous Status Equivalent | Description | Notes |
 | --- | --- | --- | --- |
 | `:::success` | `Done`, `Final` | Completed and validated document. | If the document is frozen/final, append `DON'T EDIT THIS FILE !` on a new line after `Version`. |
-| `:::warning` | `In progress`, `Need update` | Work in progress or outdated document needing update. |
- |
-| `:::danger` | `Todo` | Planned document not yet written. |
-
- |
+| `:::warning` | `In progress`, `Need update` | Work in progress or outdated document needing update. |  |
+| `:::danger` | `Todo` | Planned document not yet written. |  |
 
 Examples
 

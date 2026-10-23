@@ -106,7 +106,7 @@ Task Runner — moon
 
 | Tool | Version | Install |
 | --- | --- | --- |
-| moonrepo | `2.0.3` | `curl -fsSL https://moonrepo.dev/install/moon.sh | bash` |
+| moonrepo | `2.0.3` | `curl -fsSL https://moonrepo.dev/install/moon.sh \| bash` |
 
 Backend — Rust
 

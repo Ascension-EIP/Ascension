@@ -138,10 +138,7 @@ Légende :
 | Srv-API (CX31) | ~30 W | 8 760 | 263 | ~92 kg |
 | Srv-DB (CX41) | ~50 W | 8 760 | 438 | ~153 kg |
 | Srv-ML (CX51) | ~80 W | 8 760 | 701 | ~245 kg |
-| **Total** |
- |
-
- | **1 402** | **~490 kg CO2eq/an** |
+| **Total** |  |  | **1 402** | **~490 kg CO2eq/an** |
 
 > ⚠️ Avec 100% énergie renouvelable Hetzner, l'intensité carbone effective tend vers 0 gCO2/kWh. L'estimation ci-dessus représente le **pire cas** (mix réseau DE résiduel).
 

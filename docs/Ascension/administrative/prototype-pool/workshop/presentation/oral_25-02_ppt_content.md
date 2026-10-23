@@ -518,12 +518,7 @@ sequenceDiagram
 | **Object Storage** | Vidéos S3-compatible | 1 TB extensible | Hetzner Storage Box | 10€ |
 | **SSL Certificate** | HTTPS wildcard | Let's Encrypt | Gratuit | 0€ |
 | **CI/CD** | GitHub Actions | Hosted runners | GitHub | 0€ (< 2000 min/mois) |
-|
- |
-
- |
-
- | **TOTAL OPEX MVP** | **96€/mois** |
+|  |  |  | **TOTAL OPEX MVP** | **96€/mois** |
 
 ### CAPEX - Coûts uniques lancement
 
@@ -532,10 +527,7 @@ sequenceDiagram
 | Apple Developer Account | Publication App Store iOS | Annuel | 99€ |
 | Google Play Developer | Publication Play Store Android | One-time | 22€ |
 | Nom de domaine (année 1) | [ascension.com](http://escalade-app.com) | Annuel | 12€ |
-|
- |
-
- | **TOTAL CAPEX** | **133€** |
+|  |  | **TOTAL CAPEX** | **133€** |
 
 ### Coûts cachés explicitement inclus
 
@@ -683,24 +675,13 @@ Légende :
 
 ## **Slide 17 : Mitigation Strategy**
 
-|
- |
-
- |
-
- |
-
- |
-
- |
-
- |
+|  |  |  |  |  |  |
 | --- | --- | --- | --- | --- | --- |
 | **Risque (ID & Nom)** | **Crit.** | **Cause & Impact** | **Stratégie** | **Actions Concrètes** | **Échéance** |
-| #1 - Précision ML insuffisante | 20 | Cause : Modèle générique. Impact : Blessures, perte de confiance. | RÉDUIRE | • Dataset propriétaire (500 vidéos labellisées)<br><br>• Fine-tuning TFLite (2 sem.)<br><br>• Seuil confiance < $70\\%$ (masquage)<br><br>• Beta test experts | Sprint 4 |
-| #12 - RGPD & Données biométriques | 15 | Cause : Art. 9 (sensible).<br><br>Impact : Amende 4% CA, réputation. | ÉVITER | • Consentement granulaire (3 types)<br><br>• Hébergement EU (Hetzner)<br><br>• Chiffrement AES-256 & Droit effacement<br><br>• Audit avocat spécialisé | Avant Beta |
-| #2 - Panne serveurs ML | 12 | Cause : Saturation/OOM. Impact : SLA non respecté, frustration. | RÉDUIRE | • Queue RabbitMQ persistante + retries automatiques (pika)<br><br>• Alerting Grafana / Slack<br><br>• Auto-scaling horizontal automatique<br><br>• Circuit breaker (dégradation gracieuse) | Sprint 5 |
-| #4 - Fuite de données | 10 | Cause : Hack / Breach S3. Impact : Exposition vidéos, plainte CNIL. | RÉDUIRE | • Chiffrement E2E (Repos/Transit)<br><br>• Hachage Argon2 (pas de MD5/SHA1)<br><br>• S3 Signed URLs (validité 1h)<br><br>• Pentest externe avant lancement | Sprint 6 |
+| #1 - Précision ML insuffisante | 20 | Cause : Modèle générique. Impact : Blessures, perte de confiance. | RÉDUIRE | • Dataset propriétaire (500 vidéos labellisées)\<br>\<br>• Fine-tuning TFLite (2 sem.)\<br>\<br>• Seuil confiance < $`70\\%`$ (masquage)\<br>\<br>• Beta test experts | Sprint 4 |
+| #12 - RGPD & Données biométriques | 15 | Cause : Art. 9 (sensible).\<br>\<br>Impact : Amende 4% CA, réputation. | ÉVITER | • Consentement granulaire (3 types)\<br>\<br>• Hébergement EU (Hetzner)\<br>\<br>• Chiffrement AES-256 & Droit effacement\<br>\<br>• Audit avocat spécialisé | Avant Beta |
+| #2 - Panne serveurs ML | 12 | Cause : Saturation/OOM. Impact : SLA non respecté, frustration. | RÉDUIRE | • Queue RabbitMQ persistante + retries automatiques (pika)\<br>\<br>• Alerting Grafana / Slack\<br>\<br>• Auto-scaling horizontal automatique\<br>\<br>• Circuit breaker (dégradation gracieuse) | Sprint 5 |
+| #4 - Fuite de données | 10 | Cause : Hack / Breach S3. Impact : Exposition vidéos, plainte CNIL. | RÉDUIRE | • Chiffrement E2E (Repos/Transit)\<br>\<br>• Hachage Argon2 (pas de MD5/SHA1)\<br>\<br>• S3 Signed URLs (validité 1h)\<br>\<br>• Pentest externe avant lancement | Sprint 6 |
 
 ---
 
