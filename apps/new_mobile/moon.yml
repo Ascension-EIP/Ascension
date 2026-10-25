@@ -90,7 +90,7 @@ tasks:
 
   test:
     command: 'flutter'
-    args: ['test']
+    args: ['test', '--reporter', 'expanded']
     inputs:
       - 'lib/**/*'
       - 'test/**/*'
@@ -98,6 +98,65 @@ tasks:
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'analysis_options.yaml'
+    deps:
+      - 'install'
+
+  test-goldens:
+    command: 'flutter'
+    args: ['test', 'test/goldens', '--reporter', 'expanded']
+    inputs:
+      - 'lib/**/*'
+      - 'test/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+    deps:
+      - 'install'
+
+  update-goldens:
+    command: 'flutter'
+    args: ['test', '--update-goldens', 'test/goldens', '--reporter', 'expanded']
+    inputs:
+      - 'lib/**/*'
+      - 'test/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+    deps:
+      - 'install'
+
+  coverage:
+    command: 'bash'
+    args: ['scripts/coverage.sh']
+    inputs:
+      - 'lib/**/*'
+      - 'test/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'scripts/coverage.sh'
+    outputs:
+      - 'coverage'
+    deps:
+      - 'install'
+
+  coverage-open:
+    command: 'bash'
+    args: ['scripts/coverage.sh', '--open']
+    inputs:
+      - 'lib/**/*'
+      - 'test/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'scripts/coverage.sh'
+    outputs:
+      - 'coverage'
+    deps:
+      - 'install'
+
+  widgetbook:
+    command: 'flutter'
+    args: ['run', '-t', 'widgetbook/main.dart']
+    options:
+      persistent: true
+      cache: false
     deps:
       - 'install'
 

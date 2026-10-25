@@ -1,6 +1,6 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=/home/toronicolas/.cache/flutter_sdk"
+export "FLUTTER_ROOT=/opt/flutter"
 export "FLUTTER_APPLICATION_PATH=/home/toronicolas/Epitech/EIP/Ascension/apps/new_mobile"
 export "FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=/home/toronicolas/Epitech/EIP/Ascension/apps/new_mobile/macos/Flutter/ephemeral/Packages/.packages/FlutterFramework"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"

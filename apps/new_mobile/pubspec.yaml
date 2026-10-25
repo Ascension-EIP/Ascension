@@ -50,6 +50,8 @@ dev_dependencies:
   custom_lint: ^0.7.5
   freezed: ^3.0.0
   json_serializable: ^6.9.4
+  alchemist: ^0.14.0
+  widgetbook: ^3.25.0
 
 flutter_launcher_icons:
   android: "launcher_icon"
