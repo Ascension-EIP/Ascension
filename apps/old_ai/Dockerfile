@@ -1,0 +1,25 @@
+FROM python:3.14-slim
+
+WORKDIR /app
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends \
+		libgl1 \
+		libglib2.0-0 \
+		wget \
+	&& rm -rf /var/lib/apt/lists/*
+
+# Download the MediaPipe PoseLandmarker model
+RUN wget -q -O /app/pose_landmarker.task \
+    https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task
+
+# Install dependencies via uv
+COPY pyproject.toml uv.lock* ./
+RUN uv sync --frozen
+
+COPY . .
+
+ENTRYPOINT ["uv", "run", "python", "-u", "src/main.py", "worker"]

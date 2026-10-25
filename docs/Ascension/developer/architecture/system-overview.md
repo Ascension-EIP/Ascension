@@ -140,7 +140,7 @@ Processing time: 45s (no encoding)
 **API Endpoints**:
 
 ```
-POST   /v1/auth/signup
+POST   /v1/auth/register
 POST   /v1/auth/login
 DELETE /v1/auth/logout
 PUT    /v1/auth/refresh

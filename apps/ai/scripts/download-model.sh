@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MODEL_FILE="pose_landmarker.task"
-MODEL_URL="https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task"
+MODEL_FILE="resources/pose_landmarker_full.task"
+MODEL_URL="https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_full.task"
 
 if [ -f "$MODEL_FILE" ]; then
   echo "pose_landmarker.task already present, skipping download."

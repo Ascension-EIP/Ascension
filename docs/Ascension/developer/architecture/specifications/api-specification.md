@@ -25,7 +25,7 @@ This document describes the Ascension REST API for video analysis, route visuali
 ### Register (Sign Up)
 
 ```http
-POST /v1/auth/signup
+POST /v1/auth/register
 Content-Type: application/json
 
 {

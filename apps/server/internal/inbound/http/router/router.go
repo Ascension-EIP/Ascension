@@ -1,8 +1,8 @@
-// @date 2026-09-20
+// @date 2026-09-29
 // @file router.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package router
@@ -50,7 +50,7 @@ func New(
 
 		authGroup := v1.Group("/auth")
 		{
-			authGroup.POST("/signup", middleware.RateLimiter(time.Minute, 5), authH.SignupLogin)
+			authGroup.POST("/register", middleware.RateLimiter(time.Minute, 5), authH.Register)
 			authGroup.POST("/login", middleware.RateLimiter(time.Minute, 10), authH.Login)
 			authGroup.DELETE("/logout", middleware.RateLimiter(time.Minute, 10), authMW(), authH.Logout)
 			authGroup.PUT("/refresh", middleware.RateLimiter(time.Minute, 10), authH.RefreshToken)
