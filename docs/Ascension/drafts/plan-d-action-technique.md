@@ -44,6 +44,7 @@ Par conséquent :
 │ • Alignement    │ • Données compl.│ • Roadmap SAM 3D   │ • Cycle upload     │
 │   Mobile/IA     │ • Fix bugs SQL  │ • BDD analyses     │ • Dashboard Home   │
 └─────────────────┴─────────────────┴────────────────────┴────────────────────┘
+
 ```
 
 ---
@@ -56,11 +57,11 @@ L'analyse comparative révèle des ruptures de contrat bloquantes entre le clien
 
 | Domaine | Implémentation Mobile (`api_service.dart`) | Implémentation Backend Go (`router.go`) | Statut / Conséquence |
 | --- | --- | --- | --- |
-| **Inscription** | `POST /v1/auth/register`<br>Body: `{username, email, password}` | `POST /v1/auth/signup`<br>Body: `{name, email, password}` | **404 Not Found** (Route inexistante sur le serveur) |
+| **Inscription** | `POST /v1/auth/register`\<br>Body: `{username, email, password}` | `POST /v1/auth/signup`\<br>Body: `{name, email, password}` | **404 Not Found** (Route inexistante sur le serveur) |
 | **Headers d'Auth** | Aucun en-tête `Authorization` transmis sur les requêtes protégées | `authMW` vérifie `Authorization: Bearer <token>` sur `/users`, `/videos`, `/analysis` | **401 Unauthorized** systématique sur toutes les routes métier |
-| **Demande d'Upload** | `POST /v1/videos/upload-url`<br>Body: `{"filename", "user_id"}` | `GET /v1/videos/upload-url?content_type=...&size=...` | **405 Method Not Allowed** (Méthode POST refusée) |
-| **Validation Upload** | Étape non appelée par le Mobile | `PUT /v1/videos/upload-done/:id`<br>Vérifie l'objet dans MinIO et passe le statut à `completed` | **Blocage analyse** : la vidéo reste `pending`, le backend refuse de lancer l'IA |
-| **Déclenchement IA** | `POST /v1/analyses`<br>Attend `analysis_id` dans la réponse | `POST /v1/analysis/`<br>Retourne `{id, status}` | **404 Not Found** (Pluriel vs singulier) + champ d'ID divergent |
+| **Demande d'Upload** | `POST /v1/videos/upload-url`\<br>Body: `{"filename", "user_id"}` | `GET /v1/videos/upload-url?content_type=...&size=...` | **405 Method Not Allowed** (Méthode POST refusée) |
+| **Validation Upload** | Étape non appelée par le Mobile | `PUT /v1/videos/upload-done/:id`\<br>Vérifie l'objet dans MinIO et passe le statut à `completed` | **Blocage analyse** : la vidéo reste `pending`, le backend refuse de lancer l'IA |
+| **Déclenchement IA** | `POST /v1/analyses`\<br>Attend `analysis_id` dans la réponse | `POST /v1/analysis/`\<br>Retourne `{id, status}` | **404 Not Found** (Pluriel vs singulier) + champ d'ID divergent |
 | **Lecture Analyse** | `GET /v1/analyses/:id` | `GET /v1/analysis/:id` | **404 Not Found** (Pluriel vs singulier) |
 | **Host MinIO** | Upload direct sur l'URL présignée MinIO (`http://minio:9000/...`) | URL présignée construite avec l'endpoint interne Docker | **Échec réseau mobile** : un smartphone ou émulateur ne résout pas `minio` |
 
@@ -109,6 +110,7 @@ Lors du passage de l'ancien serveur Rust (Axum) au serveur Go (Gin), plusieurs f
 
      ```sql
      CREATE TRIGGER update_videos_updated_at BEFORE UPDATE ON users FOR EACH ROW ...
+
      ```
 
      Le trigger s'attache à la table `users` au lieu de `videos`.
@@ -143,6 +145,7 @@ apps/ai/src/
 ├── worker.py          # Démon RabbitMQ principal (écoute vision.skeleton)
 ├── ai_mediapipe.py    # [ACTIF] Pipeline 3D MediaPipe + Google Gemini
 └── ai_sam3d.py        # [SOMMEIL] Pipeline SAM 3D Body + MHR-70 (554 lignes)
+
 ```
 
 - **Pipeline MediaPipe (**`ai_mediapipe.py`**) - Opérationnel** :
@@ -207,6 +210,7 @@ L'interface actuelle est jugée **austère, peu attrayante et datée** ("moche")
 │   ou orange électrique│   avec bordures fines │   haute précision           │
 │ • Contrastes forts    │ • Micro-interactions  │ • Visualisation 3D fluide   │
 └───────────────────────┴───────────────────────┴─────────────────────────────┘
+
 ```
 
 Écrans cibles de la refonte graphique :
@@ -240,6 +244,7 @@ L'interface actuelle est jugée **austère, peu attrayante et datée** ("moche")
 
     ```dart
     'Authorization': 'Bearer $token'
+
     ```
 - **Gestion du rafraîchissement silencieux des tokens** :
   - Si une requête renvoie `401 Unauthorized`, appeler automatiquement `PUT /v1/auth/refresh` avec le `refresh_token` pour obtenir un nouvel `access_token` avant de rejouer la requête d'origine.
@@ -291,6 +296,7 @@ flowchart TD
     Phase 1 --> Phase 2
     Phase 2 --> Phase 3
     Phase 3 --> Phase 4
+
 ```
 
 ### Phase 1 : Rétablissement du Flux de Bout en Bout (Court Terme)

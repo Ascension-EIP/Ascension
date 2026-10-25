@@ -3,7 +3,7 @@ id: 42f46e9a-0ca5-4e39-b882-98520f4fea1e
 ---
 
 :::success
-**Version:** 2.0
+**Version:** 2.1
 :::
 
 ---
@@ -24,6 +24,7 @@ Adding a route always touches these files (at minimum):
 | --- | --- |
 | The handler logic | `internal/inbound/http/handler/<your_file>.go` |
 | Route registration | `internal/inbound/http/router/router.go` |
+| Dependency wiring | `internal/app/app.go` |
 
 ---
 
@@ -31,13 +32,14 @@ Adding a route always touches these files (at minimum):
 
 Create a new Go file under `internal/inbound/http/handler/` or add a method to an existing handler.
 
-For our version check example, we can create `internal/inbound/http/handler/status.go`:
+For our version check example, create `internal/inbound/http/handler/status.go`:
 
 ```go
 package handler
 
 import (
 	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -57,6 +59,7 @@ func (h *StatusHandler) GetVersion(c *gin.Context) {
 		Version: "1.0.0",
 	})
 }
+
 ```
 
 ---
@@ -70,12 +73,17 @@ Open `internal/inbound/http/router/router.go`.
 ```go
 func New(
 	app *gin.Engine,
-	cfg *config.Config,
-	l *zerolog.Logger,
-	// ... middlewares ...
+	cfg config.Config,
+
+	authMW middleware.AuthHandler,
+
 	userH *handler.UserHandler,
+	authH *handler.AuthHandler,
+	videoH *handler.VideoHandler,
+	analysisH *handler.AnalysisHandler,
 	statusH *handler.StatusHandler, // ← Add this handler
 )
+
 ```
 
 2. Register the route under the `/v1` group:
@@ -85,12 +93,28 @@ func New(
 	{
 		statusGroup := v1.Group("/status")
 		{
-			statusGroup.GET("/version", statusH.GetVersion) // ← Add this line
+			statusGroup.GET("/version", statusH.GetVersion) // ← Add this route
 		}
 	}
+
 ```
 
-Make sure the main wiring in `internal/app/app.go` instantiates your handler and passes it to the `router.New` function.
+3. In `internal/app/app.go`, instantiate your handler and pass it to `router.New`:
+
+```go
+	statusH := handler.NewStatusHandler()
+
+	router.New(app, cfg,
+		authMW,
+
+		&userH,
+		&authH,
+		&videoH,
+		&analysisH,
+		&statusH, // ← Pass here
+	)
+
+```
 
 ---
 
@@ -100,6 +124,7 @@ Start the server, then use `curl` or any HTTP client:
 
 ```bash
 curl http://localhost:8080/v1/status/version
+
 ```
 
 Expected response:
@@ -108,6 +133,7 @@ Expected response:
 {
   "version": "1.0.0"
 }
+
 ```
 
 ---
@@ -120,7 +146,7 @@ Gin router groups expose methods matching HTTP verbs:
 | --- | --- | --- |
 | `group.GET(path, handler)` | `GET` | Read / list a resource |
 | `group.POST(path, handler)` | `POST` | Create a new resource |
-| `group.PUT(path, handler)` | `PUT` | Replace a resource entirely |
+| `group.PUT(path, handler)` | `PUT` | Replace or update a resource |
 | `group.PATCH(path, handler)` | `PATCH` | Partially update a resource |
 | `group.DELETE(path, handler)` | `DELETE` | Delete a resource |
 
@@ -130,21 +156,19 @@ Use `:param` in the route path to capture a segment as a variable:
 
 ```go
 usersGroup.GET("/:id", userH.GetByID)
+
 ```
 
 In the handler, extract it with `c.Param("id")`:
 
 ```go
 idStr := c.Param("id")
-```
+id, err := uuid.Parse(idStr)
+if err != nil {
+	c.JSON(http.StatusBadRequest, response.NewError(err))
+	return
+}
 
-### Query parameters
-
-Use `c.Query("name")` to extract `?key=value` parameters:
-
-```go
-// GET /v1/videos/upload-url?content_type=video/mp4
-contentType := c.Query("content_type")
 ```
 
 ### JSON request body
@@ -153,15 +177,18 @@ Use `c.ShouldBindJSON(&struct)` to bind and validate an incoming JSON body:
 
 ```go
 type CreateAnalyseRequest struct {
-	VideoID uuid.UUID `json:"video_id" binding:"required"`
+	VideoID    uuid.UUID `json:"video_id" binding:"required"`
+	Type       string    `json:"type" binding:"required"`
+	Visibility string    `json:"visibility" binding:"required"`
 }
 
-func (h *AnalyseHandler) Create(c *gin.Context) {
+func (h *AnalysisHandler) Create(c *gin.Context) {
 	var req CreateAnalyseRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
-	// req.VideoID is now available
+	// req fields are now bound and validated
 }
+
 ```

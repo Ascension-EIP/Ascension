@@ -2,9 +2,9 @@
 id: c5bbd73b-f9e8-48e6-8aae-d2d7314fdf09
 sort: custom
 order:
-  - catalogue-fonctionnalites
-  - roadmap-fonctionnelle
-  - tarifs-abonnements
+  - features-catalog
+  - functional-roadmap
+  - pricing-subscriptions
   - action-plan
   - beta-test-plan
   - acceptance-test-plan
@@ -13,6 +13,7 @@ order:
   - prototype-pool
   - accessibility-compliance
   - folder-files
+  - infrastructure-needs
 ---
 
 :::success
@@ -51,7 +52,8 @@ Les documents de cette section sont ordonnés selon leur rôle dans le cycle de 
 
 - [**Catalogue des fonctionnalités**](./catalogue-fonctionnalites.md) **:** Référentiel complet décrivant l'ensemble des fonctionnalités du système (profil utilisateur, extraction de posture, qualification des prises, Ghost Mode, programmes d'entraînement).
 - [**Roadmap fonctionnelle**](./roadmap-fonctionnelle.md) **:** Calendrier prévisionnel de déploiement structuré en trois jalons majeurs : MVP (*Minimum Viable Product*), BTP (*Beta Test Plan*) et ATP (*Acceptance Test Plan*).
-- [**Tarifs et abonnements**](./tarifs-abonnements.md) **:** Grille tarifaire détaillée des offres (Freemium, Premium, Infinity), définition des quotas mensuels d'analyses vidéo, d'utilisation du Ghost Mode et des routines d'entraînement.
+- [Tarifs et abonnements](pricing-subscriptions.md) **:** Grille tarifaire détaillée des offres (Freemium, Premium, Infinity), définition des quotas mensuels d'analyses vidéo, d'utilisation du Ghost Mode et des routines d'entraînement.
+- [**Besoins d'infrastructure (OVHcloud)**](./infrastructure-needs.md) **:** Dimensionnement et justification technique des machines virtuelles, du stockage objet et du nom de domaine demandés suite au suivi pédagogique 3.
 
 ### 2\. Validation, Recette & Qualité
 

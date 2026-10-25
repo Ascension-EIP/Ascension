@@ -1,8 +1,8 @@
-// @date 2026-09-20
+// @date 2026-09-29
 // @file auth.go
 // @brief File description.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package service
@@ -19,52 +19,62 @@ import (
 )
 
 type AuthService struct {
-	jwtS     *JWTService
-	sessionS *SessionService
-	userS    *UserService
+	jwtS         *JWTService
+	sessionS     *SessionService
+	userS        *UserService
+	userProfileS *UserProfileService
+	repoT        model.TransactionRepository
 }
 
-func NewAuthService(jwtS *JWTService, sessionS *SessionService, userS *UserService) AuthService {
+func NewAuthService(jwtS *JWTService, sessionS *SessionService, userS *UserService, userProfileS *UserProfileService, repoT model.TransactionRepository) AuthService {
 	return AuthService{
-		jwtS:     jwtS,
-		sessionS: sessionS,
-		userS:    userS,
+		jwtS:         jwtS,
+		sessionS:     sessionS,
+		userS:        userS,
+		userProfileS: userProfileS,
+		repoT:        repoT,
 	}
 }
 
-func (s *AuthService) SignupAndLogin(ctx context.Context, form model.SignupForm, clienInfo model.ClientInfo, remember bool) (model.User, model.Tokens, error) {
-	user, err := s.Signup(ctx, form)
-	if err != nil {
-		return model.User{}, model.Tokens{}, fmt.Errorf("signup: %w", err)
+func (s *AuthService) Register(ctx context.Context, form model.RegisterForm, clientInfo model.ClientInfo, remember bool) (model.User, model.Tokens, error) {
+	if err := form.Validate(); err != nil {
+		return model.User{}, model.Tokens{}, fmt.Errorf("form validation: %w", err)
 	}
 
-	tokens, err := s.CreateTokens(ctx, user, clienInfo, remember)
+	var user model.User
+	if err := s.repoT.WithTransaction(ctx, func(ctx context.Context) error {
+		var err error
+
+		user, err = s.userS.CreateUser(ctx, model.User{
+			Username:  form.Username,
+			FirstName: form.FirstName,
+			LastName:  form.LastName,
+			Email:     form.Email,
+			Password:  form.Password,
+			Role:      model.UserRoleUser,
+			Status:    model.UserStatusActive,
+		})
+		if err != nil {
+			return fmt.Errorf("create user: %w", err)
+		}
+
+		if _, err := s.userProfileS.CreateUserProfile(ctx, model.UserProfile{
+			UserID: user.ID,
+		}); err != nil {
+			return fmt.Errorf("create user profile: %w", err)
+		}
+
+		return nil
+	}); err != nil {
+		return model.User{}, model.Tokens{}, fmt.Errorf("transaction: %w", err)
+	}
+
+	tokens, err := s.CreateTokens(ctx, user, clientInfo, remember)
 	if err != nil {
 		return user, model.Tokens{}, err
 	}
 
 	return user, tokens, nil
-}
-
-func (s *AuthService) Signup(ctx context.Context, form model.SignupForm) (model.User, error) {
-	if err := form.Validate(); err != nil {
-		return model.User{}, fmt.Errorf("form validation: %w", err)
-	}
-
-	user, err := s.userS.CreateUser(ctx, model.User{
-		Username:  form.Username,
-		FirstName: form.FirstName,
-		LastName:  form.LastName,
-		Email:     form.Email,
-		Password:  form.Password,
-		Role:      model.UserRoleUser,
-		Status:    model.UserStatusActive,
-	})
-	if err != nil {
-		return model.User{}, err
-	}
-
-	return user, nil
 }
 
 func (s *AuthService) Login(ctx context.Context, form model.LoginForm, clientInfo model.ClientInfo, remember bool) (model.User, model.Tokens, error) {

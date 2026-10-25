@@ -106,7 +106,7 @@ Task Runner — moon
 
 | Tool | Version | Install |
 | --- | --- | --- |
-| moonrepo | `2.0.3` | `curl -fsSL https://moonrepo.dev/install/moon.sh | bash` |
+| moonrepo | `2.0.3` | `curl -fsSL https://moonrepo.dev/install/moon.sh \| bash` |
 
 Backend — Rust
 
@@ -180,6 +180,7 @@ moon run :test
 
 # 7. Run tests on affected projects only (recommended in CI)
 moon run :test --affected
+
 ```
 
 ---

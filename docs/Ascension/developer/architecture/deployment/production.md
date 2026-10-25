@@ -103,6 +103,7 @@ graph TB
     style PG_Replica fill:#f0f0f0
     style RabbitMQ fill:#ffe1e1
     style MinIO fill:#e1ffe1
+
 ```
 
 ---
@@ -120,10 +121,7 @@ graph TB
 | **Domain** | DNS | `.com` domain | 1€/month (12€/year) |
 | **SSL** | TLS Certificates | Let's Encrypt via Cloudflare | 0€ |
 | **Monitoring** | Prometheus + Grafana + Loki | Self-hosted on Srv-API | 0€ |
-|
- |
-
- | **Total (MVP)** | **96€/month** |
+|  |  | **Total (MVP)** | **96€/month** |
 
 ### GPU Machine (AI Workers — Optional Upgrade)
 
@@ -167,6 +165,7 @@ graph LR
         Workers --> MinIO[MinIO]
         Workers --> DB
     end
+
 ```
 
 ### Firewall Rules
@@ -183,6 +182,7 @@ sudo ufw allow 443/tcp
 # No need to expose PostgreSQL, RabbitMQ, or MinIO externally
 
 sudo ufw enable
+
 ```
 
 ---
@@ -206,31 +206,38 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
-      - api
+      - server
     restart: always
 
   # Go API Server (from apps/server/)
-  api:
-    image: ascension/api:latest
-    container_name: ascension-api
+  server:
+    image: ${IMAGE_PREFIX:-ghcr.io/ascension-eip}/ascension-server:latest
+    container_name: ascension-server
     environment:
-      DB_NAME: ${POSTGRES_DB}
-      DB_USER: ${POSTGRES_USER}
-      DB_PASS: ${POSTGRES_PASSWORD}
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_MIGRATION: /app/migrations
-      RABBITMQ_URL: ${RABBITMQ_URL}
-      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
-      MINIO_BUCKET: ${MINIO_BUCKET}
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
+      POSTGRES_HOST: postgresql
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_MIGRATION: "true"
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_PASS: ${RABBITMQ_DEFAULT_PASS}
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ID: ${MINIO_ROOT_USER}
+      MINIO_SECRET: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET:-videos}
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET}
+      AUTH_JWT_EXP: 15m
+      AUTH_SESSION_SECRET: ${AUTH_SESSION_SECRET}
+      AUTH_SESSION_EXP: 168h
+      AUTH_SESSION_REMEMBER_EXP: 720h
       LOG_LEVEL: info
     expose:
       - "8080"
     depends_on:
-      db:
+      postgresql:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
@@ -238,15 +245,16 @@ services:
         condition: service_healthy
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
 
   # PostgreSQL Database
-  db:
-    image: postgres:18-alpine
-    container_name: ascension-db
+  postgresql:
+    build: ./apps/server/postgres
+    image: ${IMAGE_PREFIX:-ghcr.io/ascension-eip}/ascension-postgres:latest
+    container_name: ascension-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -254,7 +262,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
       - ./backups:/backups
     restart: always
     command:
@@ -268,18 +276,21 @@ services:
       - "-c"
       - "wal_level=replica"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   # RabbitMQ Message Broker
   rabbitmq:
-    image: rabbitmq:4.2.4-management-alpine
+    image: rabbitmq:4.3.5-management
     container_name: ascension-rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     restart: always
@@ -291,7 +302,7 @@ services:
 
   # MinIO Object Storage
   minio:
-    image: minio/minio:latest
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
     container_name: ascension-minio
     command: server /data --console-address ":9001"
     environment:
@@ -317,26 +328,31 @@ services:
     entrypoint: >
       /bin/sh -c "
       /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
-      /usr/bin/mc mb myminio/${MINIO_BUCKET} --ignore-existing;
+      /usr/bin/mc mb myminio/${MINIO_BUCKET:-videos} --ignore-existing;
       exit 0;
       "
 
   # Python AI Workers (from apps/ai/)
-  worker:
-    image: ascension/worker:latest
-    container_name: ascension-worker
+  ai-worker:
+    image: ${IMAGE_PREFIX:-ghcr.io/ascension-eip}/ascension-ai-worker:latest
+    container_name: ascension-ai-worker
     environment:
-      DATABASE_URL: ${DATABASE_URL}
-      RABBITMQ_URL: ${RABBITMQ_URL}
-      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
-      MINIO_BUCKET: ${MINIO_BUCKET}
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY}
+      POSTGRES_HOST: postgresql
+      POSTGRES_DB_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgresql:5432/${POSTGRES_DB}
+      RABBITMQ_HOST: rabbitmq
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ID: ${MINIO_ROOT_USER}
+      MINIO_SECRET: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET:-videos}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.1-flash-lite}
     depends_on:
-      - db
-      - rabbitmq
-      - minio
+      postgresql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
     restart: always
     deploy:
       replicas: 2
@@ -387,6 +403,7 @@ volumes:
   prometheus_data:
   loki_data:
   grafana_data:
+
 ```
 
 ### Nginx Configuration
@@ -436,6 +453,7 @@ server {
         deny all;
     }
 }
+
 ```
 
 ### MinIO Lifecycle Policy
@@ -457,12 +475,14 @@ Create `lifecycle.json` (auto-delete unsaved videos after 7 days):
     }
   ]
 }
+
 ```
 
 Apply:
 
 ```bash
 mc ilm import myminio/ascension-production < lifecycle.json
+
 ```
 
 ### Environment Variables
@@ -494,6 +514,7 @@ GRAFANA_PASSWORD=<STRONG_PASSWORD>
 
 # Environment
 ENVIRONMENT=production
+
 ```
 
 ---
@@ -511,6 +532,7 @@ docker build -t ascension/api:v${VERSION} \
 
 # Build Worker image
 docker build -t ascension/worker:v${VERSION} ./apps/ai
+
 ```
 
 ### 2\. Push to Container Registry
@@ -523,6 +545,7 @@ docker push your-registry/ascension-api:v${VERSION}
 
 docker tag ascension/worker:v${VERSION} your-registry/ascension-worker:v${VERSION}
 docker push your-registry/ascension-worker:v${VERSION}
+
 ```
 
 ### 3\. Deploy to Hetzner VPS
@@ -532,15 +555,16 @@ docker push your-registry/ascension-worker:v${VERSION}
 ssh deploy@production.ascension.app
 
 # Pull latest images
-docker pull your-registry/ascension-api:v${VERSION}
-docker pull your-registry/ascension-worker:v${VERSION}
+docker pull your-registry/ascension-server:v${VERSION}
+docker pull your-registry/ascension-ai-worker:v${VERSION}
 
 # Tag as latest
-docker tag your-registry/ascension-api:v${VERSION} ascension/api:latest
-docker tag your-registry/ascension-worker:v${VERSION} ascension/worker:latest
+docker tag your-registry/ascension-server:v${VERSION} ascension/server:latest
+docker tag your-registry/ascension-ai-worker:v${VERSION} ascension/ai-worker:latest
 
 # Restart services (zero-downtime with health checks)
-docker-compose up -d --no-deps api worker
+docker-compose --profile prod up -d --no-deps server ai-worker
+
 ```
 
 ### 4\. Database Migrations
@@ -549,6 +573,7 @@ In Go, database migrations are automatically run by the server on startup when t
 
 ```bash
 docker-compose logs api
+
 ```
 
 ---
@@ -586,6 +611,7 @@ jobs:
 
       - name: Run affected lint
         run: moon run :lint --affected
+
 ```
 
 ### Production Deployment
@@ -617,15 +643,15 @@ jobs:
 
       - name: Build and push API image
         run: |
-          docker build -t ${{ secrets.DOCKER_REGISTRY }}/ascension-api:${{ github.ref_name }} \
+          docker build -t ${{ secrets.DOCKER_REGISTRY }}/ascension-server:${{ github.ref_name }} \
             -f apps/server/Dockerfile --target production ./apps/server
-          docker push ${{ secrets.DOCKER_REGISTRY }}/ascension-api:${{ github.ref_name }}
+          docker push ${{ secrets.DOCKER_REGISTRY }}/ascension-server:${{ github.ref_name }}
 
       - name: Build and push Worker image
         run: |
-          docker build -t ${{ secrets.DOCKER_REGISTRY }}/ascension-worker:${{ github.ref_name }} \
+          docker build -t ${{ secrets.DOCKER_REGISTRY }}/ascension-ai-worker:${{ github.ref_name }} \
             ./apps/ai
-          docker push ${{ secrets.DOCKER_REGISTRY }}/ascension-worker:${{ github.ref_name }}
+          docker push ${{ secrets.DOCKER_REGISTRY }}/ascension-ai-worker:${{ github.ref_name }}
 
       - name: Deploy to Hetzner
         uses: appleboy/ssh-action@v1
@@ -635,11 +661,9 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /opt/ascension
-            docker pull ${{ secrets.DOCKER_REGISTRY }}/ascension-api:${{ github.ref_name }}
-            docker pull ${{ secrets.DOCKER_REGISTRY }}/ascension-worker:${{ github.ref_name }}
-            docker tag ${{ secrets.DOCKER_REGISTRY }}/ascension-api:${{ github.ref_name }} ascension/api:latest
-            docker tag ${{ secrets.DOCKER_REGISTRY }}/ascension-worker:${{ github.ref_name }} ascension/worker:latest
-            docker-compose up -d --no-deps api worker
+            docker pull ${{ secrets.DOCKER_REGISTRY }}/ascension-server:${{ github.ref_name }}
+            docker pull ${{ secrets.DOCKER_REGISTRY }}/ascension-ai-worker:${{ github.ref_name }}
+            docker-compose --profile prod up -d --no-deps server ai-worker
 
       - name: Verify deployment
         uses: appleboy/ssh-action@v1
@@ -650,6 +674,7 @@ jobs:
           script: |
             sleep 10
             curl -f http://localhost:8080/healthz || exit 1
+
 ```
 
 ---
@@ -675,6 +700,7 @@ sudo dpkg-reconfigure -plow unattended-upgrades
 # Fail2Ban
 sudo apt install fail2ban
 sudo systemctl enable fail2ban
+
 ```
 
 ### Secrets Management
@@ -686,6 +712,7 @@ All secrets are stored in `.env` files on the server (never committed to Git):
 openssl rand -hex 32  # For JWT_SECRET
 openssl rand -hex 32  # For POSTGRES_PASSWORD
 openssl rand -hex 32  # For MINIO_ROOT_PASSWORD
+
 ```
 
 Secrets are injected into containers via Docker Compose `env_file` directive.
@@ -704,7 +731,7 @@ Secrets are injected into containers via Docker Compose `env_file` directive.
 - **In Transit**: TLS 1.3 for all external communication
 - **At Rest**: Encrypted Hetzner volumes
 - **RGPD**: Data stored in EU (Hetzner Germany/Finland), `ON DELETE CASCADE` for right-to-erasure
-- **Passwords**: Hashed with Argon2
+- **Passwords**: Hashed with bcrypt (`golang.org/x/crypto/bcrypt`)
 - **API Keys**: Presigned URLs expire after 15 minutes
 
 ---
@@ -723,7 +750,7 @@ global:
 scrape_configs:
   - job_name: "ascension-api"
     static_configs:
-      - targets: ["api:8080"]
+      - targets: ["server:8080"]
 
   - job_name: "rabbitmq"
     static_configs:
@@ -736,6 +763,7 @@ scrape_configs:
   - job_name: "node"
     static_configs:
       - targets: ["node-exporter:9100"]
+
 ```
 
 ### Grafana Data Sources
@@ -780,6 +808,7 @@ func main() {
 	p.Use(r)
 	// ...
 }
+
 ```
 
 ---
@@ -800,6 +829,7 @@ docker-compose exec -T db pg_dump -U ascension ascension_production \
 
 # Keep last 7 daily backups
 find /backups -name "backup_*.sql.gz" -mtime +7 -delete
+
 ```
 
 Cron setup:
@@ -807,6 +837,7 @@ Cron setup:
 ```bash
 crontab -e
 # 0 3 * * * /opt/ascension/backup.sh
+
 ```
 
 **RPO (Recovery Point Objective)**: < 15 minutes (via WAL archiving) **RTO (Recovery Time Objective)**: < 2 hours (restore + restart services)
@@ -818,6 +849,7 @@ MinIO uses distributed mode with data redundancy. Additional backups to Hetzner 
 ```bash
 # Sync MinIO data to backup storage
 mc mirror local/ascension-production backup/ascension-production --overwrite
+
 ```
 
 ### Recovery Procedures

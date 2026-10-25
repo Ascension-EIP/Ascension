@@ -7,24 +7,20 @@ project:
   description: 'AI service for Ascension'
 
 tasks:
+  setup:
+    command: 'bash'
+    args: ['scripts/download-model.sh']
+    inputs:
+      - 'scripts/download-model.sh'
+    outputs:
+      - 'resources/pose_landmarker_full.task'
+
   install:
     command: 'uv'
     args: ['sync']
     inputs:
       - 'pyproject.toml'
       - 'uv.lock'
-    deps:
-      - 'root:setup'
-    #options:
-    #  outputStyle: "buffer-only-failure"
-
-  download-model:
-    command: 'bash'
-    args: ['scripts/download-model.sh']
-    inputs:
-      - 'scripts/download-model.sh'
-    outputs:
-      - 'pose_landmarker.task'
 
   update:
     command: 'uv'
@@ -79,7 +75,7 @@ tasks:
 
   dev:
     command: 'uv'
-    args: ['run', 'python', '-u', 'src/main.py', 'worker']
+    args: ['run', 'worker']
     env:
       LOG_LEVEL: 'debug'
       PYTHONUNBUFFERED: '1'
@@ -89,22 +85,34 @@ tasks:
       envFile: true
     deps:
       - 'install'
+      - 'root:schemas-generate'
 
-  pose-2d:
+  producer:
     command: 'uv'
-    args: ['run', 'python', 'src/main.py', 'pose-2d']
+    args: ['run', 'python', 'src/producer.py']
+    env:
+      PYTHONUNBUFFERED: '1'
     options:
       cache: false
+      envFile: true
     deps:
       - 'install'
 
-  pose-3d:
-    command: 'uv'
-    args: ['run', 'python', 'src/main.py', 'pose-3d']
-    options:
-      cache: false
-    deps:
-      - 'install'
+  # pose-2d:
+  #   command: 'uv'
+  #   args: ['run', 'python', 'src/main.py', 'pose-2d']
+  #   options:
+  #     cache: false
+  #   deps:
+  #     - 'install'
+
+  # pose-3d:
+  #   command: 'uv'
+  #   args: ['run', 'python', 'src/main.py', 'pose-3d']
+  #   options:
+  #     cache: false
+  #   deps:
+  #     - 'install'
 
   clean:
     script: |

@@ -1,4 +1,4 @@
-// @date 2026-09-20
+// @date 2026-09-24
 // @file ports.go
 // @brief File description.
 // @project Ascension
@@ -23,6 +23,11 @@ type UserRepository interface {
 	ListUsersByFilter(ctx context.Context, filter UserFilter) ([]User, error)
 	UpdateUser(ctx context.Context, partial UserPartial) (User, error)
 	DeleteUser(ctx context.Context, userID uuid.UUID) error
+
+	CreateUserProfile(ctx context.Context, userProfile UserProfile) (UserProfile, error)
+	GetUserProfileByFilter(ctx context.Context, filter UserProfileFilter) (UserProfile, error)
+	UpdateUserProfile(ctx context.Context, partial UserProfilePartial) (UserProfile, error)
+	DeleteUserProfile(ctx context.Context, userID uuid.UUID) error
 }
 
 type SessionRepository interface {

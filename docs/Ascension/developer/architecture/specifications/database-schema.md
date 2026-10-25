@@ -16,9 +16,9 @@ id: 2f73e756-4920-4208-ae1e-6928976f81ec
 
 ### 1.1 Scope
 
-This document is the single source of truth for the PostgreSQL 18 data model of Ascension. It covers every feature of the [feature catalogue](../../../administrative/catalogue-fonctionnalites.md) (F01 to F16), including the ATP-phase features, so that the schema is complete from the start. Tables that are not needed yet are still specified here and will be created by migrations when their feature is implemented.
+This document is the single source of truth for the PostgreSQL 18 data model of Ascension. It covers every feature of the [feature catalogue](../../../administrative/features-catalog.md) (F01 to F16), including the ATP-phase features, so that the schema is complete from the start. Tables that are not needed yet are still specified here and will be created by migrations when their feature is implemented.
 
-The current migrations in `apps/server/migrations/` implement only a subset of this schema. Section 13 lists the differences to apply.
+The migrations in `apps/server/internal/outbound/postgres/migrations/` (migrations 20260918172358 through 20260918222653) implement the complete schema specified in this document. Section 13 summarizes the applied schema evolution.
 
 ### 1.2 Conventions
 
@@ -102,6 +102,7 @@ erDiagram
 
     SUBSCRIPTION_PLANS ||--o{ SUBSCRIPTIONS : priced_by
     SUBSCRIPTIONS ||--o{ SUBSCRIPTION_EVENTS : emits
+
 ```
 
 Summary: `users` is the root of every branch. The video branch (`climbing_sessions` → `videos` → `analyses` → `analysis_scores`) holds the biomechanical analysis. The route branch (`routes` → `holds` → `ghosts`) holds the Ghost Mode without climbing, and `comparisons` joins both branches for the Ghost Mode in comparison. The coaching branch (`goals` → `training_programs` → `training_program_sessions` → `exercises`, with `training_logs` for what was actually done) and the business branch (`subscription_plans` → `subscriptions` → `subscription_events`, `quota_usages`) are independent of the AI branches.
@@ -151,6 +152,7 @@ CREATE TYPE subscription_event_type AS ENUM (
     'payment_failed', 'canceled', 'expired'
 );
 CREATE TYPE tutorial_status AS ENUM ('not_started', 'in_progress', 'completed');
+
 ```
 
 Notes:
@@ -169,6 +171,7 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 ```
 
 Every table with an `updated_at` column attaches it with:
@@ -178,6 +181,7 @@ CREATE TRIGGER update_<table>_updated_at
     BEFORE UPDATE ON <table>
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
 ```
 
 The trigger statement is omitted from the table definitions below for brevity.
@@ -217,6 +221,7 @@ CREATE TABLE users (
 
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_users_status ON users(status);
+
 ```
 
 Business rules:
@@ -252,6 +257,7 @@ CREATE TABLE user_profiles (
     CONSTRAINT chk_user_profiles_level
         CHECK ((climbing_level IS NULL) = (grading_system IS NULL))
 );
+
 ```
 
 Business rules:
@@ -284,6 +290,7 @@ CREATE INDEX idx_user_body_constraints_user_id ON user_body_constraints(user_id)
 CREATE UNIQUE INDEX uq_user_body_constraints_active
     ON user_body_constraints(user_id, zone)
     WHERE ended_at IS NULL;
+
 ```
 
 Business rules:
@@ -311,6 +318,7 @@ CREATE TABLE sessions (
 
 CREATE INDEX idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX idx_sessions_expires_at ON sessions(expires_at);
+
 ```
 
 Business rules:
@@ -337,6 +345,7 @@ CREATE TABLE tutorial_progress (
     CONSTRAINT chk_tutorial_progress_completed
         CHECK (status <> 'completed' OR completed_at IS NOT NULL)
 );
+
 ```
 
 Business rules:
@@ -370,6 +379,7 @@ CREATE TABLE gyms (
 
 CREATE INDEX idx_gyms_city ON gyms(country_code, city);
 CREATE INDEX idx_gyms_owner_user_id ON gyms(owner_user_id);
+
 ```
 
 Business rules:
@@ -415,6 +425,7 @@ CREATE TABLE climbing_sessions (
 
 CREATE INDEX idx_climbing_sessions_user_started ON climbing_sessions(user_id, started_at DESC);
 CREATE INDEX idx_climbing_sessions_gym_id ON climbing_sessions(gym_id);
+
 ```
 
 Business rules:
@@ -451,6 +462,7 @@ CREATE TABLE videos (
 CREATE INDEX idx_videos_user_created ON videos(user_id, created_at DESC);
 CREATE INDEX idx_videos_climbing_session_id ON videos(climbing_session_id);
 CREATE INDEX idx_videos_expiry ON videos(expires_at) WHERE retained = FALSE;
+
 ```
 
 Business rules:
@@ -490,6 +502,7 @@ CREATE TABLE analyses (
 
 CREATE INDEX idx_analyses_video_created ON analyses(video_id, created_at DESC);
 CREATE INDEX idx_analyses_status ON analyses(status) WHERE status IN ('pending', 'processing', 'generating_hints');
+
 ```
 
 Business rules:
@@ -520,6 +533,7 @@ Business rules:
     }
   ]
 }
+
 ```
 
 For `type = '3d'`, `landmarks` values are metric 3D coordinates and the object carries the fields produced by the 3D pipeline (`fps`, `width`, `height` are always present).
@@ -543,6 +557,7 @@ For `type = '3d'`, `landmarks` values are metric 3D coordinates and the object c
   "model": "gemini-2.5-pro",
   "generated_at": "2026-09-18T10:12:00Z"
 }
+
 ```
 
 `category` uses the values of the `focus_area` enum. `priority` is 1 (highest) to 5.
@@ -568,6 +583,7 @@ CREATE TABLE analysis_scores (
         endurance_score BETWEEN 0 AND 100
     )
 );
+
 ```
 
 Business rules:
@@ -607,6 +623,7 @@ CREATE TABLE routes (
 
 CREATE INDEX idx_routes_user_created ON routes(user_id, created_at DESC);
 CREATE INDEX idx_routes_gym_id ON routes(gym_id);
+
 ```
 
 Business rules:
@@ -644,6 +661,7 @@ CREATE TABLE holds (
 
 CREATE INDEX idx_holds_route_id ON holds(route_id);
 CREATE INDEX idx_holds_corrected ON holds(route_id) WHERE corrected_at IS NOT NULL;
+
 ```
 
 Business rules:
@@ -682,6 +700,7 @@ CREATE TABLE ghosts (
 
 CREATE INDEX idx_ghosts_route_created ON ghosts(route_id, created_at DESC);
 CREATE INDEX idx_ghosts_user_id ON ghosts(user_id);
+
 ```
 
 Business rules:
@@ -704,6 +723,7 @@ CREATE TABLE ghost_holds (
 );
 
 CREATE INDEX idx_ghost_holds_hold_id ON ghost_holds(hold_id);
+
 ```
 
 Business rules:
@@ -742,6 +762,7 @@ CREATE TABLE comparisons (
 
 CREATE INDEX idx_comparisons_analysis_id ON comparisons(analysis_id);
 CREATE INDEX idx_comparisons_ghost_id ON comparisons(ghost_id);
+
 ```
 
 Business rules:
@@ -781,6 +802,7 @@ CREATE TABLE goals (
 
 CREATE INDEX idx_goals_user_id ON goals(user_id);
 CREATE UNIQUE INDEX uq_goals_active ON goals(user_id) WHERE status = 'active';
+
 ```
 
 Business rules:
@@ -813,6 +835,7 @@ CREATE TABLE training_programs (
 
 CREATE INDEX idx_training_programs_author_user_id ON training_programs(author_user_id);
 CREATE UNIQUE INDEX uq_training_programs_active ON training_programs(goal_id) WHERE status = 'active';
+
 ```
 
 Business rules:
@@ -841,6 +864,7 @@ CREATE TABLE training_program_sessions (
     CONSTRAINT chk_training_program_sessions_day CHECK (day_of_week BETWEEN 1 AND 7),
     CONSTRAINT uq_training_program_sessions_slot UNIQUE (program_id, week_number, day_of_week)
 );
+
 ```
 
 Business rules:
@@ -868,6 +892,7 @@ CREATE TABLE exercises (
 
     CONSTRAINT uq_exercises_position UNIQUE (program_session_id, position)
 );
+
 ```
 
 Business rules:
@@ -899,6 +924,7 @@ CREATE TABLE training_logs (
 CREATE INDEX idx_training_logs_user_performed ON training_logs(user_id, performed_on DESC);
 CREATE INDEX idx_training_logs_program_session_id ON training_logs(program_session_id);
 CREATE INDEX idx_training_logs_climbing_session_id ON training_logs(climbing_session_id);
+
 ```
 
 Business rules:
@@ -933,6 +959,7 @@ CREATE UNIQUE INDEX uq_friendships_pair
     ON friendships(LEAST(requester_id, addressee_id), GREATEST(requester_id, addressee_id));
 CREATE INDEX idx_friendships_addressee_pending
     ON friendships(addressee_id) WHERE status = 'pending';
+
 ```
 
 Business rules:
@@ -956,6 +983,7 @@ CREATE TABLE follows (
 );
 
 CREATE INDEX idx_follows_followed_id ON follows(followed_id);
+
 ```
 
 Business rules:
@@ -1002,6 +1030,7 @@ CREATE TABLE subscription_plans (
 
     CONSTRAINT chk_subscription_plans_price CHECK (price_cents >= 0)
 );
+
 ```
 
 Seed data:
@@ -1039,6 +1068,7 @@ CREATE UNIQUE INDEX uq_subscriptions_current
     ON subscriptions(user_id) WHERE status IN ('trialing', 'active', 'past_due');
 CREATE INDEX idx_subscriptions_period_end ON subscriptions(current_period_end)
     WHERE status IN ('trialing', 'active', 'past_due');
+
 ```
 
 Business rules:
@@ -1068,6 +1098,7 @@ CREATE TABLE subscription_events (
 CREATE INDEX idx_subscription_events_user_occurred ON subscription_events(user_id, occurred_at DESC);
 CREATE INDEX idx_subscription_events_type_occurred ON subscription_events(type, occurred_at DESC);
 CREATE INDEX idx_subscription_events_subscription_id ON subscription_events(subscription_id);
+
 ```
 
 Business rules:
@@ -1091,6 +1122,7 @@ CREATE TABLE quota_usages (
     CONSTRAINT chk_quota_usages_period CHECK (period_start = DATE_TRUNC('month', period_start)::DATE),
     CONSTRAINT chk_quota_usages_counts CHECK (analyses_count >= 0 AND ghosts_count >= 0)
 );
+
 ```
 
 Business rules:
@@ -1101,7 +1133,13 @@ Business rules:
 
 ---
 
-## 11\. Scheduled Jobs (pg\_cron)
+## 11\. Scheduled Jobs (Go Cron Worker & SQL Definitions)
+
+Background maintenance jobs can be executed either via a dedicated Go background worker (`apps/server/cmd/cron/main.go` using `robfig/cron/v3` and `internal/job/`) or natively inside PostgreSQL via `pg_cron`.
+
+In the Ascension backend architecture, scheduled database cleaning jobs are implemented in `apps/server/cmd/cron` and `internal/job/` (e.g. `PruneExpiredSessionsJob`, `PruneAbandonedUploadsJob`, `PruneExpiredVideosJob`, `PruneOldQuotaUsagesJob`).
+
+For reference or standalone database deployments, the equivalent SQL schedules using `pg_cron` are:
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS pg_cron;
@@ -1130,9 +1168,10 @@ SELECT cron.schedule('clean-old-quota-usages', '0 3 1 * *', $$
     DELETE FROM quota_usages
      WHERE period_start < DATE_TRUNC('month', NOW()) - INTERVAL '24 months';
 $$);
+
 ```
 
-Storage objects are not deleted by pg\_cron. An S3 bucket lifecycle rule expires objects whose key matches a deleted row, or the Go server runs a reconciliation job that lists object keys absent from `videos` and `routes` and removes them.
+Storage objects are not deleted by the database queries alone. When `clean-abandoned-uploads` or `clean-expired-videos` prunes rows, the Go server/cron worker reconciliation job or S3 bucket lifecycle rules purge the corresponding object keys from MinIO/S3.
 
 ---
 
@@ -1145,6 +1184,7 @@ SELECT DISTINCT ON (type) *
   FROM analyses
  WHERE video_id = $1 AND status = 'completed'
  ORDER BY type, created_at DESC;
+
 ```
 
 Remaining quota for a user this month:
@@ -1159,6 +1199,7 @@ SELECT COALESCE(p.monthly_analysis_quota, f.monthly_analysis_quota) - COALESCE(q
   LEFT JOIN quota_usages q
          ON q.user_id = u.id AND q.period_start = DATE_TRUNC('month', NOW())::DATE
  WHERE u.id = $1 AND f.code = 'freemium';
+
 ```
 
 Weekly progression curve (F04):
@@ -1173,6 +1214,7 @@ SELECT DATE_TRUNC('week', started_at)::DATE AS week,
  WHERE user_id = $1 AND scored_at IS NOT NULL AND started_at >= NOW() - INTERVAL '12 weeks'
  GROUP BY week
  ORDER BY week;
+
 ```
 
 Route with its current holds and latest ghost:
@@ -1185,6 +1227,7 @@ SELECT r.*,
          ORDER BY g.created_at DESC LIMIT 1) AS ghost_path
   FROM routes r
  WHERE r.id = $1;
+
 ```
 
 Content visible to a viewer (friend check):
@@ -1208,29 +1251,37 @@ SELECT v.*
          WHERE b.status = 'blocked'
            AND LEAST(b.requester_id, b.addressee_id) = LEAST($1, $2)
            AND GREATEST(b.requester_id, b.addressee_id) = GREATEST($1, $2));
+
 ```
 
 ---
 
-## 13\. Migration Delta From Current Schema
+## 13\. Applied Migrations & Schema Evolution
 
-The migrations in `apps/server/migrations/` (20260905000001 to 20260905000005) differ from this specification as follows. These changes require a coordinated update of the Go models and DTOs (`apps/server/internal/model`, `apps/server/internal/outbound/postgres/dto`) and of the AI worker (`apps/ai/src/infrastructure/database.py`).
+The full data model specified in this document has been partitioned and applied via versioned migrations in `apps/server/migrations/` (and mirrored in `apps/server/internal/outbound/postgres/migrations/`).
 
-| Table | Change |
-| --- | --- |
-| `users` | Replace `name` with `first_name`, `last_name`, `username`. Rename `password` to `password_hash`. Convert `role` from `TEXT` to the `user_role` enum. Add `status`, `email_verified_at`, `last_login_at`, `deactivated_at`, `stripe_customer_id`, email and username `CHECK`s. |
-| `sessions` | Add `token_hash` (the session `id` is no longer the refresh token), `user_agent`, `ip_address`, `last_used_at`, `revoked_at`. |
-| `videos` | Drop `bucket`. Rename `size` to `size_bytes`, `duration` to `duration_ms`. Convert `status` to the `video_status` enum. Add `climbing_session_id`, `title`, `content_type`, `width`, `height`, `fps`, `retained`, `visibility`. Make `object_key` unique. |
-| `analyses` | Convert `status` from `TEXT` to `job_status` (adds `processing` and `generating_hints`, already written by the worker). Rename `processing_time` to `processing_time_ms`. Convert `hints` from `TEXT` to `JSONB`. Add `started_at`, `visibility`, progress and consistency `CHECK`s. Drop `uq_analyses_video_id_type` and the two redundant indexes; keep one index on `(video_id, created_at DESC)`. |
-| pg\_cron | Split `clean-expired-upload` into `clean-abandoned-uploads` and `clean-expired-videos`; add `clean-old-quota-usages`. |
-| New | All enums of section 3.1 and the tables `user_profiles`, `user_body_constraints`, `tutorial_progress`, `gyms`, `climbing_sessions`, `analysis_scores`, `routes`, `holds`, `ghosts`, `ghost_holds`, `comparisons`, `goals`, `training_programs`, `training_program_sessions`, `exercises`, `training_logs`, `friendships`, `follows`, `subscription_plans`, `subscriptions`, `subscription_events`, `quota_usages`. |
+The migration history evolved from the initial prototype schema (`20260905000001` to `20260905000005`) to the complete modular suite implemented on 2026-09-18 (`20260918172358` through `20260918222653`):
 
-Recommended migration order: enums and shared trigger, then `users` and `sessions` changes, then `gyms` and `climbing_sessions`, then `videos` and `analyses` changes, then each feature group in the order of the sections above.
+| Migration File Prefix | Feature / Domain | Content & Changes Applied |
+| --- | --- | --- |
+| `20260918172358` | Base Enums & Extensions | Core PostgreSQL extensions (`uuid-ossp`, `pgcrypto`) and enum types (`user_role`, `job_status`, `visibility`, `video_status`, `body_zone`, `hold_type`, etc.). |
+| `20260918174541` | Shared Trigger | `trigger_set_updated_at` function for automatic `updated_at` timestamp management across all tables. |
+| `20260918174719` – `20260918175402` | Core Auth & Users | Tables `users` (with `first_name`, `last_name`, `username`, `password_hash`, `role`), `sessions` (with `token_hash`, `user_agent`, `ip_address`, `revoked_at`), `user_profiles`, and `user_body_constraints`. |
+| `20260918182744` – `20260918183049` | Onboarding & Gyms | Tables `tutorial_progress` and `gyms`. |
+| `20260918183204` – `20260918183601` | Sessions & Videos | Tables `climbing_sessions` and `videos` (with `object_key`, `size_bytes`, `duration_ms`, `content_type`, `fps`, `visibility`, `retained`). |
+| `20260918183756` – `20260918184024` | Analyses & Scores | Tables `analyses` (with `status` enum, `processing_time_ms`, `result` JSONB, `hints` JSONB) and `analysis_scores`. |
+| `20260918184203` – `20260918184715` | Routes & Holds | Tables `routes` and `holds` (with classification, coordinates, polygon points). |
+| `20260918184918` – `20260918185521` | Ghosts & Comparisons | Tables `ghosts`, `ghost_holds`, and `comparisons` (with metrics and trajectory comparison data). |
+| `20260918221841` – `20260918222129` | Coaching & Training | Tables `goals`, `training_programs`, `training_program_sessions`, `exercises`, and `training_logs`. |
+| `20260918222236` – `20260918222340` | Social & Community | Tables `friendships` and `follows`. |
+| `20260918222453` – `20260918222653` | Subscriptions & Quotas | Tables `subscription_plans`, `subscriptions`, `subscription_events`, and `quota_usages`. |
+
+All tables conform to the foreign key constraints, indexes, and check constraints detailed in sections 3 through 10.
 
 ---
 
 **Related**:
 
 - [API Specification](api-specification.md)
-- [Feature catalogue](../../../administrative/catalogue-fonctionnalites.md)
+- [Feature catalogue](../../../administrative/features-catalog.md)
 - [System Overview](../system-overview.md)

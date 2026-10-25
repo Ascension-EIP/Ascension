@@ -79,12 +79,13 @@ Additional optional labels can be applied:
 Use this structure for all new issues.
 
 ```md
-Description
+Description 
 
 ## Definition of Done
 - [ ] Objective, testable criterion 1
 - [ ] Objective, testable criterion 2
 - [ ] Objective, testable criterion 3
+
 ```
 
 Opitional sections can be added when relevant:
@@ -113,6 +114,7 @@ Describe any API endpoints added/modified by this issue, with request/response e
 ## Validation
 - [ ] Tests added/updated
 - [ ] Documentation updated if behavior changed
+
 ```
 
 ---
@@ -190,4 +192,5 @@ Before creating an issue, verify:
 - [ ] ...
 - [ ] ...
 - [ ] ...
+
 ```
