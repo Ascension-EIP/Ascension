@@ -87,6 +87,24 @@ tasks:
       envFile: true
     deps:
       - 'lint'
+  
+  build:
+    command: 'bash'
+    args: ['scripts/build.sh']
+    inputs:
+      - 'lib/**/*'
+      - 'assets/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'android/**/*'
+      - 'ios/**/*'
+      - 'scripts/build.sh'
+    outputs:
+      - 'build'
+    options:
+      envFile: true
+    deps:
+      - 'lint'
 
   test:
     command: 'flutter'
