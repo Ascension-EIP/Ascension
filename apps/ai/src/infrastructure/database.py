@@ -1,4 +1,4 @@
-# @date 2026-09-18
+# @date 2026-10-25
 # @file database.py
 # @brief PostgreSQL repository for saving analyses results and progress.
 # @project Ascension
@@ -9,7 +9,7 @@
 
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import psycopg2
@@ -121,7 +121,7 @@ class AnalysisRepository:
                         json.dumps(result),
                         hints_json,
                         processing_time,
-                        datetime.now(timezone.utc),
+                        datetime.now(UTC),
                         analysis_id,
                     ),
                 )
@@ -152,7 +152,7 @@ class AnalysisRepository:
                 )
             conn.commit()
             logger.info("Marked analysis %s as failed in PostgreSQL", analysis_id)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             conn.rollback()
             logger.warning("Could not mark analysis %s as failed: %s", analysis_id, e)
 

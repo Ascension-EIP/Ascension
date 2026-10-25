@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-10-25
 # @file pipeline.py
 # @brief SAM 3D Body pose estimation pipeline.
 # @project Ascension
@@ -75,7 +75,7 @@ class PoseAnalysis3DPipeline(BasePipeline, AdviceCapability):
 
         try:
             import torch
-            from sam_3d_body import load_sam_3d_body, SAM3DBodyEstimator
+            from sam_3d_body import SAM3DBodyEstimator, load_sam_3d_body
         except ImportError:
             logger.warning("sam_3d_body package not installed. Running in mock/fallback mode.")
             return None
@@ -200,7 +200,7 @@ class PoseAnalysis3DPipeline(BasePipeline, AdviceCapability):
                     try:
                         outputs = estimator.process_one_image(frame_rgb)
                         last_people = self._serialise_frame_outputs(outputs)
-                    except Exception as e:
+                    except Exception as e:  # noqa: BLE001
                         logger.warning("SAM-3D frame %d failed: %s", i, e)
                         last_people = []
 
@@ -218,7 +218,7 @@ class PoseAnalysis3DPipeline(BasePipeline, AdviceCapability):
                     pct = min(99, int((i + 1) / n_frames * 100))
                     try:
                         on_progress(pct)
-                    except Exception as err:
+                    except Exception as err:  # noqa: BLE001
                         logger.warning("on_progress callback raised: %s", err)
 
             logger.info("SAM 3D inference completed: %d frames processed", len(output["frames"]))

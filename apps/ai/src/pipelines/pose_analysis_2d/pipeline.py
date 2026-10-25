@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-10-25
 # @file pipeline.py
 # @brief MediaPipe 2D pose analysis pipeline.
 # @project Ascension
@@ -99,7 +99,7 @@ class PoseAnalysis2DPipeline(BasePipeline, AdviceCapability):
         fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
         n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-        frame_step = max(1, int(round(fps / target_fps)))
+        frame_step = max(1, round(fps / target_fps))
         effective_frames = (n_frames + frame_step - 1) // frame_step
 
         logger.info(
@@ -158,13 +158,16 @@ class PoseAnalysis2DPipeline(BasePipeline, AdviceCapability):
                     frames_list.append(frame_data)
                     analyzed += 1
 
-                    if analyzed % 30 == 0:
-                        if on_progress is not None and effective_frames > 0:
-                            pct = min(99, int(analyzed / effective_frames * 100))
-                            try:
-                                on_progress(pct)
-                            except Exception as err:
-                                logger.warning("on_progress callback raised: %s", err)
+                    if (
+                        analyzed % 30 == 0
+                        and on_progress is not None
+                        and effective_frames > 0
+                    ):
+                        pct = min(99, int(analyzed / effective_frames * 100))
+                        try:
+                            on_progress(pct)
+                        except Exception as err:  # noqa: BLE001
+                            logger.warning("on_progress callback raised: %s", err)
 
                     i += 1
 

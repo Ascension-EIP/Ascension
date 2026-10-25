@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-10-25
 # @file advice.py
 # @brief Gemini-based climbing coaching advice generator for 2D pose analysis.
 # @project Ascension
@@ -63,7 +63,7 @@ class Advice2DGenerator:
 
         try:
             genai.configure(api_key=self.api_key)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.warning("Failed to configure Google Generative AI: %s", e)
             return None
 
@@ -111,6 +111,6 @@ class Advice2DGenerator:
             ):
                 return raw_text
             return None
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.warning("Gemini advice generation failed: %s", e)
             return None

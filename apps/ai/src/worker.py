@@ -1,4 +1,4 @@
-# @date 2026-09-17
+# @date 2026-10-25
 # @file worker.py
 # @brief File description.
 # @project Ascension
@@ -19,16 +19,16 @@ import os
 import signal
 import tempfile
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from urllib.parse import urlparse
 
 import boto3
 import pika
 import psycopg2
-from dotenv import load_dotenv
 
 # from ai_sam3d import analyze, create_estimator
 from ai_mediapipe import analyze, get_climbing_advice
+from dotenv import load_dotenv
 
 # Load .env from project root (two levels up from apps/ai/) so that
 # RABBITMQ_HOST, MINIO_ENDPOINT, DB_URI etc. are available when the
@@ -123,16 +123,16 @@ def _parse_s3_url(url: str) -> tuple[str, str]:
 def _download_video(s3, bucket: str, key: str) -> str:
     """Download an S3 object to a temporary file and return its path."""
     suffix = os.path.splitext(key)[1] or ".mp4"
-    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
-    try:
-        logger.info("Downloading s3://%s/%s → %s", bucket, key, tmp.name)
-        s3.download_fileobj(bucket, key, tmp)
-        tmp.close()
-        return tmp.name
-    except Exception:
-        tmp.close()
-        os.unlink(tmp.name)
-        raise
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp_name = tmp.name
+        try:
+            logger.info("Downloading s3://%s/%s → %s", bucket, key, tmp_name)
+            s3.download_fileobj(bucket, key, tmp)
+            return tmp_name
+        except Exception:
+            if os.path.exists(tmp_name):
+                os.unlink(tmp_name)
+            raise
 
 
 def _update_analysis(
@@ -161,7 +161,7 @@ def _update_analysis(
                 json.dumps(result_json) if result_json is not None else None,
                 hints,
                 processing_time_ms,
-                datetime.now(timezone.utc),
+                datetime.now(UTC),
                 status,
                 analysis_id,
             ),
@@ -266,7 +266,7 @@ def on_message(ch, method, _properties, body):
                 "Gemini hints received (%d chars)",
                 len(hints) if isinstance(hints, str) else 0,
             )
-        except Exception:  # noqa: BLE001
+        except Exception:
             logger.warning(
                 "Gemini hints generation failed for analysis %s",
                 analysis_id,

@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-10-25
 # @file advice.py
 # @brief Gemini-based 3D climbing coaching advice generator.
 # @project Ascension
@@ -66,7 +66,7 @@ class Advice3DGenerator:
 
         try:
             genai.configure(api_key=self.api_key)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.warning("Failed to configure Google Generative AI: %s", e)
             return None
 
@@ -115,6 +115,6 @@ class Advice3DGenerator:
             ):
                 return raw_text
             return None
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.warning("Gemini 3D advice generation failed: %s", e)
             return None

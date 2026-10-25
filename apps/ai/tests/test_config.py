@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-10-25
 # @file test_config.py
 # @brief Unit tests for configuration validation, fail-fast behavior, and secret masking.
 # @project Ascension
@@ -8,6 +8,7 @@
 """Unit tests for configuration security and validation."""
 
 import os
+
 import pytest
 
 from src.config.exceptions import InvalidEnvVarValueError, MissingRequiredEnvVarError

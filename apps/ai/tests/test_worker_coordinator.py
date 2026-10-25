@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-10-25
 # @file test_worker_coordinator.py
 # @brief Unit tests for the worker JobCoordinator orchestration.
 # @project Ascension
@@ -114,5 +114,7 @@ def test_coordinator_handles_failure_gracefully(sample_settings):
 
     coordinator.handle_message(mock_channel, mock_method, None, body)
 
-    mock_db.mark_failed.assert_called_once_with(mock_conn, "analysis-fail")
+    mock_db.mark_failed.assert_called_once_with(
+        mock_conn, "analysis-fail", error="S3 Connection dropped"
+    )
     mock_channel.basic_nack.assert_called_once_with(delivery_tag=2, requeue=False)

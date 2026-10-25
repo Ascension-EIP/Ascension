@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-10-25
 # @file storage.py
 # @brief MinIO and S3 object storage adapter.
 # @project Ascension
@@ -50,14 +50,13 @@ class StorageService:
         """Download video from MinIO/S3 to a temporary file and return its path."""
         bucket, key = self.parse_s3_url(video_url)
         suffix = os.path.splitext(key)[1] or ".mp4"
-        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
-        try:
-            logger.info("Downloading s3://%s/%s → %s", bucket, key, tmp.name)
-            self._client.download_fileobj(bucket, key, tmp)
-            tmp.close()
-            return tmp.name
-        except (BotoCoreError, ClientError, Exception) as e:
-            tmp.close()
-            if os.path.exists(tmp.name):
-                os.unlink(tmp.name)
-            raise StorageError(f"Failed to download video from {video_url}: {e}") from e
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            tmp_name = tmp.name
+            try:
+                logger.info("Downloading s3://%s/%s → %s", bucket, key, tmp_name)
+                self._client.download_fileobj(bucket, key, tmp)
+                return tmp_name
+            except (BotoCoreError, ClientError, Exception) as e:
+                if os.path.exists(tmp_name):
+                    os.unlink(tmp_name)
+                raise StorageError(f"Failed to download video from {video_url}: {e}") from e

@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-10-25
 # @file conftest.py
 # @brief Pytest fixtures and environment configuration.
 # @project Ascension
@@ -9,6 +9,7 @@
 
 import os
 from collections.abc import Generator
+
 import pytest
 
 from src.config.settings import (

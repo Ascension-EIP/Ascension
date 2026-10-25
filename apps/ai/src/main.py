@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-10-25
 # @file main.py
 # @brief Unified application entry point for the Ascension AI service.
 # @project Ascension
@@ -27,9 +27,9 @@ _PROJECT_DIR = Path(__file__).resolve().parent.parent
 if str(_PROJECT_DIR) not in sys.path:
     sys.path.insert(0, str(_PROJECT_DIR))
 
-from src.pipelines.pose_analysis_2d.cli import main as run_pose_2d  # noqa: E402
-from src.pipelines.pose_analysis_3d.cli import main as run_pose_3d  # noqa: E402
-from src.worker.runner import run_worker  # noqa: E402
+from src.pipelines.pose_analysis_2d.cli import main as run_pose_2d
+from src.pipelines.pose_analysis_3d.cli import main as run_pose_3d
+from src.worker.runner import run_worker
 
 
 def print_help() -> None:

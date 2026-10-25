@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-10-25
 # @file registry.py
 # @brief Registry and factory for AI pipelines.
 # @project Ascension
@@ -8,7 +8,7 @@
 """Registry for AI pipelines."""
 
 from collections.abc import Callable
-from typing import TypeVar
+from typing import ClassVar, TypeVar
 
 from src.core.exceptions import PipelineNotFoundError
 from src.core.interfaces import BasePipeline
@@ -19,8 +19,8 @@ T = TypeVar("T", bound=type[BasePipeline])
 class PipelineRegistry:
     """Central registry mapping pipeline names to their implementation classes."""
 
-    _registry: dict[str, type[BasePipeline]] = {}
-    _instances: dict[str, BasePipeline] = {}
+    _registry: ClassVar[dict[str, type[BasePipeline]]] = {}
+    _instances: ClassVar[dict[str, BasePipeline]] = {}
 
     @classmethod
     def register(cls, name: str) -> Callable[[T], T]:

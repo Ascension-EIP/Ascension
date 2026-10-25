@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-10-25
 # @file __main__.py
 # @brief Direct execution entry point for worker (python -m src.worker).
 # @project Ascension
@@ -8,6 +8,7 @@
 """Direct execution entry point for worker."""
 
 import sys
+
 from src.worker.runner import run_worker
 
 if __name__ == "__main__":

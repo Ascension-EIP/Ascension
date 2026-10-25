@@ -1,11 +1,11 @@
-# @date 2026-09-05
+# @date 2026-10-25
 # @file constants.py
 # @brief SAM-3D keypoint definitions and angle definitions.
 # @project Ascension
 # @author Nicolas TORO <nicolas.toro@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
-"""SAM-3D Body landmark indices and mappings."""
+from typing import ClassVar
 
 
 class KP:
@@ -29,7 +29,7 @@ class KP:
     R_WRIST = 41
     L_WRIST = 62
 
-    NAMES = {
+    NAMES: ClassVar[dict[int, str]] = {
         0: "nose",
         5: "left_shoulder",
         6: "right_shoulder",

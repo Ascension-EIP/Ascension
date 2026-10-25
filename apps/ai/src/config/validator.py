@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-10-25
 # @file validator.py
 # @brief Environment variables validator and settings loader.
 # @project Ascension
@@ -9,6 +9,7 @@
 
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 from src.config.exceptions import InvalidEnvVarValueError, MissingRequiredEnvVarError
@@ -95,14 +96,13 @@ def load_settings(standalone: bool = False, load_env: bool = True) -> Settings:
     db_password = os.getenv("POSTGRES_PASSWORD")
     db_name = os.getenv("POSTGRES_DB")
 
-    if not standalone:
-        if not db_url:
-            if not db_user:
-                missing_mandatory.append("POSTGRES_USER (or POSTGRES_DB_URL)")
-            if not db_password:
-                missing_mandatory.append("POSTGRES_PASSWORD (or POSTGRES_DB_URL)")
-            if not db_name:
-                missing_mandatory.append("POSTGRES_DB (or POSTGRES_DB_URL)")
+    if not standalone and not db_url:
+        if not db_user:
+            missing_mandatory.append("POSTGRES_USER (or POSTGRES_DB_URL)")
+        if not db_password:
+            missing_mandatory.append("POSTGRES_PASSWORD (or POSTGRES_DB_URL)")
+        if not db_name:
+            missing_mandatory.append("POSTGRES_DB (or POSTGRES_DB_URL)")
 
     database_settings = DatabaseSettings(
         db_url=db_url,

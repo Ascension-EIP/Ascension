@@ -1,4 +1,4 @@
-# @date 2026-09-18
+# @date 2026-10-25
 # @file coordinator.py
 # @brief Job coordinator orchestrating storage, AI pipelines, database, and messaging.
 # @project Ascension
@@ -52,7 +52,7 @@ class JobCoordinator:
         try:
             data = json.loads(body)
             job = JobPayload.from_dict(data)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error("Failed to parse incoming job JSON: %s (payload: %r)", e, body)
             channel.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
             return
@@ -94,7 +94,7 @@ class JobCoordinator:
                         "Coaching advice generated (%d chars)",
                         len(hints) if hints else 0,
                     )
-                except Exception as advice_err:
+                except Exception as advice_err:  # noqa: BLE001
                     logger.warning(
                         "Advice generation failed for analysis %s: %s",
                         job.analysis_id,
@@ -126,12 +126,12 @@ class JobCoordinator:
             logger.info("Successfully finished job %s in %d ms", job.job_id, processing_ms)
 
         except Exception as err:
-            logger.exception("Job %s failed: %s", job.job_id, err)
+            logger.exception("Job %s failed", job.job_id)
             try:
                 if db_conn is None:
                     db_conn = self.db_repo.get_connection()
                 self.db_repo.mark_failed(db_conn, job.analysis_id, error=str(err))
-            except Exception as db_err:
+            except Exception as db_err:  # noqa: BLE001
                 logger.error("Failed to mark analysis %s as failed: %s", job.analysis_id, db_err)
 
             channel.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
@@ -145,5 +145,5 @@ class JobCoordinator:
             if db_conn is not None:
                 try:
                     db_conn.close()
-                except Exception:
-                    pass
+                except Exception as close_err:  # noqa: BLE001
+                    logger.debug("Failed to close DB connection: %s", close_err)

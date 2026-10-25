@@ -1,11 +1,11 @@
-# @date 2026-09-05
+# @date 2026-10-25
 # @file constants.py
 # @brief MediaPipe landmark constants and skeleton mappings.
 # @project Ascension
 # @author Nicolas TORO <nicolas.toro@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
-"""MediaPipe landmark definitions and mappings."""
+from typing import ClassVar
 
 
 class LM:
@@ -24,7 +24,7 @@ class LM:
     L_ANKLE = 27
     R_ANKLE = 28
 
-    NAMES = {
+    NAMES: ClassVar[dict[int, str]] = {
         11: "left_shoulder",
         12: "right_shoulder",
         13: "left_elbow",

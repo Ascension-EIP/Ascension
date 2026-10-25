@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-10-25
 # @file __main__.py
 # @brief Direct module execution entry point for pose_analysis_3d.
 # @project Ascension
@@ -8,6 +8,7 @@
 """Main entry point for running pose_analysis_3d via python -m."""
 
 import sys
+
 from src.pipelines.pose_analysis_3d.cli import main
 
 if __name__ == "__main__":

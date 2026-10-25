@@ -1,4 +1,4 @@
-# @date 2026-09-05
+# @date 2026-10-25
 # @file cli.py
 # @brief Standalone CLI for 3D pose analysis development.
 # @project Ascension
@@ -18,8 +18,8 @@ _PROJECT_DIR = Path(__file__).resolve().parent.parent.parent.parent
 if str(_PROJECT_DIR) not in sys.path:
     sys.path.insert(0, str(_PROJECT_DIR))
 
-from src.pipelines.pose_analysis_3d.pipeline import PoseAnalysis3DPipeline  # noqa: E402
-from src.pipelines.pose_analysis_3d.renderer import render_annotated_video  # noqa: E402
+from src.pipelines.pose_analysis_3d.pipeline import PoseAnalysis3DPipeline
+from src.pipelines.pose_analysis_3d.renderer import render_annotated_video
 
 
 def main(argv: list[str] | None = None) -> int:
