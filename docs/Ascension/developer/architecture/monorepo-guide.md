@@ -50,6 +50,7 @@ Ascension/ (Monorepo)
         ├── moon.yml         # moon project config
         ├── pubspec.yaml
         └── lib/
+
 ```
 
 ---
@@ -95,6 +96,7 @@ projects:
   mobile: 'apps/mobile'
   server: 'apps/server'
   ai:     'apps/ai'
+
 ```
 
 ### Toolchain (`/.moon/toolchain.yml`)
@@ -107,6 +109,7 @@ go:
 
 python:
   version: '3.11'
+
 ```
 
 ### Project config (`apps/<project>/moon.yml`)
@@ -149,6 +152,7 @@ tasks:
 
   clean:
     ...
+
 ```
 
 `apps/ai/moon.yml` (Python):
@@ -187,6 +191,7 @@ tasks:
 
   clean:
     ...
+
 ```
 
 `apps/mobile/moon.yml` (Flutter):
@@ -225,6 +230,7 @@ tasks:
 
   clean:
     ...
+
 ```
 
 ---
@@ -237,12 +243,14 @@ curl -fsSL https://moonrepo.dev/install/moon.sh | bash
 
 # Or with proto (moon's toolchain manager)
 proto install moon
+
 ```
 
 Verify installation:
 
 ```bash
 moon --version
+
 ```
 
 ---
@@ -254,6 +262,7 @@ moon --version
 ```bash
 git clone https://github.com/Ascension-EIP/Ascension.git
 cd Ascension
+
 ```
 
 Add `--recursive` only if you need the `docs/` submodule locally (for documentation edits or AI context).
@@ -279,6 +288,7 @@ moon run :clean
 
 # Update and lock dependencies across all projects (including moon at root)
 moon run :update
+
 ```
 
 ### Common Commands
@@ -295,6 +305,7 @@ moon run :test --affected
 
 # Check the task dependency graph
 moon task-graph
+
 ```
 
 ### Working on a Specific Service
@@ -309,6 +320,7 @@ cd apps/server
 # Run its tasks via moon from anywhere in the repo
 moon run server:test
 moon run server:lint
+
 ```
 
 ---
@@ -334,6 +346,7 @@ services:
       context: ./apps/ai
       dockerfile: Dockerfile
     # ...
+
 ```
 
 ### Starting Development Environment
@@ -344,6 +357,7 @@ docker-compose up -d
 
 # Verify all services are running
 docker-compose ps
+
 ```
 
 ---
@@ -377,6 +391,7 @@ jobs:
 
       - name: Run affected lint
         run: moon run :lint --affected
+
 ```
 
 ### Full Build for Deploy
@@ -402,6 +417,7 @@ jobs:
         run: |
           docker build -t ascension-api   ./apps/server
           docker build -t ascension-worker ./apps/ai
+
 ```
 
 ---
@@ -421,6 +437,7 @@ Keep `.moon/toolchain.yml` up to date so all developers and CI use the same Go/P
 ```bash
 moon run :test --affected
 moon run :lint --affected
+
 ```
 
 This avoids rebuilding and retesting services that have not changed.
@@ -431,6 +448,7 @@ This avoids rebuilding and retesting services that have not changed.
 git commit -m "feat(server): add new endpoint
 
 BREAKING CHANGE: Requires new ENV_VAR variable in .env"
+
 ```
 
 ### 5\. Keep `moon.yml` Minimal
@@ -449,6 +467,7 @@ curl -fsSL https://moonrepo.dev/install/moon.sh | bash
 
 # Make sure ~/.moon/bin is in your PATH
 export PATH="$HOME/.moon/bin:$PATH"
+
 ```
 
 ### Problem: Task Fails with Missing Binary
@@ -459,6 +478,7 @@ Ensure dependencies are installed first:
 moon run ai:setup
 moon run ai:install
 moon run ai:dev
+
 ```
 
 ### Problem: Cache Is Stale
@@ -466,6 +486,7 @@ moon run ai:dev
 ```bash
 # Force re-run ignoring cache
 moon run server:test --updateCache
+
 ```
 
 ### Problem: Wrong Toolchain Version
@@ -474,6 +495,7 @@ Check `.moon/toolchain.yml` and make sure proto/moon manages the version:
 
 ```bash
 moon toolchain --list
+
 ```
 
 ---

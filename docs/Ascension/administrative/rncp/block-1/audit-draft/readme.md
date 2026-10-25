@@ -68,6 +68,7 @@ graph TB
     style DB fill:#f0f0f0
     style RabbitMQ fill:#ffe1e1
     style MinIO fill:#e1ffe1
+
 ```
 
 ### 3.1 Environnement d’exécution

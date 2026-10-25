@@ -35,6 +35,7 @@ All routes are prefixed with `/v1` except `/healthz`.
 {
   "error": "email already exists"
 }
+
 ```
 
 ---
@@ -45,6 +46,7 @@ Protected endpoints require a valid JWT bearer token in the `Authorization` head
 
 ```http
 Authorization: Bearer <access_token>
+
 ```
 
 Authentication is enforced via `middleware.AuthMiddleware` (`internal/inbound/http/middleware/auth.go`). The middleware validates the JWT token, checks allowed user roles, and attaches the parsed `model.User` to the Gin context at key `macro.Me` (`"me"`).
@@ -97,6 +99,7 @@ Creates a new user account, hashes the password with bcrypt, creates a refresh s
   "password": "securepassword123",
   "remember": true
 }
+
 ```
 
 | Field | Type | Rules |
@@ -134,6 +137,7 @@ Creates a new user account, hashes the password with bcrypt, creates a refresh s
     "Status": "active"
   }
 }
+
 ```
 
 ---
@@ -153,6 +157,7 @@ Authenticates a user via their identifier (email or username) and password.
   "password": "securepassword123",
   "remember": false
 }
+
 ```
 
 | Field | Type | Rules |
@@ -200,6 +205,7 @@ Generates a new access token using a valid refresh token.
 {
   "refresh_token": "a1b2c3d4e5f6..."
 }
+
 ```
 
 | Field | Type | Rules |
@@ -222,6 +228,7 @@ Generates a new access token using a valid refresh token.
   "token_type": "Bearer",
   "expires_in": 900
 }
+
 ```
 
 ---
@@ -245,6 +252,7 @@ All endpoints under `/v1/users` require the `admin` role (`authMW(model.UserRole
   "password": "initialpassword123",
   "role": "coach"
 }
+
 ```
 
 | Field | Type | Rules |
@@ -302,6 +310,7 @@ Allows updating any subset of a user's fields. All fields in the body are option
   "role": "admin",
   "status": "active"
 }
+
 ```
 
 **Responses:**
@@ -347,6 +356,7 @@ Generates a presigned PUT URL allowing direct upload from the mobile client to M
   "title": "Send of Sector 4",
   "retained": false
 }
+
 ```
 
 | Field | Type | Rules |
@@ -411,6 +421,7 @@ Creates a pending analysis record and dispatches a job message to the RabbitMQ q
   "type": "2d",
   "visibility": "private"
 }
+
 ```
 
 | Field | Type | Rules |
@@ -462,6 +473,7 @@ Returns the current progress, status, and results of an analysis.
   "started_at": "2026-09-22T10:15:00Z",
   "completed_at": "2026-09-22T10:15:14Z"
 }
+
 ```
 
 **Analysis Status Lifecycle:**
@@ -469,6 +481,7 @@ Returns the current progress, status, and results of an analysis.
 ```
 pending → processing → completed
                     ↘ failed
+
 ```
 
 ---

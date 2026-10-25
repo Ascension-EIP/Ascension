@@ -43,6 +43,7 @@ internal/
         │   └── post.go     # Gin HTTP handler methods
         └── router/
             └── router.go   # Route registration and middleware attachment
+
 ```
 
 ---
@@ -67,12 +68,14 @@ CREATE TRIGGER update_posts_updated_at
 BEFORE UPDATE ON posts
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
+
 ```
 
 **`migrations/20260922000000_create_posts_table.down.sql`**:
 
 ```sql
 DROP TABLE IF EXISTS posts;
+
 ```
 
 ---
@@ -113,6 +116,7 @@ func (p *NewPost) Validate() error {
 	}
 	return nil
 }
+
 ```
 
 ### 2\. Add the repository port to `internal/model/ports.go`
@@ -122,6 +126,7 @@ type PostRepository interface {
 	CreatePost(ctx context.Context, p *NewPost) (*Post, error)
 	GetPostByID(ctx context.Context, id uuid.UUID) (*Post, error)
 }
+
 ```
 
 ---
@@ -158,6 +163,7 @@ func (s *PostService) Create(ctx context.Context, newPost *model.NewPost) (*mode
 func (s *PostService) GetByID(ctx context.Context, id uuid.UUID) (*model.Post, error) {
 	return s.repo.GetPostByID(ctx, id)
 }
+
 ```
 
 ---
@@ -217,6 +223,7 @@ func (r *PostgresRepository) GetPostByID(ctx context.Context, id uuid.UUID) (*mo
 	}
 	return &post, nil
 }
+
 ```
 
 ---
@@ -280,6 +287,7 @@ func (h *PostHandler) Create(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, post)
 }
+
 ```
 
 ---
@@ -302,6 +310,7 @@ func New(
 		postsGroup.POST("/", postH.Create)
 	}
 }
+
 ```
 
 2. Wire the dependencies in `internal/app/app.go`:
@@ -320,6 +329,7 @@ router.New(
 	&analysisH,
 	&postHandler,
 )
+
 ```
 
 ---
@@ -330,4 +340,5 @@ router.New(
 moon run server:test
 # or
 go test ./internal/service/...
+
 ```

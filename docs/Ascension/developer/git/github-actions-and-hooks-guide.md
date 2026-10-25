@@ -52,6 +52,7 @@ Both layers rely on the same shared Python validation scripts located in `.githu
 ├── dependabot.yml            # Dependabot configuration
 ├── keywords.txt              # Allowed types for branch names and commit messages
 └── pull_request_template.md  # Default pull request description template
+
 ```
 
 ---
@@ -108,6 +109,7 @@ Git hooks are shell scripts stored in `.github/hooks/`. They are **not** active 
 git diff --quiet HEAD -- docs || git add docs
 .github/scripts/reformat_code
 echo "$FILES" | xargs git add
+
 ```
 
 ### 3.2 `commit-msg`
@@ -144,6 +146,7 @@ pre-push
     ├── check_branch  → ❌ reject on invalid name
     ├── check_push    → ❌ reject on failed checks
     └── git pull + push
+
 ```
 
 ### 3.4 Enabling hooks locally
@@ -152,6 +155,7 @@ The hooks are stored in `.github/hooks/` instead of `.git/hooks/` so they are tr
 
 ```sh
 git config core.hooksPath .github/hooks
+
 ```
 
 > ℹ️ This command only needs to be run once per clone. After that, all hooks are applied automatically.
@@ -190,6 +194,7 @@ Validates that a commit message follows the Conventional Commits format:
 
 ```
 <type>(<scope>): <description>
+
 ```
 
 - `type` must be one of the keywords in `.github/keywords.txt`.
@@ -222,6 +227,7 @@ Runs the code formatters for each application using the `moon` task runner:
 moon run server:format   # Go (go fmt)
 moon run mobile:format   # Dart (dart format)
 # moon run ai:format     # Python (disabled)
+
 ```
 
 This script is called automatically by the `pre-commit` hook and can also be run manually to format the entire codebase.

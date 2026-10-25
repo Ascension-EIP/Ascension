@@ -59,6 +59,7 @@ func (h *StatusHandler) GetVersion(c *gin.Context) {
 		Version: "1.0.0",
 	})
 }
+
 ```
 
 ---
@@ -82,6 +83,7 @@ func New(
 	analysisH *handler.AnalysisHandler,
 	statusH *handler.StatusHandler, // ← Add this handler
 )
+
 ```
 
 2. Register the route under the `/v1` group:
@@ -94,6 +96,7 @@ func New(
 			statusGroup.GET("/version", statusH.GetVersion) // ← Add this route
 		}
 	}
+
 ```
 
 3. In `internal/app/app.go`, instantiate your handler and pass it to `router.New`:
@@ -110,6 +113,7 @@ func New(
 		&analysisH,
 		&statusH, // ← Pass here
 	)
+
 ```
 
 ---
@@ -120,6 +124,7 @@ Start the server, then use `curl` or any HTTP client:
 
 ```bash
 curl http://localhost:8080/v1/status/version
+
 ```
 
 Expected response:
@@ -128,6 +133,7 @@ Expected response:
 {
   "version": "1.0.0"
 }
+
 ```
 
 ---
@@ -150,6 +156,7 @@ Use `:param` in the route path to capture a segment as a variable:
 
 ```go
 usersGroup.GET("/:id", userH.GetByID)
+
 ```
 
 In the handler, extract it with `c.Param("id")`:
@@ -161,6 +168,7 @@ if err != nil {
 	c.JSON(http.StatusBadRequest, response.NewError(err))
 	return
 }
+
 ```
 
 ### JSON request body
@@ -182,4 +190,5 @@ func (h *AnalysisHandler) Create(c *gin.Context) {
 	}
 	// req fields are now bound and validated
 }
+
 ```

@@ -142,4 +142,5 @@ Ce cadre implique que chaque évolution technique doit être analysée de maniè
 ---
 
 Tu as maintenant tout le contexte du projet Ascension. Réponds à toutes les questions et accomplis toutes les tâches avec ces informations. Lors de l'écriture de code, respecte les choix de stack existants. Lors de conseils, aligne-toi avec les principes architecturaux décrits ci-dessus.
+
 ````

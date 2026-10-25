@@ -85,6 +85,7 @@ graph LR
     style G fill:#bbf,stroke:#333,stroke-width:2px
     style J fill:#bfb,stroke:#333,stroke-width:2px
     style M fill:#f96,stroke:#333,stroke-width:4px
+
 ```
 
 ```mermaid
@@ -106,6 +107,7 @@ graph LR
     style A fill:#f9f,stroke:#333
     style D fill:#bbf,stroke:#333
     style F fill:#f96,stroke:#333
+
 ```
 
 ### 1\. Feuille de route d'évolution (Horizon 36 mois)
@@ -151,6 +153,7 @@ graph LR
     style H2 fill:#b3e5fc,stroke:#01579b
     style H3 fill:#81d4fa,stroke:#01579b
     style M fill:#fff3e0,stroke:#e65100
+
 ```
 
 ```mermaid
@@ -166,4 +169,5 @@ graph LR
     end
 
     C -.-> D
+
 ```
