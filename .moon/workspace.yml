@@ -6,10 +6,10 @@ $schema: './cache/schemas/workspace.json'
 projects:
   root: '.'
   ai: 'apps/ai'
-  new_ai: 'apps/new_ai'
+  old_ai: 'apps/old_ai'
   server: 'apps/server'
   mobile: 'apps/mobile'
-  new_mobile: 'apps/new_mobile'
+  old_mobile: 'apps/old_mobile'
 
 vcs:
   client: 'git'
