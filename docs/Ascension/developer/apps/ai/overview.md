@@ -3,3 +3,8 @@ id: a521a93c-f811-4150-a388-1a7238a7242c
 ---
 
 TODO
+
+```mermaid
+flowchart LR
+    A --> B
+```
