@@ -42,7 +42,7 @@ Before diving into implementation, review these key documents:
    - Event-driven architecture patterns
    - CQRS implementation
    - Scaling strategy and performance targets
-3. [Infrastructure Architecture](infrastructure.md) - Infrastructure and hosting setup
+3. [Infrastructure Architecture](./infrastructure.md) - Infrastructure and hosting setup
    - OVHcloud VPS-4 (Milan) and Object Storage (Gravelines)
    - Domain routing (ascension-eip.fr) and security topology
    - Resource allocation and cost optimization
