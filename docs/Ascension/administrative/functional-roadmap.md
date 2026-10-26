@@ -170,8 +170,8 @@ Transformer le MVP en version alpha solide et testable à plus grande échelle, 
 
 - Reconstruire l'**IA de pose autour d'un modèle 3D** afin d'extraire la posture 3D complète et de générer un format biomécanique standardisé enrichi.
 - Développer l'**expérience 3D mobile** interactive (scène 3D manipulable au doigt : rotation, zoom, déplacement) avec des performances fluides sur Android et iOS.
-- Livrer un **mode fantôme complet** avec meilleure fidélité de comparaison et workflow de sélection des prises plus avancé:
-  - Détection automatique des prises avec sélection par clic.
+- Livrer un **mode fantôme complet** avec workflow de détection et sélection des prises avancé et rendu optimisé étape par étape :
+  - Détection automatique des prises avec catégorisation par couleur et type, et sélection par case à cocher.
   - Fallback manuel si une prise n'est pas détectée.
   - Choix de mode: Custom (manuel) ou Couleur détectée (rouge, bleu, etc.).
 - Développer une **IA avancée de lecture des prises** (type, difficulté, exploitation) pour enrichir les conseils.

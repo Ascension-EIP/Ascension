@@ -51,4 +51,4 @@ This glossary defines key terms, acronyms, and domain vocabulary used across the
 - **Mobile App:** User-facing client for recording climbs, viewing analyses, and receiving coaching feedback.
 - **Server:** Backend service layer handling persistence, APIs, authentication, and business logic.
 - **AI Worker:** Processing service that runs pose, holds, and movement analysis pipelines.
-- **Ghost Climber:** Visual guidance overlay that shows an optimized movement sequence on top of user video.
+- **Ghost Mode:** Step-by-step visual guidance sequence (one image per movement step) showing the optimal beta calculated from an empty route photo and climber morphology.

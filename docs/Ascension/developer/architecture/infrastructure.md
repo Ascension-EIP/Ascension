@@ -109,7 +109,7 @@ The 24 GB RAM and 8 vCores allocation is configured to prevent Out-Of-Memory (OO
 
 - **AI Inference Workers (Python 3.11):**
   - *Pose Analysis Worker:* 2D skeleton extraction (MediaPipe Pose, 33 keypoints per frame), 3D postural reconstruction, and biomechanical feedback computation.
-  - *Ghost Mode Worker:* Computer vision hold detection, morphological validation, and inverse-kinematics pathfinding for route beta.
+  - *Ghost Mode Worker:* Computer vision hold detection and categorization on route photos, pathfinding adapted to user morphology, and generation of step-by-step movement images.
   - Allocation: ~6 to 8 GB RAM dedicated to absorb parallel video processing pipelines.
 - **API Gateway (Go 1.27.1 / Gin):**
   - High-throughput entry point handling REST routes, WebSockets for real-time notifications, and asynchronous analysis orchestration.

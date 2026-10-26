@@ -29,7 +29,7 @@ Flux utilisateur de référence dans l’alpha :
 1. Préparer la voie (détection automatique des prises, qualification et correction manuelle).
 2. Générer une bêta optimale sans grimpe sur photo ou analyser une vidéo avec reconstruction de posture 3D.
 3. Manipuler la restitution dans une scène 3D mobile interactive.
-4. Comparer sa montée réelle au fantôme complet avec retour biomécanique enrichi.
+4. Comparer sa montée réelle à celle d'autres grimpeurs avec retour biomécanique enrichi.
 5. Recevoir des conseils contextualisés et suivre un programme d'entraînement adaptatif.
 6. Interagir avec la communauté (partage d'analyses, progression sociale, paramétrage de confidentialité).
 7. Utiliser le mode de grimpe assistée en temps réel avec guidage vocal.
@@ -60,7 +60,7 @@ Toutes les fonctionnalités listées ci-dessous font partie du scope ATP à dém
 | ATP-F05 | Grimpeur alpha | Générer une bêta sans grimpe | Produire une trajectoire optimale à partir de la voie qualifiée et du profil utilisateur. |
 | ATP-F06 | Grimpeur alpha | Extraire la posture via modèle 3D | Reconstruire la pose en 3D et générer les sorties biomécaniques standardisées. |
 | ATP-F07 | Grimpeur alpha | Manipuler la scène 3D mobile | Explorer interactivement la grimpe en 3D (rotation, zoom, déplacement fluide). |
-| ATP-F08 | Grimpeur alpha | Comparer sa montée au fantôme complet | Visualiser les écarts biomécaniques clés, moments critiques et recommandations associées. |
+| ATP-F08 | Grimpeur alpha | Comparer sa montée à celle d'un autre grimpeur | Visualiser les écarts biomécaniques clés, différences de posture et de rythme entre deux grimpeurs. |
 | ATP-F09 | Grimpeur alpha | Recevoir des conseils enrichis | Obtenir un feedback technique contextualisé par IA croisant prises et biomécanique. |
 | ATP-F10 | Grimpeur alpha | Définir des objectifs de progression avancés | Configurer niveau actuel, cible, calendrier et contraintes pour un coaching adaptatif. |
 | ATP-F11 | Grimpeur alpha | Générer et consigner des entraînements | Recevoir des programmes sur mesure et enregistrer les séances pour suivi longitudinal. |
@@ -86,7 +86,7 @@ Période de validation ATP : août 2027 -> mars 2028.
 | ATP-F05 | La bêta sans grimpe se génère et reste lisible. | 25 générations, p95 < 12 s. | Not achieved (0/25). |
 | ATP-F06 | La reconstruction de pose 3D est stable et cohérente. | 30 vidéos, 0 artefact aberrant, format standardisé validé. | Not achieved (0/30). |
 | ATP-F07 | La scène 3D mobile est fluide et réactive. | FPS médian >= 30, 0 crash sur smartphones de référence. | Not achieved (0/2). |
-| ATP-F08 | La comparaison fantôme complète produit des écarts actionnables. | 25 comparaisons, >= 85% jugées utiles par testeurs. | Not achieved (0/25). |
+| ATP-F08 | La comparaison vidéo entre grimpeurs produit des écarts actionnables. | 25 comparaisons, >= 85% jugées utiles par testeurs. | Not achieved (0/25). |
 | ATP-F09 | Les conseils enrichis sont cohérents avec le contexte de voie. | 25 analyses, >= 90% retours validés par revue interne. | Not achieved (0/25). |
 | ATP-F10 | L’utilisateur peut paramétrer des objectifs de coaching sans confusion. | 30 parcours, >= 90% complétés sans aide externe. | Not achieved (0/30). |
 | ATP-F11 | Les séances générées sont exploitables et alimentent le suivi. | 50 logs, 100% visibles dans l’historique. | Not achieved (0/50). |

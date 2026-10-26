@@ -16,7 +16,7 @@ id: 5d09b283-adb5-4bde-b3a4-5d9d79c195d2
 
 This document describes the Ascension REST API for video analysis, route visualization, and climbing coaching.
 
-**Base URL**: `https://api.ascension.app/v1` **Authentication**: JWT Bearer tokens **Format**: JSON
+**Base URL**: `https://api.ascension-eip.fr/v1` **Authentication**: JWT Bearer tokens **Format**: JSON
 
 ---
 
@@ -329,12 +329,12 @@ Authorization: Bearer {token}
   "id": "uuid",
   "route_id": "uuid",
   "status": "completed",
-  "ghost_path": [
+  "steps": [
     {
       "step": 1,
-      "hand_position": {"x": 100, "y": 200},
-      "foot_position": {"x": 120, "y": 350},
-      "body_position": {"x": 110, "y": 275}
+      "image_url": "https://storage.ascension-eip.fr/ghosts/uuid/step_1.jpg",
+      "hold_id": "uuid",
+      "action": "Right hand to hold #4"
     }
   ]
 }
@@ -343,11 +343,11 @@ Authorization: Bearer {token}
 
 ---
 
-## Ghost Overlay on Video
+## Video Analysis Comparison
 
-### Compare Video with Ghost
+### Compare Video Analyses Between Climbers
 
-Overlay the ghost path on a climbing video to compare performance.
+Compare two climbing video analyses (e.g. comparing your ascent with a friend or a reference attempt) to evaluate differences in pose, trajectory, and technique.
 
 ```http
 POST /analysis/compare
@@ -355,8 +355,8 @@ Authorization: Bearer {token}
 Content-Type: application/json
 
 {
-  "video_analysis_id": "uuid",
-  "ghost_id": "uuid"
+  "base_analysis_id": "uuid",
+  "compared_analysis_id": "uuid"
 }
 
 ```
@@ -367,13 +367,14 @@ Content-Type: application/json
 {
   "comparison_id": "uuid",
   "metrics": {
-    "path_similarity": 0.78,
+    "pose_similarity": 0.78,
     "efficiency_score": 0.82,
-    "deviations": [
+    "differences": [
       {
         "frame": 45,
+        "limb": "left_arm",
         "difference": 15.5,
-        "note": "Hand reached too high"
+        "note": "Higher elbow flare"
       }
     ]
   }

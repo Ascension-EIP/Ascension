@@ -42,9 +42,9 @@ The migrations in `apps/server/internal/outbound/postgres/migrations/` (migratio
 | F01 Morphological profile | `user_profiles`, `user_body_constraints` |
 | F02 / F03 Video analysis and skeleton | `videos`, `analyses` |
 | F04 Score and progression | `climbing_sessions`, `analysis_scores` |
-| F05 Ghost comparison | `comparisons` |
+| F05 Video analysis comparison | `comparisons` |
 | F06 Hold analysis | `routes`, `holds` |
-| F07 Ghost without climbing | `routes`, `holds`, `ghosts`, `ghost_holds` |
+| F07 Ghost Mode | `routes`, `holds`, `ghosts`, `ghost_holds` |
 | F08 3D mobile experience | `analyses` (type `3d`) |
 | F09 Personalised advice | `analyses.hints` |
 | F10 Coach and training programs | `goals`, `training_programs`, `training_program_sessions`, `exercises`, `training_logs` |
@@ -595,7 +595,7 @@ Business rules:
 
 ## 7\. Routes, Holds and Ghost Mode
 
-Recommended split: the route photo is its own entity (`routes`), because it has a life independent of any video (F07 works without climbing). Holds belong to the route. A ghost is a computed path on a route for a given user morphology. A comparison joins a ghost with a video analysis (F05). All storage references are S3 object keys; the bucket is a configuration value and never appears in the schema.
+Recommended split: the route photo is its own entity (`routes`), because it has a life independent of any video. Holds belong to the route. A ghost is a computed path on a route for a given user morphology, producing step-by-step guidance images (F07). A comparison joins two video analyses between climbers/sessions (F05). All storage references are S3 object keys; the bucket is a configuration value and never appears in the schema.
 
 ### 7.1 `routes`
 
@@ -673,7 +673,7 @@ Business rules:
 
 ### 7.3 `ghosts`
 
-Optimal movement path computed for a route and a user morphology (F05, F07). Same job lifecycle as `analyses`.
+Optimal movement path computed for a route and a user morphology (F07). Same job lifecycle as `analyses`.
 
 ```sql
 CREATE TABLE ghosts (
@@ -706,7 +706,7 @@ CREATE INDEX idx_ghosts_user_id ON ghosts(user_id);
 Business rules:
 
 - `morphology` is a snapshot of `user_profiles` and active `user_body_constraints` at request time, so the ghost stays reproducible.
-- `path` is a list of steps in image pixel coordinates: `{"steps": [{"step": 1, "left_hand": {"hold_id": "...", "x": 100, "y": 200}, "right_hand": {...}, "left_foot": {...}, "right_foot": {...}, "center_of_mass": {"x": 110, "y": 275}}]}`.
+- `path` is a list of steps with step image references and move details: `{"steps": [{"step": 1, "image_key": "ghosts/uuid/step_1.jpg", "hold_id": "uuid", "action": "Right hand to hold #4", "center_of_mass": {"x": 110, "y": 275}}]}`.
 - Ghost Mode is a premium feature; the quota check happens in the API before the row is created.
 
 ### 7.4 `ghost_holds`
@@ -732,24 +732,24 @@ Business rules:
 
 ### 7.5 `comparisons`
 
-Comparison of a video analysis with a ghost (F05). Same job lifecycle as `analyses`.
+Comparison of two climbing video analyses between climbers or sessions (F05). Same job lifecycle as `analyses`.
 
 ```sql
 CREATE TABLE comparisons (
-    id                  UUID PRIMARY KEY DEFAULT uuidv7(),
-    analysis_id         UUID NOT NULL REFERENCES analyses(id) ON DELETE CASCADE,
-    ghost_id            UUID NOT NULL REFERENCES ghosts(id) ON DELETE CASCADE,
-    status              job_status NOT NULL DEFAULT 'pending',
-    progress            SMALLINT NOT NULL DEFAULT 0,
-    similarity_score    NUMERIC(5, 2),
-    efficiency_score    NUMERIC(5, 2),
-    metrics             JSONB,
-    error               TEXT,
-    processing_time_ms  INTEGER,
-    started_at          TIMESTAMPTZ,
-    completed_at        TIMESTAMPTZ,
-    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    id                   UUID PRIMARY KEY DEFAULT uuidv7(),
+    base_analysis_id     UUID NOT NULL REFERENCES analyses(id) ON DELETE CASCADE,
+    compared_analysis_id UUID NOT NULL REFERENCES analyses(id) ON DELETE CASCADE,
+    status               job_status NOT NULL DEFAULT 'pending',
+    progress             SMALLINT NOT NULL DEFAULT 0,
+    similarity_score     NUMERIC(5, 2),
+    efficiency_score     NUMERIC(5, 2),
+    metrics              JSONB,
+    error                TEXT,
+    processing_time_ms   INTEGER,
+    started_at           TIMESTAMPTZ,
+    completed_at         TIMESTAMPTZ,
+    created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     CONSTRAINT chk_comparisons_progress CHECK (progress BETWEEN 0 AND 100),
     CONSTRAINT chk_comparisons_scores CHECK (
@@ -760,14 +760,14 @@ CREATE TABLE comparisons (
         CHECK (status <> 'completed' OR (metrics IS NOT NULL AND completed_at IS NOT NULL))
 );
 
-CREATE INDEX idx_comparisons_analysis_id ON comparisons(analysis_id);
-CREATE INDEX idx_comparisons_ghost_id ON comparisons(ghost_id);
+CREATE INDEX idx_comparisons_base_analysis_id ON comparisons(base_analysis_id);
+CREATE INDEX idx_comparisons_compared_analysis_id ON comparisons(compared_analysis_id);
 
 ```
 
 Business rules:
 
-- `metrics` holds the frame-aligned deviations rendered as the ghost overlay: `{"alignment": {"offset_ms": 350}, "deviations": [{"frame": 45, "timestamp_ms": 1500, "limb": "left_hand", "distance_px": 15.5, "note": "Hand reached too high"}]}`.
+- `metrics` holds the frame-aligned comparison differences between climber videos: `{"differences": [{"frame": 45, "timestamp_ms": 1500, "limb": "left_arm", "difference": 15.5, "note": "Higher elbow flare"}]}`.
 - `similarity_score` and `efficiency_score` are promoted to columns for progression charts.
 
 ---

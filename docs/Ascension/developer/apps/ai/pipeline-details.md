@@ -25,7 +25,7 @@ Chaque brique indique son entrée, sa sortie, la technologie envisagée, son sta
 | **Bêta** | Séquence de mouvements qui résout la voie : à chaque étape, quelle prise pour quelle main ou quel pied. |
 | **Pathfinding** | Calcul de la bêta à partir des prises de la voie et de la morphologie du grimpeur. |
 | **Squelette** | 33 points du corps par image, extraits par MediaPipe Pose. |
-| **Mode fantôme** | Affichage de la bêta optimale en superposition sur la photo de la voie ou sur la vidéo du grimpeur. |
+| **Mode fantôme** | Décomposition étape par étape des mouvements optimaux (bêta) sous forme d'une suite d'images générées à partir d'une photo de la voie et de la morphologie du grimpeur. |
 | **Clustering** | Regroupement automatique de prises similaires (couleur, position) pour retrouver les voies. |
 
 ---
@@ -168,8 +168,8 @@ Points d'attention :
 
 ### 6.2 Bloc E : rendu mobile
 
-- Le client Flutter dessine le squelette, le fantôme et les conseils par-dessus la vidéo d'origine, à partir d'un JSON léger (rendu côté client, pas de ré-encodage vidéo).
-- Le mode fantôme sans grimpe (F07) affiche la bêta sur la photo. Le mode fantôme en comparaison (F05) l'affiche sur la vidéo, avec un décalage temporel (`alignment.offset_ms`).
+- Le client Flutter dessine le squelette et les conseils par-dessus la vidéo d'origine (rendu côté client, pas de ré-encodage vidéo).
+- Le mode fantôme permet à l'utilisateur de faire défiler étape par étape la succession d'images générées, montrant visuellement chaque mouvement à effectuer sur la voie.
 
 ---
 

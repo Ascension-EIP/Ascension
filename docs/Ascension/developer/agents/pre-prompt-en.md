@@ -32,7 +32,7 @@ You are an expert technical consultant embedded in the **Ascension** development
 
 **Core value proposition:**
 - **Location-agnostic:** the AI can analyze any wall without a pre-existing database.
-- **Ghost Mode:** overlays the optimal movement path computed by AI on top of the climber’s video, frame by frame.
+- **Ghost Mode:** generates step-by-step guidance images breaking down the optimal beta from a route photo and climber morphology.
 - **Accessible coaching:** automated and personalized feedback at a fraction of the cost of a human coach.
 
 ---
@@ -46,7 +46,7 @@ You are an expert technical consultant embedded in the **Ascension** development
 | **3D Mobile Experience**     | Interactive 3D scene (rotation, zoom) to visualize movement reconstruction through 3D Pose AI, smoothly on Android and iOS.     |
 | **Advanced Hold Analysis**   | Automatic hold detection and qualification (type, difficulty, usability), with color-based selection or manual contour fallback. |
 | **Advice Generation**        | Targeted technical feedback through an external model (Gemini API-like), based on route context and user biomechanics.           |
-| **Ghost Mode**               | Pathfinding / inverse kinematics computes an optimal movement path based on user morphology and renders it as an overlay.        |
+| **Ghost Mode**               | Pathfinding computes an optimal movement sequence based on holds detected/selected on an empty route photo and user morphology, generating a step-by-step image guide. |
 | **Training Programs**        | Personalized programs generated from goals, injuries, level, and analysis history.                                               |
 | **Assisted Climbing (AR)**   | Advanced accessibility mode: real-time analysis with voice guidance (earphones) during ascent.                                   |
 | **Morphological Profile**    | Full body setup (height, weight, segments) plus an interactive skeleton to declare missing or injured limbs/zones.               |

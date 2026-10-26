@@ -30,10 +30,10 @@ flowchart TD
         end
 
         subgraph P2 ["Pipeline 2"]
-            ExtPrises["Extraction des prises"]
-            RechChemin["Recherche du bon chemin"]
-            GenFantome["Générateur de fantôme<br/>(une frame par étape)"]
-            ExtPrises -->|"Prises extraites"| RechChemin
+            ExtPrises["Détection des prises & sélection"]
+            RechChemin["Pathfinding selon morphologie"]
+            GenFantome["Générateur d'images par étape"]
+            ExtPrises -->|"Prises choisies"| RechChemin
             RechChemin -->|"Chemin optimal"| GenFantome
         end
     end
@@ -57,7 +57,7 @@ flowchart TD
 
     RMQ -->|"6b. Job de mode fantôme<br/>(photo de mur)"| ExtPrises
     ExtPrises -->|"Récupère la photo"| S3
-    GenFantome -->|"7b. Stocke fantôme (JSON)"| PG
+    GenFantome -->|"7b. Stocke étapes & images"| PG
     GenFantome -->|"8b. Publie événement<br/>terminé"| RMQ
 
     RMQ -->|"9. Notifie résultat prêt"| API

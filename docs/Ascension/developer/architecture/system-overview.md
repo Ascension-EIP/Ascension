@@ -108,11 +108,11 @@ Processing time: 45s (no encoding)
 1. Capture or select video
 2. Keep video in local cache
 3. Request presigned upload URL from API
-4. Upload directly to S3/MinIO
+4. Upload directly to S3/RustFS
 5. Notify API of upload completion
 6. Await WebSocket notification
 7. Fetch JSON analysis
-8. Render skeleton/ghost overlay on local video
+8. Render skeleton overlay and coaching advice on local video
 
 ### Layer 2: API Gateway (Go)
 
@@ -211,9 +211,9 @@ All computer-vision tasks that rely on MediaPipe Pose and image processing:
 | 1\. Hold Detection | `vision.hold_detection` | Photo of the route | JSON hold map (positions + types) | User photographs the wall, AI detects and classifies holds (crimp, sloper, jug…). User can manually correct misclassified holds before proceeding. |
 | 2\. Skeleton Extraction | `vision.skeleton` | Video + hold map | JSON per-frame skeleton data | MediaPipe Pose extracts 33 keypoints per frame → computes joint angles, center of gravity, weight distribution, segment tensions. Returns the full skeleton timeline as JSON to the Go API. |
 | 3\. Analysis & Advice | `vision.advice` | Skeleton JSON + hold map | JSON advice payload | Combines skeleton data with hold context to generate targeted coaching advice (e.g., "hip too far from wall on move 3", "match hands before flagging"). |
-| 4\. Ghost Mode | `vision.ghost` | Skeleton JSON + hold map + user morphology | JSON ghost overlay data | Computes an optimal movement path (pathfinding / inverse kinematics) for the user's body proportions. Output is a frame-by-frame ghost skeleton that the Flutter client renders as an overlay. |
+| 4\. Ghost Mode | `vision.ghost` | Route photo + selected holds + user morphology | JSON ghost step sequence + step images | Computes an optimal movement sequence (pathfinding) for the user's body proportions from an empty route photo. Output is a step-by-step sequence with generated images showing each move. |
 
-**Key design**: Steps 2–4 share the same skeleton extraction output, so a single video is only processed once. The ghost mode and advice generation reuse the skeleton JSON.
+**Key design**: Video analysis (steps 2–3) and Ghost Mode (step 4) are completely decoupled. Video analysis takes a climbing video to extract pose landmarks and generate coaching advice. Ghost Mode operates strictly on an route photo: after hold detection and user selection, it uses climber morphology to generate step-by-step guidance images.
 
 Pipeline 2: Training Pipeline (CPU-only)
 
@@ -257,14 +257,19 @@ Each worker module:
 
 See `docs/engineering/developer_guide/ai/readme.md` for the full AI layer documentation.
 
-Typical Vision Pipeline Flow
+Typical Processing Flows
 
+**Video Analysis Flow**:
 ```
-1. User photos the route → hold_detection job → AI classifies holds → user validates
-2. User uploads video  → skeleton job → per-frame JSON skeleton returned to API
-3. API chains:         → advice job  → targeted coaching from skeleton + holds
-4. If Ghost Mode:      → ghost job   → optimal path overlay for user's morphology
+1. User uploads video  → skeleton job → per-frame JSON skeleton returned to API
+2. API triggers:       → advice job   → targeted coaching from skeleton + performance
+```
 
+**Ghost Mode Flow (Photo-only)**:
+```
+1. User photos route → hold_detection job → AI classifies holds by type and color
+2. User validates or manually selects holds on the route photo
+3. API triggers:           → ghost job (photo + selected holds + morphology) → pathfinding generates step-by-step images
 ```
 
 ### Layer 5: Data Persistence
@@ -409,7 +414,6 @@ sequenceDiagram
     Worker->>Worker: Pipeline 1a: Skeleton Extraction — MediaPipe (10s)
     Worker->>DB: Store skeleton JSON
     Worker->>Worker: Pipeline 1b: Advice Generation (3s)
-    Worker->>Worker: Pipeline 1c: Ghost Generation (5s)
 
     Worker->>DB: UPDATE analyses SET result_json=data, status='completed'
     Worker->>RMQ: Publish 'analysis.completed.{job_id}'
@@ -422,7 +426,7 @@ sequenceDiagram
     API-->>App: Returns analysis (50KB)
 
     App->>App: Renders overlay on local video
-    App->>User: Shows analysis (skeleton overlay, advice, ghost)
+    App->>User: Shows analysis (skeleton overlay, advice)
 
 ```
 

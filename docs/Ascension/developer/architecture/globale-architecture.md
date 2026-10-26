@@ -105,18 +105,18 @@ graph TD
     MobileApp -->|"4. Notify Upload Complete"| APIServer
 
     APIServer -->|"5. Publish Job"| MessageQueue
-    MessageQueue -->|"6a. Vision jobs"| HoldDetection
-    MessageQueue -->|"6b. Training jobs"| ProgramGenerator
+    MessageQueue -->|"6a. Video analysis jobs"| SkeletonExtraction
+    MessageQueue -->|"6b. Hold & Ghost jobs"| HoldDetection
+    MessageQueue -->|"6c. Training jobs"| ProgramGenerator
 
-    HoldDetection -->|"Detect and classify holds"| SkeletonExtraction
+    SkeletonExtraction -->|"Fetch Video"| ObjectStorage
     SkeletonExtraction -->|"Per-frame skeleton JSON"| AdviceGenerator
-    SkeletonExtraction -->|"Reuse skeleton data"| GhostGenerator
 
     HoldDetection -->|"Fetch Photo"| ObjectStorage
-    SkeletonExtraction -->|"Fetch Video"| ObjectStorage
+    HoldDetection -->|"Classified holds + user selection"| GhostGenerator
 
     AdviceGenerator -->|"7a. Store advice JSON"| Database
-    GhostGenerator -->|"7b. Store ghost JSON"| Database
+    GhostGenerator -->|"7b. Store ghost steps & images"| Database
     ProgramGenerator -->|"7c. Store program"| Database
     AdviceGenerator -->|"8. Publish Complete Event"| MessageQueue
     GhostGenerator -->|"8. Publish Complete Event"| MessageQueue
@@ -251,7 +251,7 @@ Ascension/                      # Monorepo root
 - **ML Frameworks**: MediaPipe (pose estimation), custom model (hold recognition)
 - **Services**:
   - Pose Estimation (skeleton extraction)
-  - Inverse Kinematics (Ghost Climber generation)
+  - Pathfinding & Step Generation (Ghost Mode)
   - Hold Recognition (CNN-based)
 
 ### Data Layer

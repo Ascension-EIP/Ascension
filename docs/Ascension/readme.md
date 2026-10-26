@@ -19,7 +19,7 @@ order:
 
 Bienvenue dans l'espace documentaire central du projet **Ascension**.
 
-Ascension est une solution d'entraînement et d'analyse biomécanique intelligente dédiée à l'escalade. Grâce à la vision par ordinateur et à l'intelligence artificielle, l'application transforme tout smartphone en un coach d'escalade objectif, capable d'extraire la posture du grimpeur (squelette 2D et 3D), de qualifier les prises du mur, de générer des conseils techniques personnalisés et de projeter le mouvement optimal via le mode fantôme.
+Ascension est une solution d'entraînement et d'analyse biomécanique intelligente dédiée à l'escalade. Grâce à la vision par ordinateur et à l'intelligence artificielle, l'application transforme tout smartphone en un coach d'escalade objectif, capable d'extraire la posture du grimpeur (squelette 2D), de qualifier les prises du mur, de générer des conseils techniques personnalisés et de générer la décomposition des mouvements optimaux étape par étape via le mode fantôme.
 
 ---
 
@@ -49,7 +49,7 @@ Destinée aux personnes qui utilisent l'application mobile Ascension au quotidie
 - **Premiers pas :** Installation de l'application, création de compte et configuration du profil morphologique.
 - **Enregistrement des ascensions :** Recommandations d'angle et de luminosité pour filmer efficacement une voie ou un bloc.
 - **Restitution de l'analyse :** Interprétation des scores, visualisation du squelette 2D/3D et conseils du coach virtuel.
-- **Ghost Mode & Programmes :** Utilisation de l'overlay de comparaison et suivi de programmes d'entraînement sur-mesure.
+- **Ghost Mode & Programmes :** Déchiffrage étape par étape de voie sur photo et suivi de programmes d'entraînement sur-mesure.
 
 ### 2\. Documentation Développeur (Developer)
 
