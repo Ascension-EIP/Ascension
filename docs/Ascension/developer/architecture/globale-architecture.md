@@ -42,21 +42,25 @@ Before diving into implementation, review these key documents:
    - Event-driven architecture patterns
    - CQRS implementation
    - Scaling strategy and performance targets
+3. [Infrastructure Architecture](infrastructure.md) - Infrastructure and hosting setup
+   - OVHcloud VPS-4 (Milan) and Object Storage (Gravelines)
+   - Domain routing (ascension-eip.fr) and security topology
+   - Resource allocation and cost optimization
 
 ### 📊 Part 2: Data & API Modeling
 
-3. [Database Schema \& ERD](specifications/database-schema.md) - Complete data model
+4. [Database Schema \& ERD](specifications/database-schema.md) - Complete data model
    - Entity-Relationship Diagram (Mermaid)
    - PostgreSQL schema with triggers and indexes
    - Sample queries and migration strategy
-4. [API Specification](specifications/api-specification.md) - OpenAPI 3.0 documentation
+5. [API Specification](specifications/api-specification.md) - OpenAPI 3.0 documentation
    - REST endpoints with request/response examples
    - WebSocket protocol for real-time updates
    - Authentication flows and error codes
 
 ### 🔄 Workflows
 
-5. [**Video Analysis Flow**](./workflows/video-analysis-flow.md) - End-to-end feature flow
+6. [**Video Analysis Flow**](./workflows/video-analysis-flow.md) - End-to-end feature flow
    - Complete sequence diagrams
    - Implementation code examples
    - Phase-by-phase breakdown
