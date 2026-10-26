@@ -8,7 +8,7 @@ id: 25176ca6-b02b-4486-9923-387e6794af1a
 
 ---
 
-# Décomposition de la pipeline 2D
+# Décomposition de la pipeline
 
 Ce document décompose la pipeline IA 2D d'Ascension en briques techniques. Il sert de support au suivi mensuel avec le mentor en vision par ordinateur (Ilyes TALBI). Il reprend le mémo du 14/09, la réunion de suivi du 29/09, le schéma de base de données et l'état du code (`apps/new_ai`).
 
