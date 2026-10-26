@@ -8,12 +8,12 @@ order:
   - action-plan
   - beta-test-plan
   - acceptance-test-plan
+  - infrastructure-needs
   - memo
   - rncp
   - prototype-pool
   - accessibility-compliance
   - folder-files
-  - infrastructure-needs
 ---
 
 :::success
