@@ -5,60 +5,59 @@ id: a521a93c-f811-4150-a388-1a7238a7242c
 TODO
 
 ```mermaid
-graph TD
-    subgraph Couche Client
-        App[App Mobile Flutter]
+flowchart TD
+    subgraph Client ["Couche Client"]
+        App["App Mobile (Flutter)"]
     end
 
-    subgraph API Gateway
-        Server[Serveur API Go/Gin]
+    subgraph Gateway ["API Gateway"]
+        API["Serveur API (Go/Gin)"]
     end
 
-    subgraph Message Broker
-        RMQ[RabbitMQ]
+    subgraph Broker ["Message Broker"]
+        RMQ["RabbitMQ"]
     end
 
-    subgraph Couche Traitement IA
-        subgraph Pipeline 1
-            P1_Job[6a. Job d'analyse de pose<br>vidéo de grimpe] --> P1_Extract[Extraction du squelette]
-            P1_Extract --> P1_Skel[Squelette extrait]
-            P1_Skel --> P1_Gen[Générateur de conseils]
-            S3[Object Storage S3 Rust FS] -->|Récupère la vidéo| P1_Gen
+    subgraph IA ["Couche Traitement IA"]
+        subgraph P1 ["Pipeline 1"]
+            ExtSkel["Extraction du squelette"]
+            GenCons["Générateur de conseils"]
+            ExtSkel -->|Squelette extrait| GenCons
         end
 
-        subgraph Pipeline 2
-            P2_Job[6b. Job de mode fantôme<br>photo de mur] --> P2_Extract[Extraction des prises]
-            P2_Extract --> P2_Prises[Prises extraites]
-            P2_Prises --> P2_Search[Recherche du bon chemin]
-            DB[PostgreSQL] -->|Récupère la photo| P2_Search
-            P2_Search --> P2_Path[Chemin optimal]
-            P2_Path --> P2_Ghost[Générateur de fantôme<br>une frame par étape]
+        subgraph P2 ["Pipeline 2"]
+            ExtPrises["Extraction des prises"]
+            RechChemin["Recherche du bon chemin"]
+            GenFantome["Générateur de fantôme<br/>(une frame par étape)"]
+            ExtPrises -->|Prises extraites| RechChemin
+            RechChemin -->|Chemin optimal| GenFantome
         end
     end
 
-    subgraph Couche Données et Stockage
-        S3
-        DB
+    subgraph Data ["Couche Données et Stockage"]
+        S3["Object Storage S3 (Rust<br/>FS)"]
+        PG["PostgreSQL"]
     end
 
-    %% Flux principaux
-    App -->|1. Demande Presigned URL| Server
-    Server -->|2. Génère Presigned URL| App
-    App -->|3. Upload direct<br>Vidéo ou Photo| S3
-    App -->|4. Notifie upload terminé| Server
-    Server -->|5. Publie le job| RMQ
+    %% Flux de communication (1 à 12)
+    App -->|1. Demande Presigned<br/>URL| API
+    API -->|2. Génère Presigned URL| S3
+    App -->|3. Upload direct (Vidéo ou<br/>Photo)| S3
+    App -->|4. Notifie upload terminé| API
+    API -->|5. Publie le job| RMQ
 
-    RMQ -->|6a. Job d'analyse de pose| P1_Job
-    RMQ -->|6b. Job de mode fantôme| P2_Job
+    RMQ -->|6a. Job d'analyse de pose<br/>(vidéo de grimpe)| ExtSkel
+    ExtSkel -->|Récupère la vidéo| S3
+    GenCons -->|7a. Stocke conseils (JSON)| PG
+    GenCons -->|8a. Publie événement<br/>terminé| RMQ
 
-    P1_Gen -->|7a. Stocke conseils JSON| DB
-    P2_Ghost -->|7b. Stocke fantôme JSON| DB
+    RMQ -->|6b. Job de mode fantôme<br/>(photo de mur)| ExtPrises
+    ExtPrises -->|Récupère la photo| S3
+    GenFantome -->|7b. Stocke fantôme (JSON)| PG
+    GenFantome -->|8b. Publie événement<br/>terminé| RMQ
 
-    P1_Gen -->|8a. Publie événement terminé| RMQ
-    P2_Ghost -->|8b. Publie événement terminé| RMQ
-
-    RMQ -->|9. Notifie résultat prêt| Server
-    Server -->|10. Notification WebSocket| App
-    App -->|11. Récupère l'analyse JSON| Server
-    App -->|12. Lit les données| DB
+    RMQ -->|9. Notifie résultat prêt| API
+    API -->|10. Notification WebSocket| App
+    App -->|11. Récupère l'analyse<br/>(JSON)| API
+    API -->|12. Lit les données| PG
 ```
