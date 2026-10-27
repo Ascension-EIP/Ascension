@@ -9,12 +9,12 @@ order:
   - beta-test-plan
   - acceptance-test-plan
   - infrastructure-needs
+  - eip-objectives-delivery
   - memo
   - rncp
   - prototype-pool
   - accessibility-compliance
   - folder-files
-  - eip-objectives-delivery
 ---
 
 :::success
