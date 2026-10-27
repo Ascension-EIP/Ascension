@@ -14,7 +14,7 @@ order:
   - 26-08-31
   - 26-09-07
   - 26-09-14
-  - 26
+  - 26-09
   - Untitled
   - Untitled (2)
   - Untitled (3)
