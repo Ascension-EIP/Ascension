@@ -14,7 +14,7 @@ order:
   - prototype-pool
   - accessibility-compliance
   - folder-files
-  - eip-objective
+  - eip-objectives-delivery
 ---
 
 :::success
