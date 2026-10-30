@@ -27,7 +27,7 @@
 
 Ascension is a mobile application that analyzes climbing videos using computer vision and AI to deliver concrete, objective feedback on technique — the kind of feedback that usually requires a professional coach standing next to you.
 
-Film yourself on the wall. Upload the video. Get a biomechanical breakdown of your movement, joint-by-joint coaching advice, and an optional ghost overlay comparing your path to the optimal line for your morphology.
+Film yourself on the wall. Upload the video. Get a biomechanical breakdown of your movement, joint-by-joint coaching advice, or photograph an empty wall to get a step-by-step Ghost Mode guide to climb the wall tailored to your morphology.
 
 **The problem we solve:** Professional climbing coaching is expensive (50 €/hour), subjective, and hard to access. Most climbers train without real feedback and only correct bad habits when they plateau or get injured. Ascension makes expert-level analysis available to any climber — from beginner to competition level — at a fraction of the cost.
 
@@ -41,7 +41,7 @@ Film yourself on the wall. Upload the video. Get a biomechanical breakdown of yo
 | **Video Analysis & Feedback** | Objective climb analysis from video with key movement breakdowns | MVP -> BTP |
 | **Skeleton Extraction (2D/3D)** | 33-point pose estimation (MediaPipe) in 2D, moving to 3D pose AI | MVP -> ATP |
 | **Global Score & Progress** | Session-by-session technical scores and long-term progress metrics | BTP |
-| **Ghost Mode (Comparison & Photo)** | Optimal path overlay on video or wall photo based on user morphology | BTP -> ATP |
+| **Ghost Mode** | Step-by-step movement guide computed from an empty route photo and user morphology | BTP -> ATP |
 | **Hold Detection & Analysis** | Automatic hold qualification and contouring with manual fallback | ATP |
 | **Interactive 3D Experience** | Interactive 3D scene (orbit, pan, zoom) for movement inspection | ATP |
 | **Targeted Coaching Advice** | Contextualized actionable technical feedback powered by LLM (Gemini API) | BTP |

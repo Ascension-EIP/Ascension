@@ -103,6 +103,7 @@ graph TB
     style PG_Replica fill:#f0f0f0
     style RabbitMQ fill:#ffe1e1
     style MinIO fill:#e1ffe1
+
 ```
 
 ---
@@ -120,10 +121,7 @@ graph TB
 | **Domain** | DNS | `.com` domain | 1€/month (12€/year) |
 | **SSL** | TLS Certificates | Let's Encrypt via Cloudflare | 0€ |
 | **Monitoring** | Prometheus + Grafana + Loki | Self-hosted on Srv-API | 0€ |
-|
- |
-
- | **Total (MVP)** | **96€/month** |
+|  |  | **Total (MVP)** | **96€/month** |
 
 ### GPU Machine (AI Workers — Optional Upgrade)
 
@@ -167,6 +165,7 @@ graph LR
         Workers --> MinIO[MinIO]
         Workers --> DB
     end
+
 ```
 
 ### Firewall Rules
@@ -183,6 +182,7 @@ sudo ufw allow 443/tcp
 # No need to expose PostgreSQL, RabbitMQ, or MinIO externally
 
 sudo ufw enable
+
 ```
 
 ---
@@ -403,6 +403,7 @@ volumes:
   prometheus_data:
   loki_data:
   grafana_data:
+
 ```
 
 ### Nginx Configuration
@@ -452,6 +453,7 @@ server {
         deny all;
     }
 }
+
 ```
 
 ### MinIO Lifecycle Policy
@@ -473,12 +475,14 @@ Create `lifecycle.json` (auto-delete unsaved videos after 7 days):
     }
   ]
 }
+
 ```
 
 Apply:
 
 ```bash
 mc ilm import myminio/ascension-production < lifecycle.json
+
 ```
 
 ### Environment Variables
@@ -510,6 +514,7 @@ GRAFANA_PASSWORD=<STRONG_PASSWORD>
 
 # Environment
 ENVIRONMENT=production
+
 ```
 
 ---
@@ -527,6 +532,7 @@ docker build -t ascension/api:v${VERSION} \
 
 # Build Worker image
 docker build -t ascension/worker:v${VERSION} ./apps/ai
+
 ```
 
 ### 2\. Push to Container Registry
@@ -539,6 +545,7 @@ docker push your-registry/ascension-api:v${VERSION}
 
 docker tag ascension/worker:v${VERSION} your-registry/ascension-worker:v${VERSION}
 docker push your-registry/ascension-worker:v${VERSION}
+
 ```
 
 ### 3\. Deploy to Hetzner VPS
@@ -557,6 +564,7 @@ docker tag your-registry/ascension-ai-worker:v${VERSION} ascension/ai-worker:lat
 
 # Restart services (zero-downtime with health checks)
 docker-compose --profile prod up -d --no-deps server ai-worker
+
 ```
 
 ### 4\. Database Migrations
@@ -565,6 +573,7 @@ In Go, database migrations are automatically run by the server on startup when t
 
 ```bash
 docker-compose logs api
+
 ```
 
 ---
@@ -602,6 +611,7 @@ jobs:
 
       - name: Run affected lint
         run: moon run :lint --affected
+
 ```
 
 ### Production Deployment
@@ -664,6 +674,7 @@ jobs:
           script: |
             sleep 10
             curl -f http://localhost:8080/healthz || exit 1
+
 ```
 
 ---
@@ -689,6 +700,7 @@ sudo dpkg-reconfigure -plow unattended-upgrades
 # Fail2Ban
 sudo apt install fail2ban
 sudo systemctl enable fail2ban
+
 ```
 
 ### Secrets Management
@@ -700,6 +712,7 @@ All secrets are stored in `.env` files on the server (never committed to Git):
 openssl rand -hex 32  # For JWT_SECRET
 openssl rand -hex 32  # For POSTGRES_PASSWORD
 openssl rand -hex 32  # For MINIO_ROOT_PASSWORD
+
 ```
 
 Secrets are injected into containers via Docker Compose `env_file` directive.
@@ -750,6 +763,7 @@ scrape_configs:
   - job_name: "node"
     static_configs:
       - targets: ["node-exporter:9100"]
+
 ```
 
 ### Grafana Data Sources
@@ -794,6 +808,7 @@ func main() {
 	p.Use(r)
 	// ...
 }
+
 ```
 
 ---
@@ -814,6 +829,7 @@ docker-compose exec -T db pg_dump -U ascension ascension_production \
 
 # Keep last 7 daily backups
 find /backups -name "backup_*.sql.gz" -mtime +7 -delete
+
 ```
 
 Cron setup:
@@ -821,6 +837,7 @@ Cron setup:
 ```bash
 crontab -e
 # 0 3 * * * /opt/ascension/backup.sh
+
 ```
 
 **RPO (Recovery Point Objective)**: < 15 minutes (via WAL archiving) **RTO (Recovery Time Objective)**: < 2 hours (restore + restart services)
@@ -832,6 +849,7 @@ MinIO uses distributed mode with data redundancy. Additional backups to Hetzner 
 ```bash
 # Sync MinIO data to backup storage
 mc mirror local/ascension-production backup/ascension-production --overwrite
+
 ```
 
 ### Recovery Procedures

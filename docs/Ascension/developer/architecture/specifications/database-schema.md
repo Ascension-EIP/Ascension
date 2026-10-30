@@ -42,9 +42,9 @@ The migrations in `apps/server/internal/outbound/postgres/migrations/` (migratio
 | F01 Morphological profile | `user_profiles`, `user_body_constraints` |
 | F02 / F03 Video analysis and skeleton | `videos`, `analyses` |
 | F04 Score and progression | `climbing_sessions`, `analysis_scores` |
-| F05 Ghost comparison | `comparisons` |
+| F05 Video analysis comparison | `comparisons` |
 | F06 Hold analysis | `routes`, `holds` |
-| F07 Ghost without climbing | `routes`, `holds`, `ghosts`, `ghost_holds` |
+| F07 Ghost Mode | `routes`, `holds`, `ghosts`, `ghost_holds` |
 | F08 3D mobile experience | `analyses` (type `3d`) |
 | F09 Personalised advice | `analyses.hints` |
 | F10 Coach and training programs | `goals`, `training_programs`, `training_program_sessions`, `exercises`, `training_logs` |
@@ -102,6 +102,7 @@ erDiagram
 
     SUBSCRIPTION_PLANS ||--o{ SUBSCRIPTIONS : priced_by
     SUBSCRIPTIONS ||--o{ SUBSCRIPTION_EVENTS : emits
+
 ```
 
 Summary: `users` is the root of every branch. The video branch (`climbing_sessions` → `videos` → `analyses` → `analysis_scores`) holds the biomechanical analysis. The route branch (`routes` → `holds` → `ghosts`) holds the Ghost Mode without climbing, and `comparisons` joins both branches for the Ghost Mode in comparison. The coaching branch (`goals` → `training_programs` → `training_program_sessions` → `exercises`, with `training_logs` for what was actually done) and the business branch (`subscription_plans` → `subscriptions` → `subscription_events`, `quota_usages`) are independent of the AI branches.
@@ -151,6 +152,7 @@ CREATE TYPE subscription_event_type AS ENUM (
     'payment_failed', 'canceled', 'expired'
 );
 CREATE TYPE tutorial_status AS ENUM ('not_started', 'in_progress', 'completed');
+
 ```
 
 Notes:
@@ -169,6 +171,7 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 ```
 
 Every table with an `updated_at` column attaches it with:
@@ -178,6 +181,7 @@ CREATE TRIGGER update_<table>_updated_at
     BEFORE UPDATE ON <table>
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
 ```
 
 The trigger statement is omitted from the table definitions below for brevity.
@@ -217,6 +221,7 @@ CREATE TABLE users (
 
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_users_status ON users(status);
+
 ```
 
 Business rules:
@@ -252,6 +257,7 @@ CREATE TABLE user_profiles (
     CONSTRAINT chk_user_profiles_level
         CHECK ((climbing_level IS NULL) = (grading_system IS NULL))
 );
+
 ```
 
 Business rules:
@@ -284,6 +290,7 @@ CREATE INDEX idx_user_body_constraints_user_id ON user_body_constraints(user_id)
 CREATE UNIQUE INDEX uq_user_body_constraints_active
     ON user_body_constraints(user_id, zone)
     WHERE ended_at IS NULL;
+
 ```
 
 Business rules:
@@ -311,6 +318,7 @@ CREATE TABLE sessions (
 
 CREATE INDEX idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX idx_sessions_expires_at ON sessions(expires_at);
+
 ```
 
 Business rules:
@@ -337,6 +345,7 @@ CREATE TABLE tutorial_progress (
     CONSTRAINT chk_tutorial_progress_completed
         CHECK (status <> 'completed' OR completed_at IS NOT NULL)
 );
+
 ```
 
 Business rules:
@@ -370,6 +379,7 @@ CREATE TABLE gyms (
 
 CREATE INDEX idx_gyms_city ON gyms(country_code, city);
 CREATE INDEX idx_gyms_owner_user_id ON gyms(owner_user_id);
+
 ```
 
 Business rules:
@@ -415,6 +425,7 @@ CREATE TABLE climbing_sessions (
 
 CREATE INDEX idx_climbing_sessions_user_started ON climbing_sessions(user_id, started_at DESC);
 CREATE INDEX idx_climbing_sessions_gym_id ON climbing_sessions(gym_id);
+
 ```
 
 Business rules:
@@ -451,6 +462,7 @@ CREATE TABLE videos (
 CREATE INDEX idx_videos_user_created ON videos(user_id, created_at DESC);
 CREATE INDEX idx_videos_climbing_session_id ON videos(climbing_session_id);
 CREATE INDEX idx_videos_expiry ON videos(expires_at) WHERE retained = FALSE;
+
 ```
 
 Business rules:
@@ -490,6 +502,7 @@ CREATE TABLE analyses (
 
 CREATE INDEX idx_analyses_video_created ON analyses(video_id, created_at DESC);
 CREATE INDEX idx_analyses_status ON analyses(status) WHERE status IN ('pending', 'processing', 'generating_hints');
+
 ```
 
 Business rules:
@@ -520,6 +533,7 @@ Business rules:
     }
   ]
 }
+
 ```
 
 For `type = '3d'`, `landmarks` values are metric 3D coordinates and the object carries the fields produced by the 3D pipeline (`fps`, `width`, `height` are always present).
@@ -543,6 +557,7 @@ For `type = '3d'`, `landmarks` values are metric 3D coordinates and the object c
   "model": "gemini-2.5-pro",
   "generated_at": "2026-09-18T10:12:00Z"
 }
+
 ```
 
 `category` uses the values of the `focus_area` enum. `priority` is 1 (highest) to 5.
@@ -568,6 +583,7 @@ CREATE TABLE analysis_scores (
         endurance_score BETWEEN 0 AND 100
     )
 );
+
 ```
 
 Business rules:
@@ -579,7 +595,7 @@ Business rules:
 
 ## 7\. Routes, Holds and Ghost Mode
 
-Recommended split: the route photo is its own entity (`routes`), because it has a life independent of any video (F07 works without climbing). Holds belong to the route. A ghost is a computed path on a route for a given user morphology. A comparison joins a ghost with a video analysis (F05). All storage references are S3 object keys; the bucket is a configuration value and never appears in the schema.
+Recommended split: the route photo is its own entity (`routes`), because it has a life independent of any video. Holds belong to the route. A ghost is a computed path on a route for a given user morphology, producing step-by-step guidance images (F07). A comparison joins two video analyses between climbers/sessions (F05). All storage references are S3 object keys; the bucket is a configuration value and never appears in the schema.
 
 ### 7.1 `routes`
 
@@ -607,6 +623,7 @@ CREATE TABLE routes (
 
 CREATE INDEX idx_routes_user_created ON routes(user_id, created_at DESC);
 CREATE INDEX idx_routes_gym_id ON routes(gym_id);
+
 ```
 
 Business rules:
@@ -644,6 +661,7 @@ CREATE TABLE holds (
 
 CREATE INDEX idx_holds_route_id ON holds(route_id);
 CREATE INDEX idx_holds_corrected ON holds(route_id) WHERE corrected_at IS NOT NULL;
+
 ```
 
 Business rules:
@@ -655,7 +673,7 @@ Business rules:
 
 ### 7.3 `ghosts`
 
-Optimal movement path computed for a route and a user morphology (F05, F07). Same job lifecycle as `analyses`.
+Optimal movement path computed for a route and a user morphology (F07). Same job lifecycle as `analyses`.
 
 ```sql
 CREATE TABLE ghosts (
@@ -682,12 +700,13 @@ CREATE TABLE ghosts (
 
 CREATE INDEX idx_ghosts_route_created ON ghosts(route_id, created_at DESC);
 CREATE INDEX idx_ghosts_user_id ON ghosts(user_id);
+
 ```
 
 Business rules:
 
 - `morphology` is a snapshot of `user_profiles` and active `user_body_constraints` at request time, so the ghost stays reproducible.
-- `path` is a list of steps in image pixel coordinates: `{"steps": [{"step": 1, "left_hand": {"hold_id": "...", "x": 100, "y": 200}, "right_hand": {...}, "left_foot": {...}, "right_foot": {...}, "center_of_mass": {"x": 110, "y": 275}}]}`.
+- `path` is a list of steps with step image references and move details: `{"steps": [{"step": 1, "image_key": "ghosts/uuid/step_1.jpg", "hold_id": "uuid", "action": "Right hand to hold #4", "center_of_mass": {"x": 110, "y": 275}}]}`.
 - Ghost Mode is a premium feature; the quota check happens in the API before the row is created.
 
 ### 7.4 `ghost_holds`
@@ -704,6 +723,7 @@ CREATE TABLE ghost_holds (
 );
 
 CREATE INDEX idx_ghost_holds_hold_id ON ghost_holds(hold_id);
+
 ```
 
 Business rules:
@@ -712,24 +732,24 @@ Business rules:
 
 ### 7.5 `comparisons`
 
-Comparison of a video analysis with a ghost (F05). Same job lifecycle as `analyses`.
+Comparison of two climbing video analyses between climbers or sessions (F05). Same job lifecycle as `analyses`.
 
 ```sql
 CREATE TABLE comparisons (
-    id                  UUID PRIMARY KEY DEFAULT uuidv7(),
-    analysis_id         UUID NOT NULL REFERENCES analyses(id) ON DELETE CASCADE,
-    ghost_id            UUID NOT NULL REFERENCES ghosts(id) ON DELETE CASCADE,
-    status              job_status NOT NULL DEFAULT 'pending',
-    progress            SMALLINT NOT NULL DEFAULT 0,
-    similarity_score    NUMERIC(5, 2),
-    efficiency_score    NUMERIC(5, 2),
-    metrics             JSONB,
-    error               TEXT,
-    processing_time_ms  INTEGER,
-    started_at          TIMESTAMPTZ,
-    completed_at        TIMESTAMPTZ,
-    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    id                   UUID PRIMARY KEY DEFAULT uuidv7(),
+    base_analysis_id     UUID NOT NULL REFERENCES analyses(id) ON DELETE CASCADE,
+    compared_analysis_id UUID NOT NULL REFERENCES analyses(id) ON DELETE CASCADE,
+    status               job_status NOT NULL DEFAULT 'pending',
+    progress             SMALLINT NOT NULL DEFAULT 0,
+    similarity_score     NUMERIC(5, 2),
+    efficiency_score     NUMERIC(5, 2),
+    metrics              JSONB,
+    error                TEXT,
+    processing_time_ms   INTEGER,
+    started_at           TIMESTAMPTZ,
+    completed_at         TIMESTAMPTZ,
+    created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     CONSTRAINT chk_comparisons_progress CHECK (progress BETWEEN 0 AND 100),
     CONSTRAINT chk_comparisons_scores CHECK (
@@ -740,13 +760,14 @@ CREATE TABLE comparisons (
         CHECK (status <> 'completed' OR (metrics IS NOT NULL AND completed_at IS NOT NULL))
 );
 
-CREATE INDEX idx_comparisons_analysis_id ON comparisons(analysis_id);
-CREATE INDEX idx_comparisons_ghost_id ON comparisons(ghost_id);
+CREATE INDEX idx_comparisons_base_analysis_id ON comparisons(base_analysis_id);
+CREATE INDEX idx_comparisons_compared_analysis_id ON comparisons(compared_analysis_id);
+
 ```
 
 Business rules:
 
-- `metrics` holds the frame-aligned deviations rendered as the ghost overlay: `{"alignment": {"offset_ms": 350}, "deviations": [{"frame": 45, "timestamp_ms": 1500, "limb": "left_hand", "distance_px": 15.5, "note": "Hand reached too high"}]}`.
+- `metrics` holds the frame-aligned comparison differences between climber videos: `{"differences": [{"frame": 45, "timestamp_ms": 1500, "limb": "left_arm", "difference": 15.5, "note": "Higher elbow flare"}]}`.
 - `similarity_score` and `efficiency_score` are promoted to columns for progression charts.
 
 ---
@@ -781,6 +802,7 @@ CREATE TABLE goals (
 
 CREATE INDEX idx_goals_user_id ON goals(user_id);
 CREATE UNIQUE INDEX uq_goals_active ON goals(user_id) WHERE status = 'active';
+
 ```
 
 Business rules:
@@ -813,6 +835,7 @@ CREATE TABLE training_programs (
 
 CREATE INDEX idx_training_programs_author_user_id ON training_programs(author_user_id);
 CREATE UNIQUE INDEX uq_training_programs_active ON training_programs(goal_id) WHERE status = 'active';
+
 ```
 
 Business rules:
@@ -841,6 +864,7 @@ CREATE TABLE training_program_sessions (
     CONSTRAINT chk_training_program_sessions_day CHECK (day_of_week BETWEEN 1 AND 7),
     CONSTRAINT uq_training_program_sessions_slot UNIQUE (program_id, week_number, day_of_week)
 );
+
 ```
 
 Business rules:
@@ -868,6 +892,7 @@ CREATE TABLE exercises (
 
     CONSTRAINT uq_exercises_position UNIQUE (program_session_id, position)
 );
+
 ```
 
 Business rules:
@@ -899,6 +924,7 @@ CREATE TABLE training_logs (
 CREATE INDEX idx_training_logs_user_performed ON training_logs(user_id, performed_on DESC);
 CREATE INDEX idx_training_logs_program_session_id ON training_logs(program_session_id);
 CREATE INDEX idx_training_logs_climbing_session_id ON training_logs(climbing_session_id);
+
 ```
 
 Business rules:
@@ -933,6 +959,7 @@ CREATE UNIQUE INDEX uq_friendships_pair
     ON friendships(LEAST(requester_id, addressee_id), GREATEST(requester_id, addressee_id));
 CREATE INDEX idx_friendships_addressee_pending
     ON friendships(addressee_id) WHERE status = 'pending';
+
 ```
 
 Business rules:
@@ -956,6 +983,7 @@ CREATE TABLE follows (
 );
 
 CREATE INDEX idx_follows_followed_id ON follows(followed_id);
+
 ```
 
 Business rules:
@@ -1002,6 +1030,7 @@ CREATE TABLE subscription_plans (
 
     CONSTRAINT chk_subscription_plans_price CHECK (price_cents >= 0)
 );
+
 ```
 
 Seed data:
@@ -1039,6 +1068,7 @@ CREATE UNIQUE INDEX uq_subscriptions_current
     ON subscriptions(user_id) WHERE status IN ('trialing', 'active', 'past_due');
 CREATE INDEX idx_subscriptions_period_end ON subscriptions(current_period_end)
     WHERE status IN ('trialing', 'active', 'past_due');
+
 ```
 
 Business rules:
@@ -1068,6 +1098,7 @@ CREATE TABLE subscription_events (
 CREATE INDEX idx_subscription_events_user_occurred ON subscription_events(user_id, occurred_at DESC);
 CREATE INDEX idx_subscription_events_type_occurred ON subscription_events(type, occurred_at DESC);
 CREATE INDEX idx_subscription_events_subscription_id ON subscription_events(subscription_id);
+
 ```
 
 Business rules:
@@ -1091,6 +1122,7 @@ CREATE TABLE quota_usages (
     CONSTRAINT chk_quota_usages_period CHECK (period_start = DATE_TRUNC('month', period_start)::DATE),
     CONSTRAINT chk_quota_usages_counts CHECK (analyses_count >= 0 AND ghosts_count >= 0)
 );
+
 ```
 
 Business rules:
@@ -1136,6 +1168,7 @@ SELECT cron.schedule('clean-old-quota-usages', '0 3 1 * *', $$
     DELETE FROM quota_usages
      WHERE period_start < DATE_TRUNC('month', NOW()) - INTERVAL '24 months';
 $$);
+
 ```
 
 Storage objects are not deleted by the database queries alone. When `clean-abandoned-uploads` or `clean-expired-videos` prunes rows, the Go server/cron worker reconciliation job or S3 bucket lifecycle rules purge the corresponding object keys from MinIO/S3.
@@ -1151,6 +1184,7 @@ SELECT DISTINCT ON (type) *
   FROM analyses
  WHERE video_id = $1 AND status = 'completed'
  ORDER BY type, created_at DESC;
+
 ```
 
 Remaining quota for a user this month:
@@ -1165,6 +1199,7 @@ SELECT COALESCE(p.monthly_analysis_quota, f.monthly_analysis_quota) - COALESCE(q
   LEFT JOIN quota_usages q
          ON q.user_id = u.id AND q.period_start = DATE_TRUNC('month', NOW())::DATE
  WHERE u.id = $1 AND f.code = 'freemium';
+
 ```
 
 Weekly progression curve (F04):
@@ -1179,6 +1214,7 @@ SELECT DATE_TRUNC('week', started_at)::DATE AS week,
  WHERE user_id = $1 AND scored_at IS NOT NULL AND started_at >= NOW() - INTERVAL '12 weeks'
  GROUP BY week
  ORDER BY week;
+
 ```
 
 Route with its current holds and latest ghost:
@@ -1191,6 +1227,7 @@ SELECT r.*,
          ORDER BY g.created_at DESC LIMIT 1) AS ghost_path
   FROM routes r
  WHERE r.id = $1;
+
 ```
 
 Content visible to a viewer (friend check):
@@ -1214,6 +1251,7 @@ SELECT v.*
          WHERE b.status = 'blocked'
            AND LEAST(b.requester_id, b.addressee_id) = LEAST($1, $2)
            AND GREATEST(b.requester_id, b.addressee_id) = GREATEST($1, $2));
+
 ```
 
 ---

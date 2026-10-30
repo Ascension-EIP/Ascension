@@ -4,7 +4,7 @@ language: 'dart'
 
 project:
   name: 'mobile'
-  description: 'Flutter mobile app for Ascension'
+  description: 'Clean Flutter mobile app for Ascension (Feature-First architecture)'
 
 tasks:
   install:
@@ -47,6 +47,15 @@ tasks:
     deps:
       - 'install'
 
+  build-runner:
+    command: 'dart'
+    args: ['run', 'build_runner', 'build', '--delete-conflicting-outputs']
+    inputs:
+      - 'lib/**/*'
+      - 'pubspec.yaml'
+    deps:
+      - 'install'
+
   build-android:
     command: 'flutter'
     args: ['build', 'apk', '--dart-define=BACKEND_URL=${BACKEND_URL}']
@@ -78,7 +87,7 @@ tasks:
       envFile: true
     deps:
       - 'lint'
-
+  
   build:
     command: 'bash'
     args: ['scripts/build.sh']
@@ -99,7 +108,7 @@ tasks:
 
   test:
     command: 'flutter'
-    args: ['test']
+    args: ['test', '--reporter', 'expanded']
     inputs:
       - 'lib/**/*'
       - 'test/**/*'
@@ -107,6 +116,65 @@ tasks:
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'analysis_options.yaml'
+    deps:
+      - 'install'
+
+  test-goldens:
+    command: 'flutter'
+    args: ['test', 'test/goldens', '--reporter', 'expanded']
+    inputs:
+      - 'lib/**/*'
+      - 'test/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+    deps:
+      - 'install'
+
+  update-goldens:
+    command: 'flutter'
+    args: ['test', '--update-goldens', 'test/goldens', '--reporter', 'expanded']
+    inputs:
+      - 'lib/**/*'
+      - 'test/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+    deps:
+      - 'install'
+
+  coverage:
+    command: 'bash'
+    args: ['scripts/coverage.sh']
+    inputs:
+      - 'lib/**/*'
+      - 'test/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'scripts/coverage.sh'
+    outputs:
+      - 'coverage'
+    deps:
+      - 'install'
+
+  coverage-open:
+    command: 'bash'
+    args: ['scripts/coverage.sh', '--open']
+    inputs:
+      - 'lib/**/*'
+      - 'test/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'scripts/coverage.sh'
+    outputs:
+      - 'coverage'
+    deps:
+      - 'install'
+
+  widgetbook:
+    command: 'flutter'
+    args: ['run', '-t', 'widgetbook/main.dart']
+    options:
+      persistent: true
+      cache: false
     deps:
       - 'install'
 

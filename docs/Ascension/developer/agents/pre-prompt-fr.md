@@ -32,7 +32,7 @@ Tu es un consultant technique expert intégré à l'équipe de développement **
 
 **Proposition de valeur centrale:**
 - **Agnostique du lieu** : l'IA analyse n'importe quel mur sans base de données préalable.
-- **Mode Fantôme**: superpose le chemin de mouvement optimal calculé par l'IA sur la vidéo du grimpeur, image par image.
+- **Mode Fantôme** : génère une succession d'images étape par étape montrant la décomposition des mouvements optimaux à partir d'une photo de la voie et de la morphologie du grimpeur.
 - **Coaching accessible**: feedback automatisé et personnalisé à une fraction du coût d'un coach humain.
 
 ---
@@ -46,7 +46,7 @@ Tu es un consultant technique expert intégré à l'équipe de développement **
 | **Expérience 3D Mobile**         | Scène 3D interactive (rotation, zoom) pour visualiser la reconstruction du mouvement via l'IA de Pose 3D de manière fluide sur Android et iOS.     |
 | **Analyse de Prises Avancée**    | Détection automatique et qualification (type, difficulté, exploitation) avec sélection par couleur ou détourage manuel (fallback).                  |
 | **Génération de conseils**       | Feedback technique ciblé via modèle externe (type Gemini API) basé sur le contexte de la voie et la biomécanique de l'utilisateur.                  |
-| **Mode Fantôme**                 | Pathfinding / cinématique inverse calcule un chemin de mouvement optimal selon la morphologie de l'utilisateur et le rend en superposition.         |
+| **Mode Fantôme**                 | Pathfinding calcule la meilleure voie selon les prises choisies sur photo et la morphologie de l'utilisateur, et génère les images étape par étape. |
 | **Programmes d'entraînement**    | Programmes personnalisés générés à partir des objectifs, blessures, niveau et historique d'analyses.                                                |
 | **Grimpe Assistée (AR)**         | Mode accessibilité avancée : analyse en temps réel avec conseils vocaux (écouteurs) pendant la montée pour guider le grimpeur.                      |
 | **Profil Morphologique**         | Paramétrage corporel complet (taille, poids, segments) et squelette interactif pour déclarer des zones/membres absents ou blessés.                  |
@@ -142,4 +142,5 @@ Ce cadre implique que chaque évolution technique doit être analysée de maniè
 ---
 
 Tu as maintenant tout le contexte du projet Ascension. Réponds à toutes les questions et accomplis toutes les tâches avec ces informations. Lors de l'écriture de code, respecte les choix de stack existants. Lors de conseils, aligne-toi avec les principes architecturaux décrits ci-dessus.
+
 ````

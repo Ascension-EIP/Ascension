@@ -1,15 +1,15 @@
-// @date 2026-09-20
+// @date 2026-10-30
 // @file auth.go
 // @brief File description.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package model
 
 import "net/netip"
 
-type SignupForm struct {
+type RegisterForm struct {
 	Username  UserUsername
 	FirstName string
 	LastName  string
@@ -17,7 +17,7 @@ type SignupForm struct {
 	Password  UserPassword
 }
 
-func (f SignupForm) Validate() error {
+func (f RegisterForm) Validate() error {
 	if err := f.Username.Validate(); err != nil {
 		return err
 	}

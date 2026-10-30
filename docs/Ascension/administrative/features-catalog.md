@@ -39,9 +39,9 @@ Ce document distingue aussi ce qui est :
 | F02 | Analyse de grimpe (vidéo -> feedback) | Le grimpeur ne voit pas ses erreurs en direct | MVP -> BTP |
 | F03 | Extraction de squelette et biomécanique | Manque de mesures objectives sur le mouvement | MVP -> ATP |
 | F04 | Score global et progression | Difficulté à suivre ses progrès dans le temps | BTP |
-| F05 | Mode Fantôme en comparaison | Difficulté à visualiser une bêta optimale pendant la grimpe | BTP -> ATP |
+| F05 | Comparaison de grimpe | Difficulté à comparer sa technique à d'autres grimpeurs | BTP -> ATP |
 | F06 | Analyse des prises | Difficulté à lire une voie de manière fiable | ATP |
-| F07 | Mode Fantôme sans grimpe | Difficulté à préparer une voie avant essai réel | BTP -> ATP |
+| F07 | Mode Fantôme (bêta pas à pas sur photo) | Difficulté à lire une voie et visualiser les mouvements à réaliser avant l'essai | BTP -> ATP |
 | F08 | Expérience 3D mobile | Les résultats techniques restent abstraits | ATP |
 | F09 | Conseils techniques personnalisés | Les retours sont trop génériques | BTP |
 | F10 | Coach perso / routines | Manque de plan de progression concret | BTP |
@@ -61,8 +61,8 @@ Ce document distingue aussi ce qui est :
 3. L'app envoie la vidéo pour une analyse IA asynchrone.
 4. Le système extrait les points du corps, calcule des indicateurs et génère un retour.
 5. L'utilisateur lit son score global et ses conseils techniques.
-6. Il peut comparer sa grimpe à un fantôme (trajectoire idéale), puis corriger sa trajectoire.
-7. Il peut aussi prendre en photo la voie pour détecter les prises, choisir les prises à utiliser et obtenir la bêta (trajectoire optimale).
+6. Il peut comparer sa montée à celle d'autres grimpeurs pour évaluer ses différences de technique.
+7. Il peut utiliser le Mode Fantôme : photographier une voie vide, sélectionner les prises et obtenir une suite d'images détaillant chaque mouvement étape par étape pour obtenir la bêta (trajectoire optimale).
 8. Dans les phases avancées, il reçoit des routines, partage ses progrès, et accède au coaching assisté.
 
 ---
@@ -206,33 +206,31 @@ Ce document distingue aussi ce qui est :
 
 ---
 
-### F05 - Mode Fantôme en comparaison
+### F05 - Comparaison de grimpe entre grimpeurs
 
 **But de la fonctionnalité**
 
-- Montrer visuellement le chemin de mouvement optimal (la bêta) en comparaison de la grimpe réelle.
+- Comparer visuellement et techniquement deux montées filmées (entre amis ou sessions) pour identifier les différences d'exécution.
 
 **Ce que l'utilisateur voit**
 
-- Une trajectoire fantôme superposée à sa vidéo.
-- Des écarts visibles entre son mouvement et le mouvement conseillé.
+- Une vue comparative des deux analyses vidéo.
+- Les écarts articulaires, de rythme et de posture entre les deux grimpeurs.
 
 **Parcours utilisateur simple**
 
-1. L'utilisateur prépare une analyse de voie.
-2. Le système calcule un trajet de référence.
-3. L'utilisateur lance la comparaison sur sa vidéo.
-4. Il relit les points critiques et ajuste sa technique.
+1. L'utilisateur sélectionne son analyse de grimpe.
+2. Il choisit une autre montée (session passée ou analyse d'un ami).
+3. Le système affiche la comparaison et les métriques d'écart.
 
 **Ce que le système fait en coulisse**
 
-- Calcul de trajectoire (pathfinding/cinématique inverse selon contexte).
-- Alignement temporel du fantôme avec la vidéo utilisateur.
-- Restitution des déviations utiles à la pédagogie.
+- Alignement temporel des séries de points clés 2D.
+- Calcul des écarts de posture et scores de similarité.
 
 **Valeur pour l'utilisateur**
 
-- Il comprend "quoi changer" concrètement, pas seulement "quoi corriger".
+- Comprendre concrètement ce qui différencie son exécution de celle d'un partenaire ou d'un essai réussi.
 
 **Niveau de maturité dans la roadmap**
 
@@ -275,37 +273,38 @@ Ce document distingue aussi ce qui est :
 
 ---
 
-### F07 - Mode Fantôme sans grimpe
+### F07 - Mode Fantôme (bêta pas à pas sur photo)
 
 **But de la fonctionnalité**
 
-- Montrer visuellement le chemin de mouvement optimal (la bêta) à partir d'une simple photo de la voie, sans besoin de grimper ou filmer.
+- Décomposer visuellement le chemin de mouvement optimal (la bêta optimale) à partir d'une photo de la voie, sans avoir besoin de grimper ni de filmer.
 
 **Ce que l'utilisateur voit**
 
-- L'outil de sélection des prises (automatique ou manuel) pour indiquer les prises utilisables.
-- Une trajectoire fantôme superposée à la photo de la voie.
+- L'outil de sélection des prises (automatique avec cases à cocher, ou manuel).
+- Une succession d'images (une image par étape) montrant chaque mouvement à effectuer.
 
 **Parcours utilisateur simple**
 
-1. L'utilisateur prend une photo de la voie.
-2. L'IA détecte les prises.
-3. L'utilisateur sélectionne les prises.
-4. Le système calcule et affiche la bêta optimale.
+1. L'utilisateur prend une photo de la voie (mur vide sans grimpeur).
+2. L'IA détecte automatiquement les prises, les catégorise par type et couleur, et l'utilisateur coche celles qu'il souhaite (ou les entoure manuellement).
+3. Le système récupère le profil morphologique du grimpeur.
+4. Le pathfinding calcule la meilleure voie et découpe la montée mouvement par mouvement.
+5. L'utilisateur consulte la suite d'images étape par étape pour préparer et réussir son ascension.
 
 **Ce que le système fait en coulisse**
 
-- Détection des prises et de leur qualité.
-- Calcul de trajectoire de référence en fonction des prises utilisables et du profil de l'utilisateur.
-- Restitution d'une bêta optimale sans besoin de grimper.
+- Détection et catégorisation des prises sur la photo.
+- Pathfinding morphologique adapté aux mensurations et contraintes corporelles.
+- Génération d'une image par étape avec le mouvement à exécuter.
 
 **Valeur pour l'utilisateur**
 
-- Il peut visualiser la bêta optimale avant même de grimper, ce qui l'aide à mieux préparer sa montée.
+- Déchiffrer et visualiser pas à pas comment résoudre la voie avant même de poser les mains sur le mur.
 
 **Niveau de maturité dans la roadmap**
 
-- MVP fonctionnel en BTP, version complète en ATP.
+- MVP fonctionnel en BTP (sélection manuelle des prises en mode custom), version complète en ATP (détection automatique et sélection par couleur).
 
 ---
 
@@ -639,7 +638,7 @@ Ce document distingue aussi ce qui est :
 ## Points qui font la valeur unique d'Ascension
 
 - **Agnostique du lieu**: fonctionne sur n'importe quel mur, sans base pré-remplie par salle.
-- **Mode Fantôme pédagogique**: comparaison visuelle directe entre grimpe réelle et trajectoire conseillée.
+- **Mode Fantôme pédagogique**: décomposition pas à pas des mouvements optimaux sur photo de voie selon la morphologie du grimpeur.
 - **Approche complète**: analyse, correction, entraînement, suivi, communauté.
 - **Accessibilité intégrée**: prise en compte de l'inclusion dès la conception.
 - **Architecture pragmatique**: pipeline asynchrone, rendu côté client, optimisation coût/performance.

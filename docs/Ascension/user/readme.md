@@ -26,7 +26,7 @@ Ascension equips climbers with next-generation coaching tools right from their m
 
 - **Objective Video Analysis:** Film any climb from your smartphone. The AI analyzes your posture, movement cadence, balance, and center-of-mass trajectory frame by frame.
 - **2D & 3D Skeleton Playback:** Visualize your movement reconstruction in 2D or explore your ascent inside an interactive 3D scene (orbit, zoom, pan).
-- **Ghost Mode:** Overlay an AI-computed optimal movement path directly onto your video or wall photo to compare your execution with the ideal beta for your body type.
+- **Ghost Mode:** Photograph an wall route, select the holds (or use automatic detection), and receive an AI-computed step-by-step image sequence breaking down the optimal beta for your morphology.
 - **Hold Detection & Qualification:** Automatically detect climbing holds, qualify their types (crimps, pinches, slopers, jugs), and evaluate hold usability.
 - **Adaptive Morphological Profiling:** Configure height, wingspan, weight, and declare injured or missing limbs so that movement recommendations adapt precisely to your physical reality.
 - **Targeted Training Routines:** Receive customized training programs designed around your grade progression, historical weaknesses, and recovery goals.
@@ -61,9 +61,9 @@ The following user guide modules are planned for this section:
 
 ### 4\. Master the Ghost Mode
 
-- Activating Ghost Mode on video recordings and route photos.
-- Comparing your real beta with the suggested optimal kinematic trajectory.
-- Leveraging Ghost Mode to decode tricky route crux moves.
+- Photographing an route and selecting usable holds (automatic detection or manual selection).
+- Computing your personalized pathfinding based on your body proportions.
+- Navigating through the step-by-step move images to decode tricky route crux sequences before climbing.
 
 ### 5\. Training Routines & Progression Tracking
 

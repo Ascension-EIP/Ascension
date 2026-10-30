@@ -36,7 +36,7 @@ Le modèle économique d'Ascension repose sur un système d'abonnement SaaS B2C 
 
 1. **Garantir l'accessibilité :** Permettre à tout grimpeur de tester et d'utiliser l'analyse biomécanique gratuitement sans barrière à l'entrée.
 2. **Couvrir les coûts d'infrastructure :** Répercuter fidèlement les coûts d'inférence GPU, de stockage vidéo S3 (MinIO) et de bande passante réseau à mesure que la fréquence d'utilisation augmente.
-3. **Valoriser les fonctionnalités à fort impact :** Réserver le Mode Fantôme (calcul de trajectoire optimale par cinématique inverse) et la priorité de traitement sur les workers IA aux utilisateurs investis dans leur progression.
+3. **Valoriser les fonctionnalités à fort impact :** Réserver le Mode Fantôme (calcul du chemin optimal par pathfinding et décomposition par étape sur photo) et la priorité de traitement sur les workers IA aux utilisateurs investis dans leur progression.
 
 ---
 
@@ -70,7 +70,7 @@ L'offre Freemium s'adresse aux grimpeurs occasionnels découvrant l'analyse vid�
 L'offre Premium à **20 € / mois** est pensée pour les grimpeurs réguliers (1 à 2 séances par semaine) qui souhaitent accélérer leur apprentissage grâce au retour visuel direct.
 
 - **Analyses vidéo :** 30 vidéos analysées par mois (soit environ 7 à 8 blocs ou voies analysés chaque semaine).
-- **Mode Fantôme :** 30 générations de parcours fantôme par mois, permettant de superposer la trajectoire optimale calculée par cinématique inverse sur la vidéo du grimpeur.
+- **Mode Fantôme :** 30 générations de parcours fantôme par mois, permettant d'obtenir la décomposition étape par étape des mouvements optimaux sur photo de voie.
 - **Routines d'entraînement :** Création et gestion illimitées de routines et programmes d'entraînement.
 - **Expérience utilisateur :** Aucune publicité, interface épurée dédiée à la pratique.
 - **File de traitement :** Traitement standard fiable.
@@ -80,7 +80,7 @@ L'offre Premium à **20 € / mois** est pensée pour les grimpeurs réguliers (
 L'offre Infinity à **30 € / mois** cible les compétiteurs, grimpeurs quotidiens, entraîneurs et passionnés exigeants ayant un volume d'ascensions élevé.
 
 - **Analyses vidéo :** 100 vidéos analysées par mois (large marge couvrant les séances quotidiennes et les essais multiples).
-- **Mode Fantôme :** 100 générations de trajectoires fantômes par mois.
+- **Mode Fantôme :** 100 générations de parcours fantômes par mois .
 - **Routines d'entraînement :** Création et gestion illimitées de routines.
 - **Priorité serveur :** Les requêtes d'analyse sont envoyées sur une file RabbitMQ haute priorité (`x-max-priority`), garantissant un traitement en tête de file par les workers GPU même en période de forte affluence.
 - **Expérience utilisateur :** Sans publicité.
@@ -96,7 +96,7 @@ Chaque analyse vidéo mobilise un pipeline lourd composé de :
 1. Détection de pose et squelettisation 2D (MediaPipe Pose, 33 points-clés par frame).
 2. Reconstruction et correction biomécanique 3D.
 3. Analyse des prises de la voie (OpenCV + PyTorch).
-4. Pour le Mode Fantôme : résolution cinématique inverse et recherche de chemin optimal.
+4. Pour le Mode Fantôme : détection/sélection des prises sur photo, pathfinding morphologique et génération des images d'étapes.
 
 Plafonner les quotas à **10 (Freemium)**, **30 (Premium)** et **100 (Infinity)** protège l'infrastructure contre les abus tout en garantissant des coûts d'inférence prévisibles et maîtrisés.
 

@@ -53,6 +53,7 @@ flowchart LR
     A -->|"Historic AGPLv3 license<br/>End of external contributions"| B
     B -->|"Transition to commercial model"| P
     B --> C
+
 ```
 
 *Figure 1: Evolution of MinIO between March and September 2026, highlighting the repository archival, proprietary pivot, and Ascension's migration decision.*

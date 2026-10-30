@@ -3,9 +3,9 @@
     "short_name": "Ascension",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0D1B2A",
-    "theme_color": "#00B5D3",
-    "description": "Ascension — Analyse biomécanique et suivi sportif intelligent.",
+    "background_color": "#09090B",
+    "theme_color": "#09090B",
+    "description": "A new Flutter project.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

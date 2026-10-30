@@ -47,6 +47,7 @@ graph TB
     style DB fill:#f0f0f0
     style RabbitMQ fill:#ffe1e1
     style MinIO fill:#e1ffe1
+
 ```
 
 ---
@@ -64,6 +65,7 @@ graph TB
    # Install on Linux
    curl -fsSL https://get.docker.com -o get-docker.sh
    sudo sh get-docker.sh
+
    ```
 2. **Docker Compose** (v2.0+)
    - Included with Docker Desktop on macOS/Windows
@@ -76,6 +78,7 @@ graph TB
    wget https://go.dev/dl/go1.27.1.linux-amd64.tar.gz
    sudo tar -C /usr/local -xzf go1.27.1.linux-amd64.tar.gz
    export PATH=$PATH:/usr/local/go/bin
+
    ```
 4. **Flutter SDK** (3.16+)
 
@@ -84,6 +87,7 @@ graph TB
    brew install flutter
 
    # Or download from https://docs.flutter.dev/get-started/install
+
    ```
 5. **uv** (Python package & environment manager)
 
@@ -139,6 +143,7 @@ Ascension/                  # Monorepo root
         ├── pubspec.yaml
         └── lib/
             └── main.dart
+
 ````
 
 **Why moonrepo instead of submodules?**
@@ -163,6 +168,7 @@ export PATH="$HOME/.moon/bin:$PATH"
 
 # Verify
 moon --version
+
 ```
 
 ### 2\. Clone Repository
@@ -171,6 +177,7 @@ moon --version
 # Simple clone — no --recursive needed
 git clone https://github.com/Ascension-EIP/Ascension.git
 cd Ascension
+
 ```
 
 **Verify the structure:**
@@ -187,6 +194,7 @@ Create `.env` file from template:
 
 ```bash
 cp .env.example .env
+
 ````
 
 Environment Variable Strategy
@@ -250,6 +258,7 @@ LOG_PRETTY=false
 PYTHONUNBUFFERED=1
 GEMINI_API_KEY=your_gemini_api_key_here
 GEMINI_MODEL=gemini-3.1-flash-lite
+
 ```
 
 ### 4\. Launch Infrastructure
@@ -258,6 +267,7 @@ Start all core infrastructure services:
 
 ```bash
 docker-compose up -d
+
 ```
 
 This launches:
@@ -270,6 +280,7 @@ Verify services are running:
 
 ```bash
 docker-compose ps
+
 ```
 
 Expected output:
@@ -279,6 +290,7 @@ NAME                 SERVICE      STATUS
 ascension-postgres   postgresql   running (healthy)
 ascension-rabbitmq   rabbitmq     running (healthy)
 ascension-minio      minio        running (healthy)
+
 ```
 
 ### 5\. Initialize Database
@@ -296,6 +308,7 @@ Option A: Using Docker (Production Profile)
 ```bash
 # From Ascension root directory
 docker-compose --profile prod up server -d
+
 ```
 
 Option B: Using moon (Faster Iteration)
@@ -303,6 +316,7 @@ Option B: Using moon (Faster Iteration)
 ```bash
 # From anywhere in the repo
 moon run server:dev
+
 ```
 
 Option C: Direct go run
@@ -310,6 +324,7 @@ Option C: Direct go run
 ```bash
 cd apps/server
 go run ./cmd/server
+
 ```
 
 Verify API is healthy:
@@ -317,6 +332,7 @@ Verify API is healthy:
 ```bash
 curl http://localhost:8080/healthz
 # Expected: 204 No Content
+
 ```
 
 ### 7\. Set Up AI Workers
@@ -326,6 +342,7 @@ Install Dependencies via moon
 ```bash
 moon run ai:setup
 moon run ai:install
+
 ```
 
 Common AI moon Tasks
@@ -337,6 +354,7 @@ moon run ai:dev
 moon run ai:build
 moon run ai:lint
 moon run ai:test
+
 ```
 
 Or manually:
@@ -345,12 +363,14 @@ Or manually:
 cd apps/ai
 # Sync dependencies with uv (creates venv + installs all packages)
 uv sync
+
 ```
 
 Download ML Models
 
 ```bash
 bash scripts/download-model.sh
+
 ```
 
 This downloads:
@@ -365,12 +385,14 @@ moon run ai:dev
 
 # Or directly
 cd apps/ai && uv run python src/worker.py
+
 ```
 
 Or using Docker:
 
 ```bash
 docker-compose up worker -d
+
 ```
 
 **Note**: For GPU support, see [GPU Setup](#gpu-setup-optional) below.
@@ -392,6 +414,7 @@ class ApiConfig {
   // For Android Emulator, use:
   // static const String baseUrl = 'http://10.0.2.2:8080';
 }
+
 ```
 
 Install Dependencies
@@ -403,6 +426,7 @@ moon run mobile:install
 # Or directly
 cd apps/mobile
 flutter pub get
+
 ```
 
 Run App
@@ -414,6 +438,7 @@ flutter run -d "iPhone 15 Pro"
 # Android Emulator (start emulator first)
 flutter emulator --launch <emulator_name>
 flutter run -d <device_id>
+
 ```
 
 ---
@@ -548,6 +573,7 @@ volumes:
 networks:
   ascension-network:
     name: ascension-network
+
 ```
 
 ---
@@ -560,6 +586,7 @@ Create `.up.sql` and `.down.sql` migration files under `apps/server/migrations/`
 
 ```bash
 migrate create -ext sql -dir apps/server/migrations -seq <migration_name>
+
 ```
 
 This creates `apps/server/migrations/<seq>_<migration_name>.up.sql` and `apps/server/migrations/<seq>_<migration_name>.down.sql`.
@@ -606,12 +633,14 @@ CREATE INDEX idx_videos_user_id ON videos(user_id);
 CREATE INDEX idx_videos_expires_at ON videos(expires_at) WHERE saved = FALSE;
 CREATE INDEX idx_analyses_video_id ON analyses(video_id);
 CREATE INDEX idx_analyses_status ON analyses(status);
+
 ```
 
 Migrations run automatically on server startup. You can also view logs to see if migrations applied successfully:
 
 ```bash
 docker-compose logs server
+
 ```
 
 ---
@@ -623,12 +652,13 @@ docker-compose logs server
 ```bash
 curl -i http://localhost:8080/healthz
 # Expected: HTTP/1.1 204 No Content
+
 ```
 
 ### 2\. User Registration
 
 ```bash
-curl -X POST http://localhost:8080/v1/auth/signup \
+curl -X POST http://localhost:8080/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "first_name": "Test",
@@ -637,6 +667,7 @@ curl -X POST http://localhost:8080/v1/auth/signup \
     "email": "test@example.com",
     "password": "SecurePass123!"
   }'
+
 ```
 
 ### 3\. Login
@@ -648,6 +679,7 @@ curl -X POST http://localhost:8080/v1/auth/login \
     "identifier": "test@example.com",
     "password": "SecurePass123!"
   }'
+
 ```
 
 Save the returned `access_token` and `refresh_token` for subsequent requests.
@@ -657,6 +689,7 @@ Save the returned `access_token` and `refresh_token` for subsequent requests.
 ```bash
 curl -X GET "http://localhost:8080/v1/videos/upload-url?content_type=video/mp4&size=102400" \
   -H "Authorization: Bearer <your_token>"
+
 ```
 
 ### 5\. Upload Video (Direct to MinIO)
@@ -667,6 +700,7 @@ Use the presigned `upload_url` from the previous step:
 curl -X PUT "<upload_url>" \
   --upload-file /path/to/your/video.mp4 \
   -H "Content-Type: video/mp4"
+
 ```
 
 ### 6\. Notify Upload Complete
@@ -674,6 +708,7 @@ curl -X PUT "<upload_url>" \
 ```bash
 curl -X PUT http://localhost:8080/v1/videos/upload-done/<video_id> \
   -H "Authorization: Bearer <your_token>"
+
 ```
 
 ### 7\. Start Analysis
@@ -687,6 +722,7 @@ curl -X POST http://localhost:8080/v1/analysis \
     "type": "2d",
     "visibility": "private"
   }'
+
 ```
 
 ### 8\. Poll for Results
@@ -694,6 +730,7 @@ curl -X POST http://localhost:8080/v1/analysis \
 ```bash
 curl http://localhost:8080/v1/analysis/<analysis_id> \
   -H "Authorization: Bearer <your_token>"
+
 ```
 
 ---
@@ -710,6 +747,7 @@ docker-compose logs -f
 docker-compose logs -f server
 docker-compose logs -f ai-worker
 docker-compose logs -f postgresql
+
 ```
 
 ### Restart Services
@@ -717,6 +755,7 @@ docker-compose logs -f postgresql
 ```bash
 docker-compose restart server
 docker-compose restart ai-worker
+
 ```
 
 ### Clean Database
@@ -724,12 +763,14 @@ docker-compose restart ai-worker
 ```bash
 docker-compose down -v  # WARNING: Deletes all data
 docker-compose up -d
+
 ```
 
 ### Access PostgreSQL
 
 ```bash
 docker-compose exec postgresql psql -U ascension -d ascension
+
 ```
 
 ```sql
@@ -737,6 +778,7 @@ docker-compose exec postgresql psql -U ascension -d ascension
 SELECT * FROM users;
 SELECT * FROM videos ORDER BY uploaded_at DESC LIMIT 10;
 SELECT * FROM analyses WHERE status = 'completed';
+
 ```
 
 ### Access RabbitMQ Management UI
@@ -784,6 +826,7 @@ curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.li
 
 sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
 sudo systemctl restart docker
+
 ```
 
 ### Enable GPU in Docker Compose
@@ -800,6 +843,7 @@ worker:
           - driver: nvidia
             count: 1
             capabilities: [gpu]
+
 ```
 
 ### Verify GPU Access
@@ -807,6 +851,7 @@ worker:
 ```bash
 docker-compose exec worker python -c "import torch; print(torch.cuda.is_available())"
 # Should print: True
+
 ```
 
 ---
@@ -821,6 +866,7 @@ lsof -i :8080
 
 # Kill process
 kill -9 <PID>
+
 ```
 
 ### Database Connection Refused
@@ -831,6 +877,7 @@ docker-compose logs db
 
 # Restart database
 docker-compose restart db
+
 ```
 
 ### Worker Not Processing Jobs
@@ -841,6 +888,7 @@ docker-compose logs worker
 
 # Verify RabbitMQ connection
 docker-compose exec worker python -c "import pika; c = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq')); print('Connected'); c.close()"
+
 ```
 
 ### MinIO Not Accessible
@@ -851,6 +899,7 @@ docker-compose logs minio
 
 # Verify bucket creation
 docker-compose exec minio mc ls myminio/
+
 ```
 
 ### Flutter Can't Connect to API
@@ -877,6 +926,7 @@ For faster iteration during development:
 
    ```bash
    moon run server:dev
+
    ```
 2. **Python Auto-reload**:
 
@@ -884,12 +934,14 @@ For faster iteration during development:
    cd apps/ai
    uv run python -m pip install watchdog
    uv run watchmedo auto-restart --patterns="*.py" --recursive -- python src/worker.py
+
    ```
 
    Or via moon:
 
    ```bash
    moon run ai:dev
+
    ```
 3. **Reduce Model Size**: Use quantized models for faster inference during development.
 

@@ -64,6 +64,7 @@ Instead of server-side video encoding, we return mathematical data:
 Video (50MB) → AI Processing → Enhanced Video (50MB) → Client
 Total bandwidth: 100MB
 Processing time: 45s + encoding (30s)
+
 ```
 
 **Our Approach**:
@@ -72,6 +73,7 @@ Processing time: 45s + encoding (30s)
 Video (50MB) → AI Processing → JSON (50KB) → Client renders overlay
 Total bandwidth: 50MB
 Processing time: 45s (no encoding)
+
 ```
 
 **Savings per video**:
@@ -106,11 +108,11 @@ Processing time: 45s (no encoding)
 1. Capture or select video
 2. Keep video in local cache
 3. Request presigned upload URL from API
-4. Upload directly to S3/MinIO
+4. Upload directly to S3/RustFS
 5. Notify API of upload completion
 6. Await WebSocket notification
 7. Fetch JSON analysis
-8. Render skeleton/ghost overlay on local video
+8. Render skeleton overlay and coaching advice on local video
 
 ### Layer 2: API Gateway (Go)
 
@@ -138,7 +140,7 @@ Processing time: 45s (no encoding)
 **API Endpoints**:
 
 ```
-POST   /v1/auth/signup
+POST   /v1/auth/register
 POST   /v1/auth/login
 DELETE /v1/auth/logout
 PUT    /v1/auth/refresh
@@ -146,6 +148,7 @@ GET    /v1/videos/upload-url     # Returns presigned URL
 PUT    /v1/videos/upload-done/:id # Confirms upload complete
 POST   /v1/analysis              # Triggers AI analysis
 GET    /v1/analysis/:id          # Fetch results
+
 ```
 
 ### Layer 3: Message Queue (RabbitMQ)
@@ -183,6 +186,7 @@ Example message (vision.skeleton):
   "route_id": "uuid",
   "created_at": "timestamp"
 }
+
 ```
 
 **Event Routing Keys** (ascension.events exchange):
@@ -207,9 +211,9 @@ All computer-vision tasks that rely on MediaPipe Pose and image processing:
 | 1\. Hold Detection | `vision.hold_detection` | Photo of the route | JSON hold map (positions + types) | User photographs the wall, AI detects and classifies holds (crimp, sloper, jug…). User can manually correct misclassified holds before proceeding. |
 | 2\. Skeleton Extraction | `vision.skeleton` | Video + hold map | JSON per-frame skeleton data | MediaPipe Pose extracts 33 keypoints per frame → computes joint angles, center of gravity, weight distribution, segment tensions. Returns the full skeleton timeline as JSON to the Go API. |
 | 3\. Analysis & Advice | `vision.advice` | Skeleton JSON + hold map | JSON advice payload | Combines skeleton data with hold context to generate targeted coaching advice (e.g., "hip too far from wall on move 3", "match hands before flagging"). |
-| 4\. Ghost Mode | `vision.ghost` | Skeleton JSON + hold map + user morphology | JSON ghost overlay data | Computes an optimal movement path (pathfinding / inverse kinematics) for the user's body proportions. Output is a frame-by-frame ghost skeleton that the Flutter client renders as an overlay. |
+| 4\. Ghost Mode | `vision.ghost` | Route photo + selected holds + user morphology | JSON ghost step sequence + step images | Computes an optimal movement sequence (pathfinding) for the user's body proportions from an empty route photo. Output is a step-by-step sequence with generated images showing each move. |
 
-**Key design**: Steps 2–4 share the same skeleton extraction output, so a single video is only processed once. The ghost mode and advice generation reuse the skeleton JSON.
+**Key design**: Video analysis (steps 2–3) and Ghost Mode (step 4) are completely decoupled. Video analysis takes a climbing video to extract pose landmarks and generate coaching advice. Ghost Mode operates strictly on an route photo: after hold detection and user selection, it uses climber morphology to generate step-by-step guidance images.
 
 Pipeline 2: Training Pipeline (CPU-only)
 
@@ -231,6 +235,7 @@ The canonical pipeline pattern (as implemented in `apps/ai/src/worker.py` for `v
 3. PERSIST   — UPDATE the relevant table in PostgreSQL (psycopg2)
 4. PUBLISH   — basic_publish to ascension.events with routing key {pipeline}.completed.{job_id}
 5. ACK/NACK  — basic_ack on success; basic_nack(requeue=True) on exception
+
 ```
 
 Each worker module:
@@ -252,13 +257,19 @@ Each worker module:
 
 See `docs/engineering/developer_guide/ai/readme.md` for the full AI layer documentation.
 
-Typical Vision Pipeline Flow
+Typical Processing Flows
 
+**Video Analysis Flow**:
 ```
-1. User photos the route → hold_detection job → AI classifies holds → user validates
-2. User uploads video  → skeleton job → per-frame JSON skeleton returned to API
-3. API chains:         → advice job  → targeted coaching from skeleton + holds
-4. If Ghost Mode:      → ghost job   → optimal path overlay for user's morphology
+1. User uploads video  → skeleton job → per-frame JSON skeleton returned to API
+2. API triggers:       → advice job   → targeted coaching from skeleton + performance
+```
+
+**Ghost Mode Flow (Photo-only)**:
+```
+1. User photos route → hold_detection job → AI classifies holds by type and color
+2. User validates or manually selects holds on the route photo
+3. API triggers:           → ghost job (photo + selected holds + morphology) → pathfinding generates step-by-step images
 ```
 
 ### Layer 5: Data Persistence
@@ -309,6 +320,7 @@ CREATE TABLE analysis_metrics (
     movement_efficiency FLOAT,
     hold_count INTEGER
 );
+
 ```
 
 **Indexes**:
@@ -318,6 +330,7 @@ CREATE INDEX idx_videos_user_id ON videos(user_id);
 CREATE INDEX idx_videos_expires_at ON videos(expires_at) WHERE saved = FALSE;
 CREATE INDEX idx_analyses_video_id ON analyses(video_id);
 CREATE INDEX idx_analyses_status ON analyses(status);
+
 ```
 
 MinIO/S3 (Object Storage)
@@ -334,6 +347,7 @@ ascension-videos/
 │       └── {video_id}.mp4
 └── thumbnails/
     └── {video_id}.jpg
+
 ```
 
 **Lifecycle Policies**:
@@ -353,6 +367,7 @@ ascension-videos/
     }
   ]
 }
+
 ```
 
 ---
@@ -399,7 +414,6 @@ sequenceDiagram
     Worker->>Worker: Pipeline 1a: Skeleton Extraction — MediaPipe (10s)
     Worker->>DB: Store skeleton JSON
     Worker->>Worker: Pipeline 1b: Advice Generation (3s)
-    Worker->>Worker: Pipeline 1c: Ghost Generation (5s)
 
     Worker->>DB: UPDATE analyses SET result_json=data, status='completed'
     Worker->>RMQ: Publish 'analysis.completed.{job_id}'
@@ -412,7 +426,8 @@ sequenceDiagram
     API-->>App: Returns analysis (50KB)
 
     App->>App: Renders overlay on local video
-    App->>User: Shows analysis (skeleton overlay, advice, ghost)
+    App->>User: Shows analysis (skeleton overlay, advice)
+
 ```
 
 ---
@@ -488,6 +503,7 @@ API → User: Returns {access_token, refresh_token}
 User → API: All requests include: Authorization: Bearer <token>
 API → API: Verify JWT signature + expiry
 API → DB: Fetch user permissions
+
 ```
 
 ### Authorization Levels
@@ -554,6 +570,7 @@ API → DB: Fetch user permissions
 Local Docker Compose: Free (runs on dev machine)
 MinIO Storage: Included locally
 Total: ~€0/month
+
 ```
 
 ### Staging Phase (Single Hetzner VPS)
@@ -562,6 +579,7 @@ Total: ~€0/month
 Hetzner VPS (CX31 - 4 vCPU, 8GB RAM): ~€12/month
 MinIO Storage (included on VPS): €0
 Total: ~€12/month
+
 ```
 
 ### Production Phase (1,000 active users — Hetzner)
@@ -574,6 +592,7 @@ MinIO (self-hosted Object Storage): €0
 Hetzner Volume Storage (500GB): ~€25/month
 Data Transfer (20TB included): €0
 Total: ~€70/month (~€0.07 per user)
+
 ```
 
 ### Production Phase (100,000 active users — Hetzner / Kubernetes)
@@ -587,6 +606,7 @@ MinIO Cluster (Object Storage): Included
 Hetzner Volume Storage (50TB): ~€2,500/month
 Data Transfer (included): €0
 Total: ~€3,000-3,500/month (~€0.035 per user)
+
 ```
 
 ---

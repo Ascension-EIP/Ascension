@@ -1,8 +1,8 @@
-// @date 2026-09-20
+// @date 2026-10-30
 // @file auth.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package handler
@@ -27,40 +27,19 @@ func NewAuthHandler(s *service.AuthService) AuthHandler {
 	return AuthHandler{s: s}
 }
 
-func (h *AuthHandler) Signup(c *gin.Context) {
-	var req request.SignupForm
+func (h *AuthHandler) Register(c *gin.Context) {
+	var req request.RegisterForm
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
-	form, err := req.IntoSignupForm()
+	form, err := req.IntoRegisterForm()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
 
-	user, err := h.s.Signup(c.Request.Context(), form)
-	if err != nil {
-		utils.Error(c, err)
-		return
-	}
-
-	c.JSON(http.StatusCreated, response.UserToResponse(user))
-}
-
-func (h *AuthHandler) SignupLogin(c *gin.Context) {
-	var req request.SignupLoginForm
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, response.NewError(err))
-		return
-	}
-	form, err := req.IntoSignupLoginForm()
-	if err != nil {
-		c.JSON(http.StatusBadRequest, response.NewError(err))
-		return
-	}
-
-	user, tokens, err := h.s.SignupAndLogin(c.Request.Context(), form, utils.ClientInfo(c), req.Remember)
+	user, tokens, err := h.s.Register(c.Request.Context(), form, utils.ClientInfo(c), req.Remember)
 	if err != nil {
 		utils.Error(c, err)
 		return
