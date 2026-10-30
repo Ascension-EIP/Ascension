@@ -2,7 +2,7 @@
 // @file interactive_activity_chart.dart
 // @brief Graphique d'activité des 7 derniers jours avec interactions au survol et design modernisé.
 // @project Ascension
-// @author Gianni TUERO <gianni.tuero@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:fl_chart/fl_chart.dart';

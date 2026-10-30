@@ -2,7 +2,7 @@
 # @file errors.py
 # @brief File description.
 # @project Ascension
-# @author Gianni TUERO <gianni.tuero@epitech.eu>
+# @author Nicolas TORO <nicolas.toro@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
 from pydantic import BaseModel

@@ -2,7 +2,7 @@
 // @file profile_page_test.dart
 // @brief Tests unitaires et d'interface pour la page de profil Forui.
 // @project Ascension
-// @author Gianni TUERO <gianni.tuero@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';

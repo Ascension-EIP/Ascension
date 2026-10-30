@@ -2,7 +2,7 @@
 // @file interactive_performance_donut.dart
 // @brief Diagramme circulaire (donut) interactif au survol pour la répartition des ascensions.
 // @project Ascension
-// @author Gianni TUERO <gianni.tuero@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:fl_chart/fl_chart.dart';

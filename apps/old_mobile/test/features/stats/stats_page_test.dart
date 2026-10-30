@@ -2,7 +2,7 @@
 // @file stats_page_test.dart
 // @brief Tests pour la page de statistiques avec diagrammes interactifs.
 // @project Ascension
-// @author Gianni TUERO <gianni.tuero@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';

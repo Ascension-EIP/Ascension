@@ -2,7 +2,7 @@
 // @file profile_page.dart
 // @brief Page de profil utilisateur propulsée par Forui.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';

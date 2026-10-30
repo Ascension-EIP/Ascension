@@ -2,7 +2,7 @@
 // @file forui_profile_view.dart
 // @brief Vue de profil utilisant le kit d'interface Forui (duobaseio/forui).
 // @project Ascension
-// @author Gianni TUERO <gianni.tuero@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';

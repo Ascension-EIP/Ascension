@@ -2,7 +2,7 @@
 // @file interactive_concentric_rings.dart
 // @brief Visualisateur multi-anneaux concentriques interactif pour les métriques biomécaniques.
 // @project Ascension
-// @author Gianni TUERO <gianni.tuero@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'dart:math' as math;

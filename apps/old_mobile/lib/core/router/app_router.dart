@@ -2,7 +2,7 @@
 // @file app_router.dart
 // @brief File description.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:go_router/go_router.dart';
