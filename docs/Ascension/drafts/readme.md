@@ -9,7 +9,6 @@ order:
   - plan-d-action-technique
   - pool-draft
   - new-mobile-design
-  - Questionnaire pour Lionel REVERET
 ---
 
 :::subpages cards 3
