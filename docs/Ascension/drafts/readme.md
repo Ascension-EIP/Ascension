@@ -7,7 +7,6 @@ order:
   - issues-to-create
   - new-audit
   - plan-d-action-technique
-  - pool-draft
   - new-mobile-design
 ---
 
