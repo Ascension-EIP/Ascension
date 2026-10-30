@@ -1,0 +1,409 @@
+Suivi Mentorat 3
+Mon, Oct 19, 2026
+
+0:04 - Nicolas TORO
+J'ai coupé les feuilles. Et savoir rien.
+
+0:37 - Nicolas TORO
+Est-ce que t'as fait le toasting pour toutes les occasions ? Genre les sides ? Pour le toasting, c'est du toast. Pour ton toast ? Ouais, ouais. Moi ce toasting, je voyais des toasts. C'est pour ça que je me disais. Ça va être compliqué les questions. Et oui, comme je disais, en vrai, si j'ai mal compris les questions ce matin, c'est uniquement parce que je suis une merde.
+
+1:22 - Unidentified Speaker
+C'est tout.
+
+1:24 - Nicolas TORO
+Je reviens là, j'aurais dû rester avant pour prendre des notes. Est-ce que t'as tes résistances ou tu veux la garder ? C'est vrai que ça fait un temps qu'on avait tellement pas de clou à s'appuyer tout le temps. De toute façon, on parle qu'à moi, donc c'est vrai. Est-ce que Salut !
+
+3:07 - Unidentified Speaker
+Merci à tous ! Merci.
+
+3:45 - Nicolas TORO
+Au revoir.
+
+5:04 - Unidentified Speaker
+Bonsoir.
+
+5:58 - Unidentified Speaker
+Ciao !
+
+8:39 - Nicolas TORO
+Au revoir. À suivre.
+
+10:31 - Ilyes TALBI
+Ça va ? Ça va et toi ?
+
+10:35 - Unidentified Speaker
+Ouais, nickel.
+
+10:36 - Ilyes TALBI
+Vous êtes en vacances, là, ou… ?
+
+10:40 - Unidentified Speaker
+Pas du tout, on est en période d'examen actuellement. On n'a pas de vacances.
+
+10:48 - Nicolas TORO
+Nos seules vacances vont être de janvier à fin février. Ah oui, ok.
+
+10:54 - Ilyes TALBI
+D'accord. En décembre, ça sera juste une semaine, c'est ça ?
+
+11:00 - Nicolas TORO
+En décembre aussi, en vrai, on a des vacances, mais ça s'arrête le 19 octobre.
+
+11:08 - Ilyes TALBI
+Je n'ai pas eu le temps de regarder l'email que vous m'avez envoyé. Donc si on peut peut-être commencer par là, si vous voulez, pour connaître un peu plus en détail.
+
+11:42 - Nicolas TORO
+Yes. Après pour l'email, en gros, dans l'email, je te racontais qu'on n'avait pas énormément avancé, que par contre, on s'était bien débrouillé avec le Nasio et que du coup, on avait réussi à avoir les machines qu'on avait souhaitées. Donc maintenant, du coup, on a un VPS et on a un object storage où on va pouvoir du coup mettre toutes les toutes les vidéos, etc. Donc, pas besoin de... La dernière fois, tu nous parlais de faire un drive avec l'option étudiante, etc.
+
+ Au final, pas besoin du coup, vu qu'on a l'objet de storage. Voilà. Et après, je t'avais aussi transmis quelques schémas pour si tu voulais en savoir plus sur notre architecture, comment c'était fait, etc.
+
+12:28 - Unidentified Speaker
+OK.
+
+12:28 - Ilyes TALBI
+Ouais, je vois. Donc le premier, c'est le schéma Flowia. Oui. Ok. Alors attends, je partage mon écran comme ça. On a la même chose.
+
+12:44 - Jundo
+Nico, tu ne veux pas mettre ton assistant aussi de notes ? Il y a déjà normalement.
+
+12:55 - Ilyes TALBI
+T'es sûr ? Ok. Je pourrais vous partager ce que j'ai. Ah oui, c'est ça, c'est Read AI, c'est ton truc ? C'est ça. OK, parfait. Donc là, vous faites quoi ?
+
+13:10 - Unidentified Speaker
+Vous faites... Ça, du coup, c'est le schéma du Floïa.
+
+13:14 - Nicolas TORO
+Ça rentre dans les détails au niveau de tout ce qui est comment le mobile communique avec le back-end, etc. Mais après, on a aussi un autre schéma qu'on n'a pas, transmis qui montre un peu plus comment l'IA fonctionne en détail, là c'est vraiment une version simplifiée. Et ça c'est l'infrastructure qu'on a actuellement avec notre VPS et notre object storage pour dire que ça fonctionne comme ça.
+
+13:47 - Ilyes TALBI
+J'avoue que moi je ne suis pas expert de la partie développement d'appli. Jenkins, je connais. SonarCube, c'est quoi ? C'est quelque chose qui va... C'est un peu comme un linter.
+
+13:57 - Nicolas TORO
+En fait, c'est quelque chose qui va vraiment analyser le code, qui va te dire si tu as du code dupliqué, si tu as du
+
+14:20 - Olivier Pöuech
+code dupliqué, si tu as couche en plus en point de vue sécurité.
+
+14:25 - Ilyes TALBI
+Et ensuite sur la partie jusqu'où vous allez aller, vous y avez pensé ou pas ? Parce qu'il y avait aussi cette idée de savoir si par exemple le mode fantôme, est-ce que c'est un truc que vous avez l'ambition de développer déjà pour la première année où... Oui, c'était prévu.
+
+14:50 - Jundo
+C'était plus ou moins prévu. Mais après, on avait vu avec toi que vous allez mieux se concentrer sur un fou truc 2D qui fonctionne. Et dans tous les cas, le fantôme, on le fera quand on pourra le faire.
+
+15:06 - Unidentified Speaker
+Une fois que ça sera fait.
+
+15:09 - Jundo
+Ce n'est pas la priorité, mais oui, l'ambition, elle est là.
+
+15:13 - Ilyes TALBI
+OK. Donc l'idée c'est d'avoir un truc complet, c'est la première année. D'accord. Mais ouais, puisque moi, de fin de mémoire, ce qu'on avait dit sur la dernière session, c'était un peu de se focus sur le fait de collecter des images et ensuite d'entraîner des YOLO. Je vous ai dit qu'en fait, les modèles YOLO sur la détection d'objets vont résoudre partie des problèmes que vous avez. Je ne sais pas si c'est des trucs que vous avez commencé à faire ou pas.
+
+ Après, je sais que c'est une période d'examen, donc je pense que vous étiez un peu sous l'eau. Comment ?
+
+15:57 - Jundo
+Ok, on a eu un bug de code, je ne sais pas.
+
+16:07 - Ilyes TALBI
+Mais c'est une tournée en droit, du coup si ça a bugué pour un, ça a bugué pour les trois, je pense. Ah oui, ok, c'est pour ça. D'accord. Pas de soucis. Ok, enfin non, c'était juste pour savoir un peu sur ce sujet-là.
+
+16:22 - Olivier Pöuech
+Je ne sais pas trop exactement ce qu'il a fait, Johnny, côté IA. Je sais que pour ma part, du coup, je suis en train de... J'ai continué à faire avancer la partie scrap pour récupérer assez de vidéos en fait, et juste de personnes qui escaladent pour vous rentraîner les modèles. Maintenant, je pense qu'il faut avoir passé une grosse partie de l'orientation sur les vidéos pour avoir des données entre guillemets pré-remplies potentiellement sur un premier jet.
+
+ Après, il faudrait aussi que je... On n'en a pas trop trop parlé. J'ai parlé avec Jenny, mais il faut que je vois exactement lui, c'est quoi ses attentes vis-à-vis de tout ça pour le modèle qui va entrer.
+
+17:17 - Ilyes TALBI
+Et sur les objectifs du coup, si on prend les objectifs un par un, Non, pas vraiment.
+
+17:31 - Nicolas TORO
+On n'a pas bossé en plus sur les objectifs. On les a un peu laissés en stand-by pour le moment. Mais oui, il faudrait qu'on avance un peu plus dessus.
+
+17:44 - Unidentified Speaker
+OK.
+
+17:44 - Ilyes TALBI
+Nouveau, c'était... Vos objectifs, c'était... Nous, c'était...
+
+17:47 - Nicolas TORO
+Déjà, on a un track technique, donc on a les objectifs obligatoires de la track technique. Et après, on a les objectifs complémentaires, c'était les deux derniers. Donc... Parler avec des experts et aussi mesurer, optimiser et tester notre produit. Optimiser les performances techniques, d'accord.
+
+18:07 - Ilyes TALBI
+C'est ça. Ok, c'est là que SonarCube, je pense que c'est intéressant de la voir. Il y a aussi, je ne sais pas si ça vous dit quelque chose, PostHog, un outil de tracking, enfin c'est un outil de tracking du comportement des... À la base, ils font de l'analytics classique, mais en fait, tu peux aller jusqu'à du tracking du comportement des utilisateurs, typiquement les endroits où ça clique, ce genre de trucs-là.
+
+ Après, je ne sais pas trop, c'est peut-être un peu plus orienté track solution. En y repensant, je me dis que c'est plus orienté track solution, puisque l'idée, c'est que tu sais un peu tes utilisateurs, où est-ce qu'ils cliquent. Et à partir de ça, tu... En gros, tu essaies de faire des mises à jour de ton UI, de ton UX pour améliorer un peu la solution. En plus, c'est un truc développé à San Francisco.
+
+ Je ne sais pas si c'est vraiment compliant en termes de RGPD parce que vraiment, tu peux extraire la session d'une personne et voir dans sa session ce qu'elle a fait, où est-ce qu'elle a cliqué. En gros, tu as une capture d'écran vidéo de la session en entier. C'est anonymisé, mais je me demande si c'est légal ou pas d'avoir un truc d'analytics comme ça. Après, vous avez tout le volet analyse des performances des modèles d'intelligence artificielle.
+
+ Ça, pour le coup, ça va être... Ça va être important. Et après, il y avait... Je ne l'ai pas contacté encore. J'attends de voir un peu votre avancement. Mais moi, j'ai travaillé avec lui, c'est Lionel Reveret, c'est un chercheur à l'INRIA. Il a bossé sur des sujets autour de l'estimation de taux humaines et sur l'escalade, justement. Tu peux redonner son nom, s'il te plaît ? Lionel Reveret. R-E-V-E-R-E-T.
+
+ Ok, merci.
+
+20:37 - Unidentified Speaker
+Alors attends, est-ce qu'il y avait pas un truc un peu...
+
+20:44 - Ilyes TALBI
+un peu escalade peut-être ? Après lui c'est vraiment l'escalade orientée discipline olympique. Soit escalade, enfin je sais pas si c'était escalade de vitesse ou... Je crois que c'était en escalade de vitesse.
+
+21:07 - Jundo
+Oui, mais après, en vrai, c'est très transversal, quoi. Oui, j'attends.
+
+21:15 - Ilyes TALBI
+Je ne sais pas comment... Si, par exemple, vous avez un peu une liste de questions pour que la mise en relation que je fais avec lui soit pertinente pour vous. C'est vrai qu'on n'en a pas, mais on peut y réfléchir.
+
+21:36 - Jundo
+Oui, puisque pour le coup, j'ai bossé avec lui.
+
+21:39 - Ilyes TALBI
+Après, je ne sais pas, les chercheurs sont toujours un peu compliqués à joindre, mais je pense que le fait qu'on ait bossé ensemble par le passé, peut-être que je pourrais avoir une réponse de sa part assez rapidement. Donc, si besoin, On pourrait organiser un peu une interview entre l'un de vous et lui, un truc très rapide de 20 minutes pour que ça ne lui prenne pas trop de temps. Et vous derrière, ça vous donnera des arguments sur la partie collaboration avec des experts techniques.
+
+ En soi, les gens qui ont travaillé sur la computer vision dans l'escalade, vous n'avez pas en avoir 35 000 je pense en France tu dois avoir une cinquantaine de chercheurs et je pense qu'il en fait partie donc autant en profiter donc je pense le mieux pour que ce soit pertinent et pour que ce soit aussi bien pertinent pour vous que pour lui d'ailleurs essayez de me préparer un petit document avec 10-15 questions, une idée principale de ce que vous voulez lui demander concrètement.
+
+ Je sais qu'entre nous, on sait que c'est juste pour avoir un argument sur l'objectif de collaborer avec des experts techniques. Mais tant qu'à faire, autant le faire un peu sérieusement et essayer de chercher des choses un peu plus concrètes. N'hésitez pas à demander, par exemple, il peut vous partager de la data ou ce genre de choses-là. Quand vous êtes en relation avec lui, vous pouvez essayer de lui demander.
+
+ Je pense qu'il dira non, je ne vais pas vous mentir, parce que c'est un truc, il est affilié à un labo de recherche public qui est lié au gouvernement. Je ne pense pas qu'il puisse partager la donnée des athlètes comme ça facilement. Ça m'étonnerait qu'il puisse le faire. Par contre, vous vous demandez comme ça, si vous pouvez récupérer des choses concrètes et réutilisables pour votre projet, ça sera bénéfique.
+
+ Je pense que juste l'interview avec lui en elle-même, c'est déjà excellent. 20 minutes en visio, ça fera l'affaire. Vous me faites un document avec les questions que vous voulez lui poser. On le revoit ensemble et une fois que c'est bon, je fais la mise en relation et après je vous laisse voir avec lui pour organiser un créneau qui fonctionne bien.
+
+24:36 - Nicolas TORO
+Ok, merci en tout cas pour ce contact un peu. Ça nous aide un peu plus.
+
+24:45 - Ilyes TALBI
+Oui, au moins, et après peut-être que parmi les questions que vous pouvez lui poser, c'est aussi lui demander s'il n'a pas d'autres contacts vraiment sur cette partie expertise technique. Pour le coup, il n'y a pas énormément de gens qui peuvent vous aider sur un sujet comme celui-ci. D'essayer d'explorer la piste à fond. Et du coup, sur les objectifs obligatoires ?
+
+25:18 - Nicolas TORO
+Du coup, sur les objectifs obligatoires, c'était ceux de la track technique, donc... Ouais, c'est veille technologique.
+
+25:28 - Ilyes TALBI
+C'est ça. Pour lever le point dur du projet. C'est ça, la formulation, je crois.
+
+25:36 - Nicolas TORO
+Ouais.
+
+25:38 - Ilyes TALBI
+ça va être technologique et l'exploiter pour lever le point dur du projet. Je pense que la première question à se poser d'abord, la plus pertinente, c'est savoir c'est quoi ce point dur du projet.
+
+25:54 - Nicolas TORO
+Oui, effectivement. Je pense que pour nous, le point dur du projet, c'est plus l'IA, c'est plus le truc, le point compliqué, le point à pour approfondir un maximum. Mais du coup, il faut qu'on fasse de la vie technologique dessus.
+
+26:17 - Ilyes TALBI
+Oui, c'est la brique computer vision.
+
+26:22 - Unidentified Speaker
+Oui, c'est ça.
+
+26:24 - Nicolas TORO
+Après, il y a aussi le deuxième objectif obligatoire qui était structures, documents, et avoir une bonne architecture de projet. Oui, ça va pour le coup. Oui, dans le sens, ça va se faire petit à petit.
+
+26:45 - Ilyes TALBI
+Surtout, ce que vous avez déjà, c'est exactement dans ce sens-là que ça va. Un schéma d'architecture, donc ça, c'est bien. Après, les guides doivent être bien documentés, le reading doit être complet, systématiquement, quand vous faites un truc, quand il y a un modèle qui marche, quand c'est déployé sous forme d'une API, il faut que ce soit dockerisé. Vous connaissez Docker, j'imagine. Ça fait partie des bonnes pratiques.
+
+ Ça fait partie du test aussi. Coverage, reproductibilité, tout ça, ça doit être solide sur ce point-ci. Si je reviens sur le premier objectif, il y a peut-être... Je ne sais pas, vous avez un truc en particulier sur la partie veille que vous avez mis en œuvre ou pas encore ?
+
+27:44 - Jundo
+Je ne sais pas si on peut appeler ça de la veille, mais suite à la dernière réunion qu'on avait avec toi, le dernier point qu'on avait fait avec toi, Tu nous avais dit que l'un des premiers trucs prioritaires à faire serait de décomposer la pipeline. Comme ça, déjà, on peut mieux la visualiser, faire en sorte qu'elle soit moins abstraite et pouvoir ensuite trouver les difficultés dedans. Donc, on l'a fait.
+
+ Suite à tout ce que tu avais dit, après, j'envoie un petit prompt à Claude avec toutes nos notes. Je lui ai dit, fais le document, comme ça, au moins, tu peux écrire un markdown à la main. On peut te le montrer, mais je pense que le seul point, pas le point noir, mais je vais essayer de faire un partage d'écran, je ne promets rien avec la co.
+
+28:34 - Unidentified Speaker
+Ouais, vas-y.
+
+28:35 - Jundo
+Est-ce qu'on voit bien mon écran ? Ouais, c'est bon. Ok, alors je vais zoomer. En gros, ça, c'est l'espèce de schéma suite à ce qu'on avait dit lors du dernier point, donc en gros, il n'y a pas que plein d'affaires côté computer vision, quoi. Petite overview générale, on a le côté d'analyse de la vidéo, donc on a la vidéo du grimpeur, le squelette média pari-plaisant et le découpage en plusieurs mouvements, ça c'est ce qui est fait, c'est pas un point noir en soi.
+
+ Ensuite tout ça, ça passe dans la comparaison des conseils, enfin comparaison et conseils, mais pour avoir ça, il faut qu'on fasse la lecture de voix. Donc la photo de la voix, détection des prises avec Iodo, ce qu'on avait dit, les couleurs dominantes par exemple, clustering par voix, la validation utilisateur de des bonnes prises qui ont été détectées. Avec tout ça, on va pouvoir ensuite aligner la vidéo et la photo, on va pouvoir voir les écarts vidéo et bêta, et on va donner des conseils de modèles externes.
+
+ Le seul point qui est un peu galère, je pense, c'est le côté pathfinding. Peut-être savoir comment on va vraiment faire un pathfinding là-dessus, sachant qu'il faut prendre en compte la morphologie du mec, et aussi qu'est-ce qu'il y a bien faire en escalade. La partie logique métier, elle est là-dedans en soi. Là, on est vraiment sur de la computer vision, et c'est déjà plus clair qu'avant le premier point qu'on avait fait.
+
+ Mais ce côté pass-funding, il va falloir qu'on fasse de la veille là-dessus. Parce qu'on pourra toujours trouver des chemins, mais bon, est-ce que ça sera ne serait-ce qu'optimiser un petit peu. C'est plus le point noir là-dessus, en tout cas côté IA. Côté tout ce qui est architecture logicielle et tout ça, ça va, c'est pas de galère, on est farmé à ça, tu vois.
+
+30:24 - Ilyes TALBI
+Mais côté IA, c'est pour ça qu'on t'a tout le temps en menteur entre guillemets. Ok. Ok, très clair. En vrai, c'est pas mal, ça me paraît pertinent comme découpage. Mais après, en fait, sur la partie, on va dire, veille, il y a aussi cette idée de peut-être mettre en place un système de monitoring qui va, on va dire, je ne sais pas, simplement surveiller des sources en continu et voir s'il y a des articles qui peuvent vous intéresser pour les envoyer par exemple.
+
+ Donc ça, je ne sais pas à quel point c'est pertinent parce qu'il n'y a peut-être pas des articles tous les jours qui sont publiés sur le sujet de la computer vision pour l'escalade en particulier. Mais ça rentre aussi dans le cadre d'essayer de rajouter des actions réalisées par objectif, on va dire. Donc là, moi, ce que je ferais, par exemple, à votre place, ce serait Juste un truc, une automation, par exemple, sur N8n qui m'envoie des infos sur des sources que j'ai identifiées, des blogs peut-être qui parlent d'IA dans le sport, tout ça.
+
+
+
+31:44 - Unidentified Speaker
+À chaque fois qu'il y a des nouveaux trucs, ça m'envoie des infos et aussi sur la brique de computer vision de manière générale.
+
+31:54 - Ilyes TALBI
+Computer vision, dès qu'il y a un modèle, un article qui parle de YOLO ou quoi, essayer de faire d'être au courant parce que c'est aussi cette idée quand on dit organiser sa veille technologique c'est qu'ils attendent quand même qu'il y ait eu une réflexion approfondie sur le sujet de la veille en particulier donc voilà, c'était ça que j'avais en tête Clustering par voie Je ne sais pas si vous avez essayé des trucs autour de ça.
+
+
+
+32:35 - Jundo
+OK, il y a eu un petit bug de connexion.
+
+32:39 - Ilyes TALBI
+Oui. Comme on a dit tout à l'heure. Non, je disais juste qu'il y a eu dans l'idée d'organiser...
+
+32:47 - Jundo
+Je ne sais pas s'il nous entend. Là, c'est bon.
+
+32:51 - Ilyes TALBI
+C'est une faussure de... OK, bon. Pas de souci. Je disais dans cette idée d'organiser, sa veille technologique, c'est vraiment le fait d'avoir eu une réflexion dédiée à ce sujet-là.
+
+33:05 - Unidentified Speaker
+Ce n'est pas juste, je ne sais pas, en scrollant sur Insta, j'ai trouvé cette startup qui fait ça.
+
+33:14 - Ilyes TALBI
+C'est vraiment dans l'idée d'avoir une démarche organisée pour la veille technologique. Donc le fait d'avoir construit un petit workflow, ça ne vous prendra pas beaucoup de temps. Une trentaine de minutes sur une huitaine pour faire ça, ça peut aider. Depuis qu'on a le VPS, on va pouvoir set-up ça.
+
+33:37 - Jundo
+Le VPS, c'est Epitech qui vous a donné accès ? Non, on a dû le prendre nous-mêmes et on fait une note de frais et une rembourse.
+
+33:49 - Ilyes TALBI
+Vous avez validé ça avec qui ? Côté Epitech ? Il y a des informations un peu contradictoires sur ce sujet et donc je préférais rien vous promettre et vous avez pris quoi du coup comme VPS ?
+
+34:21 - Unidentified Speaker
+c'est le VPS4 d'OVH On a 24Go de RAM, 300Go de stockage.
+
+34:29 - Nicolas TORO
+Après au niveau de CPU, je ne sais plus exactement.
+
+34:35 - Unidentified Speaker
+D'accord, c'est très bien en français.
+
+34:38 - Nicolas TORO
+Pour entraîner des modèles... C'est le meilleur qui est disponible.
+
+34:44 - Unidentified Speaker
+D'accord, parfait. Ils n'en ont pas d'autres.
+
+34:48 - Ilyes TALBI
+Oui, parfait, très bien. Vous allez pouvoir l'exploiter à fond. Et sur YOLO, le truc que je conseille, une fois que vous avez votre donnée qui est prête, en vrai, faites les entraînements avec Ultralytics. C'est le plus simple. Qu'est-ce que tu as dit, Ultralytics ?
+
+35:14 - Unidentified Speaker
+Pas Litics.
+
+35:16 - Ilyes TALBI
+Ultralytics, L-I-T-I-C-S. Ça se fait très rapidement. J'ai fait un notebook d'entraînement d'un modèle sur Ultra 8X, je vais vous montrer éventuellement à quoi ça ressemble pour vraiment vous montrer à quel point c'est hyper simple. Je l'avais fait sur Colab parce que j'avais besoin de GPU. En gros, c'est juste l'import des installations, l'import des librairies. Ensuite, Ensuite, ici, c'était pour récupérer les données qui étaient annotées.
+
+ Là, je vais charger le modèle avec Ultra 8X. Je ne sais pas si vous savez, mais YOLO, je pense que vous savez, il y a plusieurs versions de YOLO en fonction du détail par rapport à ce qu'on veut faire.
+
+36:08 - Unidentified Speaker
+Donc vous, comme vous allez être sur du temps réel, c'est de l'inférence cloud ? Oui, c'est du cloud.
+
+36:17 - Ilyes TALBI
+Comme vous êtes sur du temps réel, je pense que vous partirez plutôt sur du nano ou du small. Ça, c'est charger le modèle de base.
+
+36:29 - Unidentified Speaker
+Et ensuite, le train du modèle, littéralement, c'est juste ça.
+
+36:34 - Ilyes TALBI
+C'est pour ça que le plus galère, c'est vraiment le labeling de la data. Et après, on met tout dans un data.yaml et le data.yaml c'est ce qui me dit où sont mes images, où sont les labels associés à ces images et aussi le nom des classes que je suis en train d'essayer de détecter donc en l'occurrence pour vous, je pense que ce sera juste les prises ou alors prises plus personnes, plus des choses Ça peut prendre le coup parfois d'essayer de détecter les choses qui sont autour, qui sont dans l'environnement, qui à première vue n'ont pas l'air d'impacter le modèle, mais ça peut être important de détecter le maximum de choses pour avoir une meilleure compréhension de la scène.
+
+ Ça peut être pertinent en fonction de ce à quoi vos images Après, souvent, dans le monde d'époque, je vais mettre une valeur assez élevée. Et ce que je vais faire, c'est que je vais mettre un facteur de patience. Je ne sais pas si vous savez ce que c'est, la patience, dans ce contexte-là. C'est simplement qu'en fait, si je... Trop d'époques d'entraînement, le problème qui va arriver, c'est que le modèle va overfitter, il va essayer de trop coller à la donnée d'entraînement.
+
+ Ce que je fais, c'est que je dis à mon modèle, si pendant dix époques d'entraînement, on n'observe pas d'amélioration sur les données de test, ça veut dire qu'on est sûrement en train d'overfitter, ça veut dire qu'en fait, ça ne sert à rien d'aller plus loin et tu vas revenir à, donc si par exemple, j'étais arrivé à l'époque 30, il va me donner le modèle qui va enregistrer à la fin, ce sera celui de l'époque 20.
+
+
+
+38:40 - Unidentified Speaker
+Puisque pendant les 10 dernières époques, il ne s'est pas amélioré.
+
+38:43 - Ilyes TALBI
+Pourquoi est-ce qu'on fait ça ? C'est parce que parfois, tu peux avoir de manière locale, d'une époque à l'autre, une stagnation de ton modèle, ou alors des fois, ton modèle qui devient moins bon. D'une époque à l'autre, ça peut arriver, parce que parfois, il y a des petites anomalies statistiques qui se produisent. Par contre, si pendant 10 époques, tu t'améliores pas, ça veut dire que t'as atteint un plateau et que t'es en train de commencer limite, soit t'as déjà commencé à overfitter, soit tu vas pas tarder à commencer à overfitter.
+
+ Parce qu'en fait vraiment le dilemme en machine learning, c'est toujours cette idée de prolonger au maximum l'entraînement, mais en fait plus tu prolonges l'entraînement, plus tu risques d'overfitter, que ton modèle il colle trop à la donnée à la donnée d'entraînement, il perd sa capacité à se généraliser. Donc ça, c'est important. La taille d'image, ce n'est pas si important que ça, mais en fait, c'est simplement qu'il faut avoir conscience d'un truc, c'est que vos images vont être issues de smartphones, donc potentiellement des images à une vingtaine de millions de pixels.
+
+ Vous ne le mettez pas dans un YOLO tel quel, c'est trop gros pour processer par un modèle YOLO en temps raisonnable. Donc ce que vous faites c'est que vous allez diviser ça en une largeur par exemple de 640 pixels pour chaque image par exemple. Pour que ce soit beaucoup plus rapide au niveau de l'inférence. Et donc ça c'est un truc que vous allez décider au moment de l'entraînement. En soi c'est pas si critique que ça, c'est des trucs qui peuvent être qui peuvent être corrigés si besoin.
+
+
+
+40:35 - Unidentified Speaker
+Ensuite, on a le batch size.
+
+40:38 - Ilyes TALBI
+Le batch size, c'est le nombre d'images que mon modèle va voir en même temps à chaque étape. Vous avez les époques. Pendant une époque d'entraînement, mon modèle a vu toutes les données que j'ai dans mon dataset d'entraînement. Par contre, il ne les voit pas toutes même temps puisqu'on n'a pas assez de RAM donc on divise ça en batch et du coup ici en l'occurrence dans cet exemple là on divise ça en batch de 32 images donc il va y avoir 32 images par 32 images donc ça en fait concrètement on veut qu'il soit le plus grand possible mais il ne faut pas que ça sature la RAM parce que si ça sature la RAM ça va vous faire une erreur OEM Donc ça c'est juste, ça dépend de combien vous avez de RAM et de c'est quoi le modèle que vous essayez d'entraîner.
+
+ Après bon, c'est pas des trucs qui sont hyper complexes à comprendre, c'est juste j'anticipe sur les prochaines étapes que vous allez avoir.
+
+41:48 - Unidentified Speaker
+Voilà.
+
+41:48 - Ilyes TALBI
+Je ne sais pas si vous avez des questions ou d'autres sujets.
+
+41:53 - Jundo
+Non, ça semble assez clair, c'est juste à nous. De commencer un peu à bosser, parce qu'entre maladies partielles et flemmes, c'est vrai qu'il faudrait qu'on avance.
+
+42:04 - Ilyes TALBI
+Maladies et partielles, c'est compréhensible, mais flemmes, en vrai... Non, mais bien sûr, mais c'est pour être totalement honnête.
+
+42:12 - Jundo
+Ouais, non, je comprends.
+
+42:13 - Ilyes TALBI
+Mais si vous avez la flemme, c'est peut-être une bonne idée de bosser sur le IP, puisque je pense que vous aurez encore plus la flemme de réviser des partielles enfin en cinquième année. Je pense que c'est une bonne idée quand même d'avoir...
+
+42:30 - Jundo
+On est bien conscients, on est bien conscients, toi qui pète.
+
+42:35 - Ilyes TALBI
+En fait, toutes les personnes que j'ai en cours là, je vais commencer dans deux semaines, on va commencer la session de computer vision. Toutes les personnes que j'ai en cours à Paris, elles sont dégoûtées d'avoir raté le IP et de devoir juste le fait de prendre le train Nice à Paris, déjà, c'est... Je me dis en vrai, la flemme que j'ai maintenant, il vaut mieux que je la mette de côté, parce que sinon...
+
+ Parce qu'après, avec les EIP aussi, vous devez vous déplacer à Paris, mais en vrai, c'est un peu plus sympa. C'est des séminaires sur place. Ce n'est pas vraiment des cours. Tu n'as pas de trucs à réviser. Tu n'as pas de partiels. Tu n'as pas de passage à l'oral. Enfin, plein de trucs... Tu t'affranchis de plein de trucs un peu... Un peu casse-tête. Ok. S'il n'y a pas d'autres sujets, on peut regarder sur la prochaine session, voir comment on peut...
+
+ C'est quoi les dates déjà de la prochaine session ? Il faut juste savoir c'est quoi, c'est en quelle semaine, et voir avez des dispo déjà ?
+
+43:52 - Nicolas TORO
+Moi j'avais dit que c'était la semaine du 9 novembre, donc ça fait trois semaines quoi.
+
+44:01 - Ilyes TALBI
+9 novembre, ok. 9 novembre, ouais.
+
+44:05 - Unidentified Speaker
+Ok.
+
+44:05 - Ilyes TALBI
+Alors, je ne sais pas, c'est quoi un peu vos dispo sur cette semaine toujours les mêmes après on peut prendre le même créneau qu'aujourd'hui je pense que ça a été le même qu'aujourd'hui peut-être un peu plus tôt est-ce que ça vous dirait en fait le truc c'est que l'eau Il a cours jusqu'à 15h en heure française.
+
+44:45 - Jundo
+Oh merde, quelle heure ? Je ne sais même plus. Oui, heure française. Votre voiture, tu as cours ? Oui.
+
+44:51 - Ilyes TALBI
+Votre voiture, tu as cours, mais il a cours à l'après-midi, donc...
+
+44:55 - Nicolas TORO
+Aujourd'hui, plus tôt ? Non, moi, ça me va, il n'y a pas de souci.
+
+45:00 - Voiture Toiture
+Enfin, genre, ce jour-là, plus tôt.
+
+45:01 - Jundo
+Ah oui, plus tôt, oui. Non, c'est vrai, je n'ai rien dit. Plus tôt, oui. Ça ferait à 9h pour l'heure française, moi.
+
+45:09 - Ilyes TALBI
+Oui, à 9h en France. Je pense que ça peut être bien après moi je serai en Malaisie donc il sera 15h je crois au moins ou 16h mais vraiment ce n'est pas un problème je risque d'avoir des nuits assez longues où je vais finir à 3h du matin parce que mes clients ne sont pas en Malaisie du tout mais ce n'est pas grave ok je mets ça pour le neuf à 9h, heure française.
+
+45:40 - Unidentified Speaker
+Parfait.
+
+45:40 - Jundo
+Super.
+
+45:41 - Nicolas TORO
+Merci beaucoup.
+
+45:42 - Ilyes TALBI
+N'hésitez pas, en tout cas, entre temps, s'il y a des sujets, s'il y a des questions. Dès qu'on n'attend pas le 9, par contre, pour préparer le rendez-vous avec Lionel, parce qu'en fait, à partir de... Je sais que la fin de décembre, par exemple, ça va être un peu compliqué, Donc je préférais qu'on prépare ça un peu en avance pour envisager d'organiser une visio peut-être aux alentours, au mois de novembre.
+
+ Parce qu'en plus, novembre, je crois que la semaine du 9, justement, c'est un jour de férié. Donc je sais qu'il y en a qui vont partir en vacances, tout ça. À mon avis, on essaie d'organiser ça peut-être deuxième ou troisième semaine de novembre. Donc je vous laisse m'envoyer dès maintenant ce que je vous ai dit avec un plan d'interview, quelques questions et des demandes que vous pourriez avoir notamment en termes de données ou des conseils de sa part.
+
+
+
+46:54 - Unidentified Speaker
+Pas de souci.
+
+46:56 - Ilyes TALBI
+OK, top.
+
+46:57 - Unidentified Speaker
+Merci.
+
+46:58 - Jundo
+Merci à toi et bon mariage.
+
+47:01 - Ilyes TALBI
+Merci, à bientôt, ciao.
