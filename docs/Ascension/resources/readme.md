@@ -8,6 +8,7 @@ order:
   - images
   - deck
   - follow-up
+  - bills
   - folder-files
 ---
 
