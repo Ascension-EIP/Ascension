@@ -60,9 +60,8 @@ flowchart TD
     end
 
     subgraph Pathfinding ["Calcul de la bêta"]
-        D2 & M --> PF1[Graphe de postures]
-        PF1 --> PF2["Pathfinding sous contraintes<br>(équilibre & portée)"]
-        PF2 --> BG[Guide pas-à-pas de la bêta]
+        D2 & M --> PF1["Pathfinding sous contraintes<br>(équilibre & portée)"]
+        PF1 --> BG[Guide pas-à-pas de la bêta]
     end
 ```
 
