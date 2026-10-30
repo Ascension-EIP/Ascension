@@ -14,7 +14,7 @@ id: bbc2869a-77e0-4448-b0e4-6c57afda3bfc
 
 ## Bon de commande
 
-[PDF](./order_OVHCloud.pdf)
+[PDF](./order_OVHcloud.pdf)
 
 ## Note de frais octobre
 
