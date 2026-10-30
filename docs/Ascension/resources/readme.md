@@ -9,6 +9,7 @@ order:
   - deck
   - follow-up
   - folder-files
+  - bills
 ---
 
 :::subpages cards 3
