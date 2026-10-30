@@ -8,8 +8,8 @@ order:
   - images
   - deck
   - follow-up
-  - folder-files
   - bills
+  - folder-files
 ---
 
 :::subpages cards 3
