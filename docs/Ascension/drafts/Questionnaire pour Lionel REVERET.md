@@ -29,8 +29,8 @@ Voici le flow de traitement que nous mettons en place pour cette partie :
 ```mermaid
 flowchart LR
     A[Vidéo smartphone] --> B[Décodage OpenCV]
-    B --> C[Pose estimation<br>MediaPipe Pose]
-    C --> D[Squelette 2D<br>33 keypoints / frame]
+    B --> C["Pose estimation<br>(MediaPipe Pose)"]
+    C --> D["Squelette 2D<br>(33 keypoints / frame)"]
     D --> E[Lissage & Filtrage]
     E --> F[Découpage en mouvements<br>& calcul des métriques]
     F --> G[Génération des retours]
@@ -51,17 +51,17 @@ Voici le flow prévu pour le Mode Fantôme :
 flowchart TD
     subgraph Input ["Entrées utilisateur"]
         P[Photo du mur vide]
-        M[Profil morphologique<br>taille, envergure, segments]
+        M["Profil morphologique<br>(taille, envergure, segments)"]
     end
 
     subgraph Vision ["Détection"]
-        P --> D1[Détection des prises<br>YOLO]
-        D1 --> D2[Cartographie des prises<br>coordonnées, types, orientations]
+        P --> D1["Détection des prises<br>(YOLO)"]
+        D1 --> D2["Cartographie des prises<br>(coordonnées, types, orientations)"]
     end
 
     subgraph Pathfinding ["Calcul de la bêta"]
-        D2 & M --> PF1[Graphe de postures accessibles]
-        PF1 --> PF2[Pathfinding sous contraintes<br>équilibre & portée]
+        D2 & M --> PF1[Graphe de postures]
+        PF1 --> PF2["Pathfinding sous contraintes<br>(équilibre & portée)"]
         PF2 --> BG[Guide pas-à-pas de la bêta]
     end
 ```
