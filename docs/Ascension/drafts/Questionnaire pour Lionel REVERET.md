@@ -99,10 +99,12 @@ flowchart TD
 
 Merci beaucoup pour le temps que vous accorderez à la lecture de nos questions.
 
+Notre mail de contact : [ascension.eip@gmail.com](mailto:ascension.eip@gmail.com).
+
 **L'équipe Ascension :**
 
-- Christophe VANDEVOIR (`christophe.vandevoir@epitech.eu`) - Développeur Backend
-- Gianni TUERO (`gianni.tuero@epitech.eu`) - Chef de Projet & Développeur IA
-- Lou PELLEGRINO (`lou.pellegrino@epitech.eu`) - Développeur Backend
-- Nicolas TORO (`nicolas.toro@epitech.eu`) - Chef d'équipe & Développeur Mobile
-- Olivier POUECH (`olivier.pouech@epitech.eu`) - Développeur IA
+- Christophe VANDEVOIR - Développeur Backend
+- Gianni TUERO - Chef de Projet & Développeur IA
+- Lou PELLEGRINO - Développeur Backend
+- Nicolas TORO - Chef d'équipe & Développeur Mobile
+- Olivier POUECH - Développeur IA
