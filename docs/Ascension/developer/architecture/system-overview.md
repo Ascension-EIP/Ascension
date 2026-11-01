@@ -3,7 +3,7 @@ id: f1d0195a-2bc8-4cf6-a6c2-f215f94e82c6
 ---
 
 :::success
-**Version:** 1.2
+**Version:** 1.3
 :::
 
 ---
@@ -160,117 +160,118 @@ GET    /v1/analysis/:id          # Fetch results
 - Dead letter queue for failed jobs
 - Flexible routing with routing keys
 
-**Queue Pattern**:
+**Topology (AI worker, implemented)**:
 
-```
-Exchange: ascension.vision (type: direct)
-Queues:
-  - vision.hold_detection  (durable, persistent)
-  - vision.skeleton        (durable, persistent)
-  - vision.advice          (durable, persistent)
-  - vision.ghost           (durable, persistent)
+One durable topic exchange, `events`, carries every job and status message. Each queue is bound with the routing keys it consumes. A failed or rejected message is dead-lettered through the direct exchange `events.dlx` into `<queue>.dlq`.
 
-Exchange: ascension.training (type: direct)
-Queues:
-  - training.program       (durable, persistent)
-
-Exchange: ascension.events (type: topic)
-  - For completion/failure notifications back to API
-
-Example message (vision.skeleton):
-{
-  "job_id": "uuid",
-  "analysis_id": "uuid",
-  "user_id": "uuid",
-  "video_url": "s3://bucket/path",
-  "route_id": "uuid",
-  "created_at": "timestamp"
-}
-
+```mermaid
+flowchart LR
+    Producer["Go API or producer.py"] -->|"pose.detect.requested"| EV(["exchange events (topic)"])
+    EV -->|"pose.detect.requested"| QD["poses.detect"]
+    EV -->|"pose.detect.completed"| QA["poses.advice"]
+    EV -->|"pose.advice.requested"| QA
+    QD -.->|"nack, no requeue"| DLX(["exchange events.dlx (direct)"])
+    QA -.->|"nack, no requeue"| DLX
+    DLX --> DD["poses.detect.dlq"]
+    DLX --> DA["poses.advice.dlq"]
+    Worker["AI worker"] -->|"pose.detect.completed, pose.detect.status, pose.advice.status"| EV
 ```
 
-**Event Routing Keys** (ascension.events exchange):
+_Summary: the API publishes `pose.detect.requested` on the `events` exchange. The worker consumes `poses.detect`, then publishes `pose.detect.completed`, which feeds `poses.advice`. Both steps publish their statuses. Messages that fail for good go to the dead-letter queues._
 
-- `hold_detection.completed.{job_id}`
-- `skeleton.completed.{job_id}`
-- `advice.completed.{job_id}`
-- `ghost.completed.{job_id}`
-- `training.completed.{job_id}`
-- `*.failed.{job_id}`
+| Queue          | Bound routing keys                               | Payload                | Handler               |
+| -------------- | ------------------------------------------------ | ---------------------- | --------------------- |
+| `poses.detect` | `pose.detect.requested`                          | `{job_id, object_key}` | `pose_detect_request` |
+| `poses.advice` | `pose.detect.completed`, `pose.advice.requested` | `{job_id}`             | `pose_advice_request` |
+
+Status messages (`pose.detect.status`, `pose.advice.status`) carry `{job_id, status, message}` (`message` is optional and short) with `status` among `pending`, `started`, `running`, `success`, `failed`. The `job_id` is the `analyses.id`; the bucket is a configuration value, not part of the message. The JSON Schemas in `schemas/` are the source of truth for these payloads.
+
+**Reliability rules**:
+
+- Queues are durable and declared with the dead-letter arguments. Queues created by an older version must be deleted once, since RabbitMQ refuses a redeclaration with different arguments.
+- Each worker process takes one message at a time (`prefetch_count=1`) and runs the job in a thread, so heartbeats keep flowing during long jobs.
+- A payload that fails validation is rejected without running the handler and lands in the dead-letter queue. No status is published for it (there is no reliable `job_id`), so the analysis stays `pending` and must be detected on the server side.
+
+**Planned queues**: hold detection, Ghost Mode and training programs will get their own queues and routing keys. Their former names (`vision.hold_detection`, `vision.ghost`, `training.program`) are **planned and must be redefined** under the new convention (exchange `events`, queues and keys named by feature).
 
 ### Layer 4: AI Workers (Python + PyTorch + MediaPipe + OpenCV)
 
-A single Python service (`apps/ai/`) handles all AI tasks, routed through RabbitMQ into **two distinct pipelines**.
+A single Python service (`apps/ai/`) handles all AI tasks, routed through RabbitMQ into **two distinct pipelines**. Only the first two steps of the vision pipeline exist today; see the [AI worker overview](../apps/ai/overview.md) and the [worker README](../../../../apps/ai/README.md).
 
-Pipeline 1: Vision Pipeline (GPU-intensive)
+Pipeline 1: Vision Pipeline
 
 All computer-vision tasks that rely on MediaPipe Pose and image processing:
 
-| Step | Queue | Input | Output | Description |
-| --- | --- | --- | --- | --- |
-| 1\. Hold Detection | `vision.hold_detection` | Photo of the route | JSON hold map (positions + types) | User photographs the wall, AI detects and classifies holds (crimp, sloper, jug…). User can manually correct misclassified holds before proceeding. |
-| 2\. Skeleton Extraction | `vision.skeleton` | Video + hold map | JSON per-frame skeleton data | MediaPipe Pose extracts 33 keypoints per frame → computes joint angles, center of gravity, weight distribution, segment tensions. Returns the full skeleton timeline as JSON to the Go API. |
-| 3\. Analysis & Advice | `vision.advice` | Skeleton JSON + hold map | JSON advice payload | Combines skeleton data with hold context to generate targeted coaching advice (e.g., "hip too far from wall on move 3", "match hands before flagging"). |
-| 4\. Ghost Mode | `vision.ghost` | Route photo + selected holds + user morphology | JSON ghost step sequence + step images | Computes an optimal movement sequence (pathfinding) for the user's body proportions from an empty route photo. Output is a step-by-step sequence with generated images showing each move. |
+| Step               | Queue                          | Input                                                | Output                                                                                                    | Status                                                                                                                                                                                                 |
+| ------------------ | ------------------------------ | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1\. Hold Detection | Planned (name to be redefined) | Photo of the route                                   | JSON hold map (positions + types)                                                                         | Planned. User photographs the wall, AI detects and classifies holds (crimp, sloper, jug…). User can manually correct misclassified holds before proceeding.                                            |
+| 2\. Pose detection | `poses.detect`                 | `{job_id, object_key}` (video in RustFS)             | `analyses.result`: filtered landmarks, joint angles, speeds, arm extension, metrics, movements and pauses | **Implemented.** MediaPipe Pose extracts 33 keypoints per frame, filters and smooths them, then computes angles, metrics and movements. Hands are unreliable on the sample video.                      |
+| 3\. Advice         | `poses.advice`                 | `{job_id}` (the worker reads `analyses.result` back) | `analyses.hints`: structured advice in French                                                             | **Implemented.** Computed values only, sent to an interchangeable OpenAI-compatible LLM (`LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`). No hold map or route context yet. Real providers are not tested. |
+| 4\. Ghost Mode     | Planned (name to be redefined) | Route photo + selected holds + user morphology       | JSON ghost step sequence + step images                                                                    | Planned. Computes an optimal movement sequence (pathfinding) for the user's body proportions from an empty route photo. Output is a step-by-step sequence with generated images showing each move.     |
 
 **Key design**: Video analysis (steps 2–3) and Ghost Mode (step 4) are completely decoupled. Video analysis takes a climbing video to extract pose landmarks and generate coaching advice. Ghost Mode operates strictly on an route photo: after hold detection and user selection, it uses climber morphology to generate step-by-step guidance images.
 
 Pipeline 2: Training Pipeline (CPU-only)
 
-| Step | Queue | Input | Output | Description |
-| --- | --- | --- | --- | --- |
-| 1\. Program Generation | `training.program` | User profile (goals, injuries, level, analysis history) | JSON training program | Algorithm selects and personalizes training routines based on the user's objectives, injury history, and past performance data from analyses. |
+| Step                   | Queue                          | Input                                                   | Output                | Status                                                                                                                                                 |
+| ---------------------- | ------------------------------ | ------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1\. Program Generation | Planned (name to be redefined) | User profile (goals, injuries, level, analysis history) | JSON training program | Planned. Algorithm selects and personalizes training routines based on the user's objectives, injury history, and past performance data from analyses. |
 
 This pipeline does **not** require GPU or video processing. It runs as a lightweight algorithm (rule-based + optional LLM for textual personalization in the future).
 
 Worker Architecture
 
-Each pipeline is implemented as a **dedicated worker module** — one process per queue. This contrasts with a monolithic router approach and allows independent scaling and deployment of each pipeline.
+One worker process consumes both implemented queues, one job at a time. Handlers live in `apps/ai/src/worker/handlers/`, one per routing flow, and the pipeline steps in numbered modules (`_1_mediapipe`, `_2_advice`) that do not depend on RabbitMQ, PostgreSQL or storage. Scaling is done by adding replicas.
 
-The canonical pipeline pattern (as implemented in `apps/ai/src/worker.py` for `vision.skeleton`) is:
+The canonical pipeline pattern (as implemented in `apps/ai/src/worker/handlers/pose_detect_request.py` for `poses.detect`) is:
 
-```
-1. DOWNLOAD  — fetch asset from MinIO/S3 via boto3
-2. PROCESS   — run the AI/algorithm module
-3. PERSIST   — UPDATE the relevant table in PostgreSQL (psycopg2)
-4. PUBLISH   — basic_publish to ascension.events with routing key {pipeline}.completed.{job_id}
-5. ACK/NACK  — basic_ack on success; basic_nack(requeue=True) on exception
+1. **Take**: mark the analysis `started` in PostgreSQL (`analyses.status`, `progress`) and publish `started`.
+2. **Download**: fetch the asset from RustFS (S3 API through boto3) into a temporary file that is always deleted.
+3. **Process**: run the AI/algorithm module, reporting progress.
+4. **Persist**: write `result` (or `hints`) to PostgreSQL (psycopg 3, parameterized queries).
+5. **Publish**: publish the status on `pose.<step>.status` and, for detect, `pose.detect.completed` to trigger the next step.
+6. **Ack or dead-letter**: `ack` on success. On failure, `nack` without requeue so the message goes to `<queue>.dlq`.
 
-```
+Failure handling:
 
-Each worker module:
+- Temporary errors (storage, database, LLM) are retried three times with an in-memory backoff (2 s, then 4 s).
+- Permanent errors (invalid payload, missing or unreadable video) are not retried: the analysis becomes `failed` with a short message, the status is published once, and the message is dead-lettered. Tracebacks stay in the logs.
+- `success` is written only after the advice step. If the LLM fails, the analysis still ends in `success` with `hints = NULL`, and `pose.advice.status` is `failed`; the advice step can be rerun with `pose.advice.requested`.
+- A redelivered detect message for an analysis already in `success` is acknowledged and ignored.
 
-- Declares its queue as **durable** at startup.
-- Declares `ascension.events` as a **topic + durable** exchange at startup.
+Each worker process:
+
+- Declares its queues as **durable**, with the dead-letter arguments, and `events` as a **topic + durable** exchange at startup.
 - Sets `prefetch_count=1` (one job at a time per worker instance).
-- Retries the initial RabbitMQ connection up to **12 × 5 s** to handle Docker Compose startup race conditions.
+- Retries the initial RabbitMQ connection up to **12 × 5 s** (`RABBITMQ_MAX_RETRIES`, `RABBITMQ_RETRY_DELAY`) to handle Docker Compose startup race conditions.
+- Exits with a non-zero code if a connection fails or drops, so the container is restarted.
 
 **Implementation status:**
 
-| Queue | Module | Status |
-| --- | --- | --- |
-| `vision.skeleton` | `apps/ai/src/worker.py` | ✅ Implemented |
-| `vision.hold_detection` | — | Planned |
-| `vision.advice` | — | Planned |
-| `vision.ghost` | — | Planned |
-| `training.program` | — | Planned |
+| Queue            | Module                                               | Status                                     |
+| ---------------- | ---------------------------------------------------- | ------------------------------------------ |
+| `poses.detect`   | `apps/ai/src/worker/handlers/pose_detect_request.py` | ✅ Implemented (not yet fed by the Go API) |
+| `poses.advice`   | `apps/ai/src/worker/handlers/pose_advice_request.py` | ✅ Implemented (provider calls untested)   |
+| Hold detection   | —                                                    | Planned                                    |
+| Ghost Mode       | —                                                    | Planned                                    |
+| Training program | —                                                    | Planned                                    |
 
-See `docs/engineering/developer_guide/ai/readme.md` for the full AI layer documentation.
+See the [AI worker overview](../apps/ai/overview.md), the [2D pipeline decomposition](../apps/ai/pipeline-2d-decomposition.md) and the [worker README](../../../../apps/ai/README.md) for the full AI layer documentation.
 
 Typical Processing Flows
 
 **Video Analysis Flow**:
-```
-1. User uploads video  → skeleton job → per-frame JSON skeleton returned to API
-2. API triggers:       → advice job   → targeted coaching from skeleton + performance
-```
 
-**Ghost Mode Flow (Photo-only)**:
-```
-1. User photos route → hold_detection job → AI classifies holds by type and color
-2. User validates or manually selects holds on the route photo
-3. API triggers:           → ghost job (photo + selected holds + morphology) → pathfinding generates step-by-step images
-```
+1. User uploads the video, then the API creates a `pending` analysis and publishes `pose.detect.requested`.
+2. The worker runs the pose detection and stores the per-frame result (`analyses.result`, progress 85).
+3. `pose.detect.completed` triggers the advice step, which stores `analyses.hints` and sets the analysis to `success`.
+4. The app polls `GET /v1/analysis/:id`. A `pose.detect.status` of `success` does **not** mean the analysis is over: it ends with `pose.advice.status`.
+
+**Ghost Mode Flow (Photo-only, planned)**:
+
+1. User photos route, then a hold detection job classifies holds by type and color.
+2. User validates or manually selects holds on the route photo.
+3. API triggers a ghost job (photo + selected holds + morphology), and pathfinding generates step-by-step images.
 
 ### Layer 5: Data Persistence
 
@@ -300,13 +301,14 @@ CREATE TABLE videos (
     expires_at TIMESTAMP  -- NULL if saved
 );
 
--- Analysis results table
+-- Analysis results table (simplified: see the database schema specification for the real columns)
 CREATE TABLE analyses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     video_id UUID REFERENCES videos(id),
-    status VARCHAR(50) DEFAULT 'pending',  -- pending, processing, completed, failed
-    result_json JSONB,  -- The actual analysis data
-    processing_time_ms INTEGER,
+    status job_status DEFAULT 'pending',  -- pending, started, running, success, failed
+    result JSONB,  -- Skeleton, angles, metrics, movements (written by the AI worker)
+    hints JSONB,   -- Structured advice, NULL if the LLM step failed
+    processing_time_ms INTERVAL,
     created_at TIMESTAMP DEFAULT NOW(),
     completed_at TIMESTAMP
 );
@@ -333,9 +335,11 @@ CREATE INDEX idx_analyses_status ON analyses(status);
 
 ```
 
-MinIO/S3 (Object Storage)
+RustFS/S3 (Object Storage)
 
-**Bucket Structure**:
+RustFS replaces MinIO (see the [MinIO deprecation audit](./audits/minio-deprecation.md) and the [object storage benchmark](./benchmark/object-storage.md)). The Go API and the AI worker both use the S3 API; the worker uses boto3 with path-style addressing. The bucket must exist before the worker starts: the Go API creates it at startup.
+
+**Bucket Structure** (target layout, not enforced by the code today):
 
 ```
 ascension-videos/
@@ -350,7 +354,7 @@ ascension-videos/
 
 ```
 
-**Lifecycle Policies**:
+**Lifecycle Policies** (target, not configured today and not verified against RustFS):
 
 ```json
 {
@@ -367,12 +371,13 @@ ascension-videos/
     }
   ]
 }
-
 ```
 
 ---
 
 ## Data Flow: Complete Video Analysis
+
+The diagram shows the contract implemented by the AI worker. The Go API still publishes on the old queue `vision.skeleton` and uses the old status values until the backend handoff is applied, so an analysis started from the app does not reach the worker yet.
 
 ```mermaid
 sequenceDiagram
@@ -380,7 +385,7 @@ sequenceDiagram
     participant User as 👤 User
     participant App as 📱 Flutter App
     participant API as 🛡️ Go API
-    participant S3 as 📦 S3/MinIO
+    participant S3 as 📦 S3/RustFS
     participant RMQ as 📨 RabbitMQ
     participant Worker as 🤖 AI Worker
     participant DB as 🗄️ PostgreSQL
@@ -402,26 +407,27 @@ sequenceDiagram
     Note over App,RMQ: JOB SUBMISSION
     App->>API: POST /v1/analysis {video_id}
     API->>DB: INSERT INTO analyses (status='pending')
-    API->>RMQ: Publish to 'vision.skeleton' queue
+    API->>RMQ: Publish 'pose.detect.requested' {job_id, object_key}
     API-->>App: Returns analysis_id (202 Accepted)
 
     Note over RMQ,Worker: PROCESSING PHASE
-    RMQ->>Worker: Job consumed from queue
-    Worker->>DB: UPDATE analyses SET status='processing'
-    Worker->>S3: Download video
+    RMQ->>Worker: Job consumed from queue 'poses.detect'
+    Worker->>DB: UPDATE analyses SET status='started', then 'running'
+    Worker->>S3: Download video (temporary file)
     S3-->>Worker: Video stream
 
-    Worker->>Worker: Pipeline 1a: Skeleton Extraction — MediaPipe (10s)
-    Worker->>DB: Store skeleton JSON
-    Worker->>Worker: Pipeline 1b: Advice Generation (3s)
+    Worker->>Worker: Step 1: pose detection — MediaPipe, filtering, metrics, movements
+    Worker->>DB: UPDATE analyses SET result=data (progress 85)
+    Worker->>RMQ: Publish 'pose.detect.status' and 'pose.detect.completed'
 
-    Worker->>DB: UPDATE analyses SET result_json=data, status='completed'
-    Worker->>RMQ: Publish 'analysis.completed.{job_id}'
-    Worker->>S3: DELETE video (if not saved)
+    RMQ->>Worker: Job consumed from queue 'poses.advice'
+    Worker->>Worker: Step 2: advice generation — LLM
+    Worker->>DB: UPDATE analyses SET hints=data, status='success'
+    Worker->>RMQ: Publish 'pose.advice.status'
 
     Note over API,App: NOTIFICATION & FETCH
     App->>API: Polls GET /v1/analysis/{analysis_id}
-    API->>DB: SELECT result_json FROM analyses
+    API->>DB: SELECT result, hints FROM analyses
     DB-->>API: Returns JSON data
     API-->>App: Returns analysis (50KB)
 
@@ -439,7 +445,7 @@ sequenceDiagram
 1. **API Servers**: Add more instances behind load balancer
 2. **AI Workers**: Add more worker processes/containers
 3. **Database**: Read replicas for query distribution
-4. **Object Storage**: Inherently scalable (S3/MinIO)
+4. **Object Storage**: Inherently scalable (S3/RustFS)
 5. **RabbitMQ**: RabbitMQ Cluster for high availability
 
 ### Vertical Scaling Points
@@ -568,7 +574,7 @@ API → DB: Fetch user permissions
 
 ```
 Local Docker Compose: Free (runs on dev machine)
-MinIO Storage: Included locally
+RustFS Storage: Included locally
 Total: ~€0/month
 
 ```
@@ -577,7 +583,7 @@ Total: ~€0/month
 
 ```
 Hetzner VPS (CX31 - 4 vCPU, 8GB RAM): ~€12/month
-MinIO Storage (included on VPS): €0
+RustFS Storage (included on VPS): €0
 Total: ~€12/month
 
 ```
@@ -588,7 +594,7 @@ Total: ~€12/month
 Hetzner VPS API+DB (CPX31 - 4 vCPU, 8GB): ~€15/month
 Hetzner VPS AI Worker (CCX23 - 4 vCPU, 16GB): ~€30/month
 RabbitMQ (self-hosted on API VPS): €0
-MinIO (self-hosted Object Storage): €0
+RustFS (self-hosted Object Storage): €0
 Hetzner Volume Storage (500GB): ~€25/month
 Data Transfer (20TB included): €0
 Total: ~€70/month (~€0.07 per user)
@@ -602,7 +608,7 @@ Hetzner Dedicated Servers (3x AX41): ~€150/month
 Hetzner GPU Server (or cloud GPU): ~€200-500/month
 PostgreSQL (replicated): Included on dedicated servers
 RabbitMQ Cluster: Included on dedicated servers
-MinIO Cluster (Object Storage): Included
+RustFS Cluster (Object Storage): Included
 Hetzner Volume Storage (50TB): ~€2,500/month
 Data Transfer (included): €0
 Total: ~€3,000-3,500/month (~€0.035 per user)
@@ -645,7 +651,7 @@ We migrated the API Gateway server from Rust (Axum) to Go (Gin) for several reas
 - **Concurrency**: Goroutines provide extremely high throughput and low latency, similar to Tokio tasks, but with a much lower cognitive load.
 - **Robust standard library**: Simplified database connection pooling and HTTP handling.
 
-*Note: The initial Rust prototype helped us validate benchmarks and establish performance guidelines, but Go was chosen for the long-term production gateway.*
+_Note: The initial Rust prototype helped us validate benchmarks and establish performance guidelines, but Go was chosen for the long-term production gateway._
 
 ### Why PostgreSQL over MongoDB?
 
@@ -662,11 +668,13 @@ We migrated the API Gateway server from Rust (Axum) to Go (Gin) for several reas
 - Flexible routing system for different job types
 - Industry standard for reliable async processing
 
-### Why MinIO for Development?
+### Why RustFS?
 
 - S3-compatible API (easy production migration)
 - Self-hosted (no cloud costs)
 - Docker-friendly
+- Replaces MinIO Community Edition, deprecated and archived upstream in April 2026 (see the [MinIO deprecation audit](./audits/minio-deprecation.md) and the [object storage benchmark](./benchmark/object-storage.md))
+- Python access goes through boto3, since RustFS documents no dedicated Python SDK
 
 ---
 
@@ -678,4 +686,4 @@ We migrated the API Gateway server from Rust (Axum) to Go (Gin) for several reas
 
 ---
 
-**Last Updated**: 2026-02-12 **Maintainer**: Ascension Development Team
+**Last Updated**: 2026-10-30 **Maintainer**: Ascension Development Team

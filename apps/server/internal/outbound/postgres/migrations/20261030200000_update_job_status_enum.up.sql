@@ -1,0 +1,64 @@
+-- Align job_status with the RabbitMQ statuses: pending, started, running, success, failed.
+-- PostgreSQL cannot remove enum values, so a new type replaces the old one.
+BEGIN;
+
+DROP INDEX idx_analyses_status;
+ALTER TABLE analyses DROP CONSTRAINT chk_analyses_completed;
+ALTER TABLE analyses DROP CONSTRAINT chk_analyses_failed;
+ALTER TABLE ghosts DROP CONSTRAINT chk_ghosts_completed;
+ALTER TABLE ghosts DROP CONSTRAINT chk_ghosts_failed;
+ALTER TABLE comparisons DROP CONSTRAINT chk_comparisons_completed;
+
+CREATE TYPE job_status_new AS ENUM ('pending', 'started', 'running', 'success', 'failed');
+
+ALTER TABLE analyses ALTER COLUMN status DROP DEFAULT;
+ALTER TABLE analyses ALTER COLUMN status TYPE job_status_new USING (
+    CASE status::text
+        WHEN 'processing' THEN 'running'
+        WHEN 'generating_hints' THEN 'running'
+        WHEN 'completed' THEN 'success'
+        ELSE status::text
+    END
+)::job_status_new;
+ALTER TABLE analyses ALTER COLUMN status SET DEFAULT 'pending';
+
+ALTER TABLE ghosts ALTER COLUMN status DROP DEFAULT;
+ALTER TABLE ghosts ALTER COLUMN status TYPE job_status_new USING (
+    CASE status::text
+        WHEN 'processing' THEN 'running'
+        WHEN 'generating_hints' THEN 'running'
+        WHEN 'completed' THEN 'success'
+        ELSE status::text
+    END
+)::job_status_new;
+ALTER TABLE ghosts ALTER COLUMN status SET DEFAULT 'pending';
+
+ALTER TABLE comparisons ALTER COLUMN status DROP DEFAULT;
+ALTER TABLE comparisons ALTER COLUMN status TYPE job_status_new USING (
+    CASE status::text
+        WHEN 'processing' THEN 'running'
+        WHEN 'generating_hints' THEN 'running'
+        WHEN 'completed' THEN 'success'
+        ELSE status::text
+    END
+)::job_status_new;
+ALTER TABLE comparisons ALTER COLUMN status SET DEFAULT 'pending';
+
+DROP TYPE job_status;
+ALTER TYPE job_status_new RENAME TO job_status;
+
+ALTER TABLE analyses ADD CONSTRAINT chk_analyses_completed
+    CHECK (status <> 'success' OR (result IS NOT NULL AND completed_at IS NOT NULL));
+ALTER TABLE analyses ADD CONSTRAINT chk_analyses_failed
+    CHECK (status <> 'failed' OR error IS NOT NULL);
+ALTER TABLE ghosts ADD CONSTRAINT chk_ghosts_completed
+    CHECK (status <> 'success' OR (path IS NOT NULL AND completed_at IS NOT NULL));
+ALTER TABLE ghosts ADD CONSTRAINT chk_ghosts_failed
+    CHECK (status <> 'failed' OR error IS NOT NULL);
+ALTER TABLE comparisons ADD CONSTRAINT chk_comparisons_completed
+    CHECK (status <> 'success' OR (metrics IS NOT NULL AND completed_at IS NOT NULL));
+
+CREATE INDEX idx_analyses_status ON analyses(status)
+    WHERE status IN ('pending', 'started', 'running');
+
+COMMIT;

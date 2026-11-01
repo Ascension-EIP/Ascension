@@ -1,12 +1,12 @@
 :::warning
-**Version:** 0.1
+**Version:** 0.2
 :::
 
 ---
 
 # Décomposition de la pipeline 2D
 
-Ce document décompose la pipeline IA 2D d'Ascension en briques techniques. Il sert de support au suivi mensuel avec le mentor en vision par ordinateur (Ilyes TALBI). Il reprend le mémo du 14/09, la réunion de suivi du 29/09, le schéma de base de données et l'état du code (`apps/new_ai`).
+Ce document décompose la pipeline IA 2D d'Ascension en briques techniques. Il sert de support au suivi mensuel avec le mentor en vision par ordinateur (Ilyes TALBI). Il reprend le mémo du 14/09, la réunion de suivi du 29/09, le schéma de base de données et l'état du code (`apps/ai`). Mis à jour le 30/10/2026 : les briques A1 à A4 et D3 sont faites dans `apps/ai` (voir le [README du worker](../../../../../apps/ai/README.md)), avec leurs limites.
 
 Chaque brique indique son entrée, sa sortie, la technologie envisagée, son statut et ses risques. Les points à trancher avec le mentor sont regroupés en section 7.
 
@@ -77,18 +77,38 @@ _Résumé du diagramme : la vidéo (A) et la photo (B) sont traitées en parall�
 
 ## 3\. Bloc A : analyse vidéo (pose)
 
-| Brique                     | Entrée                                                       | Sortie                                                           | Technologie                                     | Statut                                                        |
-| -------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------- |
-| A1 Ingestion               | Vidéo MP4 (10 à 60 s) téléversée sur MinIO par URL présignée | Fichier local temporaire dans le worker                          | Go (URL présignée), RabbitMQ, MinIO             | Partiel : le handler existe, le téléchargement S3 est un TODO |
-| A2 Squelette               | Frames de la vidéo                                           | 33 landmarks par image (`x`, `y`, `z`, `visibility`)             | MediaPipe PoseLandmarker (modèle `full`)        | Fait                                                          |
-| A3 Angles et métriques     | Landmarks                                                    | 10 angles articulaires par image, vitesse, extension des bras    | Python (géométrie)                              | Partiel : angles faits, métriques à ajouter                   |
-| A4 Découpage en mouvements | Série temporelle des landmarks                               | Liste de mouvements (quel membre bouge, début, fin) et de pauses | Règles sur la vitesse des poignets et chevilles | À explorer                                                    |
+| Brique                     | Entrée                                                        | Sortie                                                                                                      | Technologie                                                  | Statut                                                                                                                                 |
+| -------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| A1 Ingestion               | Vidéo MP4 (10 à 60 s) téléversée sur RustFS par URL présignée | Fichier local temporaire dans le worker, supprimé après usage                                               | Go (URL présignée), RabbitMQ, RustFS (boto3)                 | **Fait** côté worker. Le serveur Go n'est pas encore branché (il publie sur l'ancienne queue)                                          |
+| A2 Squelette               | Frames de la vidéo                                            | 33 landmarks par image (`x`, `y`, `z`, `visibility`)                                                        | MediaPipe PoseLandmarker (modèle `full`)                     | **Fait** : un landmarker par vidéo, mémoire constante (398 Mio mesurés pour 309 et 1236 frames), vidéo illisible = erreur définitive   |
+| A3 Angles et métriques     | Landmarks                                                     | 10 angles articulaires par image, vitesse des poignets et chevilles, extension des bras, métriques globales | Python (géométrie, numpy)                                    | **Fait** : filtrage (visibilité ≥ 0,5, trous de 5 frames au plus comblés, lissage sur 5 frames), angles calculés en pixels, `z` écarté |
+| A4 Découpage en mouvements | Série temporelle des vitesses                                 | Liste de mouvements (quel membre bouge, début, fin) et de pauses                                            | Règles à hystérésis sur la vitesse des poignets et chevilles | **Fait**, mais **mains non fiables** sur `example-2.mp4` (voir ci-dessous)                                                             |
 
 Points d'attention :
 
 - La sortie de A2 et A3 est déjà validée par le schéma `AnalysisResult` et stockée dans `analyses.result` (JSONB).
-- Le seuil de confiance MediaPipe est très bas (0,1) pour ne pas perdre de pose. Il faut donc filtrer ou lisser les landmarks peu visibles avant de calculer des angles.
+- Le seuil de confiance MediaPipe reste très bas (0,1) pour ne pas perdre de pose. Les landmarks peu visibles sont donc filtrés puis lissés avant de calculer les angles (étape `pose-filter`). Un landmark manquant est omis, jamais écrit à 0, et un angle dont un point manque est omis.
 - A4 est nécessaire pour comparer la vidéo à une bêta découpée en étapes (bloc D).
+- Chaque étape est une sous-commande de `uv run worker` (`pose-skeleton`, `pose-filter`, `pose-metrics`, `pose-movements`, `pose-detect`), sans RabbitMQ, base ni stockage.
+
+**Seuils retenus** (constantes nommées, surchargeables en ligne de commande) :
+
+| Seuil                                           | Valeur                                  | Étape                                          |
+| ----------------------------------------------- | --------------------------------------- | ---------------------------------------------- |
+| `MIN_VISIBILITY`                                | 0,5                                     | Filtrage                                       |
+| `MAX_GAP_FRAMES`                                | 5                                       | Filtrage (comblement de trous)                 |
+| `SMOOTH_WINDOW`                                 | 5 frames                                | Filtrage                                       |
+| `BENT_ARM_THRESHOLD`                            | 0,8                                     | Métriques (bras plié sous 80 % de l'extension) |
+| `MOVE_SPEED_THRESHOLD` / `STOP_SPEED_THRESHOLD` | 0,8 / 0,4 longueur de torse par seconde | Mouvements (hystérésis)                        |
+| `MERGE_GAP_MS` / `MIN_MOVE_MS` / `MIN_PAUSE_MS` | 150 / 100 / 500 ms                      | Mouvements                                     |
+
+**Limites connues** :
+
+- **Seuils calibrés sur une seule vidéo** (`resources/example-2.mp4`, grimpeur vu de dos, 309 images). Ils sont à revoir avec de vraies grimpes et d'autres angles de caméra.
+- **Les mains ne sont pas fiables sur cette vidéo avec `MIN_VISIBILITY` à 0,5.** La visibilité moyenne du poignet est de 0,48 à 0,50 : la vitesse n'est connue que sur 142 images (gauche) et 136 (droite) sur 309, et aucune image n'a les deux bras mesurables en même temps. Résultat : 14 mouvements (pieds cohérents, mains inexploitables) et aucune pause. Une pause exige que les quatre membres soient mesurés et immobiles ; une version plus permissive produisait une pause fantôme.
+- Baisser `MIN_VISIBILITY` (0,1 à 0,3) rend les mains continues mais n'est pas validé : ce sont des points que le modèle juge peu fiables. À décider après validation visuelle sur un grimpeur filmé de face ou de côté.
+- Les angles sont calculés en 2D (pixels), `z` est écarté : sur cette vidéo, les angles 3D diffèrent des angles 2D de 5 à 50° en moyenne selon l'articulation sans réduire le bruit image à image.
+- Temps de traitement mesuré : environ 6 s pour `example-2.mp4` (10 s de vidéo), sur CPU, avec un LLM simulé. Valeur de référence sur une seule vidéo.
 
 ---
 
@@ -109,7 +129,7 @@ _Résumé du diagramme : YOLO détecte les prises, OpenCV extrait la couleur de 
 
 | Brique                  | Entrée                              | Sortie                                                       | Technologie                                                                      | Statut                                      |
 | ----------------------- | ----------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------- | ------------------------------------------- |
-| B1 Photo                | Photo prise dans l'app              | Image + dimensions (`routes.image_width`, `image_height`)    | Flutter, MinIO                                                                   | Prévu                                       |
+| B1 Photo                | Photo prise dans l'app              | Image + dimensions (`routes.image_width`, `image_height`)    | Flutter, RustFS                                                                  | Prévu                                       |
 | B2 Détection des prises | Image                               | Une boîte ou un masque par prise, avec un score de confiance | YOLOv8 (Ultralytics), entraîné sur nos données                                   | À explorer : jeu de données en construction |
 | B3 Couleur dominante    | Pixels de chaque prise              | Une couleur par prise (HSV ou Lab)                           | OpenCV, k-means sur les pixels du masque                                         | À explorer                                  |
 | B4 Clustering           | Couleur et position de chaque prise | Groupes de prises = voies candidates                         | k-means (conseil du mentor), DBSCAN ou HDBSCAN si le nombre de voies est inconnu | À explorer                                  |
@@ -150,17 +170,18 @@ L'intérêt de séparer détection (bloc B) et pathfinding (bloc C) est de donne
 
 ### 6.1 Bloc D : comparaison et conseils
 
-| Brique                       | Entrée                                        | Sortie                                                                               | Technologie                                                               | Statut                                   |
-| ---------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------- | ---------------------------------------- |
-| D1 Alignement vidéo et photo | Une frame de la vidéo et la photo de la voie  | Transformation qui place les pixels de la vidéo dans le repère de la photo           | OpenCV : correspondance de points (ORB ou SIFT) puis homographie (RANSAC) | À explorer : risque principal            |
-| D2 Écarts                    | Squelette (A), mouvements (A4), bêta (C)      | Écarts par étape : membre, distance, instant (`comparisons.metrics`)                 | Python, géométrie                                                         | À explorer                               |
-| D3 Conseils                  | Angles, écarts, contexte de voie, morphologie | Conseils structurés (`analyses.hints` : catégorie, priorité, zones du corps, frames) | Modèle externe type Gemini, validé par le schéma `Hints`                  | Partiel : schéma fait, `PoseAdvice` vide |
+| Brique                       | Entrée                                                                                 | Sortie                                                                               | Technologie                                                                                                                       | Statut                                                                                                                                                         |
+| ---------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1 Alignement vidéo et photo | Une frame de la vidéo et la photo de la voie                                           | Transformation qui place les pixels de la vidéo dans le repère de la photo           | OpenCV : correspondance de points (ORB ou SIFT) puis homographie (RANSAC)                                                         | À explorer : risque principal                                                                                                                                  |
+| D2 Écarts                    | Squelette (A), mouvements (A4), bêta (C)                                               | Écarts par étape : membre, distance, instant (`comparisons.metrics`)                 | Python, géométrie                                                                                                                 | À explorer                                                                                                                                                     |
+| D3 Conseils                  | Angles, métriques, mouvements (puis écarts et contexte de voie, morphologie plus tard) | Conseils structurés (`analyses.hints` : catégorie, priorité, zones du corps, frames) | Modèle interchangeable via un client compatible OpenAI (`LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`), validé par le schéma `Hints` | **Fait** pour les conseils sur la pose seule. Fournisseurs (Gemini, DeepSeek) **non testés en réel** ; pas encore d'écarts D2 ni de morphologie dans le prompt |
 
 Points d'attention :
 
 - Le détecteur de prises tourne sur la photo uniquement. Pour comparer la vidéo à la bêta, il faut donc relier les deux repères (D1). Sans cela, on ne sait pas quelle prise le grimpeur touche.
 - D1 est fragile si la caméra bouge ou si l'angle diffère de la photo. Deux alternatives : demander une photo cadrée comme la vidéo, ou comparer des séquences de mouvements sans repère commun en pixels.
 - Le modèle externe ne doit recevoir que des données déjà calculées (angles, écarts), pas la vidéo brute, pour limiter le coût et les hallucinations.
+- Implémenté ainsi : le prompt ne contient que des valeurs calculées, résumées et bornées (jamais la vidéo, ni identifiant), et les conseils sont en français. Pour chaque membre, une couverture de mesure est calculée ; un membre mesuré sur moins de 70 % des images est signalé comme peu fiable et le modèle a interdiction de conclure sur lui. En cas d'échec du LLM, l'analyse reste en `success` avec `hints = NULL`.
 
 ### 6.2 Bloc E : rendu mobile
 
@@ -183,14 +204,15 @@ Points d'attention :
 
 ## 8\. État d'avancement et prochaines étapes
 
-| Brique                                      | Statut                                   |
-| ------------------------------------------- | ---------------------------------------- |
-| A2 Squelette, A3 angles                     | Fait                                     |
-| A1 Ingestion S3, A4 mouvements, D3 conseils | En cours ou à faire                      |
-| B2 à B5 Lecture de voie                     | À explorer, données en cours de collecte |
-| C Pathfinding                               | À explorer                               |
-| D1, D2 Alignement et écarts                 | À explorer                               |
-| E Rendu                                     | Prévu côté mobile                        |
+| Brique                                                               | Statut                                                                                             |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| A1 Ingestion S3, A2 squelette, A3 angles et métriques, A4 mouvements | **Fait** (limites : mains non fiables sur la vidéo d'exemple, seuils calibrés sur une seule vidéo) |
+| D3 conseils                                                          | **Fait** pour la pose seule ; fournisseurs LLM non testés en réel                                  |
+| B2 à B5 Lecture de voie                                              | À explorer, données en cours de collecte                                                           |
+| C Pathfinding                                                        | À explorer                                                                                         |
+| D1, D2 Alignement et écarts                                          | À explorer                                                                                         |
+| E Rendu                                                              | Prévu côté mobile                                                                                  |
+| Branchement du serveur Go au worker                                  | À faire (voir le handoff backend, hors dépôt)                                                      |
 
 Prochaines étapes décidées à la réunion du 29/09 :
 

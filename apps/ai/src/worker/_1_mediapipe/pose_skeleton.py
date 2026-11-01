@@ -1,13 +1,14 @@
-# @date 2026-10-25
+# @date 2026-11-01
 # @file pose_skeleton.py
 # @brief File description.
 # @project Ascension
-# @author Nicolas TORO <nicolas.toro@epitech.eu>
+# @author Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
-import math
+import os
+from collections.abc import Callable, Iterator
 from pathlib import Path
-from typing import ClassVar, Self
+from typing import Self
 
 import cv2
 import mediapipe as mp
@@ -16,122 +17,52 @@ from mediapipe.tasks.python.components.containers.landmark import NormalizedLand
 from mediapipe.tasks.python.vision import drawing_styles, drawing_utils
 from rich.progress import track
 
+from common.utils.errors import PermanentError
 from common.utils.logger import log
+from worker._1_mediapipe.pose_geometry import frame_angles
 
 PoseLandmark = vision.PoseLandmark
 
 #: Number of decimal places kept for coordinates/visibility.
 COORD_PRECISION = 4
-#: Number of decimal places kept for angles (in degrees).
-ANGLE_PRECISION = 1
+#: ``apps/ai``, used to resolve relative paths independently of the cwd.
+AI_ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_MODEL_PATH = "resources/pose_landmarker_full.task"
+#: Used when the container reports no FPS.
+DEFAULT_FPS = 30.0
+
+
+def resolve_model_path() -> str:
+    """Model path from ``POSE_MODEL_PATH`` (default: bundled model), relative to ``apps/ai``."""
+    return str(AI_ROOT / os.environ.get("POSE_MODEL_PATH", DEFAULT_MODEL_PATH))
 
 
 class PoseSkeleton:
-    #: Angle at vertex ``B`` formed by the points ``A-B-C`` (MediaPipe convention).
-    #: Names match the `body_zone` enum of the database schema.
-    JOINTS: ClassVar[dict[str, tuple[PoseLandmark, PoseLandmark, PoseLandmark]]] = {
-        "left_shoulder": (
-            PoseLandmark.LEFT_ELBOW,
-            PoseLandmark.LEFT_SHOULDER,
-            PoseLandmark.LEFT_HIP,
-        ),
-        "right_shoulder": (
-            PoseLandmark.RIGHT_ELBOW,
-            PoseLandmark.RIGHT_SHOULDER,
-            PoseLandmark.RIGHT_HIP,
-        ),
-        "left_elbow": (
-            PoseLandmark.LEFT_SHOULDER,
-            PoseLandmark.LEFT_ELBOW,
-            PoseLandmark.LEFT_WRIST,
-        ),
-        "right_elbow": (
-            PoseLandmark.RIGHT_SHOULDER,
-            PoseLandmark.RIGHT_ELBOW,
-            PoseLandmark.RIGHT_WRIST,
-        ),
-        "left_hip": (
-            PoseLandmark.LEFT_SHOULDER,
-            PoseLandmark.LEFT_HIP,
-            PoseLandmark.LEFT_KNEE,
-        ),
-        "right_hip": (
-            PoseLandmark.RIGHT_SHOULDER,
-            PoseLandmark.RIGHT_HIP,
-            PoseLandmark.RIGHT_KNEE,
-        ),
-        "left_knee": (
-            PoseLandmark.LEFT_HIP,
-            PoseLandmark.LEFT_KNEE,
-            PoseLandmark.LEFT_ANKLE,
-        ),
-        "right_knee": (
-            PoseLandmark.RIGHT_HIP,
-            PoseLandmark.RIGHT_KNEE,
-            PoseLandmark.RIGHT_ANKLE,
-        ),
-        "left_ankle": (
-            PoseLandmark.LEFT_KNEE,
-            PoseLandmark.LEFT_ANKLE,
-            PoseLandmark.LEFT_FOOT_INDEX,
-        ),
-        "right_ankle": (
-            PoseLandmark.RIGHT_KNEE,
-            PoseLandmark.RIGHT_ANKLE,
-            PoseLandmark.RIGHT_FOOT_INDEX,
-        ),
-    }
+    """Extract the 33-point skeleton of every frame of a video."""
 
-    def __init__(self, model: str = "resources/pose_landmarker_full.task"):
-        self.model = model
-        self.video_path: str | None = None
-        self.landmarker = self.init_model()
+    def __init__(self, model: str | None = None):
+        self.model = model or resolve_model_path()
         self.fps: float = 0.0
         self.frame_size: tuple[int, int] = (0, 0)
         #: Payload ready to be stored in `analyses.result`
-        #: (``{"fps", "width", "height", "frames"}``).
-        self.mp_images_with_results: dict | None = None
-        #: Raw (image, MediaPipe result) pairs, kept for `render_video`.
-        self.raw_frames: list[tuple] = []
+        #: (``{"fps", "width", "height", "frames"}``), raw (unfiltered).
+        self.result: dict | None = None
 
-    # def detect_frame(frame, detector):
-    def init_model(self):
+    def create_landmarker(self):
+        """Create a landmarker. One per video: VIDEO mode needs timestamps that
+        increase over the whole landmarker lifetime, so it cannot be reused."""
         log.info("Initializing the mediapipe model.")
-        BaseOptions = mp.tasks.BaseOptions
-        PoseLandmarker = mp.tasks.vision.PoseLandmarker
-        PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
-        VisionRunningMode = mp.tasks.vision.RunningMode
-        options = PoseLandmarkerOptions(
-            base_options=BaseOptions(model_asset_path=self.model),
-            running_mode=VisionRunningMode.VIDEO,
+        options = vision.PoseLandmarkerOptions(
+            base_options=mp.tasks.BaseOptions(model_asset_path=self.model),
+            running_mode=vision.RunningMode.VIDEO,
             min_pose_detection_confidence=0.1,
             min_pose_presence_confidence=0.1,
             min_tracking_confidence=0.1,
         )
-        return PoseLandmarker.create_from_options(options)
+        return vision.PoseLandmarker.create_from_options(options)
 
     @staticmethod
-    def coords(landmark: NormalizedLandmark) -> tuple[float, float, float]:
-        """Coordinates (x, y, z) of the landmark, with ``None`` coerced to 0.0."""
-        return (landmark.x or 0.0, landmark.y or 0.0, landmark.z or 0.0)
-
-    @classmethod
-    def angle(
-        cls,
-        a: NormalizedLandmark,
-        b: NormalizedLandmark,
-        c: NormalizedLandmark,
-    ) -> float:
-        """Angle in degrees at vertex ``b`` formed by the points ``a-b-c``."""
-        ba = tuple(p - q for p, q in zip(cls.coords(a), cls.coords(b), strict=True))
-        bc = tuple(p - q for p, q in zip(cls.coords(c), cls.coords(b), strict=True))
-        norm = math.sqrt(sum(v * v for v in ba)) * math.sqrt(sum(v * v for v in bc))
-        if norm == 0:
-            raise ValueError("undefined angle: zero-length vector")
-        cos = sum(p * q for p, q in zip(ba, bc, strict=True)) / norm
-        return math.degrees(math.acos(max(-1.0, min(1.0, cos))))
-
-    def format_landmarks(self, landmarks: list[NormalizedLandmark]) -> dict:
+    def format_landmarks(landmarks: list[NormalizedLandmark]) -> dict:
         """Serialize the landmarks as ``{name: {x, y, z, visibility}}``."""
         return {
             PoseLandmark(index).name.lower(): {
@@ -144,106 +75,112 @@ class PoseSkeleton:
             if index < len(PoseLandmark)
         }
 
-    def format_angles(self, landmarks: list[NormalizedLandmark]) -> dict:
-        """Compute the usable joint angles for the frame."""
-        angles: dict[str, float] = {}
-        for name, (a, b, c) in self.JOINTS.items():
-            if max(a, b, c) >= len(landmarks):
-                continue
-            try:
-                angle = self.angle(landmarks[a], landmarks[b], landmarks[c])
-            except ValueError:
-                continue
-            angles[name] = round(angle, ANGLE_PRECISION)
-        return angles
-
     def format_frame(self, frame_index: int, timestamp_ms: int, result) -> dict:
         """Build a ``frames`` entry matching `analyses.result`."""
         poses = result.pose_landmarks
-        landmarks = poses[0] if poses else []
+        landmarks = self.format_landmarks(poses[0] if poses else [])
         return {
             "frame": frame_index,
             "timestamp_ms": timestamp_ms,
             "pose_detected": bool(poses),
-            "landmarks": self.format_landmarks(landmarks),
-            "angles": self.format_angles(landmarks),
+            "landmarks": landmarks,
+            "angles": frame_angles(landmarks, *self.frame_size),
         }
 
-    def landmark_video(self, video_path: str, landmarker) -> list[dict]:
-        """Detect the skeleton frame by frame and return the formatted frames."""
-        log.info("Landmarking the video frame per frame.")
-        cv_video = cv2.VideoCapture(video_path)
-        self.fps = cv_video.get(cv2.CAP_PROP_FPS) or 30.0
-        self.frame_size = (
-            int(cv_video.get(cv2.CAP_PROP_FRAME_WIDTH)),
-            int(cv_video.get(cv2.CAP_PROP_FRAME_HEIGHT)),
-        )
-        total_frames = int(cv_video.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.raw_frames = []
-        frames: list[dict] = []
-
-        for frame_index in track(
-            range(total_frames), description="Landmarking frames..."
-        ):
-            success, frame = cv_video.read()
+    @staticmethod
+    def read_frames(cap: cv2.VideoCapture) -> Iterator:
+        """Yield frames until ``read()`` fails (the frame count can be wrong)."""
+        while True:
+            success, frame = cap.read()
             if not success:
-                break
-            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
+                return
+            yield frame
 
-            timestamp_ms = int(frame_index / self.fps * 1000)
-            pose_landmarker_result = landmarker.detect_for_video(mp_image, timestamp_ms)
-            self.raw_frames.append((mp_image, pose_landmarker_result))
-            frames.append(
-                self.format_frame(frame_index, timestamp_ms, pose_landmarker_result)
-            )
-
-        cv_video.release()
-        return frames
-
-    def draw_landmarks_on_image(self, mp_image, detection_result):
-        pose_landmarks_list = detection_result.pose_landmarks
-        annotated_image = cv2.cvtColor(mp_image.numpy_view(), cv2.COLOR_RGB2BGR)
-
-        pose_landmark_style = drawing_styles.get_default_pose_landmarks_style()
-        pose_connection_style = drawing_utils.DrawingSpec(
-            color=(0, 255, 0), thickness=2
-        )
-
-        for pose_landmarks in pose_landmarks_list:
+    @staticmethod
+    def draw_landmarks(frame, detection_result) -> None:
+        """Draw the skeleton on a BGR frame, in place."""
+        for pose_landmarks in detection_result.pose_landmarks:
             drawing_utils.draw_landmarks(
-                image=annotated_image,
+                image=frame,
                 landmark_list=pose_landmarks,
                 connections=vision.PoseLandmarksConnections.POSE_LANDMARKS,
-                landmark_drawing_spec=pose_landmark_style,
-                connection_drawing_spec=pose_connection_style,
+                landmark_drawing_spec=drawing_styles.get_default_pose_landmarks_style(),
+                connection_drawing_spec=drawing_utils.DrawingSpec(color=(0, 255, 0), thickness=2),
             )
 
-        return annotated_image
+    def landmark_video(
+        self,
+        video_path: str,
+        render_path: str | None = None,
+        on_progress: Callable[[int], None] | None = None,
+    ) -> list[dict]:
+        """Detect the skeleton frame by frame and return the formatted frames.
 
-    def render_video(self) -> str:
-        """Draw landmarks on every frame and write them to <video>-result.mp4."""
-        output_path = str(
-            Path(self.video_path).with_stem(Path(self.video_path).stem + "-result")
-        )
-        writer = cv2.VideoWriter(
-            output_path, cv2.VideoWriter_fourcc(*"mp4v"), self.fps, self.frame_size
-        )
+        Frames are not kept: the optional render is written as we go.
 
-        for mp_image, detection_result in track(
-            self.raw_frames, description="Rendering video..."
-        ):
-            writer.write(self.draw_landmarks_on_image(mp_image, detection_result))
+        Raises:
+            PermanentError: The video cannot be opened or has no readable frame.
+        """
+        log.info("Landmarking the video frame per frame.")
+        cap = cv2.VideoCapture(video_path)
+        writer = None
+        try:
+            if not cap.isOpened():
+                raise PermanentError("Video cannot be opened")
+            self.fps = cap.get(cv2.CAP_PROP_FPS)
+            if not self.fps > 0:
+                log.warning("Video reports no FPS, assuming %s.", DEFAULT_FPS)
+                self.fps = DEFAULT_FPS
+            # Only used for progress: the container may report a wrong count.
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            frames: list[dict] = []
+            last_percent = -1
 
-        writer.release()
-        log.info(f"Rendered video written to {output_path}")
-        return output_path
+            with self.create_landmarker() as landmarker:
+                for index, frame in enumerate(
+                    track(self.read_frames(cap), description="Landmarking frames...", total=total_frames or None)
+                ):
+                    if index == 0:
+                        height, width = frame.shape[:2]
+                        self.frame_size = (width, height)
+                        if render_path:
+                            writer = cv2.VideoWriter(
+                                render_path, cv2.VideoWriter_fourcc(*"mp4v"), self.fps, self.frame_size
+                            )
+                    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
+                    timestamp_ms = int(index / self.fps * 1000)
+                    detection = landmarker.detect_for_video(mp_image, timestamp_ms)
+                    frames.append(self.format_frame(index, timestamp_ms, detection))
+                    if writer:
+                        self.draw_landmarks(frame, detection)
+                        writer.write(frame)
+                    if on_progress and total_frames > 0:
+                        percent = min(100, (index + 1) * 100 // total_frames)
+                        if percent != last_percent:
+                            last_percent = percent
+                            on_progress(percent)
+            if not frames:
+                raise PermanentError("Video has no readable frame")
+            if on_progress and last_percent < 100:
+                on_progress(100)
+            if render_path:
+                log.info("Rendered video written to %s", render_path)
+            return frames
+        finally:
+            cap.release()
+            if writer:
+                writer.release()
 
-    def process(self, video_path: str) -> Self:
-        """Run the detection and expose the full `analyses.result` payload."""
-        self.video_path = video_path
-        frames = self.landmark_video(self.video_path, self.landmarker)
-        self.mp_images_with_results = {
+    def process(
+        self,
+        video_path: str,
+        render_path: str | None = None,
+        on_progress: Callable[[int], None] | None = None,
+    ) -> Self:
+        """Run the detection and expose the raw `analyses.result` payload in ``result``."""
+        frames = self.landmark_video(video_path, render_path, on_progress)
+        self.result = {
             "fps": self.fps,
             "width": self.frame_size[0],
             "height": self.frame_size[1],

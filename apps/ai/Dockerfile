@@ -14,8 +14,9 @@ RUN apt-get update \
 
 # Install dependencies via uv
 COPY pyproject.toml uv.lock* ./
-RUN uv sync --frozen
+RUN uv sync --frozen --no-install-project
 
 COPY . .
+RUN uv sync --frozen
 
 ENTRYPOINT ["uv", "run", "worker"]
