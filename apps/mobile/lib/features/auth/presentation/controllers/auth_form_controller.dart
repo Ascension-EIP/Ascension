@@ -1,4 +1,4 @@
-// @date 2026-10-30
+// @date 2026-10-25
 // @file auth_form_controller.dart
 // @brief Controller managing authentication forms (login & register).
 // @project Ascension

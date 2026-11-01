@@ -1,4 +1,4 @@
-// @date 2026-10-30
+// @date 2026-10-25
 // @file settings_screen_golden_test.dart
 // @brief Golden tests for ProfileScreen and SettingsScreen.
 // @project Ascension

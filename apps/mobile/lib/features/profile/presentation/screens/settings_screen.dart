@@ -1,4 +1,4 @@
-// @date 2026-10-30
+// @date 2026-10-25
 // @file settings_screen.dart
 // @brief Settings screen allowing user preferences and logout.
 // @project Ascension

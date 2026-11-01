@@ -1,4 +1,4 @@
-// @date 2026-10-30
+// @date 2026-10-25
 // @file auth_session.dart
 // @brief Domain entity holding JWT tokens and user metadata.
 // @project Ascension

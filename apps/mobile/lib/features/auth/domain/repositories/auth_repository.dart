@@ -1,4 +1,4 @@
-// @date 2026-10-30
+// @date 2026-10-25
 // @file auth_repository.dart
 // @brief Abstract repository contract for authentication.
 // @project Ascension

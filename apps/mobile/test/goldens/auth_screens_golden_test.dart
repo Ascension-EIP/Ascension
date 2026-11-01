@@ -1,4 +1,4 @@
-// @date 2026-10-30
+// @date 2026-10-25
 // @file auth_screens_golden_test.dart
 // @brief Golden tests for WelcomeScreen, LoginScreen and RegisterScreen.
 // @project Ascension

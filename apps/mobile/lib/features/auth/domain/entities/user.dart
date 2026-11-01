@@ -1,4 +1,4 @@
-// @date 2026-10-30
+// @date 2026-10-25
 // @file user.dart
 // @brief Pure domain entity representing an Ascension user.
 // @project Ascension

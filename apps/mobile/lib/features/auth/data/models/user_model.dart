@@ -1,4 +1,4 @@
-// @date 2026-10-30
+// @date 2026-10-25
 // @file user_model.dart
 // @brief Data Transfer Object for User JSON serialization.
 // @project Ascension

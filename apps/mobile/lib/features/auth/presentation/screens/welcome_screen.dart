@@ -1,4 +1,4 @@
-// @date 2026-10-30
+// @date 2026-10-25
 // @file welcome_screen.dart
 // @brief Welcome / Landing screen for authentication with logo and action buttons.
 // @project Ascension
