@@ -1,0 +1,17 @@
+@Library('jenkins-shared-library@main') _
+
+// Go API pipeline: format, vet, build, tests, then SonarQube on dev.
+// The stages live in runServerCI (Ascension-EIP/jenkins-shared-library);
+// this file only sets the variables.
+runServerCI(
+    // Same version as .moon/toolchain.yml and the GitHub Actions CI.
+    goVersion: '1.27.1',
+
+    // Build only when the server or the shared schemas changed.
+    watchPaths: ['apps/server/', 'schemas/'],
+
+    // SonarQube project ascension-server (apps/server/sonar-project.properties).
+    // Community analyses one branch per project: dev only.
+    enableSonarqube: true,
+    sonarBranch: 'dev',
+)
