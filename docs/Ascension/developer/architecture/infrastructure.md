@@ -69,8 +69,8 @@ flowchart TB
 
         Proxy -->|api.ascension-eip.fr| API
         Proxy -->|ascension-eip.fr| WebSite
-        Proxy -->|ci.ascension-eip.fr| Jenkins
-        Proxy -->|sonar.ascension-eip.fr| Sonar
+        Proxy -->|jenkins.ascension-eip.fr| Jenkins
+        Proxy -->|sonarqube.ascension-eip.fr| Sonar
 
         API --> DB
         API --> RabbitMQ
@@ -170,8 +170,8 @@ The domain routes incoming traffic to the Milan VPS via an authoritative DNS zon
 | :--- | :--- | :--- |
 | `ascension-eip.fr` / `www` | VPS (Milan) | Public showcase website and project documentation portal |
 | `api.ascension-eip.fr` | VPS (Milan) | Backend Go API (REST endpoints and WebSockets for Flutter app) |
-| `ci.ascension-eip.fr` | VPS (Milan) | Jenkins Continuous Integration platform (internal team access) |
-| `sonar.ascension-eip.fr` | VPS (Milan) | SonarQube code quality and analysis platform (internal team access) |
+| `jenkins.ascension-eip.fr` | VPS (Milan) | Jenkins Continuous Integration platform (internal team access) |
+| `sonarqube.ascension-eip.fr` | VPS (Milan) | SonarQube code quality and analysis platform (internal team access) |
 
 #### Security and TLS Certificates
 - All client connections enforce **HTTPS / TLS 1.3**.
@@ -191,7 +191,7 @@ The infrastructure follows defense-in-depth principles to isolate user data and 
    - The Gravelines bucket is strictly private.
    - Public write operations are prohibited; uploads require cryptographically signed, short-lived presigned URLs (15-minute validity window).
 3. **Internal Tools Hardening:**
-   - Development subdomains (`ci.ascension-eip.fr` and `sonar.ascension-eip.fr`) require role-based authentication and IP allowlisting where appropriate.
+   - Development subdomains (`jenkins.ascension-eip.fr` and `sonarqube.ascension-eip.fr`) require role-based authentication and IP allowlisting where appropriate.
 4. **Automated Backups:**
    - Scheduled, encrypted PostgreSQL 18 database dumps are exported directly to a dedicated private bucket on the Gravelines Object Storage, ensuring cross-region redundancy between Milan and France.
 
