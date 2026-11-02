@@ -187,12 +187,14 @@ Flutter and `uv` are installed in the cache because their images are not publish
 
 ## 8\. Maintenance
 
-| Task                               | How                                                                                                                        |
-| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Update Go, Python, `uv` or Flutter | Change the version in the `Jenkinsfile` of the application. A new Flutter or `uv` version is installed by the next build   |
-| Free disk space                    | Delete an old version folder in `/var/jenkins_home/ci-cache/tools`, or a whole cache folder: the next build fills it again |
-| Add a team member                  | Create the Jenkins and SonarQube accounts, then assign the Jenkins role (section 2)                                        |
-| Restart Jenkins or SonarQube       | From Coolify, on the matching service                                                                                      |
+| Task                               | How                                                                                                                                                           |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Update Go, Python, `uv` or Flutter | Change the version in the `Jenkinsfile` of the application. A new Flutter or `uv` version is installed by the next build                                      |
+| Free disk space                    | Delete an old version folder in `/var/jenkins_home/ci-cache/tools`, or a whole cache folder: the next build fills it again                                    |
+| Docker images                      | Nothing to do: Coolify removes unused images every night at 00:00, and the first build of the day pulls them again                                            |
+| Host settings for SonarQube        | `/etc/sysctl.d/99-sonarqube.conf` sets `vm.max_map_count=1048576` and `fs.file-max=2097152`. Never set them lower: SonarQube needs at least 524288 and 131072 |
+| Add a team member                  | Create the Jenkins and SonarQube accounts, then assign the Jenkins role (section 2)                                                                           |
+| Restart Jenkins or SonarQube       | From Coolify, on the matching service                                                                                                                         |
 
 ---
 
@@ -215,4 +217,3 @@ Flutter and `uv` are installed in the cache because their images are not publish
 - A build can start containers on the VPS Docker daemon, which gives full control of the host. Only code from the organization is built: pull requests from forks are not discovered, and `Replay` is reserved to administrators.
 - Logs stay in Jenkins and are not copied to GitHub checks.
 - SonarQube requires authentication for every page and API call.
-- The host setting `vm.max_map_count` is 262144, below the 524288 recommended by SonarQube. SonarQube runs, but raise it if its search engine fails to start.
