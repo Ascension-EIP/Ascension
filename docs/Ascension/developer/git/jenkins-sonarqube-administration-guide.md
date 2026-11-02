@@ -3,7 +3,7 @@ id: 157bff42-b388-4ae5-b2f3-2e16faa74f00
 ---
 
 :::success
-**Version:** 1.0
+**Version:** 1.1
 :::
 
 ---
@@ -122,12 +122,15 @@ Behaviours of every job:
 
 | Behaviour                          | Setting                                                                                                                    |
 | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Discover branches                  | Exclude branches that are also filed as PRs                                                                                |
+| Discover branches                  | All branches                                                                                                               |
+| Filter by name (with wildcards)    | Include `main staging dev PR-*`, nothing excluded                                                                          |
 | Discover pull requests from origin | Merging the pull request with the current target branch revision                                                           |
 | Discover pull requests from forks  | **Removed**: code from a fork must never run with access to the VPS Docker daemon                                          |
 | Status Checks Properties           | Check name from the table above, **Suppress log output in checks** and **Skip GitHub Branch Source notifications** checked |
 
 Orphaned Item Strategy: discard old items after 7 days.
+
+Jenkins builds `main`, `staging` and `dev` as branches, and every pull request. A feature branch is only built once it has a pull request, so nothing is built twice. Do not go back to **Exclude branches that are also filed as PRs**: `dev` always has an open pull request to `staging`, so it would never be built as a branch, and the SonarQube analysis, which only runs on the `dev` branch, would never run.
 
 :::warning
 Each job needs its own **Status checks name**. With the same name, the three jobs overwrite each other's check on GitHub. When a job is created with **Copy from**, change both the **Script Path** and the check name before saving: the first branch scan starts right after the save, with the copied values.
@@ -200,6 +203,7 @@ Flutter and `uv` are installed in the cache because their images are not publish
 | A job runs the stages of another application                                       | The job was copied and its **Script Path** was saved unchanged; the first branch scan used it                               | Fix the Script Path, then **Build Now** on the branch                                                |
 | A build skips everything after a configuration fix                                 | The same commit already has a successful build, and the build was not started by hand                                       | Click **Build Now**: a build started by hand always runs                                             |
 | Checks named `Jenkins` or `continuous-integration/jenkins/branch` stay in progress | Builds started before **Status Checks Properties** was set publish under the default names, and nothing ever completes them | No action: they only stay on that commit and disappear with the next one                             |
+| The SonarQube stage is always skipped on `dev`                                     | `dev` is excluded as a branch because of its open pull request to `staging`                                                 | Use **All branches** with the name filter of section 4.2                                             |
 | The SonarQube stage waits until its timeout                                        | The SonarQube webhook to `/sonarqube-webhook/` is missing or failing                                                        | Check the webhook and its last deliveries in SonarQube (_Administration › Configuration › Webhooks_) |
 | The scanner hangs at `SCM Publisher`                                               | The native `git blame` of the scanner stops reading git's output                                                            | Already handled: `sonarAnalysis` sets `sonar.scm.use.blame.algorithm=GIT_FILES_BLAME` (JGit)         |
 | `SonarQube installation ... does not match any configured installation`            | No SonarQube server named `SonarQube` in Jenkins                                                                            | Add it in _System › SonarQube servers_ (section 4.1)                                                 |
