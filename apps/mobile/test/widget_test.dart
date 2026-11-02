@@ -1,4 +1,4 @@
-// @date 2026-10-25
+// @date 2026-11-02
 // @file widget_test.dart
 // @brief File description.
 // @project Ascension
@@ -35,6 +35,11 @@ class FakeSecureStorageService extends SecureStorageService {
 
   @override
   Future<void> clearAuthData() async {}
+}
+
+class FakeFrenchLocaleNotifier extends LocaleNotifier {
+  @override
+  Locale build() => const Locale('fr');
 }
 
 void main() {
@@ -110,11 +115,7 @@ void main() {
                 userId: 'user_123',
               ),
             ),
-            localeProvider.overrideWith(
-              (ref) =>
-                  LocaleNotifier(LocalStorageService(sharedPreferences))
-                    ..setLocale(const Locale('fr')),
-            ),
+            localeProvider.overrideWith(FakeFrenchLocaleNotifier.new),
           ],
           child: const AscensionApp(),
         ),

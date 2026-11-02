@@ -1,4 +1,4 @@
-// @date 2026-10-25
+// @date 2026-11-02
 // @file test_helper.dart
 // @brief Shared helpers, mock providers and wrappers for widget and golden tests.
 // @project Ascension
@@ -7,6 +7,7 @@
 // @status done
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:forui/forui.dart';
 import 'package:mobile/app/app_theme.dart';
 import 'package:mobile/core/l10n/app_localizations.dart';

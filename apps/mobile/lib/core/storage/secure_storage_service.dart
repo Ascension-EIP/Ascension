@@ -1,4 +1,4 @@
-// @date 2026-10-25
+// @date 2026-11-02
 // @file secure_storage_service.dart
 // @brief File description.
 // @project Ascension
@@ -45,7 +45,7 @@ class SecureStorageService {
 /// Provider for [SecureStorageService].
 final secureStorageServiceProvider = Provider<SecureStorageService>((ref) {
   const storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    aOptions: AndroidOptions.defaultOptions,
     iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
   );
   return const SecureStorageService(storage);
