@@ -3,7 +3,7 @@ id: 64cd6da4-a0ca-4ce3-aa19-6ddebbd38b44
 ---
 
 :::success
-**Version:** 1.0
+**Version:** 1.1
 :::
 
 ---
@@ -81,6 +81,8 @@ Each job publishes its own check on the pull request:
 - **Logs:** they stay in Jenkins and are not copied to GitHub. Log in to Jenkins with your account to read them (**Console Output** on the build page).
 
 A pull request is built on the result of its merge into the target branch, so a check also fails when the merge breaks the code.
+
+Jenkins builds `main`, `staging`, `dev` and every pull request. A feature branch is only built by Jenkins once its pull request is open; before that, the GitHub Actions CI checks it.
 
 ---
 
