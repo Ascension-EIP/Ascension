@@ -15,9 +15,10 @@ dependencies = [
     "openai>=3.41.0",
     "opencv-contrib-python>=4.8.0",
     "pika>=1.4.4",
-    "psycopg[binary]>=3.3.5",
-    "pydantic>=2.13.5",
+    "psycopg[binary]>=3.3.6",
+    "pydantic>=2.14.2",
     "rich>=15.0.0",
+    "ruff>=0.17.3",
 ]
 
 [project.scripts]
@@ -27,7 +28,7 @@ worker = "worker:main"
 module-name = ["worker", "common", "services", "shared"]
 
 [build-system]
-requires = ["uv_build>=0.12.10,<0.13.0"]
+requires = ["uv_build>=0.13.6,<0.14.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
