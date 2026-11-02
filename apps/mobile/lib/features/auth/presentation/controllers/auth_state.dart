@@ -1,4 +1,4 @@
-// @date 2026-10-25
+// @date 2026-11-02
 // @file auth_state.dart
 // @brief File description.
 // @project Ascension
@@ -25,17 +25,25 @@ class AuthState extends Equatable {
   List<Object?> get props => [status, userId];
 }
 
-class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier(this._storage)
-    : super(const AuthState(status: AuthStatus.initial)) {
+class AuthNotifier extends Notifier<AuthState> {
+  @override
+  AuthState build() {
+    // Listen to 401 session expiration from ApiClient
+    ref.listen<bool>(sessionExpiredProvider, (_, expired) {
+      if (expired) {
+        logout();
+        ref.read(sessionExpiredProvider.notifier).reset();
+      }
+    });
+
     checkAuthStatus();
+    return const AuthState(status: AuthStatus.initial);
   }
 
-  final SecureStorageService _storage;
-
   Future<void> checkAuthStatus() async {
-    final token = await _storage.getAccessToken();
-    final userId = await _storage.getUserId();
+    final storage = ref.read(secureStorageServiceProvider);
+    final token = await storage.getAccessToken();
+    final userId = await storage.getUserId();
     if (token != null && token.isNotEmpty) {
       state = AuthState(status: AuthStatus.authenticated, userId: userId);
     } else {
@@ -48,23 +56,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout() async {
-    await _storage.clearAuthData();
+    final storage = ref.read(secureStorageServiceProvider);
+    await storage.clearAuthData();
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 }
 
 /// Provider for [AuthState] managing authentication session lifecycle.
-final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final storage = ref.watch(secureStorageServiceProvider);
-  final notifier = AuthNotifier(storage);
-
-  // Listen to 401 session expiration from ApiClient
-  ref.listen<bool>(sessionExpiredProvider, (_, expired) {
-    if (expired) {
-      notifier.logout();
-      ref.read(sessionExpiredProvider.notifier).state = false;
-    }
-  });
-
-  return notifier;
-});
+final authStateProvider = NotifierProvider<AuthNotifier, AuthState>(
+  AuthNotifier.new,
+);

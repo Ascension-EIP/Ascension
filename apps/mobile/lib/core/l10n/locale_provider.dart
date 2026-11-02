@@ -1,4 +1,4 @@
-// @date 2026-10-25
+// @date 2026-11-02
 // @file locale_provider.dart
 // @brief File description.
 // @project Ascension
@@ -11,35 +11,33 @@ import 'package:mobile/core/constants/storage_keys.dart';
 import 'package:mobile/core/l10n/app_localizations.dart';
 import 'package:mobile/core/storage/local_storage_service.dart';
 
-class LocaleNotifier extends StateNotifier<Locale> {
-  LocaleNotifier(this._storage) : super(AppLocalizations.defaultLocale) {
-    _loadSavedLocale();
-  }
-
-  final LocalStorageService _storage;
-
-  void _loadSavedLocale() {
-    final savedCode = _storage.getString(StorageKeys.locale);
+class LocaleNotifier extends Notifier<Locale> {
+  @override
+  Locale build() {
+    final storage = ref.watch(localStorageServiceProvider);
+    final savedCode = storage.getString(StorageKeys.locale);
     if (savedCode != null) {
       final matched = AppLocalizations.supportedLocales.where(
         (l) => l.languageCode == savedCode,
       );
       if (matched.isNotEmpty) {
-        state = matched.first;
+        return matched.first;
       }
     }
+    return AppLocalizations.defaultLocale;
   }
 
   Future<void> setLocale(Locale locale) async {
     if (AppLocalizations.supportedLocales.contains(locale)) {
       state = locale;
-      await _storage.setString(StorageKeys.locale, locale.languageCode);
+      await ref
+          .read(localStorageServiceProvider)
+          .setString(StorageKeys.locale, locale.languageCode);
     }
   }
 }
 
 /// Provider managing active app locale.
-final localeProvider = StateNotifierProvider<LocaleNotifier, Locale>((ref) {
-  final storage = ref.watch(localStorageServiceProvider);
-  return LocaleNotifier(storage);
-});
+final localeProvider = NotifierProvider<LocaleNotifier, Locale>(
+  LocaleNotifier.new,
+);
