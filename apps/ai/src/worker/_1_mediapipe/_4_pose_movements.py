@@ -1,5 +1,5 @@
-# @date 2026-11-01
-# @file pose_movements.py
+# @date 2026-11-02
+# @file _4_pose_movements.py
 # @brief File description.
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
@@ -7,7 +7,7 @@
 # @status done
 """Step A4: split the time series into limb movements and pauses (speed rules only)."""
 
-#: Limb name -> joint whose speed (computed by `pose_metrics`) drives it.
+#: Limb name -> joint whose speed (computed by `_3_pose_metrics`) drives it.
 LIMB_JOINTS = {
     "left_hand": "left_wrist",
     "right_hand": "right_wrist",
@@ -64,7 +64,7 @@ def detect_movements(
 ) -> dict:
     """Return a copy of an `AnalysisResult`-shaped dict with ``movements`` and ``pauses``.
 
-    Reads the per-frame ``speeds`` from `pose_metrics`. Each limb gets its own hysteresis
+    Reads the per-frame ``speeds`` from `_3_pose_metrics`. Each limb gets its own hysteresis
     (start at ``move_speed``, stop below ``stop_speed``), then close movements are merged
     and short ones dropped. A frame with no speed for a limb ends that limb's movement.
 

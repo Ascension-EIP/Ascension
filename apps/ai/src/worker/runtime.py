@@ -1,4 +1,4 @@
-# @date 2026-11-01
+# @date 2026-11-02
 # @file runtime.py
 # @brief File description.
 # @project Ascension
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from services.postgresql import PostgreSQL
     from services.rabbitmq import Broker
     from services.rustfs import RustFS
-    from worker._1_mediapipe.pose_skeleton import PoseSkeleton
+    from worker._1_mediapipe._1_pose_skeleton import PoseSkeleton
 
 
 @lru_cache(maxsize=1)
@@ -45,7 +45,7 @@ def get_storage() -> "RustFS":
 
 @lru_cache(maxsize=1)
 def get_pose_skeleton() -> "PoseSkeleton":
-    from worker._1_mediapipe.pose_skeleton import PoseSkeleton
+    from worker._1_mediapipe._1_pose_skeleton import PoseSkeleton
 
     return PoseSkeleton()
 

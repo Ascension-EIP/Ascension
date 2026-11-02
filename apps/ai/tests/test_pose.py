@@ -1,4 +1,4 @@
-# @date 2026-11-01
+# @date 2026-11-02
 # @file test_pose.py
 # @brief File description.
 # @project Ascension
@@ -11,10 +11,10 @@ import cv2
 import pytest
 
 from common.utils.errors import PermanentError
-from worker._1_mediapipe.pose_filter import filter_frames
+from worker._1_mediapipe._1_pose_skeleton import PoseSkeleton, resolve_model_path
+from worker._1_mediapipe._2_pose_filter import filter_frames
+from worker._1_mediapipe._3_pose_metrics import compute_metrics
 from worker._1_mediapipe.pose_geometry import frame_angles
-from worker._1_mediapipe.pose_metrics import compute_metrics
-from worker._1_mediapipe.pose_skeleton import PoseSkeleton, resolve_model_path
 
 AI_ROOT = Path(__file__).resolve().parents[1]
 VIDEO = AI_ROOT / "resources" / "example-2.mp4"

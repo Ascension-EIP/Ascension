@@ -1,4 +1,4 @@
-# @date 2026-11-01
+# @date 2026-11-02
 # @file test_handlers.py
 # @brief Handler tests with db, storage, broker and LLM simulated; the call order is checked.
 # @project Ascension
@@ -134,7 +134,7 @@ def install(monkeypatch, w: World):
             on_progress(pct)
         return RESULT
 
-    monkeypatch.setitem(sys.modules, "worker._1_mediapipe.pose_detect", SimpleNamespace(detect_pose=detect_pose))
+    monkeypatch.setitem(sys.modules, "worker._1_mediapipe._0_pose_detect", SimpleNamespace(detect_pose=detect_pose))
 
 
 def detect(w):
@@ -239,7 +239,7 @@ def test_unexpected_pose_error_has_no_traceback_in_status(monkeypatch):
     def boom(*a, **k):
         raise RuntimeError("secret detail")
 
-    sys.modules["worker._1_mediapipe.pose_detect"].detect_pose = boom
+    sys.modules["worker._1_mediapipe._0_pose_detect"].detect_pose = boom
     detect(w)
     msg = next(c for c in w.calls if c[0] == "publish" and c[2] == "failed")[3]
     assert msg == "Analysis failed" and "Traceback" not in msg and "secret" not in msg

@@ -1,4 +1,4 @@
-# @date 2026-11-01
+# @date 2026-11-02
 # @file pose_detect_request.py
 # @brief Handler of `pose.detect.requested`: download, analyse, store the result.
 # @project Ascension
@@ -37,7 +37,7 @@ def pose_detect_request(payload: PoseDetectRequest):
             log.info("Job %s already done, redelivery ignored", job_id)
             return
         # Lazy: this import loads MediaPipe.
-        from worker._1_mediapipe.pose_detect import detect_pose
+        from worker._1_mediapipe._0_pose_detect import detect_pose
 
         with_retry(lambda: db.mark_started(job_id))
         broker.publish(RoutingKey.POSE_DETECT_STATUS, JobStatus(job_id=job_id, status=Status.STARTED))

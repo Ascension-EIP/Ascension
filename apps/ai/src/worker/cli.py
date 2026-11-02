@@ -1,4 +1,4 @@
-# @date 2026-11-01
+# @date 2026-11-02
 # @file cli.py
 # @brief File description.
 # @project Ascension
@@ -94,27 +94,27 @@ def _kwargs(args: argparse.Namespace, **names: str) -> dict:
 
 
 def _pose_skeleton(args: argparse.Namespace) -> None:
-    from worker._1_mediapipe.pose_skeleton import PoseSkeleton
+    from worker._1_mediapipe._1_pose_skeleton import PoseSkeleton
 
     _write(args.out, PoseSkeleton().process(args.video, args.render).result)
 
 
 def _pose_filter(args: argparse.Namespace) -> None:
-    from worker._1_mediapipe.pose_filter import filter_frames
+    from worker._1_mediapipe._2_pose_filter import filter_frames
 
     kw = _kwargs(args, min_visibility="min_visibility", max_gap="max_gap", window="window")
     _write(args.out, filter_frames(_read(args.input), **kw))
 
 
 def _pose_metrics(args: argparse.Namespace) -> None:
-    from worker._1_mediapipe.pose_metrics import compute_metrics
+    from worker._1_mediapipe._3_pose_metrics import compute_metrics
 
     kw = _kwargs(args, bent_arm_threshold="bent_arm")
     _write(args.out, compute_metrics(_read(args.input), **kw))
 
 
 def _pose_movements(args: argparse.Namespace) -> None:
-    from worker._1_mediapipe.pose_movements import detect_movements
+    from worker._1_mediapipe._4_pose_movements import detect_movements
 
     kw = _kwargs(
         args,
@@ -128,7 +128,7 @@ def _pose_movements(args: argparse.Namespace) -> None:
 
 
 def _pose_detect(args: argparse.Namespace) -> None:
-    from worker._1_mediapipe.pose_detect import detect_pose
+    from worker._1_mediapipe._0_pose_detect import detect_pose
 
     _write(args.out, detect_pose(args.video, args.render).model_dump())
 

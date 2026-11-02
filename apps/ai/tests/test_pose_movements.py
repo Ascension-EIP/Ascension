@@ -1,11 +1,11 @@
-# @date 2026-11-01
+# @date 2026-11-02
 # @file test_pose_movements.py
 # @brief File description.
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
-from worker._1_mediapipe.pose_movements import detect_movements
+from worker._1_mediapipe._4_pose_movements import detect_movements
 
 FPS = 100.0  # 10 ms per frame
 LIMBS = ("left_wrist", "right_wrist", "left_ankle", "right_ankle")

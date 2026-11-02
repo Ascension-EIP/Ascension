@@ -236,7 +236,7 @@ Without `--upstream none`, moon first runs the upstream tasks, including `root:s
 | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/worker/__init__.py`, `cli.py` | `worker` entry point and sub-commands                                                                                                  |
 | `src/worker/runtime.py`            | Lazy, cached access to the broker, database, storage, skeleton extractor and LLM                                                       |
-| `src/worker/_1_mediapipe/`         | Pipeline steps: `pose_skeleton`, `pose_filter`, `pose_metrics`, `pose_movements`, plus `pose_geometry` and `pose_detect` (chains them) |
+| `src/worker/_1_mediapipe/`         | Pipeline steps: `_1_pose_skeleton`, `_2_pose_filter`, `_3_pose_metrics`, `_4_pose_movements`, plus `pose_geometry` and `_0_pose_detect` (chains them) |
 | `src/worker/_2_advice/`            | `pose_advice`: prompt, LLM call, `Hints`                                                                                               |
 | `src/worker/handlers/`             | One handler per RabbitMQ flow, plus `failure.py`                                                                                       |
 | `src/services/`                    | Third-party services: `rabbitmq.py`, `postgresql.py`, `rustfs.py`, `llm.py`                                                            |

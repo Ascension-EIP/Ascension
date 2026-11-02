@@ -1,5 +1,5 @@
-# @date 2026-11-01
-# @file pose_skeleton.py
+# @date 2026-11-02
+# @file _1_pose_skeleton.py
 # @brief File description.
 # @project Ascension
 # @author Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
