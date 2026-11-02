@@ -3,7 +3,7 @@ id: 2f73e756-4920-4208-ae1e-6928976f81ec
 ---
 
 :::success
-**Version:** 2.1
+**Version:** 2.3
 :::
 
 ---
@@ -138,7 +138,7 @@ CREATE TYPE body_constraint_type AS ENUM ('missing', 'injured');
 CREATE TYPE visibility AS ENUM ('private', 'friends', 'public');
 CREATE TYPE video_status AS ENUM ('pending', 'completed');
 CREATE TYPE analysis_type AS ENUM ('2d', '3d');
-CREATE TYPE job_status AS ENUM ('pending', 'processing', 'generating_hints', 'completed', 'failed');
+CREATE TYPE job_status AS ENUM ('pending', 'started', 'running', 'success', 'failed');
 CREATE TYPE hold_type AS ENUM ('jug', 'crimp', 'sloper', 'pinch', 'pocket', 'edge', 'volume', 'foothold');
 CREATE TYPE hold_source AS ENUM ('ai', 'manual');
 CREATE TYPE goal_status AS ENUM ('active', 'achieved', 'abandoned');
@@ -157,7 +157,7 @@ CREATE TYPE tutorial_status AS ENUM ('not_started', 'in_progress', 'completed');
 
 Notes:
 
-- `job_status` is shared by `analyses`, `ghosts` and `comparisons`. `generating_hints` is only reached by `analyses`.
+- `job_status` is shared by `analyses`, `ghosts` and `comparisons`, and its values are identical to the statuses published on RabbitMQ (`schemas/job_status.schema.json`): `pending` is set by the server when it creates the row, `started` when the worker picks the job, `running` while it processes it, then `success` or `failed`. There is no separate `generating_hints` value: the advice step is part of `running`.
 - `grading_system` distinguishes bouldering (`font`, `v_scale`) from route climbing (`french`, `yds`). The grade itself is stored as `TEXT` (`6a+`, `V4`, `7A`).
 - `body_zone` follows the MediaPipe segment layout so that constraints can be mapped directly onto skeleton landmarks.
 
@@ -479,14 +479,15 @@ One AI processing run on a video (F02, F03, F08, F09). Several analyses may exis
 ```sql
 CREATE TABLE analyses (
     id                  UUID PRIMARY KEY DEFAULT uuidv7(),
-    video_id            UUID NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
+    video_id            UUID NOT NULL UNIQUE REFERENCES videos(id) ON DELETE CASCADE,
     type                analysis_type NOT NULL DEFAULT '2d',
     status              job_status NOT NULL DEFAULT 'pending',
     progress            SMALLINT NOT NULL DEFAULT 0,
     result              JSONB,
+    advice              TEXT,
     hints               JSONB,
     error               TEXT,
-    processing_time_ms  INTEGER,
+    processing_time_ms  INTERVAL,
     started_at          TIMESTAMPTZ,
     completed_at        TIMESTAMPTZ,
     visibility          visibility NOT NULL DEFAULT 'private',
@@ -495,20 +496,24 @@ CREATE TABLE analyses (
 
     CONSTRAINT chk_analyses_progress CHECK (progress BETWEEN 0 AND 100),
     CONSTRAINT chk_analyses_completed
-        CHECK (status <> 'completed' OR (result IS NOT NULL AND completed_at IS NOT NULL)),
+        CHECK (status <> 'success' OR (result IS NOT NULL AND completed_at IS NOT NULL)),
     CONSTRAINT chk_analyses_failed
         CHECK (status <> 'failed' OR error IS NOT NULL)
 );
 
 CREATE INDEX idx_analyses_video_created ON analyses(video_id, created_at DESC);
-CREATE INDEX idx_analyses_status ON analyses(status) WHERE status IN ('pending', 'processing', 'generating_hints');
+CREATE INDEX idx_analyses_status ON analyses(status) WHERE status IN ('pending', 'started', 'running');
 
 ```
 
 Business rules:
 
-- The status flow is `pending` → `processing` → `generating_hints` → `completed`, or `failed` from any state. The worker sets `started_at` when it picks the job, and `progress` from 0 to 99 during processing, then 100 on completion.
-- No uniqueness on `(video_id, type)`: a user may relaunch an analysis. The API returns the latest completed analysis of each type by default.
+- The status flow is `pending` → `started` → `running` → `success`, or `failed` from any state. The server creates the row as `pending`. The worker sets `started` and `started_at` when it picks the job (`progress` 0), `running` while it processes it (`progress` up to 90), then `success` and `progress` 100.
+- `success` is set only after the advice step, so `result` and `completed_at` are always present on a `success` row (enforced by `chk_analyses_completed`). `hints` may stay `NULL` on a `success` row if the LLM call failed: the advice step then publishes `failed` on `pose.advice.status` and can be relaunched with `pose.advice.requested`.
+- `video_id` is currently `UNIQUE` in the real database (migration `20260918172427`): a video can have only one analysis, so a `2d` and a `3d` run, or a retry after a failure, cannot coexist. The intended model is several analyses per video, with no uniqueness on `(video_id, type)`. The constraint is not changed yet (see `task/handoff-server-go.md`); the worker does not depend on it.
+- `processing_time_ms` is an `INTERVAL` (the Go server reads it as a `time.Duration`), despite its name. The worker writes `NOW() - started_at` when it completes the job. `ghosts` and `comparisons` use an `INTEGER` of milliseconds.
+- `advice` (`TEXT`) is the legacy free-text advice, still read by the Go server. The worker writes the structured `hints` instead. `advice` will be dropped once the server exposes `hints`.
+- The worker writes `status`, `progress`, `result`, `hints`, `error`, `started_at`, `completed_at` and `processing_time_ms`: the migrations must be applied before it starts.
 - The partial index on `status` keeps the "in-flight jobs" lookup cheap without indexing millions of completed rows.
 
 `result` **structure** (written by the AI worker, consumed by the mobile app for client-side rendering):
@@ -693,7 +698,7 @@ CREATE TABLE ghosts (
 
     CONSTRAINT chk_ghosts_progress CHECK (progress BETWEEN 0 AND 100),
     CONSTRAINT chk_ghosts_completed
-        CHECK (status <> 'completed' OR (path IS NOT NULL AND completed_at IS NOT NULL)),
+        CHECK (status <> 'success' OR (path IS NOT NULL AND completed_at IS NOT NULL)),
     CONSTRAINT chk_ghosts_failed
         CHECK (status <> 'failed' OR error IS NOT NULL)
 );
@@ -757,7 +762,7 @@ CREATE TABLE comparisons (
         (efficiency_score IS NULL OR efficiency_score BETWEEN 0 AND 100)
     ),
     CONSTRAINT chk_comparisons_completed
-        CHECK (status <> 'completed' OR (metrics IS NOT NULL AND completed_at IS NOT NULL))
+        CHECK (status <> 'success' OR (metrics IS NOT NULL AND completed_at IS NOT NULL))
 );
 
 CREATE INDEX idx_comparisons_base_analysis_id ON comparisons(base_analysis_id);
@@ -1177,12 +1182,12 @@ Storage objects are not deleted by the database queries alone. When `clean-aband
 
 ## 12\. Sample Queries
 
-Latest completed analysis of each type for a video:
+Latest successful analysis of each type for a video:
 
 ```sql
 SELECT DISTINCT ON (type) *
   FROM analyses
- WHERE video_id = $1 AND status = 'completed'
+ WHERE video_id = $1 AND status = 'success'
  ORDER BY type, created_at DESC;
 
 ```
@@ -1223,7 +1228,7 @@ Route with its current holds and latest ghost:
 SELECT r.*,
        (SELECT json_agg(h ORDER BY h.created_at) FROM holds h WHERE h.route_id = r.id) AS holds,
        (SELECT g.path FROM ghosts g
-         WHERE g.route_id = r.id AND g.user_id = $2 AND g.status = 'completed'
+         WHERE g.route_id = r.id AND g.user_id = $2 AND g.status = 'success'
          ORDER BY g.created_at DESC LIMIT 1) AS ghost_path
   FROM routes r
  WHERE r.id = $1;
@@ -1269,12 +1274,14 @@ The migration history evolved from the initial prototype schema (`20260905000001
 | `20260918174719` – `20260918175402` | Core Auth & Users | Tables `users` (with `first_name`, `last_name`, `username`, `password_hash`, `role`), `sessions` (with `token_hash`, `user_agent`, `ip_address`, `revoked_at`), `user_profiles`, and `user_body_constraints`. |
 | `20260918182744` – `20260918183049` | Onboarding & Gyms | Tables `tutorial_progress` and `gyms`. |
 | `20260918183204` – `20260918183601` | Sessions & Videos | Tables `climbing_sessions` and `videos` (with `object_key`, `size_bytes`, `duration_ms`, `content_type`, `fps`, `visibility`, `retained`). |
-| `20260918183756` – `20260918184024` | Analyses & Scores | Tables `analyses` (with `status` enum, `processing_time_ms`, `result` JSONB, `hints` JSONB) and `analysis_scores`. |
+| `20260918183756` – `20260918184024` | Analyses & Scores | Tables `analyses` (with `status` enum, `processing_time_ms` INTERVAL, `result` JSONB, `advice` TEXT) and `analysis_scores`. `hints` JSONB is added by `20261030200100`. |
 | `20260918184203` – `20260918184715` | Routes & Holds | Tables `routes` and `holds` (with classification, coordinates, polygon points). |
 | `20260918184918` – `20260918185521` | Ghosts & Comparisons | Tables `ghosts`, `ghost_holds`, and `comparisons` (with metrics and trajectory comparison data). |
 | `20260918221841` – `20260918222129` | Coaching & Training | Tables `goals`, `training_programs`, `training_program_sessions`, `exercises`, and `training_logs`. |
 | `20260918222236` – `20260918222340` | Social & Community | Tables `friendships` and `follows`. |
 | `20260918222453` – `20260918222653` | Subscriptions & Quotas | Tables `subscription_plans`, `subscriptions`, `subscription_events`, and `quota_usages`. |
+| `20261030200000` | Job status alignment | `job_status` becomes `pending, started, running, success, failed` (same values as the RabbitMQ statuses). `processing` and `generating_hints` become `running`, `completed` becomes `success`. The `chk_*_completed` checks and `idx_analyses_status` are recreated. The `down` migration maps `started`/`running` back to `processing` and `success` back to `completed`. |
+| `20261030200100` | Analyses hints | Adds `analyses.hints JSONB` (nullable), written by the AI worker (`schemas/hints.schema.json`). `advice TEXT` is kept for the Go server. |
 
 All tables conform to the foreign key constraints, indexes, and check constraints detailed in sections 3 through 10.
 

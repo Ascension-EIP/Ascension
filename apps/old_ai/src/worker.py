@@ -2,7 +2,7 @@
 # @file worker.py
 # @brief File description.
 # @project Ascension
-# @author Gianni TUERO <gianni.tuero@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
+# @author Nicolas TORO <nicolas.toro@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
 """Ascension AI Worker — vision.skeleton pipeline.

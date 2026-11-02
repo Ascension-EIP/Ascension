@@ -2,7 +2,7 @@
 # @file database.py
 # @brief PostgreSQL repository for saving analyses results and progress.
 # @project Ascension
-# @author Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
+# @author Nicolas TORO <nicolas.toro@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
 """PostgreSQL repository for analyses."""
