@@ -1,6 +1,6 @@
 ---
 name: densho
-description: Read, write and organise pages in a Densho workspace through its MCP server. Use when the user asks to look something up in their wiki or documentation, draft or update a page, answer from what the team has written down, leave feedback on a page, or tidy the wiki (labels, icons, review status, moving, duplicating, trashing and restoring pages, page history, public links, subscriptions). Covers pages, spaces, comments and the Densho Markdown dialect.
+description: Read, write and organise pages in a Densho workspace through its MCP server. Use when the user asks to look something up in their wiki or documentation, draft or update a page, answer from what the team has written down, leave feedback on a page, or tidy the wiki (labels, icons, review status, moving, duplicating, trashing and restoring pages, page history, public links, subscriptions, snippets). Covers pages, spaces, comments and the Densho Markdown dialect.
 ---
 
 # Densho
@@ -73,9 +73,17 @@ truth), `get_page` (title, body as Markdown and the version token, with the
 page's icon, review status, labels, parent, whether it sits in the trash and
 whether the user follows it), `list_comments` (threads and their resolution
 state), `list_labels` (the workspace's labels with how many pages carry each),
-`get_page_history` and `get_page_version` (the saved versions of a page, and
-one of them as Markdown), `get_public_link` (whether a page is published and
-its public URL), `list_trash` (what a space's trash holds).
+`get_page_history` and `get_page_version` (the versions of a page, one per
+editing session with who edited it and how many lines it changed, or the git
+log of its file in a space synced with git; and one of them as Markdown),
+`get_page_diff` (what changed between two versions, or between a version and
+the current page, as a unified diff of the page's Markdown; older instances
+do not have it), `get_public_link` (whether a page is published and
+its public URL), `list_trash` (what a space's trash holds), `read_file` (the
+text of a PDF or a text file attached to a page, given its id or the
+`/files/<id>/...` link of the page's Markdown; a long PDF comes back cut after
+a whole page with the range to ask for next in `pages`, and a scanned PDF has
+no text to read; older instances do not have it).
 
 **Writing the page.** `create_page` (in a space, optionally under a parent,
 with an icon and a body), `update_page` (title, icon, review status and/or the
@@ -83,10 +91,13 @@ full body), `restore_page_version` (put a saved version back as the body; the
 current one goes into the history, so it can be undone the same way).
 
 **Labelling and reviewing.** `add_page_labels` and `remove_page_label` work by
-name. Labels are one taxonomy for the whole workspace: `list_labels` first and
-reuse the spelling you find, because a name that does not exist yet is only
-created by workspace admins, and a near duplicate ("how-to" next to "howto")
-is worse than no label. The review status goes `DRAFT`, `IN_PROGRESS`,
+name. A label belongs to a space, and a few workspace labels, made in the
+workspace settings, are offered in every space: call `list_labels` with the
+page's `spaceId` first and reuse the spelling you find: a name that does not
+exist yet becomes a new label of that space for anyone who can edit the
+page, and a near duplicate ("how-to" next to "howto") is worse than no
+label. Older instances keep one list for the whole workspace
+and take no `spaceId`. The review status goes `DRAFT`, `IN_PROGRESS`,
 `READY_TO_VERIFY`, `VERIFIED`; you may move a page along the first three, but
 setting `VERIFIED`, or touching a verified page's status, is refused unless the
 user is an admin.
@@ -102,6 +113,18 @@ a page for 30 days and there is no permanent deletion through you).
 `parentCommentId`), `resolve_comment` (resolve or reopen), `subscribe_page` and
 `subscribe_space` (the user's own notifications only: edits of a page, new
 pages in a space).
+
+**Snippets.** Reusable pieces of content a member keeps to insert into pages:
+`list_snippets` (the user's own and the ones shared with the workspace, by
+name, without their content) and `get_snippet` (one of them, its content as
+Markdown); with write access, `create_snippet` and `update_snippet` (name,
+description, Markdown content and whether it is shared). A snippet is private
+to its author until shared; a shared one can be changed by its author and the
+workspace admins, and only its author can share or unshare it. Inserting a
+snippet into a page is an ordinary edit: `get_page`, put the snippet's Markdown
+where it belongs in the body, `update_page`. What lands there is a copy, so a
+later change to the snippet leaves the page alone. Older instances have no
+snippets.
 
 Pages are also exposed as `densho://page/{id}` resources, so a client can attach
 one directly.
@@ -128,8 +151,32 @@ the section is about, short paragraphs, and lists where the content is a list.
 Everything the editor supports round-trips through Markdown, so what you write
 is what the person sees, and what they later export. The round trip normalises
 as it goes: `$$maths$$` comes back on three lines, blocks gain blank lines
-between them. Reading back something shaped slightly differently from what you
-sent is normal and not a sign that anything failed.
+between them, a hard line break comes back as a backslash at the end of the
+line. Reading back something shaped slightly differently from what you sent is
+normal and not a sign that anything failed.
+
+Text that merely looks like syntax stays text, and the export escapes only
+what would otherwise be read as a mark or a block (`\+\+`, `\=\=`, `\~`, `\^`,
+`\$`, a leading `\:::` with or without a space after it, a line such as
+`2026\.`, `1\)`, `\+`, `\#` or a heading ending in `\#`, and an HTML entity
+written as text, `\&amp;`): leave those backslashes in place when you rewrite
+a page. The inside of `~sub~` and `^sup^` is inline Markdown, so a tilde or
+caret in it is `\~` or `\^`, and an address followed by a bracket is written
+`<https://e.com/a>\[b`. Dollars follow the same care: `$5-$10` and
+`$PATH:$HOME` are prose and need nothing, `$x^2$` is a formula, and a formula
+the plain form cannot carry is written `` $`text`$ ``. A table row is one
+line: a line break in a cell is `<br>`, a pipe is `\|`, an empty cell is `|
+|`, and a list or code block in a cell is flattened to text. A table always
+has a header row: one written without it comes back with its first row as the
+header. A code block and a `$$` block are kept exactly as written, blank lines
+at the end included. A toggle title is read as inline Markdown, and an empty
+callout, toggle, quote or code block is kept as it is.
+
+One normalisation is a loss, not a reshaping: **a single newline inside a
+paragraph is not kept**, the lines are joined. A metadata header written as
+`Version: 1.2` over `Language: English` comes back as one line. When lines must
+stay apart, make them a list or a table, or use the line break the reference
+gives.
 
 ## What will not work
 
@@ -140,6 +187,10 @@ sent is normal and not a sign that anything failed.
   block self contained unless the user tells you their workspace allows more.
   A block never sends a `Referer`, so services that require one (OpenStreetMap
   tiles, keys restricted to a website) refuse it whatever the setting.
+  The one exception is the coloured highlight, `<mark data-color="green">text</mark>`
+  (orange, red, pink, purple, blue, green or gray; `==text==` stays the yellow
+  one): it is read back as a highlight, but only with that single attribute, a
+  `<mark>` carrying a `style` stays text. `get_markdown_reference` has the rest.
 - **GitHub callouts** (`> [!NOTE]`) are not part of the dialect: the brackets are
   escaped and the reader sees `\[!NOTE\]` inside a plain quote. Use a callout.
 - **Footnotes** are worse than useless here. `text[^1]` with its `[^1]: note`
@@ -150,10 +201,25 @@ sent is normal and not a sign that anything failed.
   a Markdown image pointing at a local path or a file you claim to have added.
   An image already in the page keeps working: leave its link untouched when you
   rewrite the body.
-- **Never invent chip identifiers.** Mentions, page links and synced blocks
-  encode real ids (`[@Name](mention:<userId>)`, `[label](page:<pageId>)`,
-  `![[synced-blocks/...]]`). A made up id renders as a dead chip. Use a real id
-  you obtained from a tool, or write a plain link.
+- **Never invent chip identifiers.** Mentions, profile cards, page links,
+  links to a file of another page, synced blocks and Kanban blocks encode
+  real ids (`[@Name](mention:<userId>)`, `[@Name](profile:<userId>)`,
+  `[label](page:<pageId>)`, `[file](element:<pageId>/<attachmentId>)`,
+  `![[synced-block:<blockId>]]`, `:::kanban board <boardId>`). A made up id
+  renders as a dead chip. Use a real id you obtained from a tool, or write a
+  plain link.
+- **Keep the `:::kanban` lines of a page as they came.** Each is a Kanban
+  block (a board, its cards, one card, its progress, or the cards linked to
+  the page) and no tool lists boards, so you cannot write a new one: when you
+  rewrite a page, leave those lines where they are, or the blocks are
+  deleted.
+- **Keep the `![[synced-block:<blockId>]]` lines as they came.** Each, on a
+  line of its own, is a synced block: content shared by several pages of the
+  space and edited in the editor. Rewrite the page around it and leave the line
+  as it is; no tool creates a block. Repeating the line of an existing block
+  shows it on another page of the same space. Inside a code block or a
+  sentence it is plain text. In the files of a git synced space the same block
+  reads `![[synced-blocks/<file>.md]]`, the path of the file holding it.
 
 ## Things that have consequences for the team
 
@@ -172,9 +238,18 @@ sent is normal and not a sign that anything failed.
   permissions. `get_public_link` tells you which case you are in. Look at
   `list_pages` before moving something, and trash a page only when the user
   asked for that page.
+- **A space can be synced with a git repository**, where every page is a
+  Markdown file and every folder page a directory. There, `move_page`, a new
+  title, `trash_page` and `restore_page` move, rename or remove files, and the
+  commit goes out under the user's own git signature for the team to pull.
+  Treat a reorganisation there like a change to code: say which pages will
+  move before doing it, and do not rename a page back and forth to try
+  things out. The user usually knows whether their space is synced; ask when
+  a large reorganisation is on the table and you cannot tell.
 - **Restoring a version is an edit like any other**: it shows up live for
-  whoever has the page open and resets a verified page. Read the version with
-  `get_page_version` and say what it drops before putting it back.
+  whoever has the page open and resets a verified page. Look at what it
+  drops with `get_page_diff` (from the version to `current`), or read it with
+  `get_page_version`, and say so before putting it back.
 - **Subscriptions are the user's own.** Subscribing them to a space is a
   notification for every new page in it: do it when they asked, not as a
   favour.
