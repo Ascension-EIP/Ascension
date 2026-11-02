@@ -5,7 +5,7 @@
 [![Flutter](https://img.shields.io/badge/Mobile-Flutter%20%2F%20Dart-02569B?logo=flutter)](https://flutter.dev)
 [![Go](https://img.shields.io/badge/API-Go%20%2F%20Gin-00ADD8?logo=go)](https://go.dev)
 [![Python](https://img.shields.io/badge/AI-Python%20%2F%20MediaPipe-3776AB?logo=python)](https://python.org)
-[![PostgreSQL](https://img.shields.io/badge/DB-PostgreSQL%2016-336791?logo=postgresql)](https://postgresql.org)
+[![PostgreSQL](https://img.shields.io/badge/DB-PostgreSQL%2018-336791?logo=postgresql)](https://postgresql.org)
 
 ---
 
