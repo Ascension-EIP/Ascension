@@ -3,7 +3,7 @@ id: 277eed31-195d-41d5-9a77-b0723e50fc8b
 ---
 
 :::success
-**Version:** 1.3
+**Version:** 1.4
 :::
 
 ---
@@ -113,13 +113,13 @@ Le système suit une **architecture événementielle** avec **CQRS** et **rendu 
 
 ## 6. Équipe
 
-| Développeur          | OS                   | Responsabilité                                                                                                         |
-|----------------------|----------------------|------------------------------------------------------------------------------------------------------------------------|
-| Nicolas TORO         | Arch Linux / Android | Gestion de projet technique et d'équipe / Développeur backend et mobile / Responsable de la documentation et de la CI/CD |
-| Lou PELLEGRINO       | NixOS / iOS          | Développeur backend                                                                                                    |
-| Gianni TUERO         | Arch Linux / Android | Chef de projet administratif / Intégrateur RabbitMQ / Développeur IA                                                   |
-| Olivier POUECH       | Arch Linux / iOS     | CEO / Développeur IA                                                                                                   |
-| Christophe VANDEVOIR | macOS / iOS          | Développeur mobile et backend / Responsable de l'infrastructure                                                        |
+| Développeur          | OS                   | Responsabilité                                                                                                                                        |
+|----------------------|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Nicolas TORO         | Arch Linux / Android | Gestion de projet technique et d'équipe / Développeur mobile / Supervision globale et revue des PRs / Responsable de la documentation et de la CI/CD |
+| Lou PELLEGRINO       | NixOS / iOS          | Développeur backend                                                                                                                                   |
+| Gianni TUERO         | Arch Linux / Android | Chef de projet administratif / Intégrateur RabbitMQ / Développeur IA                                                                                  |
+| Olivier POUECH       | Arch Linux / iOS     | CEO / Développeur IA                                                                                                                                  |
+| Christophe VANDEVOIR | macOS / iOS          | Administrateur système (Infrastructure) / Développeur backend                                                                                         |
 
 ---
 

@@ -3,7 +3,7 @@ id: 75c02209-c62c-43bf-8b8e-5c48e688fea2
 ---
 
 :::success
-**Version:** 1.3
+**Version:** 1.4
 :::
 
 ---
@@ -113,13 +113,13 @@ The system follows an **event-driven architecture** with **CQRS** and **client-s
 
 ## 6. Team
 
-| Developer            | OS                   | Responsibility                                                                                      |
-|----------------------|----------------------|-----------------------------------------------------------------------------------------------------|
-| Nicolas TORO         | Arch Linux / Android | Technical and team project management / Backend and mobile developer / Documentation and CI/CD lead |
-| Lou PELLEGRINO       | NixOS / iOS          | Backend developer                                                                                   |
-| Gianni TUERO         | Arch Linux / Android | Administrative project lead / RabbitMQ integrator / AI developer                                    |
-| Olivier POUECH       | Arch Linux / iOS     | CEO / AI developer                                                                                  |
-| Christophe VANDEVOIR | macOS / iOS          | Mobile and backend developer / Infrastructure lead                                                  |
+| Developer            | OS                   | Responsibility                                                                                                              |
+|----------------------|----------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| Nicolas TORO         | Arch Linux / Android | Technical and team project management / Mobile developer / Global supervision and PR review / Documentation and CI/CD lead |
+| Lou PELLEGRINO       | NixOS / iOS          | Backend developer                                                                                                           |
+| Gianni TUERO         | Arch Linux / Android | Administrative project lead / RabbitMQ integrator / AI developer                                                            |
+| Olivier POUECH       | Arch Linux / iOS     | CEO / AI developer                                                                                                          |
+| Christophe VANDEVOIR | macOS / iOS          | System administrator (Infrastructure) / Backend developer                                                                   |
 
 ---
 
