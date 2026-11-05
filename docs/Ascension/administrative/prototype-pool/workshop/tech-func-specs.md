@@ -47,6 +47,7 @@ C4Context
     Rel(ascension, hetzner_s3, "Stores / retrieves videos and JSON results", "S3 API / HTTPS")
     Rel(ascension, rabbitmq, "Publishes and consumes analysis jobs", "AMQP")
     Rel(ascension, apn_fcm, "Sends analysis-complete push notifications", "HTTPS")
+
 ```
 
 ---
@@ -76,6 +77,7 @@ C4Container
     Rel(worker, storage, "Reads raw videos / Writes results", "S3 API")
     Rel(worker, db, "Writes analysis results (JSONB)", "TCP / SQLAlchemy")
     Rel(api, mobile, "Push real-time status via WebSocket", "WSS")
+
 ```
 
 ---
@@ -117,6 +119,7 @@ C4Component
     Rel(auth, db, "Read/Write users and sessions")
     Rel(analysis, storage, "Generate presigned URLs")
     Rel(ws, mobile, "Push progress/completion events")
+
 ```
 
 ---
@@ -158,6 +161,7 @@ sequenceDiagram
     API-->>User: { status: completed, result: { frames: [...] } }
 
     Note over User: Flutter CustomPainter renders<br/>skeleton overlay locally (no re-encode)
+
 ```
 
 ---
@@ -172,6 +176,7 @@ Every protected endpoint requires a signed JWT token in the `Authorization` head
 
 ```http
 Authorization: Bearer <jwt_access_token>
+
 ```
 
 Tokens are issued on `POST /auth/login` and `POST /auth/register`. They are signed with a server-side secret (HS256), carry a short expiry (1 h), and are verified by the **Auth Handler** in the Rust API before any handler executes.
@@ -258,6 +263,7 @@ graph TB
     style PG fill:#f0f0f0,color:#000
     style Rabbit fill:#ffe1e1,color:#000
     style MinIO fill:#e1ffe1,color:#000
+
 ```
 
 ---
@@ -281,10 +287,7 @@ graph TB
 
 Mobile: Flutter (Dart)
 
-|
- |
-
- |
+|  |  |
 | --- | --- |
 | **Decision** | Flutter, cross-platform framework by Google |
 | **Rationale** | Single codebase targets iOS **and** Android simultaneously, cutting mobile development effort by half. The `CustomPainter` API allows drawing skeleton keypoint overlays frame-by-frame on the video without any native bridge. The team already has Flutter expertise, and hot-reload drastically accelerates UI iteration. |
@@ -295,10 +298,7 @@ Mobile: Flutter (Dart)
 
 Backend: Rust (Axum + Tokio)
 
-|
- |
-
- |
+|  |  |
 | --- | --- |
 | **Decision** | Rust with the Axum web framework and Tokio async runtime |
 | **Rationale** | Rust delivers C++-level throughput with near-zero memory footprint (idle < 100 MB), allowing the API and Nginx to coexist on a single CX31 node (15 €/month). Memory safety eliminates whole classes of vulnerabilities (buffer overflow, use-after-free). The type system catches data contract errors at compile time. Axum's async model handles thousands of concurrent WebSocket connections efficiently. |
@@ -309,10 +309,7 @@ Backend: Rust (Axum + Tokio)
 
 AI/ML: Python (PyTorch + MediaPipe + OpenCV)
 
-|
- |
-
- |
+|  |  |
 | --- | --- |
 | **Decision** | Python workers using MediaPipe for pose estimation, OpenCV for video frame processing, PyTorch for model fine-tuning |
 | **Rationale** | Python is the lingua franca of AI/ML research. MediaPipe provides a production-ready, pre-trained human pose estimation model (33 landmarks) that runs without GPU for prototyping. The asynchronous worker pattern (RabbitMQ worker) isolates Python's GIL from the Rust API entirely. The team's AI specialist has deep PyTorch expertise. |
@@ -323,10 +320,7 @@ AI/ML: Python (PyTorch + MediaPipe + OpenCV)
 
 Database: PostgreSQL 16
 
-|
- |
-
- |
+|  |  |
 | --- | --- |
 | **Decision** | PostgreSQL with JSONB columns for semi-structured AI results |
 | **Rationale** | Our core entities (users, videos, analyses, routes, training sessions) have clear relational structure that benefits from JOIN queries and foreign-key constraints. The `JSONB` type stores MediaPipe keypoint arrays (per-frame skeleton data) efficiently without a separate NoSQL layer. `ON DELETE CASCADE` simplifies RGPD right-to-erasure implementation. SQLx (Rust) provides compile-time query validation. |
@@ -337,10 +331,7 @@ Database: PostgreSQL 16
 
 Message Broker: RabbitMQ
 
-|
- |
-
- |
+|  |  |
 | --- | --- |
 | **Decision** | RabbitMQ for asynchronous job queuing between the API and AI workers |
 | **Rationale** | Video analysis is CPU-intensive (20–60 s per video). Without a queue, the API would block. RabbitMQ ensures jobs are **never lost** even if a worker crashes (persistent queues, manual ACK). It decouples the API from workers, enabling horizontal scaling by simply adding worker nodes. Dead-letter queues provide automatic retry. |
@@ -351,10 +342,7 @@ Message Broker: RabbitMQ
 
 Object Storage: MinIO (dev) → Hetzner Storage Box / S3 (prod)
 
-|
- |
-
- |
+|  |  |
 | --- | --- |
 | **Decision** | MinIO locally, S3-compatible storage in production |
 | **Rationale** | Videos (avg. 50 MB each) must not transit through the API server (bandwidth cost + latency). **Presigned URLs** let clients upload directly to the storage bucket, bypassing the API entirely. MinIO is S3-compatible, so zero code changes for production. Hetzner Storage Box costs ~7 €/TB/month versus ~23 €/TB on AWS S3. |
@@ -365,10 +353,7 @@ Object Storage: MinIO (dev) → Hetzner Storage Box / S3 (prod)
 
 Infrastructure: Hetzner Cloud
 
-|
- |
-
- |
+|  |  |
 | --- | --- |
 | **Decision** | Hetzner Cloud (Falkenstein, Germany) |
 | **Rationale** | Hetzner offers comparable compute to AWS at 4× lower cost (CX31 = 15 €/month vs. ~60 €/month for equivalent EC2). 100% certified renewable energy (ISO 14001) aligns with our GreenIT commitment. German datacenter guarantees EU-only data residency for RGPD compliance (biometric data under Art. 9). |
@@ -523,6 +508,7 @@ erDiagram
         timestamp expires_at
         timestamp created_at
     }
+
 ```
 
 ---
@@ -590,6 +576,7 @@ App
     ├── 📤 Upload (Video Analysis)
     ├── 📊 Stats (Progress & History)
     └── 👤 Profile (Settings & Subscription)
+
 ```
 
 ---
@@ -643,6 +630,7 @@ Tap "Choisir une vidéo"
     → API notified → job dispatched to RabbitMQ
     → WebSocket "analysis:completed" event received
     → Redirect to Stats screen with new result highlighted
+
 ```
 
 **Quota display:** Remaining analyses shown (e.g. "8 / 10 analyses restantes ce mois").
@@ -691,6 +679,7 @@ Flow A — First-time Video Analysis
 → Loading state (WebSocket polling)
 → [Stats] → New analysis card highlighted
 → Tap analysis → Skeleton overlay player
+
 ```
 
 Flow B — Ghost Mode Comparison (Premium)
@@ -701,6 +690,7 @@ Flow B — Ghost Mode Comparison (Premium)
 → [Stats] → Select climb video → "Comparer au Ghost"
 → Ghost overlay rendered client-side via CustomPainter
 → Deviation score + per-frame annotations displayed
+
 ```
 
 Flow C — Degraded Mode (Network Loss During Upload)
@@ -713,6 +703,7 @@ Flow C — Degraded Mode (Network Loss During Upload)
 → If analysis job fails server-side: status = "failed"
 → WebSocket delivers failure event
 → User notified → Manual retry button displayed
+
 ```
 
 ---

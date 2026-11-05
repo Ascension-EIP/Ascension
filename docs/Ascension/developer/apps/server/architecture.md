@@ -41,7 +41,7 @@ graph TD
     subgraph Outside ["OUTSIDE"]
         HTTP["HTTP Requests<br>(Inbound / Adapters)"]
         Cron["Cron Scheduler<br>(cmd/cron & internal/job)"]
-
+        
         DB["PostgreSQL Database<br>(Outbound / Adapters)"]
         Ext["RabbitMQ / MinIO<br>(Outbound / Adapters)"]
     end
@@ -51,7 +51,7 @@ graph TD
         Models["Models (internal/model)"]
         Ports["Ports / Interfaces (internal/model/ports)"]
         Services["Services (internal/service)"]
-
+        
         Note["Knows NOTHING about Gin or HTTP<br>Knows NOTHING about SQL queries"]
     end
 
@@ -132,21 +132,21 @@ Background maintenance workers orchestrated via `robfig/cron/v3`:
 
 ---
 
-## Step-by-step Request Flow Example (`POST /v1/auth/signup`)
+## Step-by-step Request Flow Example (`POST /v1/auth/register`)
 
 ```
 Client
   │
-  │  POST /v1/auth/signup  { "username": "...", "email": "...", "password": "...", "first_name": "...", "last_name": "..." }
+  │  POST /v1/auth/register  { "username": "...", "email": "...", "password": "...", "first_name": "...", "last_name": "..." }
   ▼
 Gin Router  (internal/inbound/http/router/router.go)
   │  Matches route, applies RateLimiter(1m, 5)
   ▼
-Handler: AuthHandler.SignupLogin()  (internal/inbound/http/handler/auth.go)
-  │  1. Binds JSON body → request.SignupLoginForm
-  │  2. Converts DTO to model.SignupForm
+Handler: AuthHandler.Register()  (internal/inbound/http/handler/auth.go)
+  │  1. Binds JSON body → request.RegisterForm
+  │  2. Converts DTO to model.RegisterForm
   ▼
-Service: AuthService.SignupLogin()  (internal/service/auth.go)
+Service: AuthService.Register()  (internal/service/auth.go)
   │  1. Invokes UserService.CreateUser() → hashes password with bcrypt
   │  2. Calls UserRepository.CreateUser() (via port)
   │  3. Issues JWT access token via JWTService
@@ -160,6 +160,7 @@ Handler
   │  Serializes DTO to JSON and returns HTTP 200 OK
   ▼
 Client
+
 ```
 
 ---
@@ -220,6 +221,7 @@ apps/server/
     └── setup/
         ├── config/                     # Environment configuration loader
         └── logger/                     # Structured logger constructor (slog)
+
 ```
 
 ---

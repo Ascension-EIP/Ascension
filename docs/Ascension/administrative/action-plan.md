@@ -36,9 +36,8 @@ Ascension transforme un smartphone en coach d’escalade assisté par IA.
 Le produit permet de :
 
 - analyser une grimpe à partir d’une vidéo,
-- reconstruire et expliquer le mouvement,
-- comparer la montée avec une trajectoire de référence (mode fantôme),
-- fournir des conseils personnalisés,
+- fournir des conseils personnalisés suite a une grimpe,
+- obtenir un guide étape par étape pour grimper une voie via le mode fantôme,
 - accompagner la progression dans le temps.
 
 ### 1.4 Objectif global et résultat attendu
@@ -108,7 +107,7 @@ Ce plan couvre le pilotage des blocs ciblés pour le jalon **GreenLight (BTP)** 
 - upload vidéo et analyse IA 2D asynchrone (MediaPipe Pose, format biomécanique standardisé),
 - restitution biomécanique, score global et suivi de progression dans le temps,
 - conseils techniques personnalisés via modèle externe (type Gemini ou équivalent API),
-- mode fantôme MVP (comparaison sur vidéo réelle et génération via photo de voie avec sélection manuelle des prises en mode custom),
+- mode fantôme MVP (génération des images étape par étape via photo de voie avec sélection manuelle des prises en mode custom),
 - dimension communautaire et partage (partage d'analyses, comparaison de performances entre amis, contrôle fin de la visibilité),
 - coach personnel et programmes d'entraînement (objectifs de progression, séances types personnalisées, journalisation des entraînements),
 - accessibilité numérique mobile forte (objectifs WCAG 2.2 AA),
@@ -126,7 +125,7 @@ Ce plan couvre le pilotage des blocs ciblés pour le jalon **GreenLight (BTP)** 
 | US-04 | En tant que grimpeur, j’envoie une vidéo de grimpe et je lance une analyse. | Une analyse est créée avec statut et progression visibles jusqu'au résultat final. |
 | US-05 | En tant que grimpeur, je consulte un résultat biomécanique clair, mon score global et mes conseils. | Je reçois des indicateurs, un score de séance et des recommandations personnalisées compréhensibles. |
 | US-06 | En tant que grimpeur, je sélectionne les prises de ma voie en mode custom sur photo pour générer le fantôme MVP. | Les prises sélectionnées manuellement sont prises en compte pour calculer la trajectoire optimale. |
-| US-07 | En tant que grimpeur, je visualise la bêta calculée sur photo. | La bêta est affichée clairement et progressivement sur la photo. |
+| US-07 | En tant que grimpeur, je visualise la bêta étape par étape sous forme d'images. | Les images d'étapes sont affichées clairement avec chaque mouvement à réaliser. |
 | US-08 | En tant que grimpeur, je définis mes objectifs et génère des routines d'entraînement personnalisées. | Des séances types adaptées à mon profil sont proposées et je peux consigner mes entraînements. |
 | US-09 | En tant que grimpeur, je partage mes analyses et compare mes performances avec mes amis selon mes choix de confidentialité. | Le partage respecte les droits choisis (privé, amis, public) et l'accès ami est instantané. |
 | US-10 | En tant qu'utilisateur ayant des besoins d'accessibilité, je navigue confortablement dans l'application. | L'application respecte les contrastes, la mise à l'échelle des textes et le guidage par lecteur d'écran. |

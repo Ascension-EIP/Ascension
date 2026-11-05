@@ -37,6 +37,7 @@ sequenceDiagram
     API-->>Client: Return Presigned S3 Token
     Client->>Storage: Direct Video Upload (Presigned PUT)
     Worker->>Storage: Fetch Video for Analysis (Presigned GET)
+
 ```
 
 *Figure: Direct client-to-storage presigned upload workflow eliminating API server proxy bottlenecks.*

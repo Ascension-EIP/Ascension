@@ -42,21 +42,25 @@ Before diving into implementation, review these key documents:
    - Event-driven architecture patterns
    - CQRS implementation
    - Scaling strategy and performance targets
+3. [Infrastructure Architecture](./infrastructure.md) - Infrastructure and hosting setup
+   - OVHcloud VPS-4 (Milan) and Object Storage (Gravelines)
+   - Domain routing (ascension-eip.fr) and security topology
+   - Resource allocation and cost optimization
 
 ### 📊 Part 2: Data & API Modeling
 
-3. [Database Schema \& ERD](specifications/database-schema.md) - Complete data model
+4. [Database Schema \& ERD](specifications/database-schema.md) - Complete data model
    - Entity-Relationship Diagram (Mermaid)
    - PostgreSQL schema with triggers and indexes
    - Sample queries and migration strategy
-4. [API Specification](specifications/api-specification.md) - OpenAPI 3.0 documentation
+5. [API Specification](specifications/api-specification.md) - OpenAPI 3.0 documentation
    - REST endpoints with request/response examples
    - WebSocket protocol for real-time updates
    - Authentication flows and error codes
 
 ### 🔄 Workflows
 
-5. [**Video Analysis Flow**](./workflows/video-analysis-flow.md) - End-to-end feature flow
+6. [**Video Analysis Flow**](./workflows/video-analysis-flow.md) - End-to-end feature flow
    - Complete sequence diagrams
    - Implementation code examples
    - Phase-by-phase breakdown
@@ -101,18 +105,18 @@ graph TD
     MobileApp -->|"4. Notify Upload Complete"| APIServer
 
     APIServer -->|"5. Publish Job"| MessageQueue
-    MessageQueue -->|"6a. Vision jobs"| HoldDetection
-    MessageQueue -->|"6b. Training jobs"| ProgramGenerator
+    MessageQueue -->|"6a. Video analysis jobs"| SkeletonExtraction
+    MessageQueue -->|"6b. Hold & Ghost jobs"| HoldDetection
+    MessageQueue -->|"6c. Training jobs"| ProgramGenerator
 
-    HoldDetection -->|"Detect and classify holds"| SkeletonExtraction
+    SkeletonExtraction -->|"Fetch Video"| ObjectStorage
     SkeletonExtraction -->|"Per-frame skeleton JSON"| AdviceGenerator
-    SkeletonExtraction -->|"Reuse skeleton data"| GhostGenerator
 
     HoldDetection -->|"Fetch Photo"| ObjectStorage
-    SkeletonExtraction -->|"Fetch Video"| ObjectStorage
+    HoldDetection -->|"Classified holds + user selection"| GhostGenerator
 
     AdviceGenerator -->|"7a. Store advice JSON"| Database
-    GhostGenerator -->|"7b. Store ghost JSON"| Database
+    GhostGenerator -->|"7b. Store ghost steps & images"| Database
     ProgramGenerator -->|"7c. Store program"| Database
     AdviceGenerator -->|"8. Publish Complete Event"| MessageQueue
     GhostGenerator -->|"8. Publish Complete Event"| MessageQueue
@@ -121,6 +125,7 @@ graph TD
     APIServer -->|"10. WebSocket Notification"| MobileApp
     MobileApp -->|"11. Fetch Analysis JSON"| APIServer
     APIServer -->|"12. Retrieve JSON"| Database
+
 ```
 
 ---
@@ -173,6 +178,7 @@ architecture/
     ├── api-gateway.md                 # Go API server details
     ├── ai-workers.md                  # Python AI workers details
     └── message-queue.md               # RabbitMQ queue patterns
+
 ```
 
 ---
@@ -208,6 +214,7 @@ Ascension/                      # Monorepo root
         ├── moon.yml
         ├── pubspec.yaml
         └── lib/
+
 ```
 
 **Benefits**:
@@ -244,7 +251,7 @@ Ascension/                      # Monorepo root
 - **ML Frameworks**: MediaPipe (pose estimation), custom model (hold recognition)
 - **Services**:
   - Pose Estimation (skeleton extraction)
-  - Inverse Kinematics (Ghost Climber generation)
+  - Pathfinding & Step Generation (Ghost Mode)
   - Hold Recognition (CNN-based)
 
 ### Data Layer

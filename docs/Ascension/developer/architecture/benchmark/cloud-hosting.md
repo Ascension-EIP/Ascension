@@ -36,6 +36,7 @@ flowchart TB
         Gateway --> Broker["RabbitMQ Broker (Port 5672)"]
         Gateway --> Storage["Object Storage MinIO / RustFS (Port 9000)"]
     end
+
 ```
 
 *Figure: Unified containerized topology deployed on a Hetzner Cloud virtual instance.*

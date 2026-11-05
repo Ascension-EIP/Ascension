@@ -204,6 +204,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-venv-ai-
 
+      # MediaPipe and OpenCV load these libraries at runtime; the functional tests run it for real.
+      - name: Install system libraries
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libegl1 libgles2 libice6 libsm6
+
       - name: Install dependencies
         run: moon run ai:install
 

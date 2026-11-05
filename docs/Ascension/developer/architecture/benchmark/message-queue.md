@@ -32,6 +32,7 @@ flowchart TD
     Queue -->|"Prefetch Count = 1"| Workers["Python AI Worker Pool"]
     Workers -->|"On Success: basic_ack"| Done((Job Completed))
     Workers -->|"On Failure: basic_nack"| DLQ[("Dead Letter Queue (DLQ)")]
+
 ```
 
 *Figure: RabbitMQ asynchronous task queue with explicit acknowledgments and automated dead-letter routing.*

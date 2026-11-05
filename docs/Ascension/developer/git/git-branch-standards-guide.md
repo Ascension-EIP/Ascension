@@ -91,6 +91,7 @@ To help contributors avoid CI failures, local Git hooks are provided in `.github
 
 ```sh
 git config core.hooksPath .github/hooks
+
 ```
 
 This command only needs to be run once per clone. The following hooks will then be active:

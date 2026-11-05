@@ -58,6 +58,7 @@ The `.agents/` directory is organized into five specialized modules:
 │   └── mcp.json                   # Master MCP server definition
 ├── workflows -> commands          # Antigravity native workflow discovery symlink
 └── mcp_config.json -> mcp/mcp.json# Antigravity native MCP configuration symlink
+
 ```
 
 ---
@@ -223,6 +224,7 @@ The monorepo provides local stdio MCP server support for **Graphify** via a port
       }
     }
   }
+
   ```
 
 ---
@@ -290,5 +292,6 @@ The monorepo provides local stdio MCP server support for **Graphify** via a port
 
      ```bash
      find . -xtype l
+
      ```
    - An empty output confirms that all symlinks resolve cleanly.

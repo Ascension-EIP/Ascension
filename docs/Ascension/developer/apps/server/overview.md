@@ -66,6 +66,7 @@ apps/server/
     ├── outbound/       # Infrastructure adapters — pgx, rabbitmq, minio
     ├── service/        # Domain business logic (analysis, auth, jwt, user, video)
     └── setup/          # Configuration loading (env) and structured logger (slog)
+
 ```
 
 For a deeper explanation of each layer, read the [architecture overview](architecture.md).
@@ -140,6 +141,7 @@ Copy `.env.example` to `.env` at the repository root and fill in the values. The
 ```bash
 # From the repository root
 docker compose up -d
+
 ```
 
 This starts PostgreSQL (port 5432), RabbitMQ (ports 5672 & 15672), and MinIO (ports 9000 & 9001).
@@ -154,12 +156,14 @@ moon run server:setup
 
 # Run pending migrations
 moon run server:migrate
+
 ```
 
 ### 3\. Start the Go server
 
 ```bash
 moon run server:dev
+
 ```
 
 The server will start on port `8080` by default.
@@ -168,12 +172,14 @@ To run Go directly:
 
 ```bash
 go run ./cmd/server
+
 ```
 
 To run the background cron worker:
 
 ```bash
 go run ./cmd/cron
+
 ```
 
 ---
@@ -207,6 +213,7 @@ Migrations live in `apps/server/migrations/` (and are mirrored in `internal/outb
 20260918172411_create_users_table.up.sql
 20260918172411_create_users_table.down.sql
 ...
+
 ```
 
 **Rules:**
@@ -225,6 +232,7 @@ Unit and integration tests live alongside their packages (e.g. `internal/model/u
 moon run server:test
 # or
 go test ./...
+
 ```
 
 ---
@@ -242,12 +250,14 @@ docker build -t ascension-server apps/server/
 
 # Run it
 docker run --env-file .env -p 8080:8080 ascension-server
+
 ```
 
 **In production / docker-compose**:
 
 ```bash
 docker compose --profile prod up -d
+
 ```
 
 ---

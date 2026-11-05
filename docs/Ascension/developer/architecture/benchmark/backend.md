@@ -26,9 +26,10 @@ The Ascension API Gateway serves as the central orchestration layer connecting m
 ```mermaid
 flowchart TD
     Client["Mobile App (Flutter)"] -->|"HTTPS / WSS"| Gateway["API Gateway (Go / Gin)"]
-    Gateway --> DB[("PostgreSQL 16\n(Users, Sessions)")]
+    Gateway --> DB[("PostgreSQL 18\n(Users, Sessions)")]
     Gateway --> Broker["RabbitMQ Broker\n(Async Job Dispatching)"]
     Gateway --> Storage["MinIO / RustFS\n(Presigned S3 Tokens)"]
+
 ```
 
 *Figure: The API Gateway acts as the central orchestrator routing requests, presigned tokens, and asynchronous tasks.*

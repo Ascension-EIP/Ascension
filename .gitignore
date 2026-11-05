@@ -93,31 +93,56 @@ go.work.sum
 *.prof
 
 # =============================================================================
-# Flutter / Mobile
+# Flutter / Dart / Mobile
 # =============================================================================
+.dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
 .packages
 .pub-cache/
 .pub/
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.svn/
-.swiftpm/
-migrate_working_dir/
 .last_build_id
-.dart_tool/
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
+.widget_preview/
+**/doc/api/
 app.*.symbols
 app.*.map.json
-android/app/debug
-android/app/profile
-android/app/release
+
+# Android
+.gradle/
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+captures/
+local.properties
+key.properties
+*.keystore
+*.jks
+GeneratedPluginRegistrant.java
+.cxx/
+
+# iOS / macOS
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/Flutter/flutter_export_environment.sh
+**/macos/Pods/
+**/macos/.symlinks/
+**/macos/Flutter/ephemeral/
+**/DerivedData/
+**/xcuserdata/
+**/ServiceDefinitions.json
+Runner/GeneratedPluginRegistrant.*
+
+# Desktop / Linux ephemeral
+**/flutter/ephemeral/
+**/.plugin_symlinks/
 /pubspec.yaml
 
 # =============================================================================
@@ -125,3 +150,4 @@ android/app/release
 # =============================================================================
 TODO.md
 pipeline.md
+task/

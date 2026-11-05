@@ -38,6 +38,7 @@ flowchart TD
             Metrics["Biomechanical Metrics Display"]
         end
     end
+
 ```
 
 *Figure: Core architectural layers of the mobile client balancing hardware access with real-time UI rendering.*

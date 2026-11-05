@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AnalysisResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["fps", "width", "height", "frames"],
+  "properties": {
+    "fps": { "type": "number" },
+    "width": { "type": "integer" },
+    "height": { "type": "integer" },
+    "frames": { "type": "array", "items": { "$ref": "#/definitions/Frame" } },
+    "metrics": { "$ref": "#/definitions/Metrics" },
+    "movements": { "type": "array", "items": { "$ref": "#/definitions/Movement" } },
+    "pauses": { "type": "array", "items": { "$ref": "#/definitions/Pause" } }
+  },
+  "definitions": {
+    "Landmark": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "z", "visibility"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "z": { "type": "number" },
+        "visibility": { "type": "number" }
+      }
+    },
+    "Sides": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Per-side values; a side is omitted when it could not be measured.",
+      "properties": {
+        "left": { "type": "number" },
+        "right": { "type": "number" }
+      }
+    },
+    "Frame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frame", "timestamp_ms", "pose_detected", "landmarks", "angles"],
+      "properties": {
+        "frame": { "type": "integer" },
+        "timestamp_ms": { "type": "integer" },
+        "pose_detected": { "type": "boolean" },
+        "landmarks": {
+          "description": "Keyed by lowercase MediaPipe landmark name.",
+          "type": "object",
+          "additionalProperties": { "$ref": "#/definitions/Landmark" }
+        },
+        "angles": {
+          "description": "Joint angles in degrees, keyed by joint name.",
+          "type": "object",
+          "additionalProperties": { "type": "number" }
+        },
+        "speeds": {
+          "description": "Limb speeds in torso lengths per second, keyed by limb joint.",
+          "type": "object",
+          "additionalProperties": { "type": "number" }
+        },
+        "arm_extension": { "$ref": "#/definitions/Sides" }
+      }
+    },
+    "Metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["duration_ms", "pose_detection_rate"],
+      "properties": {
+        "duration_ms": { "type": "integer" },
+        "pose_detection_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "avg_speed": { "type": "object", "additionalProperties": { "type": "number" } },
+        "avg_arm_extension": { "$ref": "#/definitions/Sides" },
+        "bent_arm_ratio": { "$ref": "#/definitions/Sides" }
+      }
+    },
+    "Limb": {
+      "type": "string",
+      "enum": ["left_hand", "right_hand", "left_foot", "right_foot"]
+    },
+    "Movement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["limb", "start_frame", "end_frame", "start_ms", "end_ms"],
+      "properties": {
+        "limb": { "$ref": "#/definitions/Limb" },
+        "start_frame": { "type": "integer" },
+        "end_frame": { "type": "integer" },
+        "start_ms": { "type": "integer" },
+        "end_ms": { "type": "integer" }
+      }
+    },
+    "Pause": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_frame", "end_frame", "start_ms", "end_ms"],
+      "properties": {
+        "start_frame": { "type": "integer" },
+        "end_frame": { "type": "integer" },
+        "start_ms": { "type": "integer" },
+        "end_ms": { "type": "integer" }
+      }
+    }
+  }
+}

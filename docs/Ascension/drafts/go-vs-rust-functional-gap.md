@@ -34,7 +34,7 @@ id: 377a22cf-18e4-47b5-8e2e-f8979c75c582
 
 ---
 
-## 1) Authentification
+## 1\) Authentification
 
 ### Go (`apps/server`)
 
@@ -66,7 +66,7 @@ id: 377a22cf-18e4-47b5-8e2e-f8979c75c582
 
 ---
 
-## 2) Users
+## 2\) Users
 
 ### Go
 
@@ -84,7 +84,7 @@ id: 377a22cf-18e4-47b5-8e2e-f8979c75c582
 
 ---
 
-## 3) Videos
+## 3\) Videos
 
 ### Go
 
@@ -106,7 +106,7 @@ id: 377a22cf-18e4-47b5-8e2e-f8979c75c582
 
 ---
 
-## 4) Analyses IA
+## 4\) Analyses IA
 
 ### Go
 
@@ -137,7 +137,7 @@ id: 377a22cf-18e4-47b5-8e2e-f8979c75c582
 
 ---
 
-## 5) Documentation API
+## 5\) Documentation API
 
 ### Go
 

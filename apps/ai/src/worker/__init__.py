@@ -1,14 +1,15 @@
-# @date 2026-09-05
+# @date 2026-11-01
 # @file __init__.py
-# @brief Worker module exports.
+# @brief File description.
 # @project Ascension
-# @author Nicolas TORO <nicolas.toro@epitech.eu>
+# @author Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
-"""Worker service package."""
+def main() -> None:
+    from dotenv import load_dotenv
 
-from src.worker.coordinator import JobCoordinator
-from src.worker.pid import acquire_pid_lock
-from src.worker.runner import run_worker
+    load_dotenv()
 
-__all__ = ["JobCoordinator", "acquire_pid_lock", "run_worker"]
+    from worker.cli import main as cli_main
+
+    cli_main()

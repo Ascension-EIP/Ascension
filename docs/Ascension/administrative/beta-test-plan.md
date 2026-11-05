@@ -31,7 +31,7 @@ Flux utilisateur de référence dans la beta :
 3. Lancer l’analyse IA 2D.
 4. Suivre la progression jusqu'au résultat final.
 5. Consulter les résultats biomécaniques, le score global et les conseils techniques.
-6. Sélectionner les prises en mode custom et utiliser le mode fantôme MVP (comparaison vidéo ou trajectoire sur photo).
+6. Sélectionner les prises en mode custom et utiliser le mode fantôme MVP (succession d'images étape par étape sur photo).
 7. Définir ses objectifs et générer des routines d'entraînement personnalisées.
 8. Partager une séance et comparer ses performances avec ses amis.
 
@@ -65,7 +65,7 @@ Toutes les fonctionnalités listées ci-dessous sont démontrées pendant la sou
 | BTP-F09 | Grimpeur beta | Consulter le score global et la progression | Suivre son score par session et visualiser l'évolution de ses performances dans l'historique. |
 | BTP-F10 | Grimpeur beta | Sélectionner les prises en mode custom | Définir manuellement les prises à utiliser sur photo avant génération du fantôme. |
 | BTP-F11 | Grimpeur beta | Générer un mode fantôme MVP | Calculer une trajectoire de référence exploitable à partir des prises custom. |
-| BTP-F12 | Grimpeur beta | Comparer son mouvement au fantôme | Visualiser les écarts majeurs entre montée réelle et trajectoire cible. |
+| BTP-F12 | Grimpeur beta | Visionner le fantôme étape par étape | Parcourir la succession d'images montrant chaque mouvement calculé par le fantôme. |
 | BTP-F13 | Grimpeur beta | Générer un mode fantôme via photo | Produire une bêta de référence sans grimpe à partir d’une photo de la voie et du profil. |
 | BTP-F14 | Grimpeur beta | Définir des objectifs et générer des routines | Configurer son niveau cible, recevoir des séances types adaptées et consigner ses entraînements. |
 | BTP-F15 | Grimpeur beta + Ami | Partager une analyse et comparer les performances | Publier une montée avec gestion de la visibilité (privé, amis, public) et comparer ses résultats entre amis. |
@@ -92,7 +92,7 @@ Période de référence de validation beta : septembre 2026 -> juillet 2027.
 | BTP-F09 | Le score global et l'historique reflètent l'activité de l'utilisateur. | 20 consultations, 20 scores cohérents. | Not achieved (0/20). |
 | BTP-F10 | La sélection custom des prises est exploitable sans confusion. | 20 essais, 20 parcours complets sans blocage. | Not achieved (0/20). |
 | BTP-F11 | Le fantôme MVP se génère dans un temps acceptable. | 20 générations, temps <= 30 s. | Not achieved (0/20). |
-| BTP-F12 | La comparaison fantôme met en évidence des écarts actionnables. | 20 comparaisons, >= 80% jugées lisibles par testeurs. | Not achieved (0/20). |
+| BTP-F12 | Le visionnage étape par étape est fluide et lisible. | 20 consultations, >= 80% jugées claires par les testeurs. | Not achieved (0/20). |
 | BTP-F13 | Le mode fantôme via photo se génère avec une bêta lisible. | 20 générations photo, >= 80% bêta validée. | Not achieved (0/20). |
 | BTP-F14 | La configuration d'objectifs et la génération de routines sont pertinentes. | 20 configurations, 20 routines générées et loguées. | Not achieved (0/20). |
 | BTP-F15 | Le partage et la comparaison d'amis respectent la confidentialité. | 20 partages / comparaisons, 0 anomalie de visibilité. | Not achieved (0/20). |
