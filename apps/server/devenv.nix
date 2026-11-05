@@ -7,14 +7,11 @@
 }:
 
 {
-  dotenv.disableHint = true;
-
   # https://devenv.sh/basics/
   # env.GREET = "devenv";
 
   # https://devenv.sh/packages/
   packages = [
-    pkgs.air
     pkgs.quicktype
   ];
 
@@ -28,7 +25,54 @@
 
   # https://devenv.sh/processes/
   processes = {
-    server.exec = "dev";
+    server = {
+      exec = ''
+        secretspec run -- go run ./cmd/server/main.go
+      '';
+      cwd = "${config.git.root}/apps/server";
+      restart = {
+        on = "on_failure";
+        max = 5;
+      };
+      ready = {
+        http.get = {
+          port = 8080;
+          path = "/healthz";
+          # host = "127.0.0.1"; # default
+          # scheme = "http"; # default
+        };
+      };
+      watch = {
+        paths = [
+          ./.
+        ];
+        extensions = [
+          "go"
+          "sum"
+          "mod"
+        ];
+      };
+    };
+    cron = {
+      exec = ''
+        secretspec run -- go run ./cmd/cron/main.go
+      '';
+      cwd = "${config.git.root}/apps/server";
+      restart = {
+        on = "on_failure";
+        max = 5;
+      };
+      watch = {
+        paths = [
+          ./.
+        ];
+        extensions = [
+          "go"
+          "sum"
+          "mod"
+        ];
+      };
+    };
   };
 
   # https://devenv.sh/services/
@@ -62,49 +106,15 @@
   };
 
   # https://devenv.sh/scripts/
-  scripts.install.exec = ''
-    go mod download
-  '';
-
-  scripts.update.exec = ''
-    go get -u ./...
-    go mod tidy
-  '';
-
-  scripts.format.exec = ''
-    go fmt ./...
-  '';
-
-  scripts.lint.exec = ''
-    go vet ./...
-  '';
-
-  scripts.build.exec = ''
-    go build -o bin/server ./cmd/server
-  '';
-
-  scripts.test.exec = ''
-    go test ./...
-  '';
-
-  scripts.dev.exec = ''
-    LOG_LEVEL=debug air ./cmd/server
-  '';
-
-  scripts.clean.exec = ''
-    rm -rf bin
-  '';
-
   scripts.schemas-generate.exec = ''
     	quicktype --src-lang schema $DEVENV_ROOT/../../schemas/*.schema.json \
             -o $DEVENV_ROOT/internal/shared/models.go --lang go --just-types-and-package --package shared
   '';
 
   # https://devenv.sh/basics/
-  # enterShell = ''
-  #   hello         # Run scripts directly
-  #   git --version # Use packages
-  # '';
+  enterShell = ''
+    echo server devenv loaded !
+  '';
 
   # https://devenv.sh/tasks/
   # tasks = {
