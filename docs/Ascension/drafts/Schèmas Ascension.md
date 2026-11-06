@@ -2,8 +2,6 @@
 id: 6548674c-5c0e-41e9-ae03-a9b0ccc16681
 ---
 
----
-
 ## 1\. Schéma d'architecture globale du système
 
 ```mermaid
@@ -126,7 +124,7 @@ sequenceDiagram
 
 ---
 
-## 3 Schèma d'hébergement et d'infrastructure cloud
+## 3\. Schèma d'hébergement et d'infrastructure cloud
 
 ```mermaid
 flowchart TB
@@ -248,7 +246,7 @@ erDiagram
     SUBSCRIPTIONS ||--o{ SUBSCRIPTION_EVENTS : emits
 ```
 
-### 5\. Schèma de la pipeline de l'IA
+## 5\. Schèma de la pipeline de l'IA
 
 ```mermaid
 flowchart TD
