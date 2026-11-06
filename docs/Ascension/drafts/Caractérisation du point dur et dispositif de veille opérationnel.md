@@ -2,88 +2,276 @@
 id: 6548674c-5c0e-41e9-ae03-a9b0ccc16681
 ---
 
-## 1\. Le problème à résoudre : le Mode Fantôme
+---
 
-- **Ce qu'on veut faire :** L'utilisateur prend une photo d'une voie d'escalade et sélectionne ses prises ou laisse l'IA les détecter. En fonction de la morphologie du grimpeur, l'application doit lui donner la séquence de mouvements étape par étape pour réussir la voie (ex. *Étape 1 : pied gauche sur la prise 2, main droite sur la prise 4...*).
-- **Ce qu'on ne sait pas faire aujourd'hui :** Trouver automatiquement une suite de mouvements logique, humaine et réalisable sans que le grimpeur se retrouve coincé ou dans une posture impossible.
+## 1\. Schéma d'architecture globale du système
+
+```mermaid
+graph TD
+    subgraph Client ["📱 Couche Client"]
+        MobileApp["Application Mobile Flutter<br/>"]
+    end
+
+    subgraph API ["🛡️ API Gateway (Go / Gin)"]
+        APIServer["Serveur API REST & WebSocket"]
+        AuthService["Authentification JWT & Quotas"]
+    end
+
+    subgraph Storage ["🗄️ Données & Stockage"]
+        ObjectStorage["Stockage Objets S3<br/>(RustFS en dev / OVHcloud en prod)"]
+        Database[("Base de Données PostgreSQL<br/>Tables relationnelles + JSONB")]
+        MessageQueue["Message Broker<br/>RabbitMQ"]
+    end
+
+    subgraph AI ["🤖 Traitement IA (Python)"]
+        direction TB
+        subgraph Vision ["Pipeline 1 : Analyse de pose"]
+            Skel["Extraction squelette MediaPipe"]
+            Adv["Conseils coach LLM"]
+            Skel --> Adv
+        end
+        subgraph Ghost ["Pipeline 2 : Mode Fantôme"]
+            Holds["Détection des prises"]
+            Path["Pathfinding morphologique"]
+            StepsImg["Générateur d'images étapes"]
+            Holds --> Path --> StepsImg
+        end
+        subgraph Training ["Pipeline 3 : Entraînement"]
+            Programs["Générateur de programmes"]
+        end
+    end
+
+    MobileApp -->|"1. Demande URL d'upload"| APIServer
+    APIServer -->|"2. Délivre URL présignée PUT"| ObjectStorage
+    MobileApp -->|"3. Téléversement binaire direct"| ObjectStorage
+    MobileApp -->|"4. Notification upload terminé"| APIServer
+
+    APIServer -->|"5. Publication tâche AMQP"| MessageQueue
+    MessageQueue -->|"6a. poses.detect"| Skel
+    MessageQueue -->|"6b. ghost.path"| Holds
+    MessageQueue -->|"6c. training.plan"| Programs
+
+    Skel -->|"Lecture vidéo"| ObjectStorage
+    Holds -->|"Lecture photo"| ObjectStorage
+
+    Adv -->|"7a. Sauvegarde result & hints"| Database
+    StepsImg -->|"7b. Sauvegarde ghost & étapes"| Database
+    Programs -->|"7c. Sauvegarde plan d'entraînement"| Database
+
+    Adv -->|"8. Événement terminé"| MessageQueue
+    StepsImg -->|"8. Événement terminé"| MessageQueue
+
+    MessageQueue -->|"9. Notification résultat"| APIServer
+    APIServer -->|"10. Notification WebSocket / Polling"| MobileApp
+    MobileApp -->|"11. Requête résultats (JSON)"| APIServer
+    APIServer -->|"12. Lecture des métriques"| Database
+```
 
 ---
 
-## 2\. Pourquoi c'est dur
+## 2\. Diagramme de séquence de bout en bout pour l'analyse de pose
 
-1. **Pas de solution unique (« pas de bêta parfaite ») :** Deux grimpeurs ne grimpent pas de la même façon. Quelqu'un de plus petit va monter ses pieds plus haut, quelqu'un de grand va chercher des prises plus loin. Il n'y a pas une seule bonne réponse qu'on pourrait simplement copier.
-2. **Les erreurs de la photo se répercutent sur l'algo :** Si la détection sur la photo décale une prise de 10 cm ou rate une petite prise de pied, l'algorithme va calculer un mouvement sur du vide ou penser qu'une prise est inatteignable.
-3. **Pas de données d'entraînement toutes faites :** Il n'existe aucun jeu de données public qui associe des photos de voies à la liste exacte des mouvements réussis par différents types de personnes. On doit construire notre propre logique.
-4. **La cohérence physique dans le temps :** Le grimpeur ne peut pas se téléporter. Chaque mouvement part de la position précédente. Pour lever une main ou un pied, il faut que le reste du corps garde l'équilibre (ne pas basculer en arrière ou décrocher).
+```mermaid
+sequenceDiagram
+    autonumber
+    participant User as 👤 Grimpeur
+    participant App as 📱 Flutter Mobile
+    participant API as 🛡️ API Gateway Go
+    participant S3 as 📦 S3 (RustFS / OVHcloud)
+    participant RMQ as 📨 RabbitMQ
+    participant Worker as 🤖 Worker IA Python
+    participant DB as 🗄️ PostgreSQL
+
+    User->>App: Enregistre une vidéo de grimpe (10–45 s)
+    App->>App: Mise en cache local du fichier MP4
+
+    Note over App,API: Phase 1 : Négociation & Upload direct
+    App->>API: GET /v1/videos/upload-url?content_type=video/mp4&size=...
+    API->>S3: Génération URL pré-signée PUT (expiration 15 min)
+    S3-->>API: URL pré-signée retournée
+    API-->>App: { video_id, upload_url }
+
+    App->>S3: PUT /videos/{video_id}.mp4 (Upload binaire direct)
+    S3-->>App: 200 OK (Upload réussi)
+    App->>API: PUT /v1/videos/upload-done/{video_id}
+    API-->>App: 204 No Content
+
+    Note over App,RMQ: Phase 2 : Soumission asynchrone
+    App->>API: POST /v1/analysis { video_id }
+    API->>DB: INSERT INTO analyses (status='pending')
+    API->>RMQ: Publie 'pose.detect.requested' { job_id, object_key }
+    API-->>App: 202 Accepted { analysis_id }
+
+    Note over RMQ,Worker: Phase 3 : Traitement IA
+    RMQ->>Worker: Message consommé depuis 'poses.detect'
+    Worker->>DB: UPDATE analyses SET status='started', progress=0
+    Worker->>S3: Téléchargement du flux MP4 temporaire
+    Worker->>Worker: MediaPipe Pose : 33 keypoints par frame, filtrage & métriques
+    Worker->>DB: UPDATE analyses SET result=JSONB, progress=85
+    Worker->>RMQ: Publie 'pose.detect.completed' sur 'events'
+
+    RMQ->>Worker: Message consommé depuis 'poses.advice'
+    Worker->>Worker: LLM (OpenAI API) : génération des conseils personnalisés
+    Worker->>DB: UPDATE analyses SET hints=JSONB, status='success', progress=100
+    Worker->>RMQ: Publie 'pose.advice.status'
+
+    Note over API,App: Phase 4 : Notification & Edge Rendering
+    App->>API: Polling GET /v1/analysis/{analysis_id} (ou WebSocket)
+    API->>DB: SELECT result, hints FROM analyses WHERE id = ...
+    DB-->>API: Données JSONB
+    API-->>App: 200 OK avec payload biomécanique (~50 Ko)
+    App->>App: CustomPainter dessine le squelette et les conseils sur la vidéo locale
+    App->>User: Affichage interactif avec curseur temporel
+```
 
 ---
 
-## 3\. Pourquoi une solution toute simple (naïve) ne marche pas
+## 3 Schèma d'hébergement et d'infrastructure cloud
 
-- **La solution naïve :** Relier simplement les prises de bas en haut en allant à chaque fois à la prise la plus proche au-dessus.
-- **Pourquoi ça échoue à tous les coups :**
-  - **Croisements de membres aberrants :** L'algo naïf va par exemple demander de poser le pied droit 1 mètre à gauche du pied gauche, les jambes complètement croisées.
-  - **Perte d'équilibre immédiate :** Il ne vérifie pas si le grimpeur a assez d'appuis pour tenir au moment où il déplace une main.
-  - **Il ignore la taille du grimpeur :** Une prise située à 1m30 sera proposée de la même façon à quelqu'un d'1m50 et à quelqu'un d'1m90, alors que le premier ne peut physiquement pas l'attraper.
+```mermaid
+flowchart TB
+    subgraph Client ["📱 Client Mobile"]
+        App["App Mobile Flutter<br/>iOS & Android"]
+    end
+
+    subgraph ExtServices ["☁️ Intégrations Externes"]
+        GH["GitHub (Ascension-EIP)<br/>Webhooks & PR Checks"]
+        Discord["Discord (#veille-technique)<br/>Alertes Veille Techno"]
+    end
+
+    subgraph DNS ["🌐 Réseau & Domaine"]
+        Domain["ascension-eip.fr<br/>(Anycast DNS + DNSSEC)"]
+    end
+
+    subgraph Storage ["🗄️ OVHcloud Object Storage (Gravelines - GRA)"]
+        direction TB
+        Bucket["Bucket S3 Standard<br/>(Vidéos brutes & Photos de voies)"]
+    end
+
+    subgraph Compute ["🖥️ OVHcloud VPS-4 (Milan - IT-MIL : 8 vCores / 24 Go RAM / 200 Go NVMe)"]
+        direction TB
+
+        subgraph Management ["⚙️ Gestion & Routage (Coolify)"]
+            Coolify["Coolify PaaS<br/>Gestionnaire de conteneurs & déploiements"]
+            Proxy["Reverse Proxy Traefik<br/>Terminaison TLS Let's Encrypt"]
+            Coolify -.->|Pilote| Proxy
+        end
+
+        subgraph CoreApp ["Conteneurs Applicatifs Docker"]
+            API["API Gateway Go / Gin<br/>(Go 1.27.1)"]
+            RabbitMQ["RabbitMQ 4.2.4<br/>Message Broker AMQP"]
+            WorkerPose["Worker AI d'analyse de pose<br/>(MediaPipe / PyTorch)"]
+            WorkerGhost["Worker AI de mode fantôme<br/>(Pathfinding & YOLOv8)"]
+            DB[("PostgreSQL 18<br/>Données & JSONB")]
+        end
+
+        subgraph ToolingAndCI ["Usine Logicielle, Outils & Veille"]
+            WebSite["Site Vitrine Web<br/>(Présentation & Docs)"]
+            Jenkins["Jenkins CI/CD<br/>(Pipelines de tests & builds)"]
+            Sonar["SonarQube<br/>(Quality Gate & SAST)"]
+            N8N["n8n Automation Engine<br/>(Veille technologique)"]
+        end
+
+        Proxy -->|api.ascension-eip.fr| API
+        Proxy -->|ascension-eip.fr| WebSite
+        Proxy -->|jenkins.ascension-eip.fr| Jenkins
+        Proxy -->|sonarqube.ascension-eip.fr| Sonar
+        Proxy -->|n8n.ascension-eip.fr| N8N
+
+        API --> DB
+        API --> RabbitMQ
+        RabbitMQ --> WorkerPose
+        RabbitMQ --> WorkerGhost
+        WorkerPose --> DB
+        WorkerGhost --> DB
+
+        Jenkins <-->|Analyses & Quality Gate| Sonar
+    end
+
+    Domain --> Proxy
+    GH <-->|Webhooks & PR Status| Jenkins
+    N8N -->|Webhook Alertes RSS| Discord
+
+    App -->|"1. Demande URL pré-signée"| API
+    API -.->|"2. Délivre URL pré-signée"| App
+    App -->|"3. Upload direct vers S3"| Bucket
+    App -->|"4. Notification fin upload"| API
+    WorkerPose -->|"5. Téléchargement vidéo"| Bucket
+    WorkerGhost -->|"5. Téléchargement photo"| Bucket
+    App -->|"6. Récupération JSON d'analyse"| API
+```
 
 ---
 
-## 4\. Critères de réussite chiffrés
+## 4\. Schéma de Données (Data Diagram)
 
-1. **Faisabilité physique (100 %) :** 100 % des mouvements proposés doivent respecter la portée du grimpeur (aucune prise demandée au-delà de ce que ses bras et jambes peuvent atteindre).
-2. **Maintien de l'équilibre (**$\ge$ **85 %) :** Lors de chaque changement de prise, le grimpeur doit garder au moins 3 appuis stables (règle des 3 points d'appui) sur au moins 85 % des étapes de la voie.
-3. **Différenciation selon la morphologie (**$\ge$ **20 %) :** Sur une même voie standard comportant des prises intermédiaires (12 à 20 prises), l'algorithme doit proposer au moins 20 % d'étapes différentes entre un profil petit (~1m60) et un profil grand (~1m85) (ex. saut d'une prise intermédiaire par le grand, ou replacement de pied supplémentaire pour compenser la taille), tout en restant faisable pour les deux.
-4. **Temps de calcul (< 30 secondes) :** Le calcul complet de la voie doit prendre **moins de 25 secondes en moyenne**, et jamais plus de 30 secondes pour une voie standard (moins de 20 prises).
+```mermaid
+erDiagram
+    USERS ||--o| USER_PROFILES : has
+    USERS ||--o{ USER_BODY_CONSTRAINTS : declares
+    USERS ||--o{ SESSIONS : authenticates
+    USERS ||--o{ TUTORIAL_PROGRESS : tracks
+    USERS ||--o{ CLIMBING_SESSIONS : climbs
+    USERS ||--o{ VIDEOS : uploads
+    USERS ||--o{ ROUTES : creates
+    USERS ||--o{ GHOSTS : requests
+    USERS ||--o{ GOALS : sets
+    USERS ||--o{ TRAINING_LOGS : logs
+    USERS ||--o{ FRIENDSHIPS : requests
+    USERS ||--o{ FOLLOWS : follows
+    USERS ||--o{ SUBSCRIPTIONS : subscribes
+    USERS ||--o{ QUOTA_USAGES : consumes
+    USERS o|--o{ GYMS : manages
 
----
+    GYMS ||--o{ CLIMBING_SESSIONS : hosts
+    GYMS ||--o{ ROUTES : hosts
 
-## 5\. Notre dispositif de veille opérationnel
+    CLIMBING_SESSIONS ||--o{ VIDEOS : groups
+    CLIMBING_SESSIONS ||--o{ TRAINING_LOGS : links
 
-### 5.1 Ce qu'on regarde (sources)
+    VIDEOS ||--o{ ANALYSES : analyzed_by
+    ANALYSES ||--o| ANALYSIS_SCORES : scored_by
+    ANALYSES ||--o{ COMPARISONS : compared_in
 
-- **Projets open source et dépôts GitHub :** travaux sur la détection de prises d'escalade et générateurs de voies.
-- **Articles et recherches sur l'escalade :** notamment les travaux de chercheurs en biomécanique du sport.
-- **Algorithmes de graphes et de pathfinding :** recherche de chemin avec contraintes physiques.
+    ROUTES ||--o{ HOLDS : contains
+    ROUTES ||--o{ GHOSTS : generates
+    GHOSTS ||--o{ GHOST_HOLDS : uses
+    HOLDS ||--o{ GHOST_HOLDS : selected_in
+    GHOSTS ||--o{ COMPARISONS : compared_in
 
-### 5.2 Nos outils
+    GOALS ||--o{ TRAINING_PROGRAMS : drives
+    TRAINING_PROGRAMS ||--o{ TRAINING_PROGRAM_SESSIONS : schedules
+    TRAINING_PROGRAM_SESSIONS ||--o{ EXERCISES : contains
+    TRAINING_PROGRAM_SESSIONS ||--o{ TRAINING_LOGS : completed_by
 
-- **Instance n8n auto-hébergée sur VPS :** workflow d'automatisation déployé sur notre VPS (via Docker) qui s'exécute chaque matin pour interroger les flux RSS (arXiv, releases GitHub, Google Scholar) et filtrer les publications par mots-clés pertinents.
-- **Salon Discord `#veille-technique` :** relié directement à n8n via un webhook pour recevoir automatiquement les alertes formatées (titre, lien, extrait et tags).
-- **Documentation partagée :** fiches de synthèse écrites dans la doc du projet pour tracer ce que l'on retient ou élimine.
+    SUBSCRIPTION_PLANS ||--o{ SUBSCRIPTIONS : priced_by
+    SUBSCRIPTIONS ||--o{ SUBSCRIPTION_EVENTS : emits
+```
 
-### 5.3 Notre rythme
+### 5\. Schèma de la pipeline de l'IA
 
-- **Individuel :** environ 1 heure par semaine par personne pour se documenter et tester des approches.
-- **Équipe :** un point rapide de 15 minutes toutes les deux semaines pour décider si une idée ou un outil peut servir dans Ascension.
-- **Objectif EIP :** alimenter le journal pour avoir au moins 20 entrées documentées et 6 présentations internes sur l'année.
+```mermaid
+flowchart TD
+    subgraph A ["Analyse de pose"]
+        A1["Vidéo grimpeur (S3)"] --> A2["Squelette MediaPipe\n33 points par image"]
+        A2 --> A3["Angles articulaires & vitesses"]
+        A3 --> A4["Découpage en mouvements & pauses"]
+    end
 
-### 5.4 Qui suit quoi dans l'équipe
+    subgraph B ["Mode fantôme"]
+        B1["Photo de la voie (S3)"] --> B2["Détection prises (YOLOv8)"]
+        B2 --> B3["Couleur dominante (OpenCV HSV)"]
+        B3 --> B4["Clustering par voie (k-means)"]
+        B4 --> B5["Validation / Correction utilisateur"]
+        B5 --> B6["Prises validées + Morphologie"]
+        B6 --> B7["Calcul bêta optimale par étapes"]
+    end
 
-- **Gianni TUERO & Olivier POUECH (IA) :** Algorithmes de pathfinding, modélisation physique du grimpeur et détection des prises dans le worker IA.
-- **Lou PELLEGRINO (Backend) :** Transmission asynchrone des calculs via RabbitMQ et sauvegarde des résultats dans PostgreSQL sans bloquer l'API Go.
-- **Nicolas TORO (Mobile) :** Restitution visuelle pas-à-pas de la bêta dans l'application mobile et ergonomie utilisateur.
-- **Christophe VANDEVOIR (Infra) :** Déploiement et dimensionnement des ressources (CPU/RAM) sur le VPS pour que les workers IA tournent efficacement.
+    subgraph C ["Rendu mobile"]
+        C2["Visionneuse pas-à-pas\nMode Fantôme"]
+        C1["Canvas CustomPainter\nOverlay squelette & conseils"]
+    end
 
----
-
-## 6\. Journal de recherche (Research Log)
-
-### 6.1 Format d'une fiche
-
-Pour chaque entrée dans le journal, nous notons :
-
-- **Date :** Quand la ressource a été consultée.
-- **Auteur :** Qui l'a analysée.
-- **Source & lien :** Référence de l'article, vidéo ou repo.
-- **Sujet :** Ce que ça explique en 2-3 lignes.
-- **Apport pour Ascension :** Ce que ça peut changer pour notre projet.
-- **Décision :** Ce qu'on fait (Adopté / En test / Écarté, et pourquoi).
-
-### 6.2 Exemple de première entrée
-
-- **Date :** 15 octobre 2026
-- **Auteur :** Gianni TUERO
-- **Source :** Travaux de Lionel REVERET sur le mouvement en escalade.
-- **Sujet :** Analyse du placement des appuis et de l'équilibre du grimpeur.
-- **Apport pour Ascension :** Confirme que la règle des 3 appuis permet d'éviter les positions de déséquilibre sans calcul trop lourd.
-- **Décision :** Adopté. Intégration de cette règle comme contrainte dans notre algorithme pour éliminer immédiatement les positions de chute.
+    A4 --> C1
+    B7 --> C2
+```
