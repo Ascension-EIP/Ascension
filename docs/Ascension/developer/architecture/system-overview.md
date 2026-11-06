@@ -2,8 +2,10 @@
 id: f1d0195a-2bc8-4cf6-a6c2-f215f94e82c6
 ---
 
-:::success
+:::danger
 **Version:** 1.3
+
+à totalement revoir, c’est n’importe quoi c’est un four tout, y’a des benchmark, des coûts, etc
 :::
 
 ---
@@ -177,12 +179,12 @@ flowchart LR
     Worker["AI worker"] -->|"pose.detect.completed, pose.detect.status, pose.advice.status"| EV
 ```
 
-_Summary: the API publishes `pose.detect.requested` on the `events` exchange. The worker consumes `poses.detect`, then publishes `pose.detect.completed`, which feeds `poses.advice`. Both steps publish their statuses. Messages that fail for good go to the dead-letter queues._
+*Summary: the API publishes `pose.detect.requested` on the `events` exchange. The worker consumes `poses.detect`, then publishes `pose.detect.completed`, which feeds `poses.advice`. Both steps publish their statuses. Messages that fail for good go to the dead-letter queues.*
 
-| Queue          | Bound routing keys                               | Payload                | Handler               |
-| -------------- | ------------------------------------------------ | ---------------------- | --------------------- |
-| `poses.detect` | `pose.detect.requested`                          | `{job_id, object_key}` | `pose_detect_request` |
-| `poses.advice` | `pose.detect.completed`, `pose.advice.requested` | `{job_id}`             | `pose_advice_request` |
+| Queue | Bound routing keys | Payload | Handler |
+| --- | --- | --- | --- |
+| `poses.detect` | `pose.detect.requested` | `{job_id, object_key}` | `pose_detect_request` |
+| `poses.advice` | `pose.detect.completed`, `pose.advice.requested` | `{job_id}` | `pose_advice_request` |
 
 Status messages (`pose.detect.status`, `pose.advice.status`) carry `{job_id, status, message}` (`message` is optional and short) with `status` among `pending`, `started`, `running`, `success`, `failed`. The `job_id` is the `analyses.id`; the bucket is a configuration value, not part of the message. The JSON Schemas in `schemas/` are the source of truth for these payloads.
 
@@ -202,19 +204,19 @@ Pipeline 1: Vision Pipeline
 
 All computer-vision tasks that rely on MediaPipe Pose and image processing:
 
-| Step               | Queue                          | Input                                                | Output                                                                                                    | Status                                                                                                                                                                                                 |
-| ------------------ | ------------------------------ | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1\. Hold Detection | Planned (name to be redefined) | Photo of the route                                   | JSON hold map (positions + types)                                                                         | Planned. User photographs the wall, AI detects and classifies holds (crimp, sloper, jug…). User can manually correct misclassified holds before proceeding.                                            |
-| 2\. Pose detection | `poses.detect`                 | `{job_id, object_key}` (video in RustFS)             | `analyses.result`: filtered landmarks, joint angles, speeds, arm extension, metrics, movements and pauses | **Implemented.** MediaPipe Pose extracts 33 keypoints per frame, filters and smooths them, then computes angles, metrics and movements. Hands are unreliable on the sample video.                      |
-| 3\. Advice         | `poses.advice`                 | `{job_id}` (the worker reads `analyses.result` back) | `analyses.hints`: structured advice in French                                                             | **Implemented.** Computed values only, sent to an interchangeable OpenAI-compatible LLM (`LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`). No hold map or route context yet. Real providers are not tested. |
-| 4\. Ghost Mode     | Planned (name to be redefined) | Route photo + selected holds + user morphology       | JSON ghost step sequence + step images                                                                    | Planned. Computes an optimal movement sequence (pathfinding) for the user's body proportions from an empty route photo. Output is a step-by-step sequence with generated images showing each move.     |
+| Step | Queue | Input | Output | Status |
+| --- | --- | --- | --- | --- |
+| 1\. Hold Detection | Planned (name to be redefined) | Photo of the route | JSON hold map (positions + types) | Planned. User photographs the wall, AI detects and classifies holds (crimp, sloper, jug…). User can manually correct misclassified holds before proceeding. |
+| 2\. Pose detection | `poses.detect` | `{job_id, object_key}` (video in RustFS) | `analyses.result`: filtered landmarks, joint angles, speeds, arm extension, metrics, movements and pauses | **Implemented.** MediaPipe Pose extracts 33 keypoints per frame, filters and smooths them, then computes angles, metrics and movements. Hands are unreliable on the sample video. |
+| 3\. Advice | `poses.advice` | `{job_id}` (the worker reads `analyses.result` back) | `analyses.hints`: structured advice in French | **Implemented.** Computed values only, sent to an interchangeable OpenAI-compatible LLM (`LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`). No hold map or route context yet. Real providers are not tested. |
+| 4\. Ghost Mode | Planned (name to be redefined) | Route photo + selected holds + user morphology | JSON ghost step sequence + step images | Planned. Computes an optimal movement sequence (pathfinding) for the user's body proportions from an empty route photo. Output is a step-by-step sequence with generated images showing each move. |
 
 **Key design**: Video analysis (steps 2–3) and Ghost Mode (step 4) are completely decoupled. Video analysis takes a climbing video to extract pose landmarks and generate coaching advice. Ghost Mode operates strictly on an route photo: after hold detection and user selection, it uses climber morphology to generate step-by-step guidance images.
 
 Pipeline 2: Training Pipeline (CPU-only)
 
-| Step                   | Queue                          | Input                                                   | Output                | Status                                                                                                                                                 |
-| ---------------------- | ------------------------------ | ------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Step | Queue | Input | Output | Status |
+| --- | --- | --- | --- | --- |
 | 1\. Program Generation | Planned (name to be redefined) | User profile (goals, injuries, level, analysis history) | JSON training program | Planned. Algorithm selects and personalizes training routines based on the user's objectives, injury history, and past performance data from analyses. |
 
 This pipeline does **not** require GPU or video processing. It runs as a lightweight algorithm (rule-based + optional LLM for textual personalization in the future).
@@ -248,13 +250,13 @@ Each worker process:
 
 **Implementation status:**
 
-| Queue            | Module                                               | Status                                     |
-| ---------------- | ---------------------------------------------------- | ------------------------------------------ |
-| `poses.detect`   | `apps/ai/src/worker/handlers/pose_detect_request.py` | ✅ Implemented (not yet fed by the Go API) |
-| `poses.advice`   | `apps/ai/src/worker/handlers/pose_advice_request.py` | ✅ Implemented (provider calls untested)   |
-| Hold detection   | —                                                    | Planned                                    |
-| Ghost Mode       | —                                                    | Planned                                    |
-| Training program | —                                                    | Planned                                    |
+| Queue | Module | Status |
+| --- | --- | --- |
+| `poses.detect` | `apps/ai/src/worker/handlers/pose_detect_request.py` | ✅ Implemented (not yet fed by the Go API) |
+| `poses.advice` | `apps/ai/src/worker/handlers/pose_advice_request.py` | ✅ Implemented (provider calls untested) |
+| Hold detection | — | Planned |
+| Ghost Mode | — | Planned |
+| Training program | — | Planned |
 
 See the [AI worker overview](../apps/ai/overview.md), the [2D pipeline decomposition](../apps/ai/pipeline-2d-decomposition.md) and the [worker README](../../../../apps/ai/README.md) for the full AI layer documentation.
 
@@ -635,7 +637,7 @@ We migrated the API Gateway server from Rust (Axum) to Go (Gin) for several reas
 - **Concurrency**: Goroutines provide extremely high throughput and low latency, similar to Tokio tasks, but with a much lower cognitive load.
 - **Robust standard library**: Simplified database connection pooling and HTTP handling.
 
-_Note: The initial Rust prototype helped us validate benchmarks and establish performance guidelines, but Go was chosen for the long-term production gateway._
+*Note: The initial Rust prototype helped us validate benchmarks and establish performance guidelines, but Go was chosen for the long-term production gateway.*
 
 ### Why PostgreSQL over MongoDB?
 
@@ -657,7 +659,7 @@ _Note: The initial Rust prototype helped us validate benchmarks and establish pe
 - S3-compatible API (easy production migration)
 - Self-hosted (no cloud costs)
 - Docker-friendly
-- Replaces MinIO Community Edition, deprecated and archived upstream in April 2026 (see the [MinIO deprecation audit](./audits/minio-deprecation.md) and the [object storage benchmark](./benchmark/object-storage.md))
+- Replaces MinIO Community Edition, deprecated and archived upstream in April 2026 (see the [MinIO deprecation audit](audits/minio-deprecation.md) and the [object storage benchmark](benchmark/object-storage.md))
 - Python access goes through boto3, since RustFS documents no dedicated Python SDK
 
 ---

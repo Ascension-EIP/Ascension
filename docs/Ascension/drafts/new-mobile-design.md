@@ -2,4 +2,4 @@
 id: 562b4290-61af-4294-8740-068f3ce47b4a
 ---
 
-![Excalidraw](assets/d560e9ee-c34c-45e4-a277-0f9bf5f75cb0-diagram.excalidraw.svg)
+![Excalidraw](assets/4c05223c-3cfe-47e9-a3ca-8ec58d5801fa-diagram.excalidraw.svg)
