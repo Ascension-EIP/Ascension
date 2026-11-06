@@ -80,8 +80,8 @@ Each app under `apps/` is independently buildable and deployable. See the [Monor
 | AI Workers     | Python 3.11, MediaPipe, PyTorch, OpenCV                     |
 | Message Queue  | RabbitMQ 4.2.4 — async job dispatch between API and workers    |
 | Database       | PostgreSQL 18 — JSONB for analysis results                   |
-| Object Storage | MinIO (dev) / Hetzner Storage Box (prod) — S3-compatible     |
-| Infrastructure | Hetzner Cloud (EU), Docker Compose → Kubernetes              |
+| Object Storage | RustFS (dev) / OVHcloud Object Storage (prod) — S3-compatible |
+| Infrastructure | OVHcloud VPS-4 (Milan) + Gravelines Storage (S3), Docker Compose |
 | Monorepo       | moonrepo                                                     |
 
 For the full rationale behind every technology choice, see the [Architecture Decision Record](docs/engineering/developer_guide/architecture/readme.md).
@@ -105,7 +105,7 @@ curl -fsSL https://moonrepo.dev/install/moon.sh | bash
 # 3. Copy environment template and fill in values
 cp .env.example .env
 
-# 4. Start infrastructure (PostgreSQL, RabbitMQ, MinIO)
+# 4. Start infrastructure (PostgreSQL, RabbitMQ, RustFS)
 docker compose up -d
 
 # 5. Run a service

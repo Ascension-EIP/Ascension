@@ -35,7 +35,7 @@ id: 0069f35f-0ad8-4bf6-8f0b-c3607ff33f1a
 Le modèle économique d'Ascension repose sur un système d'abonnement SaaS B2C freemium à paliers clairs, conçu pour :
 
 1. **Garantir l'accessibilité :** Permettre à tout grimpeur de tester et d'utiliser l'analyse biomécanique gratuitement sans barrière à l'entrée.
-2. **Couvrir les coûts d'infrastructure :** Répercuter fidèlement les coûts d'inférence GPU, de stockage vidéo S3 (MinIO) et de bande passante réseau à mesure que la fréquence d'utilisation augmente.
+2. **Couvrir les coûts d'infrastructure :** Répercuter fidèlement les coûts d'inférence GPU, de stockage vidéo S3 (RustFS en dev, OVHcloud S3 en prod) et de bande passante réseau à mesure que la fréquence d'utilisation augmente.
 3. **Valoriser les fonctionnalités à fort impact :** Réserver le Mode Fantôme (calcul du chemin optimal par pathfinding et décomposition par étape sur photo) et la priorité de traitement sur les workers IA aux utilisateurs investis dans leur progression.
 
 ---
@@ -110,7 +110,7 @@ Le backend Go publie les messages de tâches d'analyse dans RabbitMQ :
 
 ### 4.3 Stockage objet et bande passante
 
-Les vidéos d'escalade brutes sont directement transférées depuis le smartphone vers MinIO via des URL pré-signées S3. Les quotas d'analyse évitent l'accumulation incontrôlée de volumétries vidéo non monétisées.
+Les vidéos d'escalade brutes sont directement transférées depuis le smartphone vers le stockage objet via des URL pré-signées S3 (RustFS en dev, OVHcloud S3 en prod). Les quotas d'analyse évitent l'accumulation incontrôlée de volumétries vidéo non monétisées.
 
 ---
 

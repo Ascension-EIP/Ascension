@@ -343,7 +343,7 @@ Permanently deletes the specified user.
 
 ### GET /v1/videos/upload-url — Get a presigned upload URL
 
-Generates a presigned PUT URL allowing direct upload from the mobile client to MinIO/S3.
+Generates a presigned PUT URL allowing direct upload from the mobile client to Object Storage (RustFS / OVHcloud S3).
 
 **Request body (JSON):**
 

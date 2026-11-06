@@ -24,7 +24,7 @@ This document explains how the Ascension backend server is structured and why it
 | **Goroutines** | Concurrency handling |
 | **PostgreSQL 18** | Relational database with JSONB document support |
 | **RabbitMQ 4.x** | AMQP message broker for asynchronous job dispatching |
-| **MinIO** | S3-compatible object storage for videos and frames |
+| **RustFS / OVHcloud S3** | S3-compatible object storage for videos and frames |
 | **robfig/cron/v3** | Cron scheduler for background cleanup tasks |
 | **golang-migrate/v4** | Database schema migrations engine |
 | **log/slog** | Standard library structured logger |
@@ -43,7 +43,7 @@ graph TD
         Cron["Cron Scheduler<br>(cmd/cron & internal/job)"]
         
         DB["PostgreSQL Database<br>(Outbound / Adapters)"]
-        Ext["RabbitMQ / MinIO<br>(Outbound / Adapters)"]
+        Ext["RabbitMQ / Object Storage (S3)<br>(Outbound / Adapters)"]
     end
 
     subgraph Domain ["DOMAIN (Core)"]
@@ -116,7 +116,7 @@ Implements the domain ports defined in `internal/model/ports.go`:
 | --- | --- | --- |
 | `internal/outbound/postgres/` | PostgreSQL adapter using `pgxpool` | `UserRepository`, `SessionRepository`, `VideoRepository`, `AnalysisRepository`, `TransactionManager` |
 | `internal/outbound/rabbitmq/` | RabbitMQ adapter using `amqp091-go` | `AnalysisQueue` |
-| `internal/outbound/minio/` | S3-compatible adapter using `minio-go/v7` | `VideoStorage` |
+| `internal/outbound/minio/` | S3 adapter using `minio-go/v7` SDK (connects to RustFS & OVHcloud S3) | `VideoStorage` |
 
 ---
 
@@ -217,7 +217,7 @@ apps/server/
     ├── outbound/                       # Infrastructure adapters
     │   ├── postgres/                   # PostgreSQL storage repository (pgx implementation)
     │   ├── rabbitmq/                   # RabbitMQ message broker adapter
-    │   └── minio/                      # MinIO / S3 object storage adapter
+    │   └── minio/                      # S3 object storage adapter (RustFS / OVHcloud S3)
     └── setup/
         ├── config/                     # Environment configuration loader
         └── logger/                     # Structured logger constructor (slog)
@@ -244,7 +244,7 @@ Database schema migrations are applied automatically at server startup or on dem
 The server parses all environment variables through `internal/setup/config/config.go` with domain-specific prefixes:
 
 - `POSTGRES_*` : Database host, port, database name (`POSTGRES_DB`), user, password, and SSL parameters.
-- `MINIO_*` : Object storage endpoint, credentials, bucket name, and URL expiration durations.
+- `MINIO_*` : Object storage configuration (RustFS in dev, OVHcloud S3 in prod): endpoint, credentials, bucket name, and URL expiration durations.
 - `RABBITMQ_*` : Message broker host, port, user, password, TLS, and queue names.
 - `AUTH_*` : JWT and session secret keys and expiration durations.
 - `PORT` & `HTTPS` : HTTP server listener configuration.

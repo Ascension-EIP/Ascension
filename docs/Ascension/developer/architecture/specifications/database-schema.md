@@ -29,7 +29,7 @@ The migrations in `apps/server/internal/outbound/postgres/migrations/` (migratio
 | Naming | `snake_case` for tables and columns. Tables are plural. Join tables are named after both sides (`ghost_holds`). |
 | Closed value sets | PostgreSQL `ENUM` types (never free `TEXT`). New values are added with `ALTER TYPE ... ADD VALUE`. |
 | Units | Encoded in the column name: `_ms`, `_cm`, `_kg`, `_bytes`, `_cents`, `_min`. |
-| Object storage | Only the `object_key` is stored. The bucket comes from the server configuration. The storage backend is Amazon S3. |
+| Object storage | Only the `object_key` is stored. The bucket comes from the server configuration. The storage backend is S3-compatible (RustFS in local/dev, OVHcloud Object Storage in production). |
 | Large AI payloads | Stored as `JSONB` in PostgreSQL (`analyses.result`, `ghosts.path`). No secondary object storage for results. |
 | Deletion | Hard delete with `ON DELETE CASCADE`. Account deactivation is a status, not a deletion. |
 | Async job lifecycle | Every AI-processed entity (`analyses`, `ghosts`, `comparisons`) shares the `job_status` enum and the same columns (`status`, `progress`, `error`). |
@@ -106,6 +106,56 @@ erDiagram
 ```
 
 Summary: `users` is the root of every branch. The video branch (`climbing_sessions` → `videos` → `analyses` → `analysis_scores`) holds the biomechanical analysis. The route branch (`routes` → `holds` → `ghosts`) holds the Ghost Mode without climbing, and `comparisons` joins both branches for the Ghost Mode in comparison. The coaching branch (`goals` → `training_programs` → `training_program_sessions` → `exercises`, with `training_logs` for what was actually done) and the business branch (`subscription_plans` → `subscriptions` → `subscription_events`, `quota_usages`) are independent of the AI branches.
+
+---
+
+### 2.1 Expected Data Volumes & Sizing
+
+This section formalizes the sizing models and projected data growth across entities for the evaluation bar of Mandatory Objective 2.
+
+#### 2.1.1 Volumetry Hypotheses & Usage Tiers
+
+The volumetry calculations rely on the business model quotas and observed climbing practices:
+
+* **Freemium**: 10 analyses/month, max 5 routines.
+* **Premium**: 30 analyses/month, 30 Ghost Mode uses/month, unlimited routines.
+* **Infinity**: 100 analyses/month, 100 Ghost Mode uses/month, unlimited routines.
+* **Average active user**: ~15 video analyses/month and ~3 climbing sessions/month.
+* **Video retention rule**: Raw climbing videos in S3 are deleted after 7 days via lifecycle policies unless explicitly flagged `retained = true` by the climber. Biomechanical JSONB results in PostgreSQL are preserved indefinitely.
+
+#### 2.1.2 Database Entity Sizing & Growth Projections
+
+| Entity / Table | Avg. Row Size | 100 Users (MVP) | 1,000 Users (Growth) | 10,000 Users (Scale) | Notes & Storage Characteristics |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **`users` + `user_profiles` + `user_body_constraints`** | ~1.2 KB / user | ~120 KB | ~1.2 MB | ~12 MB | Core user credentials, morphology, and injury zones. Very low growth. |
+| **`sessions`** | ~300 B | ~30 KB | ~300 KB | ~3 MB | Active JWT sessions with user agent & IP hash. Pruned periodically. |
+| **`climbing_sessions`** | ~250 B | ~3.6K rows/yr (~900 KB) | ~36K rows/yr (~9 MB) | ~360K rows/yr (~90 MB) | Climber session logs (~3 sessions/user/month). |
+| **`videos`** | ~500 B | ~18K rows/yr (~9 MB) | ~180K rows/yr (~90 MB) | ~1.8M rows/yr (~900 MB) | Metadata only (`object_key`, resolution, duration). Binary stored in S3. |
+| **`analyses`** | **~55 KB** (JSONB) | ~18K rows/yr (~1 GB) | ~180K rows/yr (~10 GB) | ~1.8M rows/yr (~100 GB) | Contains `result` (33 2D keypoints + angles + speeds, ~50 KB) and `hints` (~5 KB). Primary database volume driver. |
+| **`analysis_scores`** | ~150 B | ~18K rows/yr (~2.7 MB) | ~180K rows/yr (~27 MB) | ~1.8M rows/yr (~270 MB) | Synthetic numerical scoring derived from analysis. |
+| **`routes`** | ~350 B | ~600 rows (~210 KB) | ~6K rows (~2.1 MB) | ~60K rows (~21 MB) | Boulders / walls photographed. Photos stored in S3. |
+| **`holds`** | ~350 B | ~24K rows (~8.4 MB) | ~240K rows (~84 MB) | ~2.4M rows (~840 MB) | 30 to 50 holds per route (coordinates + polygon points). |
+| **`ghosts` + `ghost_holds`** | ~8 KB | ~3.6K rows (~29 MB) | ~36K rows (~290 MB) | ~360K rows (~2.9 GB) | Contains `ghosts.path` JSONB (beta steps, hold sequences, body center). |
+| **`training_programs` + `sessions` + `exercises`** | ~400 B | ~1.2K rows (~480 KB) | ~12K rows (~4.8 MB) | ~120K rows (~48 MB) | Personalized programs and planned routines. |
+| **`training_logs`** | ~250 B | ~6K rows (~1.5 MB) | ~60K rows (~15 MB) | ~600K rows (~150 MB) | Drills and completed exercises. |
+| **`subscriptions` + `subscription_events` + `quota_usages`** | ~300 B | ~2.4K rows (~720 KB) | ~24K rows (~7.2 MB) | ~240K rows (~72 MB) | Billing lifecycle, webhook events, and monthly quota counters. |
+| **Total PostgreSQL Data Disk** | — | **~1.1 GB / year** | **~10.5 GB / year** | **~105 GB / year** | Sized for standard NVMe disk on the OVHcloud VPS-4 (200 GB available). |
+
+#### 2.1.3 Binary Media Volumetry (Object Storage — RustFS / OVHcloud S3)
+
+* **Raw Video Size**: 20 MB to 50 MB per climb (1080p, 30 fps, 10–45 seconds duration).
+* **Route Photos**: 2 MB to 5 MB per photo (high-resolution wall capture).
+* **Active Storage Sizing with 7-Day Purge Policy**:
+  * **100 users**: ~35 videos active simultaneously ≈ **1.2 GB** to **1.8 GB** active.
+  * **1,000 users**: ~350 videos active simultaneously ≈ **12 GB** to **18 GB** active (plus ~15 GB persistent routes = **~35 GB** total).
+  * **10,000 users**: ~3,500 videos active simultaneously ≈ **120 GB** to **180 GB** active (plus ~150 GB persistent routes = **~350 GB** total).
+* **Storage Provider Compliance**: The unlimited elastic capacity of **OVHcloud Object Storage Standard (Gravelines)** easily accommodates this workload with negligible monthly cost (~0.01 €/GB/month, zero egress fees), while the **200 GB NVMe** disk of the Milan VPS-4 safely holds the PostgreSQL database and Redis/RabbitMQ queues for several years of growth.
+
+#### 2.1.4 Scaling & Database Performance Strategies
+
+1. **Sequential UUIDv7**: Primary keys use `uuidv7()` (native in PostgreSQL 18), providing temporal ordering. This completely eliminates random-insertion page splits and prevents B-Tree index fragmentation as tables reach millions of rows.
+2. **Table Partitioning**: As the `analyses` table approaches 1 million rows (~50 GB), range partitioning by `created_at` (monthly partitions) will be activated to maintain constant index depth and allow rapid dropping of expired historical data if required.
+3. **JSONB Compaction**: The `analyses.result` column stores only filtered landmarks and metrics; uncompressed frame bitmaps and raw video bytes never enter the database engine.
 
 ---
 
@@ -1176,7 +1226,7 @@ $$);
 
 ```
 
-Storage objects are not deleted by the database queries alone. When `clean-abandoned-uploads` or `clean-expired-videos` prunes rows, the Go server/cron worker reconciliation job or S3 bucket lifecycle rules purge the corresponding object keys from MinIO/S3.
+Storage objects are not deleted by the database queries alone. When `clean-abandoned-uploads` or `clean-expired-videos` prunes rows, the Go server/cron worker reconciliation job or S3 bucket lifecycle rules purge the corresponding object keys from RustFS (local/dev) or OVHcloud Object Storage (production).
 
 ---
 

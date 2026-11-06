@@ -67,7 +67,7 @@ Tu es un consultant technique expert intégré à l'équipe de développement **
 | Workers IA      | Python `3.11` + MediaPipe + PyTorch + OpenCV + Pika                 | 2 pipelines                        |
 | Message broker  | RabbitMQ `4.2.4`                                                    | AMQP, queues durables              |
 | Base de données | PostgreSQL `18`                                                     | JSONB pour les résultats d'analyse |
-| Stockage objets | MinIO (`RELEASE.2025-09-07T16-13-09Z`)                              | Compatible S3                      |
+| Stockage objets | RustFS (dev) / OVHcloud S3 (prod) | Compatible S3 |
 | Monitoring      | Prometheus + Grafana + Loki                                         | Prévu en production                |
 | Task runner     | moonrepo `2.5.4`                                                    | Pinning des versions, CI           |
 
@@ -95,7 +95,7 @@ Le système suit une **architecture événementielle** avec **CQRS** et **rendu 
 1. **Séparation des responsabilités** — l'API gère les requêtes, les workers IA gèrent le calcul.
 2. **Traitement asynchrone** — les charges lourdes sont mises en file via RabbitMQ et traitées indépendamment.
 3. **Rendu en périphérie** — le client rend les superpositions d'analyse localement sur la vidéo originale à partir d'un payload JSON léger, évitant le ré-encodage vidéo côté serveur.
-4. **Optimisation des coûts** — upload direct de la vidéo depuis le mobile vers MinIO (URL pré-signée), sans proxy par l'API.
+4. **Optimisation des coûts** — upload direct de la vidéo depuis le mobile vers le stockage objet via URL pré-signée (RustFS en dev, OVHcloud S3 en prod), sans proxy par l'API.
 
 ---
 

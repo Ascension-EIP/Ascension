@@ -335,9 +335,9 @@ CREATE INDEX idx_analyses_status ON analyses(status);
 
 ```
 
-RustFS/S3 (Object Storage)
+RustFS / OVHcloud S3 (Object Storage)
 
-RustFS replaces MinIO (see the [MinIO deprecation audit](./audits/minio-deprecation.md) and the [object storage benchmark](./benchmark/object-storage.md)). The Go API and the AI worker both use the S3 API; the worker uses boto3 with path-style addressing. The bucket must exist before the worker starts: the Go API creates it at startup.
+RustFS (in local/dev) and OVHcloud Object Storage Standard (in production) replace MinIO (see the [MinIO deprecation audit](./audits/minio-deprecation.md) and the [object storage benchmark](./benchmark/object-storage.md)). The Go API and the AI worker both use the standard S3 API; the worker uses boto3 with path-style addressing. The bucket must exist before the worker starts: the Go API creates it at startup.
 
 **Bucket Structure** (target layout, not enforced by the code today):
 
@@ -579,40 +579,24 @@ Total: ~€0/month
 
 ```
 
-### Staging Phase (Single Hetzner VPS)
+### Production Phase (OVHcloud VPS-4 + Managed S3)
+
+Following EIP infrastructure reviews and resource allocation (see [Infrastructure Architecture](./infrastructure.md)), production is deployed on OVHcloud:
 
 ```
-Hetzner VPS (CX31 - 4 vCPU, 8GB RAM): ~€12/month
-RustFS Storage (included on VPS): €0
-Total: ~€12/month
-
+Compute Server: OVHcloud VPS-4 Milan (8 vCores, 24 GB RAM, 200 GB SSD NVMe)
+Media Storage: OVHcloud Object Storage Standard Gravelines (S3-compatible, elastic capacity)
+Domain & DNS: ascension-eip.fr (Anycast DNS + DNSSEC)
+Total Baseline: ~€30-40/month
 ```
 
-### Production Phase (1,000 active users — Hetzner)
+### Scale Projections (10,000+ active users)
 
 ```
-Hetzner VPS API+DB (CPX31 - 4 vCPU, 8GB): ~€15/month
-Hetzner VPS AI Worker (CCX23 - 4 vCPU, 16GB): ~€30/month
-RabbitMQ (self-hosted on API VPS): €0
-RustFS (self-hosted Object Storage): €0
-Hetzner Volume Storage (500GB): ~€25/month
-Data Transfer (20TB included): €0
-Total: ~€70/month (~€0.07 per user)
-
-```
-
-### Production Phase (100,000 active users — Hetzner / Kubernetes)
-
-```
-Hetzner Dedicated Servers (3x AX41): ~€150/month
-Hetzner GPU Server (or cloud GPU): ~€200-500/month
-PostgreSQL (replicated): Included on dedicated servers
-RabbitMQ Cluster: Included on dedicated servers
-RustFS Cluster (Object Storage): Included
-Hetzner Volume Storage (50TB): ~€2,500/month
-Data Transfer (included): €0
-Total: ~€3,000-3,500/month (~€0.035 per user)
-
+Multi-node Compute or Dedicated GPU nodes: ~€150-300/month
+OVHcloud Object Storage Standard (~1-3 TB active with 7-day retention): ~€10-30/month (zero egress fees)
+PostgreSQL 18 (with table partitioning) & RabbitMQ cluster: Included on compute nodes
+Total: ~€200-350/month (~€0.02-0.035 per user)
 ```
 
 ---

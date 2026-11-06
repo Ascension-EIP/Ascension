@@ -117,7 +117,7 @@ Ce document distingue aussi ce qui est :
 **Parcours utilisateur simple**
 
 1. L'utilisateur se connecte.
-2. Il demande une URL d'upload (en fond avec MinIO).
+2. Il demande une URL d'upload (en fond avec le stockage objet S3).
 3. Il envoie sa vidéo.
 4. Il lance l'analyse.
 5. Il suit la progression.

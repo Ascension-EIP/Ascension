@@ -144,7 +144,7 @@ Authorization: Bearer <access_token>
 ```json
 {
   "id": "0191e4b8-7a8f-7c11-9a4f-123456789abc",
-  "upload_url": "https://minio:9000/videos/...",
+  "upload_url": "https://s3.gra.cloud.ovh.net/videos/...",
   "expires_at": "2026-03-01T12:15:00Z"
 }
 

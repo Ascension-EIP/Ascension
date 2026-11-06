@@ -82,7 +82,7 @@ Parties prenantes externes :
 | IA | Python (MediaPipe, OpenCV, PyTorch, modèle 3D en phase avancée) | Analyse biomécanique, détection prises, conseils |
 | Broker | RabbitMQ | Traitement asynchrone fiable |
 | Base de données | PostgreSQL | Stockage métier et résultats |
-| Stockage objet | MinIO (S3 compatible) | Upload vidéo et artefacts |
+| Stockage objet | RustFS (dev) / OVHcloud S3 (prod) | Upload direct vidéo et artefacts (S3 compatible) |
 | CI/CD | Moonrepo + pipelines CI | Qualité, tests, build, release |
 
 ### 2.2 Méthode de travail technique

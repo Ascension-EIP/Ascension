@@ -204,7 +204,7 @@ The upload screen wraps the `VideoUpload` component (in `shared/components/`).
 ```
 Pick video
   → GET presigned URL from server (POST /v1/videos/upload-url)
-  → PUT video bytes directly to MinIO
+  → PUT video bytes directly to Object Storage (RustFS / OVHcloud S3)
   → POST /v1/analyses  (trigger analysis)
   → Poll GET /v1/analyses/{id} every 5 s until status = completed / failed
   → Navigate to AnalysisPage with result data
@@ -306,8 +306,8 @@ The backend URL is resolved at runtime in this priority order:
 
 | Method | Description | Server endpoint |
 | --- | --- | --- |
-| `getUploadUrl(filename, userId)` | Get presigned MinIO PUT URL | `POST /v1/videos/upload-url` |
-| `uploadToMinio(uploadUrl, fileBytes)` | Upload video bytes directly to MinIO | `PUT <presigned-url>` |
+| `getUploadUrl(filename, userId)` | Get presigned S3 PUT URL | `POST /v1/videos/upload-url` |
+| `uploadToStorage(uploadUrl, fileBytes)` | Upload video bytes directly to Object Storage | `PUT <presigned-url>` |
 | `triggerAnalysis(videoId)` | Start a pose-analysis job | `POST /v1/analyses` |
 | `getAnalysis(analysisId)` | Poll analysis status & result | `GET /v1/analyses/{id}` |
 
@@ -325,7 +325,7 @@ All methods throw an `Exception` on non-2xx responses.
 │                                                                  │
 │  2. POST /v1/videos/upload-url  →  { video_id, upload_url }      │
 │                                                                  │
-│  3. PUT <upload_url> (bytes)    →  MinIO (direct, no proxy)      │
+│  3. PUT <upload_url> (bytes)    →  S3 (RustFS/OVHcloud) direct   │
 │                                                                  │
 │  4. POST /v1/analyses           →  { analysis_id, job_id }       │
 │                                                                  │
@@ -337,7 +337,7 @@ All methods throw an `Exception` on non-2xx responses.
 
 ```
 
-The video is **never proxied through the Go server**. It goes directly from the device to MinIO using the presigned URL. The Go server only creates the database record and returns the URL.
+The video is **never proxied through the Go server**. It goes directly from the device to Object Storage (RustFS in dev, OVHcloud S3 in prod) using the presigned URL. The Go server only creates the database record and returns the URL.
 
 ---
 
@@ -376,7 +376,7 @@ Currently the test suite uses Flutter's standard `flutter_test` framework. Widge
 | Error | Likely cause | Fix |
 | --- | --- | --- |
 | `Connection refused` | Backend not running | `docker compose up -d` then `moon run server:dev` |
-| `[get upload URL] HTTP 500` | MinIO not reachable from server | Check `MINIO_ENDPOINT` in `.env` |
+| `[get upload URL] HTTP 500` | Object Storage not reachable from server | Check `S3_ENDPOINT` in `.env` |
 | `image_picker` returns null | User cancelled picker or permission denied | Handle `null` return, check permissions on device |
 | Video preview not shown on Linux/Windows | `video_player` only supports Android/iOS/Web | Expected — preview is skipped on unsupported platforms |
 | Analysis stuck at `pending` | AI worker not running | Run `moon run ai:dev` or start with `docker compose --profile prod up` |

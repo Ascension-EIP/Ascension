@@ -142,7 +142,7 @@ Examples of what to avoid by default:
 | AI Workers | Python `3.11` + MediaPipe + PyTorch + OpenCV + Pika | 2 pipelines |
 | Message broker | RabbitMQ `4.2.4` | AMQP, durable queues |
 | Database | PostgreSQL `18` | JSONB for analysis outputs |
-| Object storage | MinIO (`RELEASE.2025-09-07T16-13-09Z`) | S3-compatible |
+| Object storage | RustFS (dev) / OVHcloud S3 (prod) | S3-compatible |
 | Monitoring | Prometheus + Grafana + Loki | Planned for production |
 | Task runner | moonrepo `2.5.4` | Version pinning, CI |
 
@@ -170,7 +170,7 @@ The system follows an **event-driven architecture** with **CQRS** and **client-s
 1. **Separation of responsibilities** — the API handles requests, AI workers handle heavy computation.
 2. **Asynchronous processing** — heavy workloads are queued through RabbitMQ and processed independently.
 3. **Edge rendering** — the client renders analysis overlays locally on the original video from a lightweight JSON payload, avoiding server-side video re-encoding.
-4. **Cost optimization** — direct video upload from mobile to MinIO (presigned URL), without API proxying.
+4. **Cost optimization** — direct video upload from mobile to Object Storage via presigned URL (RustFS in dev, OVHcloud S3 in prod), without API proxying.
 
 ---
 
