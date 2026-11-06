@@ -3,7 +3,7 @@ id: 277eed31-195d-41d5-9a77-b0723e50fc8b
 ---
 
 :::success
-**Version:** 1.3
+**Version:** 1.4
 :::
 
 ---
@@ -32,7 +32,7 @@ Tu es un consultant technique expert intégré à l'équipe de développement **
 
 **Proposition de valeur centrale:**
 - **Agnostique du lieu** : l'IA analyse n'importe quel mur sans base de données préalable.
-- **Mode Fantôme**: superpose le chemin de mouvement optimal calculé par l'IA sur la vidéo du grimpeur, image par image.
+- **Mode Fantôme** : génère une succession d'images étape par étape montrant la décomposition des mouvements optimaux à partir d'une photo de la voie et de la morphologie du grimpeur.
 - **Coaching accessible**: feedback automatisé et personnalisé à une fraction du coût d'un coach humain.
 
 ---
@@ -46,7 +46,7 @@ Tu es un consultant technique expert intégré à l'équipe de développement **
 | **Expérience 3D Mobile**         | Scène 3D interactive (rotation, zoom) pour visualiser la reconstruction du mouvement via l'IA de Pose 3D de manière fluide sur Android et iOS.     |
 | **Analyse de Prises Avancée**    | Détection automatique et qualification (type, difficulté, exploitation) avec sélection par couleur ou détourage manuel (fallback).                  |
 | **Génération de conseils**       | Feedback technique ciblé via modèle externe (type Gemini API) basé sur le contexte de la voie et la biomécanique de l'utilisateur.                  |
-| **Mode Fantôme**                 | Pathfinding / cinématique inverse calcule un chemin de mouvement optimal selon la morphologie de l'utilisateur et le rend en superposition.         |
+| **Mode Fantôme**                 | Pathfinding calcule la meilleure voie selon les prises choisies sur photo et la morphologie de l'utilisateur, et génère les images étape par étape. |
 | **Programmes d'entraînement**    | Programmes personnalisés générés à partir des objectifs, blessures, niveau et historique d'analyses.                                                |
 | **Grimpe Assistée (AR)**         | Mode accessibilité avancée : analyse en temps réel avec conseils vocaux (écouteurs) pendant la montée pour guider le grimpeur.                      |
 | **Profil Morphologique**         | Paramétrage corporel complet (taille, poids, segments) et squelette interactif pour déclarer des zones/membres absents ou blessés.                  |
@@ -67,7 +67,7 @@ Tu es un consultant technique expert intégré à l'équipe de développement **
 | Workers IA      | Python `3.11` + MediaPipe + PyTorch + OpenCV + Pika                 | 2 pipelines                        |
 | Message broker  | RabbitMQ `4.2.4`                                                    | AMQP, queues durables              |
 | Base de données | PostgreSQL `18`                                                     | JSONB pour les résultats d'analyse |
-| Stockage objets | MinIO (`RELEASE.2025-09-07T16-13-09Z`)                              | Compatible S3                      |
+| Stockage objets | RustFS (dev) / OVHcloud S3 (prod) | Compatible S3 |
 | Monitoring      | Prometheus + Grafana + Loki                                         | Prévu en production                |
 | Task runner     | moonrepo `2.5.4`                                                    | Pinning des versions, CI           |
 
@@ -95,7 +95,7 @@ Le système suit une **architecture événementielle** avec **CQRS** et **rendu 
 1. **Séparation des responsabilités** — l'API gère les requêtes, les workers IA gèrent le calcul.
 2. **Traitement asynchrone** — les charges lourdes sont mises en file via RabbitMQ et traitées indépendamment.
 3. **Rendu en périphérie** — le client rend les superpositions d'analyse localement sur la vidéo originale à partir d'un payload JSON léger, évitant le ré-encodage vidéo côté serveur.
-4. **Optimisation des coûts** — upload direct de la vidéo depuis le mobile vers MinIO (URL pré-signée), sans proxy par l'API.
+4. **Optimisation des coûts** — upload direct de la vidéo depuis le mobile vers le stockage objet via URL pré-signée (RustFS en dev, OVHcloud S3 en prod), sans proxy par l'API.
 
 ---
 
@@ -113,13 +113,13 @@ Le système suit une **architecture événementielle** avec **CQRS** et **rendu 
 
 ## 6. Équipe
 
-| Développeur          | OS                   | Responsabilité                                                                                                         |
-|----------------------|----------------------|------------------------------------------------------------------------------------------------------------------------|
-| Nicolas TORO         | Arch Linux / Android | Gestion de projet technique et d'équipe / Développeur backend et mobile / Responsable de la documentation et de la CI/CD |
-| Lou PELLEGRINO       | NixOS / iOS          | Développeur backend                                                                                                    |
-| Gianni TUERO         | Arch Linux / Android | Chef de projet administratif / Intégrateur RabbitMQ / Développeur IA                                                   |
-| Olivier POUECH       | Arch Linux / iOS     | CEO / Développeur IA                                                                                                   |
-| Christophe VANDEVOIR | macOS / iOS          | Développeur mobile et backend / Responsable de l'infrastructure                                                        |
+| Développeur          | OS                   | Responsabilité                                                                                                                                        |
+|----------------------|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Nicolas TORO         | Arch Linux / Android | Gestion de projet technique et d'équipe / Développeur mobile / Supervision globale et revue des PRs / Responsable de la documentation et de la CI/CD |
+| Lou PELLEGRINO       | NixOS / iOS          | Développeur backend                                                                                                                                   |
+| Gianni TUERO         | Arch Linux / Android | Chef de projet administratif / Intégrateur RabbitMQ / Développeur IA                                                                                  |
+| Olivier POUECH       | Arch Linux / iOS     | CEO / Développeur IA                                                                                                                                  |
+| Christophe VANDEVOIR | macOS / iOS          | Administrateur système (Infrastructure) / Développeur backend                                                                                         |
 
 ---
 

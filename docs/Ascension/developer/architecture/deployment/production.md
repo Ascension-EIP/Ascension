@@ -14,9 +14,11 @@ id: 615b8876-93f2-4f9d-80db-7d3e8553fe8b
 
 ## Overview
 
-The production environment is designed for scale, reliability, and security on **Hetzner dedicated servers**. The architecture begins with **Docker Compose on separate VPS instances** and is designed to evolve to **Kubernetes (K3s)** for horizontal auto-scaling when user volumes demand it.
+:::note
+**Official Production Target**: Following cloud resource allocation and EIP reviews, Ascension production runs on **OVHcloud VPS-4 (Milan: 8 vCores, 24 GB RAM, 200 GB SSD NVMe)** with **OVHcloud Object Storage Standard (Gravelines - S3)** and the domain `ascension-eip.fr`. See [Infrastructure Architecture](../infrastructure.md) for the single-node VPS architecture. This document presents the scaling topology and production environment configuration.
+:::
 
-All components use **RabbitMQ** as the message broker, **MinIO** (self-hosted) for S3-compatible object storage, and **PostgreSQL** for the database — consistent with development and staging environments.
+All components use **RabbitMQ** as the message broker, **OVHcloud Object Storage Standard** for S3-compatible managed object storage (and **RustFS** in local/dev), and **PostgreSQL 18** for the database.
 
 ---
 
@@ -29,29 +31,29 @@ graph TB
     end
 
     subgraph "Edge"
-        CF[Cloudflare<br/>DNS / CDN / DDoS Protection]
+        CF[Domain ascension-eip.fr<br/>Anycast DNS + DNSSEC]
     end
 
-    subgraph "Srv-API — Hetzner CX31 4 vCPU / 8 GB"
-        Nginx[Nginx<br/>Reverse Proxy + TLS]
+    subgraph "Srv-API — Compute"
+        Nginx[Nginx / Reverse Proxy<br/>Let's Encrypt TLS Termination]
         API1[Go API Instance 1]
         API2[Go API Instance 2]
     end
 
-    subgraph "Srv-DB — Hetzner CX41 4 vCPU / 16 GB"
+    subgraph "Srv-DB — Database & Broker"
         PG_Master[PostgreSQL 18<br/>Master]
         PG_Replica[PostgreSQL 18<br/>Read Replica]
         RabbitMQ[RabbitMQ 4.2.4<br/>Message Broker]
     end
 
-    subgraph "Srv-ML — Hetzner CX51 8 vCPU / 16 GB"
+    subgraph "Srv-ML — AI Workers"
         W1[Python AI Worker 1]
         W2[Python AI Worker 2]
         Wn[Python AI Worker N]
     end
 
-    subgraph "Storage — Hetzner Volume"
-        MinIO[MinIO<br/>S3-compatible Storage]
+    subgraph "Storage — OVHcloud Object Storage (Gravelines)"
+        S3Storage[OVHcloud S3<br/>Object Storage Standard]
     end
 
     subgraph "Monitoring — Self-hosted"
@@ -71,20 +73,20 @@ graph TB
     API2 --> PG_Replica
     API1 --> RabbitMQ
     API2 --> RabbitMQ
-    API1 --> MinIO
-    API2 --> MinIO
+    API1 --> S3Storage
+    API2 --> S3Storage
 
     W1 --> RabbitMQ
     W2 --> RabbitMQ
     Wn --> RabbitMQ
-    W1 --> MinIO
-    W2 --> MinIO
-    Wn --> MinIO
+    W1 --> S3Storage
+    W2 --> S3Storage
+    Wn --> S3Storage
     W1 --> PG_Master
     W2 --> PG_Master
     Wn --> PG_Master
 
-    Mobile -.->|Direct Upload<br/>Presigned URL| MinIO
+    Mobile -.->|Direct Upload<br/>Presigned URL| S3Storage
 
     API1 -.-> Prom
     API2 -.-> Prom
@@ -102,8 +104,7 @@ graph TB
     style PG_Master fill:#f0f0f0
     style PG_Replica fill:#f0f0f0
     style RabbitMQ fill:#ffe1e1
-    style MinIO fill:#e1ffe1
-
+    style S3Storage fill:#e1ffe1
 ```
 
 ---
@@ -117,8 +118,8 @@ graph TB
 | **Srv-API** | Nginx + Go API (×2) + Monitoring | CX31: 4 vCPU, 8 GB RAM, 80 GB SSD | 15€/month |
 | **Srv-DB** | PostgreSQL Master + Replica + RabbitMQ | CX41: 4 vCPU, 16 GB RAM, 160 GB SSD | 25€/month |
 | **Srv-ML** | Python AI Workers (×2-4) | CX51: 8 vCPU, 16 GB RAM, 240 GB SSD | 45€/month |
-| **Storage** | MinIO S3-compatible | Hetzner Volume 1 TB | 10€/month |
-| **Domain** | DNS | `.com` domain | 1€/month (12€/year) |
+| **Storage** | OVHcloud Object Storage Standard | S3-compatible, Gravelines | Included / Pay-as-you-go |
+| **Domain** | DNS | `ascension-eip.fr` (Anycast DNS + DNSSEC) | Included in OVHcloud plan |
 | **SSL** | TLS Certificates | Let's Encrypt via Cloudflare | 0€ |
 | **Monitoring** | Prometheus + Grafana + Loki | Self-hosted on Srv-API | 0€ |
 |  |  | **Total (MVP)** | **96€/month** |
@@ -252,8 +253,7 @@ services:
 
   # PostgreSQL Database
   postgresql:
-    build: ./apps/server/postgres
-    image: ${IMAGE_PREFIX:-ghcr.io/ascension-eip}/ascension-postgres:latest
+    image: postgres:18
     container_name: ascension-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER}

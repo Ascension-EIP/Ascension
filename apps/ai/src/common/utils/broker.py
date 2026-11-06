@@ -1,38 +1,61 @@
-# @date 2026-10-25
+# @date 2026-11-01
 # @file broker.py
 # @brief File description.
 # @project Ascension
-# @author Gianni TUERO <gianni.tuero@epitech.eu>
+# @author Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
 import functools
-import json
 from collections.abc import Callable
 from typing import Any
 
+from pydantic import BaseModel, ValidationError
+
+from common.utils.errors import with_retry
 from common.utils.logger import log
+from worker.runtime import get_broker
 
 
-def payload_validity(func: Callable[..., Any]) -> Callable[..., Any]:
-    """Décode le corps JSON avant d'appeler le consommateur.
+def consume(model: type[BaseModel]) -> Callable[[Callable[[Any], None]], Callable[..., None]]:
+    """Turn ``handler(payload)`` into a pika consumer callback.
 
-    Le callback enveloppé est appelé avec ``(channel, method, properties,
-    payload)`` : le dernier argument est le JSON désérialisé, pas les octets
-    bruts transmis par pika.
+    The body is validated against ``model``. An invalid payload is rejected at
+    once (``nack`` without requeue, so it goes to the dead-letter queue). A valid
+    one is run in the job thread, so the I/O thread keeps answering heartbeats:
+
+    - success: ``ack``;
+    - `TransientError`: retried by `with_retry`, then ``nack`` (dead letter);
+    - `PermanentError` or any other exception: ``nack`` right away, traceback in
+      the logs.
+
+    The handler stays responsible for writing ``failed`` and publishing the
+    status; this wrapper only handles the message lifecycle.
     """
 
-    @functools.wraps(func)
-    def validator(ch, method, properties, body):
-        try:
-            payload = json.loads(body.decode("utf-8"))
-        except (json.JSONDecodeError, UnicodeDecodeError) as e:
-            log.error("Échec du pré-traitement (JSON invalide): %s", e)
-            # Rejet immédiat si le prérequis échoue
-            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
-            return None
+    def decorator(handler: Callable[[Any], None]) -> Callable[..., None]:
+        @functools.wraps(handler)
+        def callback(ch, method, properties, body):
+            broker = get_broker()
+            tag = method.delivery_tag
+            try:
+                payload = model.model_validate_json(body)
+            except ValidationError as e:
+                log.error("%s: invalid %s payload, rejected: %s", handler.__name__, model.__name__, e)
+                broker.nack(tag)
+                return
+            broker.submit(_run, broker, handler, payload, tag)
 
-        return func(ch, method, properties, payload)
+        return callback
 
-    return validator
+    return decorator
 
 
+def _run(broker, handler: Callable[[Any], None], payload: Any, tag: int) -> None:
+    """Run in the job thread: execute the handler, then ack or nack."""
+    try:
+        with_retry(lambda: handler(payload))
+    except Exception:  # noqa: BLE001
+        log.exception("%s failed, message dead-lettered", handler.__name__)
+        broker.nack(tag)
+    else:
+        broker.ack(tag)

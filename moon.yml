@@ -14,7 +14,7 @@ tasks:
 
   db-up:
     command: "docker"
-    args: ["compose", "up", "-d", "postgresql", "minio", "rabbitmq"]
+    args: ["compose", "up", "-d", "postgresql", "rustfs", "rabbitmq"]
     options:
       cache: false
 
@@ -112,6 +112,11 @@ tasks:
       npx -y quicktype --src-lang schema schemas/*.schema.json \
         -o apps/ai/src/shared/models.py --lang python --just-types --python-version 3.9 --pydantic-base-model
       sed -i -e 's/^from enum import Enum$/from enum import StrEnum/' -e 's/^class \(\w\+\)(Enum):/class \1(StrEnum):/' apps/ai/src/shared/models.py
+      # quicktype emits `import "time"` after the first types, which Go rejects: move it under the package line.
+      sed -i '/^import "time"$/d' apps/server/internal/shared/models.go
+      if grep -q 'time\.Time' apps/server/internal/shared/models.go; then
+        sed -i 's/^package shared$/package shared\n\nimport "time"/' apps/server/internal/shared/models.go
+      fi
     inputs:
       - "schemas/*.schema.json"
     outputs:

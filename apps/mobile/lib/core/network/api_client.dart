@@ -1,4 +1,4 @@
-// @date 2026-10-25
+// @date 2026-11-02
 // @file api_client.dart
 // @brief File description.
 // @project Ascension
@@ -174,7 +174,23 @@ class ApiClient {
 }
 
 /// Session expiration event controller to allow reactive navigation to login
-final sessionExpiredProvider = StateProvider<bool>((ref) => false);
+class SessionExpiredNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void notifyExpired() {
+    state = true;
+  }
+
+  void reset() {
+    state = false;
+  }
+}
+
+/// Session expiration event controller to allow reactive navigation to login
+final sessionExpiredProvider = NotifierProvider<SessionExpiredNotifier, bool>(
+  SessionExpiredNotifier.new,
+);
 
 /// Riverpod provider for the configured [Dio] instance.
 final dioProvider = Provider<Dio>((ref) {
@@ -196,7 +212,7 @@ final dioProvider = Provider<Dio>((ref) {
     AuthInterceptor(
       storage: storage,
       onSessionExpired: () {
-        ref.read(sessionExpiredProvider.notifier).state = true;
+        ref.read(sessionExpiredProvider.notifier).notifyExpired();
       },
     ),
   );

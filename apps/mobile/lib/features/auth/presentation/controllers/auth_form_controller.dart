@@ -1,4 +1,4 @@
-// @date 2026-10-25
+// @date 2026-11-02
 // @file auth_form_controller.dart
 // @brief Controller managing authentication forms (login & register).
 // @project Ascension
@@ -13,7 +13,7 @@ import 'package:mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:mobile/features/auth/presentation/controllers/auth_state.dart';
 
 /// Form execution state handling loading, success, and localized error messages.
-class AuthFormController extends AutoDisposeAsyncNotifier<void> {
+class AuthFormController extends AsyncNotifier<void> {
   @override
   FutureOr<void> build() {
     // Initial state is idle (AsyncData(null))
@@ -102,6 +102,6 @@ class AuthFormController extends AutoDisposeAsyncNotifier<void> {
 
 /// Provider for [AuthFormController].
 final authFormControllerProvider =
-    AutoDisposeAsyncNotifierProvider<AuthFormController, void>(
+    AsyncNotifierProvider.autoDispose<AuthFormController, void>(
       AuthFormController.new,
     );

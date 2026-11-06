@@ -132,6 +132,9 @@ GeneratedPluginRegistrant.java
 **/ios/Flutter/app.zip
 **/ios/Flutter/flutter_assets/
 **/ios/Flutter/flutter_export_environment.sh
+**/macos/Pods/
+**/macos/.symlinks/
+**/macos/Flutter/ephemeral/
 **/DerivedData/
 **/xcuserdata/
 **/ServiceDefinitions.json
@@ -147,3 +150,4 @@ Runner/GeneratedPluginRegistrant.*
 # =============================================================================
 TODO.md
 pipeline.md
+task/

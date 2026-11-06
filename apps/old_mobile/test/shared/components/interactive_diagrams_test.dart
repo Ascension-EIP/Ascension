@@ -2,7 +2,7 @@
 // @file interactive_diagrams_test.dart
 // @brief Tests pour les jauges circulaires et diagrammes interactifs.
 // @project Ascension
-// @author Gianni TUERO <gianni.tuero@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/gestures.dart';

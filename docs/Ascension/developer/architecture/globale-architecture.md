@@ -42,21 +42,25 @@ Before diving into implementation, review these key documents:
    - Event-driven architecture patterns
    - CQRS implementation
    - Scaling strategy and performance targets
+3. [Infrastructure Architecture](./infrastructure.md) - Infrastructure and hosting setup
+   - OVHcloud VPS-4 (Milan) and Object Storage (Gravelines)
+   - Domain routing (ascension-eip.fr) and security topology
+   - Resource allocation and cost optimization
 
 ### 📊 Part 2: Data & API Modeling
 
-3. [Database Schema \& ERD](specifications/database-schema.md) - Complete data model
+4. [Database Schema \& ERD](specifications/database-schema.md) - Complete data model
    - Entity-Relationship Diagram (Mermaid)
    - PostgreSQL schema with triggers and indexes
    - Sample queries and migration strategy
-4. [API Specification](specifications/api-specification.md) - OpenAPI 3.0 documentation
+5. [API Specification](specifications/api-specification.md) - OpenAPI 3.0 documentation
    - REST endpoints with request/response examples
    - WebSocket protocol for real-time updates
    - Authentication flows and error codes
 
 ### 🔄 Workflows
 
-5. [**Video Analysis Flow**](./workflows/video-analysis-flow.md) - End-to-end feature flow
+6. [Video Analysis Flow](system-overview.md) - End-to-end feature flow
    - Complete sequence diagrams
    - Implementation code examples
    - Phase-by-phase breakdown
@@ -77,51 +81,54 @@ graph TD
     end
 
     subgraph Storage ["🗄️ Data and Storage Layer"]
-        ObjectStorage["Object Storage (MinIO/S3)"]
+        ObjectStorage["Object Storage S3<br/>(RustFS in Dev / OVHcloud in Prod)"]
         Database["PostgreSQL"]
         MessageQueue["RabbitMQ (Message Broker)"]
     end
 
     subgraph AI ["🤖 AI Processing Layer"]
         direction TB
-        subgraph Vision ["Pipeline 1 – Vision GPU"]
-            HoldDetection["Hold Detection"]
-            SkeletonExtraction["Skeleton Extraction"]
-            AdviceGenerator["Advice Generator"]
-            GhostGenerator["Ghost Climber Generator"]
+        subgraph Vision ["Pipeline 1 – Pose analysis"]
+            SkeletonExtraction["Extraction of the skeleton (MediaPipe)"]
+            AdviceGenerator["Hint generator (LLM)"]
+            SkeletonExtraction -->|"Extracted skeleton"| AdviceGenerator
         end
-        subgraph Training ["Pipeline 2 – Training CPU"]
+        subgraph Ghost ["Pipeline 2 – Ghost Mode"]
+            HoldDetection["Hold detection & selection"]
+            Pathfinding["Pathfinding based on body model"]
+            GhostGenerator["Step-by-Step Image Generator"]
+            HoldDetection -->|"Selected holds"| Pathfinding
+            Pathfinding -->|"Optimal path"| GhostGenerator
+        end
+        subgraph Training ["Pipeline 3 – Coaching & Program Generation"]
             ProgramGenerator["Training Program Generator"]
         end
     end
 
     MobileApp -->|"1. Request Presigned URL"| APIServer
     APIServer -->|"2. Generate Presigned URL"| ObjectStorage
-    MobileApp -->|"3. Direct Upload"| ObjectStorage
+    MobileApp -->|"3. Direct Upload (Video or Photo)"| ObjectStorage
     MobileApp -->|"4. Notify Upload Complete"| APIServer
 
     APIServer -->|"5. Publish Job"| MessageQueue
-    MessageQueue -->|"6a. Vision jobs"| HoldDetection
-    MessageQueue -->|"6b. Training jobs"| ProgramGenerator
+    MessageQueue -->|"6a. Video analysis jobs (poses.detect)"| SkeletonExtraction
+    MessageQueue -->|"6b. Hold & Ghost jobs (photo)"| HoldDetection
+    MessageQueue -->|"6c. Training jobs"| ProgramGenerator
 
-    HoldDetection -->|"Detect and classify holds"| SkeletonExtraction
-    SkeletonExtraction -->|"Per-frame skeleton JSON"| AdviceGenerator
-    SkeletonExtraction -->|"Reuse skeleton data"| GhostGenerator
-
-    HoldDetection -->|"Fetch Photo"| ObjectStorage
     SkeletonExtraction -->|"Fetch Video"| ObjectStorage
+    HoldDetection -->|"Fetch Photo"| ObjectStorage
 
-    AdviceGenerator -->|"7a. Store advice JSON"| Database
-    GhostGenerator -->|"7b. Store ghost JSON"| Database
+    AdviceGenerator -->|"7a. Store advice & metrics JSON"| Database
+    GhostGenerator -->|"7b. Store ghost steps & images"| Database
     ProgramGenerator -->|"7c. Store program"| Database
-    AdviceGenerator -->|"8. Publish Complete Event"| MessageQueue
-    GhostGenerator -->|"8. Publish Complete Event"| MessageQueue
+
+    AdviceGenerator -->|"8a. Publish Status / Completed"| MessageQueue
+    GhostGenerator -->|"8b. Publish Status / Completed"| MessageQueue
 
     MessageQueue -->|"9. Notify Ready"| APIServer
-    APIServer -->|"10. WebSocket Notification"| MobileApp
+    APIServer -->|"10. Notification (WebSocket / Polling)"| MobileApp
     MobileApp -->|"11. Fetch Analysis JSON"| APIServer
     APIServer -->|"12. Retrieve JSON"| Database
-
 ```
 
 ---
@@ -247,13 +254,13 @@ Ascension/                      # Monorepo root
 - **ML Frameworks**: MediaPipe (pose estimation), custom model (hold recognition)
 - **Services**:
   - Pose Estimation (skeleton extraction)
-  - Inverse Kinematics (Ghost Climber generation)
+  - Pathfinding & Step Generation (Ghost Mode)
   - Hold Recognition (CNN-based)
 
 ### Data Layer
 
 - **Database**: PostgreSQL 18
-- **Object Storage**: MinIO (self-hosted)
+- **Object Storage**: RustFS (local/dev) / OVHcloud Object Storage Standard (production)
 - **Message Queue**: RabbitMQ 4.2.4
 
 ---
@@ -263,22 +270,16 @@ Ascension/                      # Monorepo root
 ### Phase 1: Development (Single Machine)
 
 - All services in Docker Compose
-- Local MinIO for storage
+- Local RustFS for S3-compatible storage
 - Suitable for: Development, testing, prototyping
 
-### Phase 2: Staging (Single Hetzner VPS)
+### Phase 2: Staging & Production (OVHcloud Infrastructure)
 
-- All services on a single Hetzner VPS via Docker Compose
-- Each service has its own Docker image (API, AI Worker, RabbitMQ, PostgreSQL, MinIO)
-- Suitable for: Beta testing, performance validation
-
-### Phase 3: Production (Distributed — Hetzner)
-
-- Separate Hetzner VPS per service (API, AI Worker, DB)
-- Kubernetes (K8s) for horizontal scaling when needed
-- MinIO cluster or Hetzner Object Storage
-- AI workers on dedicated GPU instances
-- Suitable for: Scale (100k+ users)
+- Compute on **OVHcloud VPS-4 (Milan)**: 8 vCores, 24 GB RAM, 200 GB SSD NVMe
+- Object Storage on **OVHcloud Object Storage Standard (Gravelines - S3)**
+- Secured domain routing via `ascension-eip.fr` (Anycast DNS + DNSSEC)
+- Docker-based microservices architecture (API, AI Worker, RabbitMQ, PostgreSQL 18)
+- Complete topology detailed in [Infrastructure Architecture](infrastructure.md)
 
 ---
 
@@ -292,7 +293,7 @@ Ascension/                      # Monorepo root
 2. [System Overview](system-overview.md) - Understand HOW the system works
 3. [Database Schema](specifications/database-schema.md) - Understand WHAT data we store
 4. [API Specification](specifications/api-specification.md) - Understand the API CONTRACT
-5. [**Video Analysis Flow**](./workflows/video-analysis-flow.md) - Understand the CORE FEATURE
+5. [Video Analysis Flow](system-overview.md) - Understand the CORE FEATURE
 6. [Development Deployment](page:8981c8bc-85fc-4a2b-9c89-5c38cf81b6d6) - SET UP your local environment
 
 ### For Architects & Tech Leads
@@ -413,6 +414,6 @@ When modifying the architecture:
 - [Go Gin Web Framework](https://github.com/gin-gonic/gin)
 - [MediaPipe Pose Estimation](https://google.github.io/mediapipe/solutions/pose.html)
 - [RabbitMQ Tutorials](https://www.rabbitmq.com/tutorials)
-- [MinIO Presigned URLs](https://min.io/docs/minio/linux/integrations/presigned-put-upload-via-browser.html)
+- [RustFS S3 Compatible Storage](https://github.com/rustfs/rustfs)
 
 ---

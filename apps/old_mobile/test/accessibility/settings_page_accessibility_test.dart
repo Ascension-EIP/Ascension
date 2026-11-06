@@ -2,7 +2,7 @@
 // @file settings_page_accessibility_test.dart
 // @brief Tests unitaires d'accessibilité de SettingsPage avec Forui.
 // @project Ascension
-// @author Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';
