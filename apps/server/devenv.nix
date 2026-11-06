@@ -30,6 +30,11 @@
         secretspec run -- go run ./cmd/server/main.go
       '';
       cwd = "${config.git.root}/apps/server";
+      after = [
+        "devenv:processes:postgres"
+        "devenv:processes:rabbitmq"
+        "devenv:processes:rustfs"
+      ];
       restart = {
         on = "on_failure";
         max = 5;
@@ -58,6 +63,10 @@
         secretspec run -- go run ./cmd/cron/main.go
       '';
       cwd = "${config.git.root}/apps/server";
+      after = [
+        "devenv:processes:postgres"
+        "devenv:processes:rustfs"
+      ];
       restart = {
         on = "on_failure";
         max = 5;
@@ -109,6 +118,33 @@
   scripts.schemas-generate.exec = ''
     	quicktype --src-lang schema $DEVENV_ROOT/../../schemas/*.schema.json \
             -o $DEVENV_ROOT/internal/shared/models.go --lang go --just-types-and-package --package shared
+  '';
+
+  scripts.setup.exec = "go install -tags postgres github.com/golang-migrate/migrate/v4/cmd/migrate@v4.19.1";
+
+  scripts.install.exec = "go mod download";
+
+  scripts.format.exec = "go fmt ./...";
+
+  scripts.lint.exec = "go vet ./...";
+
+  scripts.build.exec = "secretspec run -- go build -o bin/server ./cmd/server";
+
+  scripts.test.exec = "secretspec run -- go test ./...";
+
+  scripts.update.exec = ''
+    go get -u ./...
+    go mod tidy
+  '';
+
+  scripts.migrate-db.exec = ''
+    migrate -path internal/outbound/postgres/migrations \
+      -database "postgres://${config.secretspec.secrets.POSTGRES_USER}:${config.secretspec.secrets.POSTGRES_PASSWORD}@${
+        config.secretspec.secrets.POSTGRES_HOST or "localhost"
+      }:${
+        config.secretspec.secrets.POSTGRES_PORT or "5432"
+      }/${config.secretspec.secrets.POSTGRES_DB}?sslmode=disable" \
+      up
   '';
 
   # https://devenv.sh/basics/
