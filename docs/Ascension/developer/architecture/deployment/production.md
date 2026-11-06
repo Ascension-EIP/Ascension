@@ -252,8 +252,7 @@ services:
 
   # PostgreSQL Database
   postgresql:
-    build: ./apps/server/postgres
-    image: ${IMAGE_PREFIX:-ghcr.io/ascension-eip}/ascension-postgres:latest
+    image: postgres:18
     container_name: ascension-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER}

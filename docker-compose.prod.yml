@@ -5,6 +5,3 @@ services:
   ai-worker:
     image: ${IMAGE_PREFIX}/ascension-ai:latest
 
-  postgresql:
-    image: ${IMAGE_PREFIX}/ascension-postgres:latest
-

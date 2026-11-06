@@ -326,8 +326,6 @@ No external CLI installation is required for basic local runs. Simply booting th
 
 The AI worker writes `status`, `progress`, `result`, `hints`, `error` and the timestamps of the `analyses` table, so **the migrations must be applied before the worker starts**, in particular `20261030200000_update_job_status_enum` (statuses `pending`, `started`, `running`, `success`, `failed`) and `20261030200100_add_analyses_hints` (`hints JSONB`). To apply them without starting the server, run `moon run server:migrate` (the `migrate` tool is installed by `moon run server:setup`).
 
-**Note**: `docker-compose.yml` builds the `postgresql` service from `./apps/server/postgres`, which does not exist in the repository. `docker-compose up` only works where the image `ghcr.io/ascension-eip/ascension-postgres:latest` is already pulled. On a fresh machine, pull the image first or fix the compose file.
-
 ### 6\. Build and Run API Server
 
 Option A: Using Docker (Production Profile)
@@ -551,8 +549,7 @@ services:
       retries: 5
 
   postgresql:
-    build: ./apps/server/postgres
-    image: ${IMAGE_PREFIX:-ghcr.io/ascension-eip}/ascension-postgres:latest
+    image: postgres:18
     container_name: ascension-postgres
     restart: unless-stopped
     ports:
