@@ -13,6 +13,7 @@ on:
 
 env:
   GITHUB_ACTIONS: true
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}
