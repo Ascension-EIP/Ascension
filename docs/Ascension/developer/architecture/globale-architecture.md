@@ -60,7 +60,7 @@ Before diving into implementation, review these key documents:
 
 ### 🔄 Workflows
 
-6. [**Video Analysis Flow**](system-overview.md#data-flow-complete-video-analysis) - End-to-end feature flow
+6. [Video Analysis Flow](system-overview.md) - End-to-end feature flow
    - Complete sequence diagrams
    - Implementation code examples
    - Phase-by-phase breakdown
@@ -279,7 +279,7 @@ Ascension/                      # Monorepo root
 - Object Storage on **OVHcloud Object Storage Standard (Gravelines - S3)**
 - Secured domain routing via `ascension-eip.fr` (Anycast DNS + DNSSEC)
 - Docker-based microservices architecture (API, AI Worker, RabbitMQ, PostgreSQL 18)
-- Complete topology detailed in [Infrastructure Architecture](./infrastructure.md)
+- Complete topology detailed in [Infrastructure Architecture](infrastructure.md)
 
 ---
 
@@ -293,7 +293,7 @@ Ascension/                      # Monorepo root
 2. [System Overview](system-overview.md) - Understand HOW the system works
 3. [Database Schema](specifications/database-schema.md) - Understand WHAT data we store
 4. [API Specification](specifications/api-specification.md) - Understand the API CONTRACT
-5. [**Video Analysis Flow**](system-overview.md#data-flow-complete-video-analysis) - Understand the CORE FEATURE
+5. [Video Analysis Flow](system-overview.md) - Understand the CORE FEATURE
 6. [Development Deployment](page:8981c8bc-85fc-4a2b-9c89-5c38cf81b6d6) - SET UP your local environment
 
 ### For Architects & Tech Leads
