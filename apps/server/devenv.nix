@@ -7,6 +7,8 @@
 }:
 
 {
+  dotenv.disableHint = true;
+
   # https://devenv.sh/basics/
   # env.GREET = "devenv";
 
@@ -31,9 +33,9 @@
       '';
       cwd = "${config.git.root}/apps/server";
       after = [
-        "devenv:processes:postgres"
-        "devenv:processes:rabbitmq"
-        "devenv:processes:rustfs"
+        # "devenv:processes:postgres"
+        # "devenv:processes:rabbitmq"
+        # "devenv:processes:rustfs"
       ];
       restart = {
         on = "on_failure";
@@ -64,8 +66,8 @@
       '';
       cwd = "${config.git.root}/apps/server";
       after = [
-        "devenv:processes:postgres"
-        "devenv:processes:rustfs"
+        # "devenv:processes:postgres"
+        # "devenv:processes:rustfs"
       ];
       restart = {
         on = "on_failure";
@@ -138,13 +140,18 @@
   '';
 
   scripts.migrate-db.exec = ''
-    migrate -path internal/outbound/postgres/migrations \
-      -database "postgres://${config.secretspec.secrets.POSTGRES_USER}:${config.secretspec.secrets.POSTGRES_PASSWORD}@${
-        config.secretspec.secrets.POSTGRES_HOST or "localhost"
-      }:${
-        config.secretspec.secrets.POSTGRES_PORT or "5432"
-      }/${config.secretspec.secrets.POSTGRES_DB}?sslmode=disable" \
-      up
+    echo "postgres://${config.secretspec.secrets.POSTGRES_USER}:${config.secretspec.secrets.POSTGRES_PASSWORD}@${
+      config.secretspec.secrets.POSTGRES_HOST or "localhost"
+    }:${
+      config.secretspec.secrets.POSTGRES_PORT or "5432"
+    }/${config.secretspec.secrets.POSTGRES_DB}?sslmode=disable"
+        migrate -path internal/outbound/postgres/migrations \
+          -database "postgres://${config.secretspec.secrets.POSTGRES_USER}:${config.secretspec.secrets.POSTGRES_PASSWORD}@${
+            config.secretspec.secrets.POSTGRES_HOST or "localhost"
+          }:${
+            config.secretspec.secrets.POSTGRES_PORT or "5432"
+          }/${config.secretspec.secrets.POSTGRES_DB}?sslmode=disable" \
+          up
   '';
 
   # https://devenv.sh/basics/

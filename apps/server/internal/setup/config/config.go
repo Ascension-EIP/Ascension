@@ -46,13 +46,12 @@ type (
 	}
 
 	QueueConfig struct {
-		Host        string `env:"HOST" envDefault:"localhost"`
-		Port        int    `env:"PORT" envDefault:"5672"`
-		User        string `env:"USER,unset,required"`
-		Password    string `env:"PASS,unset,required"`
-		TLS         bool   `env:"TLS" envDefault:"false"`
-		QueueAI     string `env:"QUEUE_AI" envDefault:"vision.skeleton"`
-		QueueServer string `env:"QUEUE_SERVER" envDefault:"ascension.events"`
+		Host          string `env:"HOST" envDefault:"localhost"`
+		Port          int    `env:"PORT" envDefault:"5672"`
+		User          string `env:"USER,unset,required"`
+		Password      string `env:"PASS,unset,required"`
+		TLS           bool   `env:"TLS" envDefault:"false"`
+		ExchangeEvent string `env:"EXCHANGE_EVENT" envDefault:"events"`
 	}
 
 	VideoConfig struct {

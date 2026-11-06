@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"uuid"
+
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/shared"
 )
 
 type AnalysisType string
@@ -64,6 +66,7 @@ type Analysis struct {
 	CompletedAt      *time.Time
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
+	Hints            *shared.Hints
 }
 
 type AnalysisFilter struct {

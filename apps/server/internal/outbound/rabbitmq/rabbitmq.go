@@ -14,11 +14,14 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 )
 
+const (
+	routingKeyPoseDetectRequest = "pose.detect.requested"
+)
+
 type RabbitMQ struct {
 	conn *amqp091.Connection
 	ch   *amqp091.Channel
 	cfg  config.QueueConfig
-	qAI  amqp091.Queue
 }
 
 func New(cfg config.QueueConfig) (RabbitMQ, error) {
@@ -32,15 +35,10 @@ func New(cfg config.QueueConfig) (RabbitMQ, error) {
 		return RabbitMQ{}, fmt.Errorf("RabbitMQ.New: %w", err)
 	}
 
-	qAI, err := ch.QueueDeclare(cfg.QueueAI, true, false, false, false, nil)
+	err = ch.ExchangeDeclare(cfg.ExchangeEvent, amqp091.ExchangeTopic, true, false, false, false, nil)
 	if err != nil {
 		return RabbitMQ{}, fmt.Errorf("RabbitMQ.New: %w", err)
 	}
 
-	err = ch.ExchangeDeclare(cfg.QueueServer, amqp091.ExchangeTopic, true, false, false, false, nil)
-	if err != nil {
-		return RabbitMQ{}, fmt.Errorf("RabbitMQ.New: %w", err)
-	}
-
-	return RabbitMQ{conn: conn, ch: ch, cfg: cfg, qAI: qAI}, nil
+	return RabbitMQ{conn: conn, ch: ch, cfg: cfg}, nil
 }

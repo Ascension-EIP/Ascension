@@ -81,7 +81,7 @@ type VideoStorage interface {
 // -- Queue -- //
 
 type AnalysisQueue interface {
-	PublishJSONIntoQueueAI(ctx context.Context, body []byte) error
+	PublishJSONIntoQueueEvent(ctx context.Context, body []byte) error
 }
 
 // -- //

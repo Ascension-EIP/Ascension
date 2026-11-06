@@ -16,6 +16,7 @@ import (
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/shared"
 )
 
 type AnalysisService struct {
@@ -50,21 +51,16 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, userID uuid.UUID,
 			return err
 		}
 
-		videoURL := fmt.Sprintf("s3://%s/%s", s.cfg.BucketName, video.ObjectKey)
-
-		//TODO change this with gianni new crosslanguage generated dto
-		data, err := json.Marshal(struct {
-			AnalysisID uuid.UUID `json:"analysis_id"`
-			VideoURL   string    `json:"video_url"`
-		}{
-			AnalysisID: analysis.ID,
-			VideoURL:   videoURL,
-		})
+		data, err := json.Marshal(
+			shared.PoseDetectRequest{
+				JobID:     analysis.ID.String(),
+				ObjectKey: video.ObjectKey,
+			})
 		if err != nil {
 			return err
 		}
 
-		if err := s.queue.PublishJSONIntoQueueAI(ctx, data); err != nil {
+		if err := s.queue.PublishJSONIntoQueueEvent(ctx, data); err != nil {
 			return err
 		}
 

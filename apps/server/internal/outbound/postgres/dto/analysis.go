@@ -10,8 +10,10 @@ package dto
 import (
 	"time"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"uuid"
+
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/shared"
 )
 
 type Analysis struct {
@@ -29,6 +31,7 @@ type Analysis struct {
 	CompletedAt      *time.Time         `db:"completed_at"`
 	CreatedAt        time.Time          `db:"created_at"`
 	UpdatedAt        time.Time          `db:"updated_at"`
+	Hints            *shared.Hints      `db:"hints"`
 }
 
 func (a Analysis) ToAnalysis() model.Analysis {
