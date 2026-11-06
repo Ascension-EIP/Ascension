@@ -82,20 +82,20 @@ What it is for: it carries the trace of the reasoning, not just the result.
 
 ### Timeline and deliverables
 
-| Item | Due | Deliverable |
-| --- | --- | --- |
-| Architecture | First version before end of November, updated at every structuring change | Architecture diagram and data diagram, up to date |
-| Decision record | Fed October to May, 4 decisions minimum | Complete dated record |
-| Technical documentation | First version before end of December, corrected after the reproducibility test | README, API and operations documentation |
-| Pipeline | Running before end of December | Link to the run history |
-| Code quality | Baseline in December, final measurement in May | Initial and final static analysis reports, debt log |
-| Tests | Critical path covered before end of March | Coverage report, list of regressions caught |
-| Code review | Throughout the year | Merge request history and review comments |
-| Reproducibility test | Before end of March | Dated report: who, how long, blockers, fixes applied |
+| Item                    | Due                                                                            | Deliverable                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| Architecture            | First version before end of November, updated at every structuring change      | [Architecture diagram and data diagram, up to date](architecture-and-data-diagrams.md) |
+| Decision record         | Fed October to May, 4 decisions minimum                                        | Complete dated record                                                                  |
+| Technical documentation | First version before end of December, corrected after the reproducibility test | README, API and operations documentation                                               |
+| Pipeline                | Running before end of December                                                 | Link to the run history                                                                |
+| Code quality            | Baseline in December, final measurement in May                                 | Initial and final static analysis reports, debt log                                    |
+| Tests                   | Critical path covered before end of March                                      | Coverage report, list of regressions caught                                            |
+| Code review             | Throughout the year                                                            | Merge request history and review comments                                              |
+| Reproducibility test    | Before end of March                                                            | Dated report: who, how long, blockers, fixes applied                                   |
 
 ### What you submit
 
-- Architecture diagram, up to date, and data diagram
+- [Architecture diagram, up to date, and data diagram](architecture-and-data-diagrams.md)
 - Complete dated record of technical decisions
 - README, API documentation and operations documentation
 - Link to the pipeline run history
