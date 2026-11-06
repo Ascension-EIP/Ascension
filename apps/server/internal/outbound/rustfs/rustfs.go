@@ -51,7 +51,7 @@ func (s *RustFSStorage) initBucket() error {
 	if _, err := s.client.HeadBucket(ctx, &s3.HeadBucketInput{
 		Bucket: &s.cfg.BucketName,
 	}); err != nil {
-		if _, ok := errors.AsType[*types.NoSuchBucket](err); ok {
+		if _, ok := errors.AsType[*types.NotFound](err); ok {
 			if _, err := s.client.CreateBucket(ctx, &s3.CreateBucketInput{
 				Bucket: &s.cfg.BucketName,
 			}); err != nil {
