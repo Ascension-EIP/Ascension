@@ -2,19 +2,6 @@
 id: 6548674c-5c0e-41e9-ae03-a9b0ccc16681
 ---
 
-:::success
-**Version:** 1.0
-:::
-
-# Caractérisation du point dur et dispositif de veille opérationnel
-
-**Projet :** Ascension\
-**Jalon :** Fin octobre 2026 (Mandatory 1 - Track Technique)\
-**Auteurs :** Équipe Ascension (Christophe VANDEVOIR, Gianni TUERO, Lou PELLEGRINO, Nicolas TORO, Olivier POUECH)\
-**Mentor :** Ilyes TALBI
-
----
-
 ## 1\. Le problème à résoudre : le Mode Fantôme
 
 - **Ce qu'on veut faire :** L'utilisateur prend une photo d'une voie d'escalade et sélectionne ses prises ou laisse l'IA les détecter. En fonction de la morphologie du grimpeur, l'application doit lui donner la séquence de mouvements étape par étape pour réussir la voie (ex. *Étape 1 : pied gauche sur la prise 2, main droite sur la prise 4...*).
