@@ -1,0 +1,9 @@
+# Dataset config (YOLO format). Paths are relative to `path`.
+path: ../datasets/holds
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: hold
+  1: volume

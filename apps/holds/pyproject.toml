@@ -1,0 +1,21 @@
+[project]
+name = "holds"
+version = "0.1.0"
+description = "Climbing hold detection and route reading (YOLO26-seg)"
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "numpy>=2.2.0",
+    "opencv-python>=4.13.0.92",
+    "ultralytics>=8.4.204",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.16.6",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.10,<0.14.0"]
+build-backend = "uv_build"
