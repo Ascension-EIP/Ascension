@@ -1,5 +1,11 @@
 ---
 id: 5706aeff-3a98-4808-9bf7-0f250e5590db
+sort: custom
+order:
+  - mentoring
+  - pedagogical
+  - pitch
+  - notation-template
 ---
 
 :::subpages cards 3
