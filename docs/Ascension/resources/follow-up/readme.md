@@ -11,3 +11,4 @@ Référent pédagogique: Romaric MOY (romaric1.moy@epitech.eu)
 Mentor: (ilyes.talbi@epitech.eu ou ilyestalbi75@gmail.com)
 Experts contactés:
 - Lionel REVERET (lionel.reveret@inria.fr)
+Communication entre équipe et référents: Nicolas TORO (nicolas.toro@epitech.eu)
