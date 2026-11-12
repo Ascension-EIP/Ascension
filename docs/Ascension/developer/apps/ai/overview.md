@@ -18,10 +18,10 @@ Aujourd'hui, seul le pipeline vidéo 2D existe : lecture de voie (photo), pathfi
 
 ## Ce que fait le worker
 
-| Étape             | Queue          | Entrée                                                          | Sortie                                                                                |
-| ----------------- | -------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Détection de pose | `poses.detect` | `pose.detect.requested` : `{job_id, object_key}`                | `analyses.result` (squelette filtré, angles, vitesses, métriques, mouvements, pauses) |
-| Conseils          | `poses.advice` | `pose.detect.completed` ou `pose.advice.requested` : `{job_id}` | `analyses.hints` (conseils structurés, en français)                                   |
+| Étape | Queue | Entrée | Sortie |
+| --- | --- | --- | --- |
+| Détection de pose | `poses.detect` | `pose.detect.requested` : `{job_id, object_key}` | `analyses.result` (squelette filtré, angles, vitesses, métriques, mouvements, pauses) |
+| Conseils | `poses.advice` | `pose.detect.completed` ou `pose.advice.requested` : `{job_id}` | `analyses.hints` (conseils structurés, en français) |
 
 - L'exchange est `events` (topic). Les jobs en échec définitif partent dans `<queue>.dlq`.
 - `job_id` est l'identifiant de la ligne `analyses`. Le bucket est une valeur de configuration, pas une donnée du message.
@@ -38,7 +38,7 @@ Le serveur Go n'est pas encore branché sur ces queues : il publie encore sur l'
 
 ## Schèma du flow IA
 
-_Résumé : l'application envoie la vidéo directement à RustFS, puis l'API publie le job. Le worker analyse la vidéo, écrit le résultat et les conseils dans PostgreSQL et publie ses statuts. Le pipeline 2 (mode fantôme) est prévu, pas implémenté._
+*Résumé : l'application envoie la vidéo directement à RustFS, puis l'API publie le job. Le worker analyse la vidéo, écrit le résultat et les conseils dans PostgreSQL et publie ses statuts. Le pipeline 2 (mode fantôme) est prévu, pas implémenté.*
 
 ```mermaid
 flowchart TD
