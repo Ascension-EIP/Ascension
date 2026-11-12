@@ -60,7 +60,7 @@ type Analysis struct {
 	Status           JobStatus
 	Visibility       Visibility
 	Progress         int16
-	Result           *map[string]any
+	Result           *shared.AnalysisResult
 	Advice           *string
 	Error            *string
 	ProcessingTimeMS *time.Duration

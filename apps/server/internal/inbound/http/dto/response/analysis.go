@@ -16,19 +16,19 @@ import (
 )
 
 type AnalysisResponse struct {
-	ID               uuid.UUID          `json:"id"`
-	VideoID          uuid.UUID          `json:"video_id"`
-	Type             model.AnalysisType `json:"type"`
-	Status           model.JobStatus    `json:"status"`
-	Visibility       model.Visibility   `json:"visibility"`
-	Progress         int16              `json:"progress"`
-	Result           *map[string]any    `json:"result"`
-	Advice           *string            `json:"advice"`
-	Error            *string            `json:"error"`
-	ProcessingTimeMS *time.Duration     `json:"processing_time_ms"`
-	StartedAt        *time.Time         `json:"started_at"`
-	CompletedAt      *time.Time         `json:"completed_at"`
-	Hints            *shared.Hints      `json:"hints"`
+	ID               uuid.UUID              `json:"id"`
+	VideoID          uuid.UUID              `json:"video_id"`
+	Type             model.AnalysisType     `json:"type"`
+	Status           model.JobStatus        `json:"status"`
+	Visibility       model.Visibility       `json:"visibility"`
+	Progress         int16                  `json:"progress"`
+	Result           *shared.AnalysisResult `json:"result"`
+	Advice           *string                `json:"advice"`
+	Error            *string                `json:"error"`
+	ProcessingTimeMS *time.Duration         `json:"processing_time_ms"`
+	StartedAt        *time.Time             `json:"started_at"`
+	CompletedAt      *time.Time             `json:"completed_at"`
+	Hints            *shared.Hints          `json:"hints"`
 }
 
 func AnalysisToResponse(analysis model.Analysis) AnalysisResponse {
