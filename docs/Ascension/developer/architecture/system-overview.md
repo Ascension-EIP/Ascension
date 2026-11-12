@@ -3,7 +3,7 @@ id: f1d0195a-2bc8-4cf6-a6c2-f215f94e82c6
 ---
 
 :::danger
-**Version:** 1.3
+**Version:** 1.4
 
 à totalement revoir, c’est n’importe quoi c’est un four tout, y’a des benchmark, des coûts, etc
 :::
@@ -379,7 +379,7 @@ ascension-videos/
 
 ## Data Flow: Complete Video Analysis
 
-The diagram shows the contract implemented by the AI worker. The Go API still publishes on the old queue `vision.skeleton` and uses the old status values until the backend handoff is applied, so an analysis started from the app does not reach the worker yet.
+The diagram shows the contract shared by the Go API and the AI worker: the API publishes `pose.detect.requested` on the `events` exchange, and both read and write the statuses of `schemas/job_status.schema.json`.
 
 ```mermaid
 sequenceDiagram

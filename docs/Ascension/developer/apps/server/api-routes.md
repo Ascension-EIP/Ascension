@@ -3,7 +3,7 @@ id: bfb575e1-a621-48a9-8452-4d113ee0e10e
 ---
 
 :::success
-**Version:** 1.4
+**Version:** 1.5
 :::
 
 ---
@@ -413,7 +413,7 @@ Generates a time-limited presigned GET URL to stream or download the video.
 
 ### POST /v1/analysis — Trigger an analysis
 
-Creates a pending analysis record and dispatches a job message to the RabbitMQ queue (`vision.skeleton`).
+Creates a pending analysis record and publishes a `pose.detect.requested` job on the RabbitMQ `events` exchange, with the body `{"job_id": "<analysis id>", "object_key": "<video object key>"}` (`schemas/pose_detect_request.schema.json`). The AI worker consumes it from the `poses.detect` queue.
 
 **Request body:**
 
@@ -480,7 +480,7 @@ Returns the current progress, status, and results of an analysis.
   "id": "018e6e5a-abcd-7ef0-1234-567890abcdef",
   "video_id": "018e6e5a-1234-7abc-8def-0123456789ab",
   "type": "2d",
-  "status": "completed",
+  "status": "success",
   "visibility": "private",
   "progress": 100,
   "result": {
@@ -489,7 +489,19 @@ Returns the current progress, status, and results of an analysis.
     "height": 1920,
     "frames": [...]
   },
-  "advice": "Keep your hips closer to the wall on hold 4.",
+  "advice": null,
+  "hints": {
+    "items": [
+      {
+        "title": "Arm extension",
+        "category": "technique",
+        "priority": 4,
+        "frame_end": 154,
+        "body_zones": ["left_elbow", "left_shoulder"],
+        "description": "The left arm stays bent close to the body..."
+      }
+    ]
+  },
   "error": null,
   "processing_time_ms": 14250,
   "started_at": "2026-09-22T10:15:00Z",
@@ -501,10 +513,12 @@ Returns the current progress, status, and results of an analysis.
 **Analysis Status Lifecycle:**
 
 ```
-pending → processing → completed
-                    ↘ failed
+pending → started → running → success
+                           ↘ failed
 
 ```
+
+The statuses are written by the AI worker (`schemas/job_status.schema.json`). `hints` holds the structured advice written by the worker; `advice` is the legacy free-text field and stays `null`.
 
 ---
 

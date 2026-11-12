@@ -1,8 +1,8 @@
-// @date 2026-11-12
+// @date 2026-11-13
 // @file analysis.go
 // @brief File description.
 // @project Ascension
-// @author Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package service
@@ -15,18 +15,23 @@ import (
 	"uuid"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
 )
 
+// PoseDetectRequest is the job sent to the AI worker (schemas/pose_detect_request.schema.json):
+// JobID is the id of the analysis row, ObjectKey the video in the bucket.
+type PoseDetectRequest struct {
+	JobID     uuid.UUID `json:"job_id"`
+	ObjectKey string    `json:"object_key"`
+}
+
 type AnalysisService struct {
-	cfg       config.MinIOConfig
 	analysisR model.AnalysisRepository
 	videoR    model.VideoRepository
 	queue     model.AnalysisQueue
 }
 
-func NewAnalysisService(cfg config.MinIOConfig, analysisR model.AnalysisRepository, videoR model.VideoRepository, queue model.AnalysisQueue) AnalysisService {
-	return AnalysisService{cfg: cfg, analysisR: analysisR, videoR: videoR, queue: queue}
+func NewAnalysisService(analysisR model.AnalysisRepository, videoR model.VideoRepository, queue model.AnalysisQueue) AnalysisService {
+	return AnalysisService{analysisR: analysisR, videoR: videoR, queue: queue}
 }
 
 func (s *AnalysisService) TriggerAnalysis(ctx context.Context, userID uuid.UUID, analysisConfig model.AnalysisConfig) (model.Analysis, error) {
@@ -50,21 +55,12 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, userID uuid.UUID,
 			return err
 		}
 
-		videoURL := fmt.Sprintf("s3://%s/%s", s.cfg.BucketName, video.ObjectKey)
-
-		//TODO change this with gianni new crosslanguage generated dto
-		data, err := json.Marshal(struct {
-			AnalysisID uuid.UUID `json:"analysis_id"`
-			VideoURL   string    `json:"video_url"`
-		}{
-			AnalysisID: analysis.ID,
-			VideoURL:   videoURL,
-		})
+		data, err := json.Marshal(PoseDetectRequest{JobID: analysis.ID, ObjectKey: video.ObjectKey})
 		if err != nil {
 			return err
 		}
 
-		if err := s.queue.PublishJSONIntoQueueAI(ctx, data); err != nil {
+		if err := s.queue.PublishPoseDetectRequested(ctx, data); err != nil {
 			return err
 		}
 

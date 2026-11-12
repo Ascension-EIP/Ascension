@@ -1,8 +1,8 @@
-// @date 2026-11-12
+// @date 2026-11-13
 // @file app.go
 // @brief File description.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package app
@@ -58,7 +58,7 @@ func Run(cfg config.Config) {
 	userProfileS := service.NewUserProfileService(&repo)
 	authS := service.NewAuthService(&jwtS, &sessionS, &userS, &userProfileS, &repo)
 	videoS := service.NewVideoService(cfg.Video, cfg.MinIO, &storage, &repo, &repo)
-	analysisS := service.NewAnalysisService(cfg.MinIO, &repo, &repo, &queue)
+	analysisS := service.NewAnalysisService(&repo, &repo, &queue)
 	climbingSessionS := service.NewClimbingSessionService(&repo, &repo, &repo)
 
 	authMW := middleware.AuthMiddleware(&jwtS)

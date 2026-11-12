@@ -1,4 +1,4 @@
-// @date 2026-09-20
+// @date 2026-11-13
 // @file analysis.go
 // @brief File description.
 // @project Ascension
@@ -23,6 +23,7 @@ type AnalysisResponse struct {
 	Progress         int16              `json:"progress"`
 	Result           *map[string]any    `json:"result"`
 	Advice           *string            `json:"advice"`
+	Hints            *map[string]any    `json:"hints"`
 	Error            *string            `json:"error"`
 	ProcessingTimeMS *time.Duration     `json:"processing_time_ms"`
 	StartedAt        *time.Time         `json:"started_at"`
@@ -39,6 +40,7 @@ func AnalysisToResponse(analysis model.Analysis) AnalysisResponse {
 		Progress:         analysis.Progress,
 		Result:           analysis.Result,
 		Advice:           analysis.Advice,
+		Hints:            analysis.Hints,
 		Error:            analysis.Error,
 		ProcessingTimeMS: analysis.ProcessingTimeMS,
 		StartedAt:        analysis.StartedAt,
