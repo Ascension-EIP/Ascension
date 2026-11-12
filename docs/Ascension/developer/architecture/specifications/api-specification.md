@@ -707,5 +707,5 @@ Analysis Complete
 **Related Documentation**:
 
 - [Database Schema](database-schema.md)
-- [System Overview](../system-overview.md)
+- [Global Architecture](../globale-architecture.md)
 - [Video Analysis Workflow](../workflows/video-analysis-flow.md)
