@@ -1,8 +1,8 @@
-// @date 2026-11-12
+// @date 2026-11-13
 // @file app.go
 // @brief File description.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package app
@@ -60,6 +60,7 @@ func Run(cfg config.Config) {
 	videoS := service.NewVideoService(cfg.Video, cfg.MinIO, &storage, &repo, &repo)
 	analysisS := service.NewAnalysisService(cfg.MinIO, &repo, &repo, &queue)
 	climbingSessionS := service.NewClimbingSessionService(&repo, &repo, &repo)
+	bodyConstraintS := service.NewUserBodyConstraintService(&repo)
 
 	authMW := middleware.AuthMiddleware(&jwtS)
 
@@ -69,6 +70,7 @@ func Run(cfg config.Config) {
 	analysisH := handler.NewAnalysisHandler(&analysisS)
 	userProfileH := handler.NewUserProfileHandler(&userProfileS)
 	climbingSessionH := handler.NewClimbingSessionHandler(&climbingSessionS)
+	bodyConstraintH := handler.NewUserBodyConstraintHandler(&bodyConstraintS)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -83,6 +85,7 @@ func Run(cfg config.Config) {
 		&analysisH,
 		&userProfileH,
 		&climbingSessionH,
+		&bodyConstraintH,
 	)
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(cfg.HTTP.Port),
