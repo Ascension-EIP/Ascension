@@ -1,8 +1,8 @@
-// @date 2026-09-20
+// @date 2026-11-12
 // @file main.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package main
@@ -52,7 +52,7 @@ func main() {
 	}
 
 	sessionS := service.NewSessionService(cfg.Auth.Session, &repo)
-	videoS := service.NewVideoService(cfg.Video, cfg.MinIO, &storage, &repo)
+	videoS := service.NewVideoService(cfg.Video, cfg.MinIO, &storage, &repo, &repo)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()

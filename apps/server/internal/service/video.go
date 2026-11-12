@@ -1,4 +1,4 @@
-// @date 2026-09-20
+// @date 2026-11-12
 // @file video.go
 // @brief File description.
 // @project Ascension
@@ -9,6 +9,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"time"
@@ -24,10 +25,11 @@ type VideoService struct {
 	cfgMinIO config.MinIOConfig
 	storage  model.VideoStorage
 	repo     model.VideoRepository
+	sessionR model.ClimbingSessionRepository
 }
 
-func NewVideoService(cfgVideo config.VideoConfig, cfgMinIO config.MinIOConfig, storage model.VideoStorage, repo model.VideoRepository) VideoService {
-	return VideoService{cfgVideo: cfgVideo, cfgMinIO: cfgMinIO, storage: storage, repo: repo}
+func NewVideoService(cfgVideo config.VideoConfig, cfgMinIO config.MinIOConfig, storage model.VideoStorage, repo model.VideoRepository, sessionR model.ClimbingSessionRepository) VideoService {
+	return VideoService{cfgVideo: cfgVideo, cfgMinIO: cfgMinIO, storage: storage, repo: repo, sessionR: sessionR}
 }
 
 func (s *VideoService) GetDownloadURL(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (model.VideoDownloadURL, error) {
@@ -54,6 +56,15 @@ func (s *VideoService) GetDownloadURL(ctx context.Context, videoID uuid.UUID, us
 func (s *VideoService) GetUploadURL(ctx context.Context, userID uuid.UUID, videoMetadata model.VideoMetadata, videoConfig model.VideoConfig) (model.VideoUploadURL, error) {
 	if err := videoConfig.Validate(); err != nil {
 		return model.VideoUploadURL{}, fmt.Errorf("validate video info: %w", err)
+	}
+
+	if videoConfig.ClimbingSessionID != nil {
+		if _, err := s.sessionR.GetClimbingSessionByFilter(ctx, model.ClimbingSessionFilter{ID: videoConfig.ClimbingSessionID, UserID: &userID}); err != nil {
+			if errors.Is(err, model.ErrNotFound) {
+				return model.VideoUploadURL{}, fmt.Errorf("%w: climbing_session_id: not found", model.ErrInvalidInput)
+			}
+			return model.VideoUploadURL{}, err
+		}
 	}
 
 	var url *url.URL
