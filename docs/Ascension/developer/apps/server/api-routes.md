@@ -729,13 +729,13 @@ Deletes the session. Its videos and their analyses are kept, outside any session
 
 ### GET /healthz — Liveness probe
 
-Simple unauthenticated liveness check.
+Simple unauthenticated liveness check, also answered to `HEAD` (`curl -I`). Used by the container healthcheck and the production monitoring.
 
 **Responses:**
 
 | Status | Meaning |
 | --- | --- |
-| `204 No Content` | Server is running and healthy |
+| `200 OK` | Server is running and healthy (empty body) |
 
 ---
 
