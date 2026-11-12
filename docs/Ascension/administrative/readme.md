@@ -51,10 +51,10 @@ Les documents de cette section sont ordonnés selon leur rôle dans le cycle de 
 
 ### 1\. Vision produit & Modèle économique
 
-- [**Catalogue des fonctionnalités**](./features-catalog.md) **:** Référentiel complet décrivant l'ensemble des fonctionnalités du système (profil utilisateur, sessions de grimpe, analyse de pose 2D/3D, Mode Fantôme, programmes d'entraînement).
-- [**Roadmap fonctionnelle**](./functional-roadmap.md) **:** Calendrier prévisionnel de déploiement structuré en trois jalons majeurs : MVP (*Minimum Viable Product*), BTP (*Beta Test Plan*) et ATP (*Acceptance Test Plan*).
+- [Catalogue des fonctionnalités](features-catalog.md) **:** Référentiel complet décrivant l'ensemble des fonctionnalités du système (profil utilisateur, sessions de grimpe, analyse de pose 2D/3D, Mode Fantôme, programmes d'entraînement).
+- [Roadmap fonctionnelle](functional-roadmap.md) **:** Calendrier prévisionnel de déploiement structuré en trois jalons majeurs : MVP (*Minimum Viable Product*), BTP (*Beta Test Plan*) et ATP (*Acceptance Test Plan*).
 - [Tarifs et abonnements](pricing-subscriptions.md) **:** Grille tarifaire détaillée des offres (Freemium, Premium, Infinity), définition des quotas mensuels d'analyses vidéo, d'utilisation du Ghost Mode et des routines d'entraînement.
-- [**Besoins d'infrastructure (OVHcloud)**](./infrastructure-needs.md) **:** Dimensionnement et justification technique des machines virtuelles, du stockage objet et du nom de domaine demandés suite au suivi pédagogique 3.
+- [Besoins d'infrastructure (OVHcloud)](infrastructure-needs.md) **:** Dimensionnement et justification technique des machines virtuelles, du stockage objet et du nom de domaine demandés suite au suivi pédagogique 3.
 
 ### 2\. Validation, Recette & Qualité
 
