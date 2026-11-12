@@ -8,6 +8,7 @@ order:
   - s3-object-storage-guide
   - api-deployment-guide
   - worker-deployment-guide
+  - backup-and-restore-guide
 ---
 
 :::subpages cards 2
