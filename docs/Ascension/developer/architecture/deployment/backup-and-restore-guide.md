@@ -3,7 +3,7 @@ id: 07271b11-461b-4dac-bf64-7fdaad61db37
 ---
 
 :::success
-**Version:** 1.0
+**Version:** 1.1
 :::
 
 ---
@@ -95,7 +95,7 @@ In Coolify, each resource shows its own backups:
 
 Each schedule lists its executions with their status, size and date, and has a **Back Up Now** button. A backup counts as successful when its status is `success` and the S3 upload is checked.
 
-Every schedule raises an alert when no backup succeeded for 2 days. The alert reaches the team only through a Coolify notification channel (_Notifications_).
+A failed backup, or a schedule without a successful backup for 2 days, sends an alert to the team's Discord alerts channel. The alerts are set in Coolify › _Notifications › Discord_, see the [Production Environment](./production.md), section 3.6.
 
 To list the bucket from a computer, with the keys of `ascension-backup-writer` in an env file:
 

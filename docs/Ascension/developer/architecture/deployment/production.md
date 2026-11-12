@@ -3,7 +3,7 @@ id: 615b8876-93f2-4f9d-80db-7d3e8553fe8b
 ---
 
 :::success
-**Version:** 3.0
+**Version:** 3.1
 :::
 
 ---
@@ -184,6 +184,20 @@ curl -s -o /dev/null -w '%{http_code}\n' https://n8n.ascension-eip.fr/healthz
 
 On the VPS, `sudo docker ps --format '{{.Names}} {{.Status}}'` must show every container `Up`, and `healthy` for those with a healthcheck. The worker has no healthcheck yet: check that it consumes its queues with the commands of the [AI Worker Deployment Guide](./worker-deployment-guide.md), section 4.
 
+### 3.6 Alerts
+
+Coolify posts its alerts in the team's Discord alerts channel, through a webhook set in Coolify › _Notifications › Discord_. The critical ones mention `@here`.
+
+| Group | Events sent |
+| --- | --- |
+| Deployments | Deployment failure |
+| Backups | Backup failure, and a schedule without a successful backup for 2 days |
+| Resources | Restart limit reached: a container that keeps crashing |
+| Scheduled tasks | Scheduled task failure |
+| Servers | Docker cleanup failure, disk usage warning, server unreachable, operating system updates pending, Traefik outdated |
+
+The successful events (deployments, backups, cleanups) are not sent, so that every message in the channel needs a look. Use **Send Test** on the same page to check the webhook after a change.
+
 ---
 
 ## 4\. Secrets
@@ -197,6 +211,7 @@ On the VPS, `sudo docker ps --format '{{.Names}} {{.Status}}'` must show every c
 | Logins of Coolify, Jenkins, SonarQube and n8n | Team's password storage |
 | S3 keys | OVHcloud console (users of the project `Ascension Storage`), then copied into Coolify |
 | GitHub webhook secrets | Coolify (_Webhooks_ of the application) and the repository settings |
+| Discord webhook of the alerts | Coolify › _Notifications › Discord_, and the team's password storage. Anyone with this URL can post in the channel |
 
 A secret never goes into the repository, a commit, an issue, a pull request or a Discord message.
 
