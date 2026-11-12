@@ -38,32 +38,28 @@ Before diving into implementation, review these key documents:
    - Why Go for API, Flutter for mobile, Python for AI
    - Performance benchmarks and cost analysis
    - Decision framework and evaluation criteria
-2. [System Overview](system-overview.md) - High-level design philosophy
-   - Event-driven architecture patterns
-   - CQRS implementation
-   - Scaling strategy and performance targets
-3. [Infrastructure Architecture](./infrastructure.md) - Infrastructure and hosting setup
+2. [Infrastructure Architecture](infrastructure.md) - Infrastructure and hosting setup
    - OVHcloud VPS-4 (Milan) and Object Storage (Gravelines)
    - Domain routing (ascension-eip.fr) and security topology
    - Resource allocation and cost optimization
 
 ### 📊 Part 2: Data & API Modeling
 
-4. [Database Schema \& ERD](specifications/database-schema.md) - Complete data model
+3. [Database Schema \& ERD](specifications/database-schema.md) - Complete data model
    - Entity-Relationship Diagram (Mermaid)
    - PostgreSQL schema with triggers and indexes
    - Sample queries and migration strategy
-5. [API Specification](specifications/api-specification.md) - OpenAPI 3.0 documentation
+4. [API Specification](specifications/api-specification.md) - OpenAPI 3.0 documentation
    - REST endpoints with request/response examples
    - WebSocket protocol for real-time updates
    - Authentication flows and error codes
 
 ### 🔄 Workflows
 
-6. [**Video Analysis Flow**](./workflows/video-analysis-flow.md) - End-to-end feature flow
-   - Complete sequence diagrams
-   - Implementation code examples
-   - Phase-by-phase breakdown
+5. [Video Analysis Flow](#data-flow-complete-video-analysis) - End-to-end feature flow
+   - Complete sequence diagram from video capture to client-side overlay rendering
+   - Direct S3 upload via presigned URLs
+   - Asynchronous RabbitMQ job execution
 
 ---
 
@@ -81,52 +77,119 @@ graph TD
     end
 
     subgraph Storage ["🗄️ Data and Storage Layer"]
-        ObjectStorage["Object Storage (MinIO/S3)"]
+        ObjectStorage["Object Storage S3<br/>(RustFS in Dev / OVHcloud in Prod)"]
         Database["PostgreSQL"]
         MessageQueue["RabbitMQ (Message Broker)"]
     end
 
     subgraph AI ["🤖 AI Processing Layer"]
         direction TB
-        subgraph Vision ["Pipeline 1 – Vision GPU"]
-            HoldDetection["Hold Detection"]
-            SkeletonExtraction["Skeleton Extraction"]
-            AdviceGenerator["Advice Generator"]
-            GhostGenerator["Ghost Climber Generator"]
+        subgraph Vision ["Pipeline 1 – Pose analysis"]
+            SkeletonExtraction["Extraction of the skeleton (MediaPipe)"]
+            AdviceGenerator["Hint generator (LLM)"]
+            SkeletonExtraction -->|"Extracted skeleton"| AdviceGenerator
         end
-        subgraph Training ["Pipeline 2 – Training CPU"]
+        subgraph Ghost ["Pipeline 2 – Ghost Mode"]
+            HoldDetection["Hold detection & group/manual selection"]
+            Pathfinding["Pathfinding based on body model"]
+            GhostGenerator["Step-by-Step Image Generator"]
+            HoldDetection -->|"Selected holds"| Pathfinding
+            Pathfinding -->|"Feasible beta"| GhostGenerator
+        end
+        subgraph Training ["Pipeline 3 – Coaching & Program Generation"]
             ProgramGenerator["Training Program Generator"]
         end
     end
 
     MobileApp -->|"1. Request Presigned URL"| APIServer
     APIServer -->|"2. Generate Presigned URL"| ObjectStorage
-    MobileApp -->|"3. Direct Upload"| ObjectStorage
+    MobileApp -->|"3. Direct Upload (Video or Photo)"| ObjectStorage
     MobileApp -->|"4. Notify Upload Complete"| APIServer
 
     APIServer -->|"5. Publish Job"| MessageQueue
-    MessageQueue -->|"6a. Video analysis jobs"| SkeletonExtraction
-    MessageQueue -->|"6b. Hold & Ghost jobs"| HoldDetection
+    MessageQueue -->|"6a. Video analysis jobs (poses.detect)"| SkeletonExtraction
+    MessageQueue -->|"6b. Hold & Ghost jobs (photo)"| HoldDetection
     MessageQueue -->|"6c. Training jobs"| ProgramGenerator
 
     SkeletonExtraction -->|"Fetch Video"| ObjectStorage
-    SkeletonExtraction -->|"Per-frame skeleton JSON"| AdviceGenerator
-
     HoldDetection -->|"Fetch Photo"| ObjectStorage
-    HoldDetection -->|"Classified holds + user selection"| GhostGenerator
 
-    AdviceGenerator -->|"7a. Store advice JSON"| Database
+    AdviceGenerator -->|"7a. Store advice & metrics JSON"| Database
     GhostGenerator -->|"7b. Store ghost steps & images"| Database
     ProgramGenerator -->|"7c. Store program"| Database
-    AdviceGenerator -->|"8. Publish Complete Event"| MessageQueue
-    GhostGenerator -->|"8. Publish Complete Event"| MessageQueue
+
+    AdviceGenerator -->|"8a. Publish Status / Completed"| MessageQueue
+    GhostGenerator -->|"8b. Publish Status / Completed"| MessageQueue
 
     MessageQueue -->|"9. Notify Ready"| APIServer
-    APIServer -->|"10. WebSocket Notification"| MobileApp
+    APIServer -->|"10. Notification (WebSocket / Polling)"| MobileApp
     MobileApp -->|"11. Fetch Analysis JSON"| APIServer
     APIServer -->|"12. Retrieve JSON"| Database
-
 ```
+
+---
+
+## Data Flow: Complete Pose Analysis
+
+The diagram shows the contract implemented by the AI worker. The Go API still publishes on the old queue `vision.skeleton` and uses the old status values until the backend handoff is applied, so an analysis started from the app does not reach the worker yet.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant User as 👤 User
+    participant App as 📱 Flutter App
+    participant API as 🛡️ Go API
+    participant S3 as 📦 S3/RustFS
+    participant RMQ as 📨 RabbitMQ
+    participant Worker as 🤖 AI Worker
+    participant DB as 🗄️ PostgreSQL
+
+    User->>App: Records climbing video
+    App->>App: Caches video locally
+
+    Note over App,API: UPLOAD PHASE
+    App->>API: GET /v1/videos/upload-url?content_type=...&size=...
+    API->>S3: Generate presigned URL (15min expiry)
+    S3-->>API: Returns presigned URL
+    API-->>App: Returns URL + video_id
+
+    App->>S3: PUT video (direct upload)
+    S3-->>App: Upload success
+    App->>API: PUT /v1/videos/upload-done/{video_id}
+    API-->>App: 204 No Content
+
+    Note over App,RMQ: JOB SUBMISSION
+    App->>API: POST /v1/analysis {video_id}
+    API->>DB: INSERT INTO analyses (status='pending')
+    API->>RMQ: Publish 'pose.detect.requested' {job_id, object_key}
+    API-->>App: Returns analysis_id (202 Accepted)
+
+    Note over RMQ,Worker: PROCESSING PHASE
+    RMQ->>Worker: Job consumed from queue 'poses.detect'
+    Worker->>DB: UPDATE analyses SET status='started', then 'running'
+    Worker->>S3: Download video (temporary file)
+    S3-->>Worker: Video stream
+
+    Worker->>Worker: Step 1: pose detection — MediaPipe, filtering, metrics, movements
+    Worker->>DB: UPDATE analyses SET result=data (progress 85)
+    Worker->>RMQ: Publish 'pose.detect.status' and 'pose.detect.completed'
+
+    RMQ->>Worker: Job consumed from queue 'poses.advice'
+    Worker->>Worker: Step 2: advice generation — LLM
+    Worker->>DB: UPDATE analyses SET hints=data, status='success'
+    Worker->>RMQ: Publish 'pose.advice.status'
+
+    Note over API,App: NOTIFICATION & FETCH
+    App->>API: Polls GET /v1/analysis/{analysis_id}
+    API->>DB: SELECT result, hints FROM analyses
+    DB-->>API: Returns JSON data
+    API-->>App: Returns analysis (50KB)
+
+    App->>App: Renders overlay on local video
+    App->>User: Shows analysis (skeleton overlay, advice)
+```
+
+*Summary: The Flutter app requests a presigned URL from the Go API, uploads the video directly to S3/RustFS, and triggers an analysis job. The Go API queues `pose.detect.requested` in RabbitMQ; the AI worker runs pose detection followed by LLM advice generation, persisting results to PostgreSQL. The app polls the API to fetch the lightweight JSON payload and renders the overlay locally.*
 
 ---
 
@@ -163,7 +226,6 @@ graph TD
 ```
 architecture/
 ├── README.md                          # This file - Architecture overview
-├── system-overview.md                 # High-level system design and philosophy
 ├── monorepo-guide.md                  # Monorepo management guide
 ├── adr/
 │   └── tech-stack-decision.md         # Architecture Decision Record (ADR) for tech choices
@@ -257,7 +319,7 @@ Ascension/                      # Monorepo root
 ### Data Layer
 
 - **Database**: PostgreSQL 18
-- **Object Storage**: MinIO (self-hosted)
+- **Object Storage**: RustFS (local/dev) / OVHcloud Object Storage Standard (production)
 - **Message Queue**: RabbitMQ 4.2.4
 
 ---
@@ -267,22 +329,16 @@ Ascension/                      # Monorepo root
 ### Phase 1: Development (Single Machine)
 
 - All services in Docker Compose
-- Local MinIO for storage
+- Local RustFS for S3-compatible storage
 - Suitable for: Development, testing, prototyping
 
-### Phase 2: Staging (Single Hetzner VPS)
+### Phase 2: Staging & Production (OVHcloud Infrastructure)
 
-- All services on a single Hetzner VPS via Docker Compose
-- Each service has its own Docker image (API, AI Worker, RabbitMQ, PostgreSQL, MinIO)
-- Suitable for: Beta testing, performance validation
-
-### Phase 3: Production (Distributed — Hetzner)
-
-- Separate Hetzner VPS per service (API, AI Worker, DB)
-- Kubernetes (K8s) for horizontal scaling when needed
-- MinIO cluster or Hetzner Object Storage
-- AI workers on dedicated GPU instances
-- Suitable for: Scale (100k+ users)
+- Compute on **OVHcloud VPS-4 (Milan)**: 8 vCores, 24 GB RAM, 200 GB SSD NVMe
+- Object Storage on **OVHcloud Object Storage Standard (Gravelines - S3)**
+- Secured domain routing via `ascension-eip.fr` (Anycast DNS + DNSSEC)
+- Docker-based microservices architecture (API, AI Worker, RabbitMQ, PostgreSQL 18)
+- Complete topology detailed in [Infrastructure Architecture](infrastructure.md)
 
 ---
 
@@ -293,11 +349,10 @@ Ascension/                      # Monorepo root
 **Recommended Reading Order**:
 
 1. [**Architecture Decision Record**](./adr/tech-stack-decision.md) - Understand WHY we chose each technology
-2. [System Overview](system-overview.md) - Understand HOW the system works
-3. [Database Schema](specifications/database-schema.md) - Understand WHAT data we store
-4. [API Specification](specifications/api-specification.md) - Understand the API CONTRACT
-5. [**Video Analysis Flow**](./workflows/video-analysis-flow.md) - Understand the CORE FEATURE
-6. [Development Deployment](page:8981c8bc-85fc-4a2b-9c89-5c38cf81b6d6) - SET UP your local environment
+2. [Database Schema](specifications/database-schema.md) - Understand WHAT data we store
+3. [API Specification](specifications/api-specification.md) - Understand the API CONTRACT
+4. [Video Analysis Flow](#data-flow-complete-video-analysis) - Understand the CORE FEATURE
+5. [Development Deployment](page:8981c8bc-85fc-4a2b-9c89-5c38cf81b6d6) - SET UP your local environment
 
 ### For Architects & Tech Leads
 
@@ -307,7 +362,7 @@ Ascension/                      # Monorepo root
 - 🗄️ **ERD Diagram**: [Database Schema](specifications/database-schema.md)
 - 📡 **API Contract**: [OpenAPI 3.0 Spec](specifications/api-specification.md)
 - 🎯 **Tech Justifications**: [ADR](./adr/tech-stack-decision.md#technology-decisions)
-- 📊 **Performance Targets**: [System Overview - SLAs](system-overview.md)
+- 📊 **Performance Targets**: [Performance Targets](#performance-targets)
 
 ### Quick Links
 
@@ -417,6 +472,6 @@ When modifying the architecture:
 - [Go Gin Web Framework](https://github.com/gin-gonic/gin)
 - [MediaPipe Pose Estimation](https://google.github.io/mediapipe/solutions/pose.html)
 - [RabbitMQ Tutorials](https://www.rabbitmq.com/tutorials)
-- [MinIO Presigned URLs](https://min.io/docs/minio/linux/integrations/presigned-put-upload-via-browser.html)
+- [RustFS S3 Compatible Storage](https://github.com/rustfs/rustfs)
 
 ---

@@ -3,7 +3,7 @@ id: 2f835188-7fa7-46eb-84ab-0f2bcdda5321
 ---
 
 :::success
-**Version:** 1.2
+**Version:** 1.3
 :::
 
 ---
@@ -17,7 +17,7 @@ This guide covers everything a new developer needs to start working on the Ascen
 ## Prerequisites
 
 - **Go** (toolchain version `1.27` — download from go.dev or use your package manager)
-- **Docker** + **Docker Compose** — for PostgreSQL, RabbitMQ, and MinIO locally
+- **Docker** + **Docker Compose** — for PostgreSQL, RabbitMQ, and RustFS (S3) locally
 - **moon** — monorepo task runner (see [monorepo-guide](../../architecture/monorepo-guide.md))
 
 ---
@@ -31,7 +31,7 @@ This guide covers everything a new developer needs to start working on the Ascen
 | **pgx/v5** | 5.10.0 | Async PostgreSQL driver & connection pool |
 | **PostgreSQL** | 18 | Relational database (with JSONB telemetry) |
 | **RabbitMQ** | 4.3.5 / 4.x | Message broker (amqp091-go driver) |
-| **MinIO** | RELEASE.2025-09-07 | S3-compatible object storage for videos |
+| **RustFS / OVHcloud S3** | 1.0.4 / Standard | S3-compatible object storage for videos |
 | **golang-jwt** | 5.3.1 | JWT creation and validation |
 | **golang-migrate** | 4.19.1 | Database migrations engine |
 | **caarlos0/env** | 11.4.1 | Type-safe environment configuration parser |
@@ -109,8 +109,7 @@ Copy `.env.example` to `.env` at the repository root and fill in the values. The
 | `RABBITMQ_USER` | ✅ | — | RabbitMQ username |
 | `RABBITMQ_PASS` | ✅ | — | RabbitMQ password |
 | `RABBITMQ_TLS` | ❌ | `false` | Enable TLS connection |
-| `RABBITMQ_QUEUE_AI` | ❌ | `vision.skeleton` | Target queue dispatched to AI workers |
-| `RABBITMQ_QUEUE_SERVER` | ❌ | `ascension.events` | Incoming events exchange / queue |
+| `RABBITMQ_EXCHANGE` | ❌ | `events` | Topic exchange shared with the AI worker: analysis jobs are published with the `pose.detect.requested` routing key |
 
 ### Auth & Tokens (`AUTH_*`)
 
@@ -144,7 +143,7 @@ docker compose up -d
 
 ```
 
-This starts PostgreSQL (port 5432), RabbitMQ (ports 5672 & 15672), and MinIO (ports 9000 & 9001).
+This starts PostgreSQL (port 5432), RabbitMQ (ports 5672 & 15672), and RustFS (ports 9000 & 9001).
 
 ### 2\. Run database migrations
 

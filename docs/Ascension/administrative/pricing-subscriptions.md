@@ -35,8 +35,8 @@ id: 0069f35f-0ad8-4bf6-8f0b-c3607ff33f1a
 Le modèle économique d'Ascension repose sur un système d'abonnement SaaS B2C freemium à paliers clairs, conçu pour :
 
 1. **Garantir l'accessibilité :** Permettre à tout grimpeur de tester et d'utiliser l'analyse biomécanique gratuitement sans barrière à l'entrée.
-2. **Couvrir les coûts d'infrastructure :** Répercuter fidèlement les coûts d'inférence GPU, de stockage vidéo S3 (MinIO) et de bande passante réseau à mesure que la fréquence d'utilisation augmente.
-3. **Valoriser les fonctionnalités à fort impact :** Réserver le Mode Fantôme (calcul du chemin optimal par pathfinding et décomposition par étape sur photo) et la priorité de traitement sur les workers IA aux utilisateurs investis dans leur progression.
+2. **Couvrir les coûts d'infrastructure :** Répercuter fidèlement les coûts d'inférence GPU, de stockage vidéo S3 (RustFS en dev, OVHcloud S3 en prod) et de bande passante réseau à mesure que la fréquence d'utilisation augmente.
+3. **Valoriser les fonctionnalités à fort impact :** Réserver le Mode Fantôme (calcul d'une bêta réalisable par pathfinding et décomposition par étape sur photo de voie) et la priorité de traitement sur les workers IA aux utilisateurs investis dans leur progression.
 
 ---
 
@@ -59,7 +59,7 @@ Le modèle économique d'Ascension repose sur un système d'abonnement SaaS B2C 
 
 L'offre Freemium s'adresse aux grimpeurs occasionnels découvrant l'analyse vidéo ou souhaitant un suivi ponctuel de leurs ascensions.
 
-- **Analyses vidéo :** 10 vidéos analysées par mois calendaire (extraction squelettique 2D, détection des prises et conseils techniques de base).
+- **Analyses vidéo :** 10 vidéos analysées par mois calendaire (extraction squelettique 2D en BTP, puis 3D en ATP, avec métriques biomécaniques et conseils techniques personnalisés).
 - **Mode Fantôme :** Non accessible.
 - **Routines d'entraînement :** Possibilité de créer et suivre jusqu'à 5 routines d'entraînement personnalisées.
 - **Expérience utilisateur :** Présence d'encarts promotionnels et publicitaires discrets.
@@ -70,7 +70,7 @@ L'offre Freemium s'adresse aux grimpeurs occasionnels découvrant l'analyse vid�
 L'offre Premium à **20 € / mois** est pensée pour les grimpeurs réguliers (1 à 2 séances par semaine) qui souhaitent accélérer leur apprentissage grâce au retour visuel direct.
 
 - **Analyses vidéo :** 30 vidéos analysées par mois (soit environ 7 à 8 blocs ou voies analysés chaque semaine).
-- **Mode Fantôme :** 30 générations de parcours fantôme par mois, permettant d'obtenir la décomposition étape par étape des mouvements optimaux sur photo de voie.
+- **Mode Fantôme :** 30 générations de parcours fantôme par mois, permettant d'obtenir la décomposition étape par étape d'une bêta réalisable sur photo de voie.
 - **Routines d'entraînement :** Création et gestion illimitées de routines et programmes d'entraînement.
 - **Expérience utilisateur :** Aucune publicité, interface épurée dédiée à la pratique.
 - **File de traitement :** Traitement standard fiable.
@@ -80,7 +80,7 @@ L'offre Premium à **20 € / mois** est pensée pour les grimpeurs réguliers (
 L'offre Infinity à **30 € / mois** cible les compétiteurs, grimpeurs quotidiens, entraîneurs et passionnés exigeants ayant un volume d'ascensions élevé.
 
 - **Analyses vidéo :** 100 vidéos analysées par mois (large marge couvrant les séances quotidiennes et les essais multiples).
-- **Mode Fantôme :** 100 générations de parcours fantômes par mois .
+- **Mode Fantôme :** 100 générations de parcours fantômes par mois.
 - **Routines d'entraînement :** Création et gestion illimitées de routines.
 - **Priorité serveur :** Les requêtes d'analyse sont envoyées sur une file RabbitMQ haute priorité (`x-max-priority`), garantissant un traitement en tête de file par les workers GPU même en période de forte affluence.
 - **Expérience utilisateur :** Sans publicité.
@@ -91,12 +91,12 @@ L'offre Infinity à **30 € / mois** cible les compétiteurs, grimpeurs quotidi
 
 ### 4.1 Coûts de calcul GPU et inférence IA
 
-Chaque analyse vidéo mobilise un pipeline lourd composé de :
+Les différents types d'analyse mobilisent des pipelines distincts :
 
-1. Détection de pose et squelettisation 2D (MediaPipe Pose, 33 points-clés par frame).
-2. Reconstruction et correction biomécanique 3D.
-3. Analyse des prises de la voie (OpenCV + PyTorch).
-4. Pour le Mode Fantôme : détection/sélection des prises sur photo, pathfinding morphologique et génération des images d'étapes.
+1. **Analyse de pose 2D (BTP) :** squelettisation MediaPipe Pose (33 points-clés par frame), métriques biomécaniques et génération de conseils personnalisés sur vidéo.
+2. **Analyse de pose 3D (ATP) :** reconstruction et métriques biomécaniques 3D avancées sur vidéo.
+3. **Mode Fantôme (BTP) :** détection/regroupement des prises sur photo de voie vide (sélection par groupe/couleur ou manuel), pathfinding morphologique pour calculer une bêta réalisable et génération des images d'étapes (enrichi en ATP par la qualification avancée des prises).
+4. **Grimpe assistée AR + audio (ATP, livraison EIP incertaine) :** suivi temps réel avec guidage vocal pour l'accessibilité.
 
 Plafonner les quotas à **10 (Freemium)**, **30 (Premium)** et **100 (Infinity)** protège l'infrastructure contre les abus tout en garantissant des coûts d'inférence prévisibles et maîtrisés.
 
@@ -110,7 +110,7 @@ Le backend Go publie les messages de tâches d'analyse dans RabbitMQ :
 
 ### 4.3 Stockage objet et bande passante
 
-Les vidéos d'escalade brutes sont directement transférées depuis le smartphone vers MinIO via des URL pré-signées S3. Les quotas d'analyse évitent l'accumulation incontrôlée de volumétries vidéo non monétisées.
+Les vidéos d'escalade brutes sont directement transférées depuis le smartphone vers le stockage objet via des URL pré-signées S3 (RustFS en dev, OVHcloud S3 en prod). Les quotas d'analyse évitent l'accumulation incontrôlée de volumétries vidéo non monétisées.
 
 ---
 

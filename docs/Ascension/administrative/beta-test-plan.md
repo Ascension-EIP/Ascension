@@ -21,19 +21,19 @@ Ce BTP définit le périmètre exact de la beta présentée au GreenLight. Le sc
 Objectifs de cette beta :
 
 - démontrer un parcours utilisateur complet et accessible,
-- démontrer la valeur du produit sur un cas réel (analyse 2D, fantôme MVP, routines de base, communauté),
+- démontrer la valeur du produit sur un cas réel (sessions de grimpe, analyse de pose 2D, Mode Fantôme, routines de base, communauté),
 - mesurer la maturité technique avec des critères simples et vérifiables (qualité, performance, accessibilité).
 
 Flux utilisateur de référence dans la beta :
 
 1. Se connecter, découvrir les tutoriels et configurer son profil morphologique.
-2. Envoyer une vidéo de grimpe ou prendre une photo de voie.
-3. Lancer l’analyse IA 2D.
+2. Démarrer une session de grimpe à la salle, puis filmer/envoyer une vidéo de grimpe.
+3. Lancer l’analyse de pose 2D (rattachée à la session).
 4. Suivre la progression jusqu'au résultat final.
-5. Consulter les résultats biomécaniques, le score global et les conseils techniques.
-6. Sélectionner les prises en mode custom et utiliser le mode fantôme MVP (succession d'images étape par étape sur photo).
+5. Consulter les résultats biomécaniques, le score global, les conseils techniques, et clôturer la session pour consulter la durée et les statistiques agrégées.
+6. Photographier une voie vide, choisir un groupe de prises détecté (ex. couleur) ou choisir les prises manuellement, puis utiliser le Mode Fantôme pour obtenirbêta réalisable étape par étape.
 7. Définir ses objectifs et générer des routines d'entraînement personnalisées.
-8. Partager une séance et comparer ses performances avec ses amis.
+8. Partager une analyse et comparer sa montée avec un autre utilisateur sur la même voie.
 
 ---
 

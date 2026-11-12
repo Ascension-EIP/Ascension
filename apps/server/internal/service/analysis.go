@@ -1,8 +1,8 @@
-// @date 2026-09-20
+// @date 2026-11-13
 // @file analysis.go
 // @brief File description.
 // @project Ascension
-// @author Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package service
@@ -60,7 +60,7 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, userID uuid.UUID,
 			return err
 		}
 
-		if err := s.queue.PublishJSONIntoQueueEvent(ctx, data); err != nil {
+		if err := s.queue.PublishPoseDetectRequested(ctx, data); err != nil {
 			return err
 		}
 
@@ -79,4 +79,15 @@ func (s *AnalysisService) GetAnalysisByID(ctx context.Context, videoID uuid.UUID
 	}
 
 	return analysis, nil
+}
+
+// ListAnalyses returns one page of the analyses of the user's videos, newest first, with
+// the climbing session of each one (nil for an analysis outside any session).
+func (s *AnalysisService) ListAnalyses(ctx context.Context, userID uuid.UUID, pagination model.Pagination) (model.AnalysisSummaryPage, error) {
+	analyses, total, err := s.analysisR.ListAnalysisSummariesByUserID(ctx, userID, pagination)
+	if err != nil {
+		return model.AnalysisSummaryPage{}, err
+	}
+
+	return model.AnalysisSummaryPage{Analyses: analyses, Total: total, Pagination: pagination}, nil
 }

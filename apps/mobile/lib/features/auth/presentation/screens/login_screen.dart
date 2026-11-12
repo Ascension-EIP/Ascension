@@ -1,4 +1,4 @@
-// @date 2026-10-25
+// @date 2026-11-07
 // @file login_screen.dart
 // @brief Login screen with Forui components, validation, and error feedback.
 // @project Ascension
@@ -73,16 +73,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ],
       ),
-      child: Center(
-        child: SafeArea(
+      child: SafeArea(
+        child: Align(
+          alignment: Alignment.topCenter,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 440),
               child: Form(
                 key: _formKey,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     if (errorMessage != null) ...[
@@ -90,7 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         variant: FAlertVariant.destructive,
                         title: Text(errorMessage),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 12),
                     ],
                     FTextField(
                       control: FTextFieldControl.managed(

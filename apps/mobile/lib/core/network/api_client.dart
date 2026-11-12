@@ -1,4 +1,4 @@
-// @date 2026-11-02
+// @date 2026-11-07
 // @file api_client.dart
 // @brief File description.
 // @project Ascension
@@ -82,7 +82,7 @@ class ApiClient {
     );
   }
 
-  /// Direct binary upload (e.g. to MinIO / S3 via presigned PUT URL).
+  /// Direct binary upload (e.g. to RustFS / OVHcloud S3 via presigned PUT URL).
   Future<Result<void>> uploadToPresignedUrl({
     required String presignedUrl,
     required File file,

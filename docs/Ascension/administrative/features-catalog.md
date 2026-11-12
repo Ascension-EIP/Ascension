@@ -36,18 +36,18 @@ Ce document distingue aussi ce qui est :
 | Code | Fonctionnalité | Problème résolu | Phase cible principale |
 | --- | --- | --- | --- |
 | F01 | Profil morphologique | Le feedback n'est pas adapté au corps de l'utilisateur | BTP |
-| F02 | Analyse de grimpe (vidéo -> feedback) | Le grimpeur ne voit pas ses erreurs en direct | MVP -> BTP |
-| F03 | Extraction de squelette et biomécanique | Manque de mesures objectives sur le mouvement | MVP -> ATP |
-| F04 | Score global et progression | Difficulté à suivre ses progrès dans le temps | BTP |
-| F05 | Comparaison de grimpe | Difficulté à comparer sa technique à d'autres grimpeurs | BTP -> ATP |
-| F06 | Analyse des prises | Difficulté à lire une voie de manière fiable | ATP |
-| F07 | Mode Fantôme (bêta pas à pas sur photo) | Difficulté à lire une voie et visualiser les mouvements à réaliser avant l'essai | BTP -> ATP |
-| F08 | Expérience 3D mobile | Les résultats techniques restent abstraits | ATP |
+| F02 | Sessions de grimpe & Analyse de pose 2D (vidéo -> feedback) | Le grimpeur ne voit pas ses erreurs ni le bilan global de sa séance en salle | MVP -> BTP |
+| F03 | Extraction de squelette et biomécanique | Manque de mesures objectives sur le mouvement (2D en BTP, 3D en ATP) | MVP -> ATP |
+| F04 | Score global et progression | Difficulté à suivre ses progrès par session et dans le temps | BTP |
+| F05 | Comparaison de grimpe | Difficulté à comparer sa technique à celle d'autres grimpeurs sur la même voie | BTP |
+| F06 | Détection & qualification des prises | Difficulté à lire une voie de manière fiable, à isoler et qualifier les prises sur une photo de mur | BTP (détection/groupes) -> ATP (qualification avancée) |
+| F07 | Mode Fantôme (bêta réalisable pas à pas sur photo) | Difficulté à lire une voie vide et visualiser une solution possible avant l'essai | BTP |
+| F08 | Analyse & Expérience 3D mobile | Les résultats 2D manquent parfois de lisibilité spatiale (profondeur, appuis) | ATP |
 | F09 | Conseils techniques personnalisés | Les retours sont trop génériques | BTP |
 | F10 | Coach perso / routines | Manque de plan de progression concret | BTP |
 | F11 | Communauté et partage | Progression isolée, faible motivation sociale | BTP |
-| F12 | Grimpe assistée (AR + audio) | Besoin d'aide pendant la montée | ATP |
-| F13 | Abonnements et quotas | Besoin d'un modèle économique durable | ATP |
+| F12 | Grimpe assistée temps réel (AR + audio) | Besoin d'aide et d'accessibilité vocale pendant la montée | ATP |
+| F13 | Abonnements et quotas | Besoin d'un modèle économique durable | BTP -> ATP |
 | F14 | Onboarding et tutoriels | L'utilisateur débutant ne comprend pas vite l'app | BTP |
 | F15 | Accessibilité numérique | L'app devient inutilisable pour certains profils | MVP -> ATP |
 | F16 | Fiabilité plateforme (CI/CD, pipeline) | Expérience instable, retards, incidents | Action Plan -> ATP |
@@ -57,13 +57,13 @@ Ce document distingue aussi ce qui est :
 ## Parcours global simplifié (version débutant)
 
 1. L'utilisateur crée son compte et complète son profil (niveau, morphologie, contraintes).
-2. Il filme sa grimpe ou importe une vidéo.
-3. L'app envoie la vidéo pour une analyse IA asynchrone.
-4. Le système extrait les points du corps, calcule des indicateurs et génère un retour.
-5. L'utilisateur lit son score global et ses conseils techniques.
-6. Il peut comparer sa montée à celle d'autres grimpeurs pour évaluer ses différences de technique.
-7. Il peut utiliser le Mode Fantôme : photographier une voie vide, sélectionner les prises et obtenir une suite d'images détaillant chaque mouvement étape par étape pour obtenir la bêta (trajectoire optimale).
-8. Dans les phases avancées, il reçoit des routines, partage ses progrès, et accède au coaching assisté.
+2. À son arrivée à la salle, il démarre une **session de grimpe** puis filme sa montée ou importe une vidéo.
+3. L'app envoie la vidéo pour une analyse de pose (rattachée automatiquement à la session en cours).
+4. Le système extrait les points du corps (2D en BTP, puis 3D en ATP), calcule des indicateurs chiffrés et génère un retour personnalisé.
+5. L'utilisateur consulte son score, ses conseils techniques et, en fin de session, sa durée d'entraînement et ses statistiques globales.
+6. S'il publie son analyse, un autre utilisateur ayant analysé la **même voie** peut comparer les deux montées.
+7. Indépendamment de la vidéo, il peut utiliser le **Mode Fantôme** : photographier une voie, choisir un groupe de prises détecté (ex. par couleur) ou cliquer les prises manuellement, et obtenir une suite d'images détaillant une **bêta réalisable** étape par étape adaptée à sa morphologie.
+8. Il accède également aux routines d'entraînement personnalisées et, en phase ATP, à l'expérience 3D interactive ainsi qu'à la grimpe assistée en temps réel.
 
 ---
 
@@ -101,43 +101,40 @@ Ce document distingue aussi ce qui est :
 
 ---
 
-### F02 - Analyse de grimpe (vidéo -> feedback)
+### F02 - Sessions de grimpe & Analyse de pose (vidéo -> feedback)
 
 **But de la fonctionnalité**
 
-- Donner un feedback technique objectif à partir d'une simple vidéo de grimpe.
+- Regrouper les montées d'une séance en salle via une session de grimpe et fournir un feedback technique objectif à partir de chaque vidéo.
 
 **Ce que l'utilisateur voit**
 
-- Un écran d'upload simple ou de capture vidéo.
-- Un choix entre analyse 2D basique ou expérience 3D avancée.
-- Un statut d'analyse (en attente, en cours, terminée, échec).
-- Un résultat lisible avec points clés et recommandations.
+- Un contrôle pour démarrer et clôturer sa **session de grimpe** en salle (durée d'entraînement et statistiques globales affichées en fin de session).
+- Un écran d'upload simple ou de capture vidéo rattaché à la session en cours.
+- Un choix entre analyse de pose 2D ou 3D.
+- Un statut d'analyse (en attente, en cours, terminée, échec) et un résultat lisible avec métriques chiffrées et recommandations.
 
 **Parcours utilisateur simple**
 
-1. L'utilisateur se connecte.
-2. Il demande une URL d'upload (en fond avec MinIO).
-3. Il envoie sa vidéo.
-4. Il lance l'analyse.
-5. Il suit la progression.
-6. Il consulte le résultat final.
+1. L'utilisateur se connecte et démarre une **session de grimpe** à son arrivée à la salle.
+2. Il filme ou importe sa vidéo (upload direct S3 via URL présignée) et lance l'analyse, rattachée à sa session.
+3. Il suit la progression et consulte ses métriques et conseils personnalisés.
+4. En fin de séance, il clôt sa session et consulte sa durée totale et ses statistiques agrégées.
 
 **Ce que le système fait en coulisse**
 
-- Génération d'URL présignée pour upload direct objet.
-- Création d'un job asynchrone via broker.
-- Traitement par worker IA.
-- Écriture du résultat en base.
-- Notification du client (polling/API ou événement temps réel).
+- Gestion du cycle de vie de `climbing_sessions` (démarrage, rattachement des vidéos/analyses, agrégation en fin de session).
+- Génération d'URL présignée pour upload direct objet et création d'un job asynchrone via RabbitMQ.
+- Traitement par worker IA et écriture du résultat en base.
+- Notification du client (polling/API ou WebSocket).
 
 **Valeur pour l'utilisateur**
 
-- Il obtient un retour concret sans coach présent.
+- Un suivi complet à l'échelle de la séance d'entraînement et un retour concret sur chaque essai sans coach présent.
 
 **Niveau de maturité dans la roadmap**
 
-- MVP démontrable et renforcé en BTP.
+- Sessions de grimpe et analyse de pose 2D livrées en BTP/GreenLight ; extension 3D en ATP.
 
 ---
 
@@ -210,27 +207,28 @@ Ce document distingue aussi ce qui est :
 
 **But de la fonctionnalité**
 
-- Comparer visuellement et techniquement deux montées filmées (entre amis ou sessions) pour identifier les différences d'exécution.
+- Comparer visuellement et techniquement deux analyses de pose sur la **même voie** (entre ses propres essais ou avec les montées  d'autres utilisateurs) pour identifier les différences d'exécution.
 
 **Ce que l'utilisateur voit**
 
-- Une vue comparative des deux analyses vidéo.
+- Une vue comparative de deux analyses vidéo d'une même voie.
 - Les écarts articulaires, de rythme et de posture entre les deux grimpeurs.
 
 **Parcours utilisateur simple**
 
-1. L'utilisateur sélectionne son analyse de grimpe.
-2. Il choisit une autre montée (session passée ou analyse d'un ami).
-3. Le système affiche la comparaison et les métriques d'écart.
+1. L'utilisateur ouvre une de ses analyses de grimpe (ou une montée partagée).
+2. Il sélectionne une autre analyse réalisée sur la **même voie** (un autre utilisateur autorisé ou un essai précédent).
+3. Le système affiche la comparaison vidéo-à-vidéo et les métriques d'écart.
 
 **Ce que le système fait en coulisse**
 
-- Alignement temporel des séries de points clés 2D.
+- Vérification des droits de visibilité et de la correspondance de voie.
+- Alignement temporel des séries de points clés (2D en BTP, puis 3D en ATP).
 - Calcul des écarts de posture et scores de similarité.
 
 **Valeur pour l'utilisateur**
 
-- Comprendre concrètement ce qui différencie son exécution de celle d'un partenaire ou d'un essai réussi.
+- Comprendre concrètement ce qui différencie son exécution de celle d'un autre grimpeur sur exactement le même problème.
 
 **Niveau de maturité dans la roadmap**
 
@@ -238,73 +236,73 @@ Ce document distingue aussi ce qui est :
 
 ---
 
-### F06 - Analyse des prises (détection, qualification, correction)
+### F06 - Détection & qualification des prises
 
 **But de la fonctionnalité**
 
-- Automatiser la lecture de voie tout en gardant un contrôle manuel si l'IA se trompe.
+- Automatiser la détection et le regroupement des prises sur photo tout en gardant un contrôle manuel si l'IA se trompe ou si l'utilisateur veut personnaliser sa voie.
 
 **Ce que l'utilisateur voit**
 
-- Les prises détectées sur la photo du mur.
-- Un mode de correction manuelle par catégories.
-- Un choix de mode (custom manuel ou sélection par couleur détectée).
+- Les prises détectées et regroupées (par voie/couleur) sur la photo du mur vide.
+- Le choix entre sélectionner un groupe/couleur détecté ou cliquer manuellement les prises une par une.
+- En ATP : la qualification avancée (type de prise, difficulté, exploitabilité).
 
 **Parcours utilisateur simple**
 
 1. L'utilisateur prend une photo de la voie.
-2. L'IA détecte les prises.
-3. L'utilisateur valide/corrige les prises.
-4. Le résultat alimente le mode fantôme et les conseils.
+2. L'IA détecte et regroupe les prises par couleur/voie.
+3. L'utilisateur choisit le groupe souhaité (ex. prises rouges ou vertes) ou sélectionne/corrige manuellement les prises.
+4. Les prises retenues alimentent le Mode Fantôme.
 
 **Ce que le système fait en coulisse**
 
-- Détection et qualification des prises (type, difficulté, exploitation).
-- Gestion d'un fallback manuel quand la détection est incomplète.
-- Conservation des corrections pour améliorer le modèle (boucle d'apprentissage).
+- Détection et clustering des prises (BTP) sur photo de voie vide.
+- Qualification avancée (type, difficulté, exploitation) en phase ATP.
+- Gestion d'une sélection manuelle au clic et conservation des corrections.
 
 **Valeur pour l'utilisateur**
 
-- Meilleure lecture de voie, plus fiable, et utilisable partout.
+- Sélection rapide de la voie en salle sans base préalable, utilisable même en configuration mixte ou mur chargé.
 
 **Niveau de maturité dans la roadmap**
 
-- Fonction avancée ATP.
+- Détection/groupement et sélection groupe ou manuel en BTP ; qualification avancée en ATP.
 
 ---
 
-### F07 - Mode Fantôme (bêta pas à pas sur photo)
+### F07 - Mode Fantôme (bêta réalisable pas à pas sur photo)
 
 **But de la fonctionnalité**
 
-- Décomposer visuellement le chemin de mouvement optimal (la bêta optimale) à partir d'une photo de la voie, sans avoir besoin de grimper ni de filmer.
+- Proposer visuellement **une bêta réalisable** (et non une prétendue « bêta optimale ») étape par étape à partir d'une **photo de voie**, sans grimper ni filmer.
 
 **Ce que l'utilisateur voit**
 
-- L'outil de sélection des prises (automatique avec cases à cocher, ou manuel).
-- Une succession d'images (une image par étape) montrant chaque mouvement à effectuer.
+- L'outil de sélection des prises sur photo : choix d'un ou plusieurs groupes de couleur détectés, ou sélection manuelle.
+- Une succession d'images générées depuis la photo initiale (une image par étape) affichant chaque mouvement l'un après l'autre.
 
 **Parcours utilisateur simple**
 
-1. L'utilisateur prend une photo de la voie (mur vide sans grimpeur).
-2. L'IA détecte automatiquement les prises, les catégorise par type et couleur, et l'utilisateur coche celles qu'il souhaite (ou les entoure manuellement).
-3. Le système récupère le profil morphologique du grimpeur.
-4. Le pathfinding calcule la meilleure voie et découpe la montée mouvement par mouvement.
-5. L'utilisateur consulte la suite d'images étape par étape pour préparer et réussir son ascension.
+1. L'utilisateur prend une **photo de la voie** (aucun grimpeur à l'image).
+2. L'IA détecte et regroupe les prises ; l'utilisateur choisit son groupe/couleur (ex. rouge, vert) ou choisit manuellement les prises exploitables.
+3. Le système récupère le profil morphologique du grimpeur (mensurations, contraintes).
+4. Le pathfinding calcule **une bêta réalisable** adaptée à sa morphologie et génère les mouvements/images étape par étape à partir de la photo initiale.
+5. L'utilisateur fait défiler les images étape par étape sur mobile (aucune superposition sur vidéo ni comparaison vidéo-vs-fantôme).
 
 **Ce que le système fait en coulisse**
 
-- Détection et catégorisation des prises sur la photo.
-- Pathfinding morphologique adapté aux mensurations et contraintes corporelles.
-- Génération d'une image par étape avec le mouvement à exécuter.
+- Détection et regroupement des prises sur la photo de voie vide.
+- Pathfinding morphologique calculant un enchaînement réalisable selon les mensurations et contraintes corporelles.
+- Génération d'une image par étape depuis la photo initiale avec le mouvement à exécuter.
 
 **Valeur pour l'utilisateur**
 
-- Déchiffrer et visualiser pas à pas comment résoudre la voie avant même de poser les mains sur le mur.
+- Déchiffrer et visualiser pas à pas une manière concrète et adaptée à son gabarit de grimper la voie avant même de poser les mains sur le mur.
 
 **Niveau de maturité dans la roadmap**
 
-- MVP fonctionnel en BTP (sélection manuelle des prises en mode custom), version complète en ATP (détection automatique et sélection par couleur).
+- MVP fonctionnel en BTP (détection + groupement + choix groupe/manuel + bêta réalisable pas à pas), enrichi en ATP par la qualification avancée des prises (`F06`).
 
 ---
 
@@ -437,22 +435,22 @@ Ce document distingue aussi ce qui est :
 
 ---
 
-### F12 - Grimpe assistée (AR + audio)
+### F12 - Grimpe assistée temps réel (AR + audio)
 
 **But de la fonctionnalité**
 
-- Aider le grimpeur pendant la montée avec des conseils en temps réel.
+- Aider le grimpeur pendant la montée avec des conseils en temps réel et offrir un mode d'accessibilité vocale pendant la montée (notamment pour les grimpeurs malvoyants).
 
 **Ce que l'utilisateur voit**
 
-- Un mode d'assistance active.
-- Des indications vocales pendant l'effort (via écouteurs).
+- Un mode d'assistance active lancé avec le smartphone  face au mur.
+- Des indications vocales en direct pendant l'effort (via écouteurs).
 
 **Parcours utilisateur simple**
 
-1. L'utilisateur pose son téléphone, lance le mode assisté.
+1. L'utilisateur pose son téléphone de façon fixe face au mur et lance le mode assisté avec ses écouteurs.
 2. L'IA suit la grimpe en temps réel.
-3. L'utilisateur reçoit des conseils vocaux adaptés.
+3. L'utilisateur reçoit des indications vocales adaptées sur sa posture et la progression.
 
 **Ce que le système fait en coulisse**
 
@@ -463,6 +461,7 @@ Ce document distingue aussi ce qui est :
 **Valeur pour l'utilisateur**
 
 - Un coaching "pendant l'action", pas seulement après.
+- Un guidage audio inclusif pendant l'ascension, pensé pour l'accessibilité.
 
 **Niveau de maturité dans la roadmap**
 
@@ -610,13 +609,12 @@ Ce document distingue aussi ce qui est :
 
 ### Exécution BTP (septembre 2026 -> juillet 2027)
 
-- Mode Fantôme MVP.
-- IA de Pose 2D fonctionnelle.
-- Conseils personnalisés exploitables.
-- Communauté et partage.
+- Sessions de grimpe en salle (démarrage, rattachement des analyses, durée et stats de fin de session).
+- Analyse de Pose 2D fonctionnelle (33 points clés, métriques chiffrées et conseils personnalisés).
+- Mode Fantôme sur photo de voie  (détection et regroupement des prises avec choix par groupe/couleur ou clic manuel, bêta réalisable étape par étape).
+- Communauté, partage et comparaison vidéo entre grimpeurs sur la même voie.
 - Création de routines et suivi de progression.
-- Parcours utilisateur complet.
-- Accessibilité forte.
+- Parcours utilisateur complet et accessibilité forte.
 
 ### Passage GreenLight + livraison ATP (juillet 2027)
 
@@ -626,10 +624,9 @@ Ce document distingue aussi ce qui est :
 ### Exécution ATP (août 2027 -> mars 2028)
 
 - IA de pose reconstruite autour de modèle d'analyse 3D.
-- Expérience 3D mobile.
-- Lecture de prises avancée.
-- Mode Fantôme complet.
-- Coach perso enrichis.
+- Expérience 3D mobile interactive.
+- Qualification avancée des prises (type, difficulté, exploitabilité).
+- Coach perso enrichi et comparaison vidéo.
 - Grimpe assistée temps réel MVP.
 - Cycle business complet et instrumentation produit.
 
@@ -638,7 +635,7 @@ Ce document distingue aussi ce qui est :
 ## Points qui font la valeur unique d'Ascension
 
 - **Agnostique du lieu**: fonctionne sur n'importe quel mur, sans base pré-remplie par salle.
-- **Mode Fantôme pédagogique**: décomposition pas à pas des mouvements optimaux sur photo de voie selon la morphologie du grimpeur.
-- **Approche complète**: analyse, correction, entraînement, suivi, communauté.
+- **Mode Fantôme pédagogique**: décomposition pas à pas d'une bêta réalisable à partir d'une photo de voie et de la morphologie du grimpeur.
+- **Approche complète**: sessions en salle, analyse, correction, entraînement, suivi, communauté.
 - **Accessibilité intégrée**: prise en compte de l'inclusion dès la conception.
 - **Architecture pragmatique**: pipeline asynchrone, rendu côté client, optimisation coût/performance.

@@ -25,14 +25,14 @@ Chaque brique indique son entrée, sa sortie, la technologie envisagée, son sta
 | **Bêta**         | Séquence de mouvements qui résout la voie : à chaque étape, quelle prise pour quelle main ou quel pied.                                                                 |
 | **Pathfinding**  | Calcul de la bêta à partir des prises de la voie et de la morphologie du grimpeur.                                                                                      |
 | **Squelette**    | 33 points du corps par image, extraits par MediaPipe Pose.                                                                                                              |
-| **Mode fantôme** | Décomposition étape par étape des mouvements optimaux (bêta) sous forme d'une suite d'images générées à partir d'une photo de la voie et de la morphologie du grimpeur. |
+| **Mode fantôme** | Décomposition étape par étape d'une bêta réalisable (non « optimale ») sous forme d'une suite d'images générées uniquement à partir d'une photo de la voie, des prises choisies (groupe/couleur ou manuel) et de la morphologie du grimpeur. |
 | **Clustering**   | Regroupement automatique de prises similaires (couleur, position) pour retrouver les voies.                                                                             |
 
 ---
 
 ## 2\. Vue d'ensemble
 
-La pipeline compte cinq blocs. Le bloc A (vidéo) et le bloc B (photo) sont indépendants et tournent en parallèle, comme proposé par le mentor le 14/09. Le bloc C a besoin des prises validées du bloc B. Le bloc D croise le squelette du bloc A avec la bêta du bloc C pour produire les conseils. Le bloc E est le rendu côté client.
+La pipeline IA 2D sépare deux flux indépendants : le flux **vidéo (Analyse de pose 2D)** qui produit le squelette, les métriques, les conseils et la comparaison entre grimpeurs sur la même voie (blocs A, D, E1), et le flux **photo (Mode fantôme)** qui détecte/groupe les prises sur photo de voie vide et génère une bêta réalisable en images étape par étape (blocs B, C, E2). Aucune comparaison ni alignement vidéo-vers-fantôme n'est effectué.
 
 ```mermaid
 flowchart TD
@@ -42,40 +42,36 @@ flowchart TD
         A3 --> A4["A4 Découpage en mouvements"]
     end
 
+    subgraph D ["D. Conseils & Comparaison vidéo"]
+        D2["D2 Comparaison vidéo-à-vidéo\n(même voie, public/friends)"]
+        D3["D3 Conseils\nmodèle externe"]
+    end
+
     subgraph B ["B. Lecture de voie"]
         B1["B1 Photo de la voie"] --> B2["B2 Détection des prises\nYOLOv8"]
         B2 --> B3["B3 Couleur dominante\nOpenCV"]
-        B3 --> B4["B4 Clustering\npar voie"]
-        B4 --> B5["B5 Validation utilisateur"]
+        B3 --> B4["B4 Clustering\npar voie / couleur"]
+        B4 --> B5["B5 Choix groupe ou manuel"]
     end
 
     subgraph C ["C. Pathfinding"]
-        C1["C1 Prises de la voie\n+ morphologie"] --> C2["C2 Calcul de la bêta\npar étapes"]
-    end
-
-    subgraph D ["D. Comparaison et conseils"]
-        D1["D1 Alignement vidéo et photo"] --> D2["D2 Écarts vidéo et bêta"]
-        D2 --> D3["D3 Conseils\nmodèle externe"]
+        C1["C1 Prises choisies\n+ morphologie"] --> C2["C2 Bêta réalisable\npar étapes (images)"]
     end
 
     subgraph E ["E. Rendu mobile Flutter"]
-        E1["E1 Overlay squelette"]
-        E2["E2 Overlay fantôme"]
+        E1["E1 Overlay squelette\n& conseils sur vidéo"]
+        E2["E2 Visionneuse pas-à-pas\nMode fantôme sur photo"]
     end
 
-    B5 --> C1
-    C2 --> E2
-    C2 --> D2
+    A4 --> D3
     A4 --> D2
-    A2 --> D1
-    B1 --> D1
     A2 --> E1
     D3 --> E1
+    B5 --> C1
+    C2 --> E2
 ```
 
-_Résumé du diagramme : la vidéo (A) et la photo (B) sont traitées en parallèle. Les prises validées alimentent le pathfinding (C). La comparaison (D) croise le squelette et la bêta pour générer les conseils. Le client Flutter affiche le squelette, le fantôme et les conseils (E)._
-
-> **Écart avec la documentation existante** : [system-overview.md](../../architecture/system-overview.md) décrit quatre étapes séquentielles (prises, squelette, conseils, fantôme). La version parallèle ci-dessus est plus proche de ce que le mentor a proposé et évite d'attendre la photo pour analyser la vidéo.
+_Résumé du diagramme : la pipeline vidéo (A) alimente les conseils (D3), la comparaison entre utilisateurs sur la même voie (D2) et l'overlay mobile (E1). Indépendamment, la pipeline photo (B) isole les prises d'une voie vide, alimente le pathfinding morphologique (C) pour calculer une bêta réalisable et génère les images pas-à-pas affichées sur photo côté mobile (E2)._
 
 ---
 
@@ -92,7 +88,7 @@ Points d'attention :
 
 - La sortie de A2 et A3 est déjà validée par le schéma `AnalysisResult` et stockée dans `analyses.result` (JSONB).
 - Le seuil de confiance MediaPipe reste très bas (0,1) pour ne pas perdre de pose. Les landmarks peu visibles sont donc filtrés puis lissés avant de calculer les angles (étape `pose-filter`). Un landmark manquant est omis, jamais écrit à 0, et un angle dont un point manque est omis.
-- A4 est nécessaire pour comparer la vidéo à une bêta découpée en étapes (bloc D).
+- A4 enrichit les métriques transmises au modèle de conseils (bloc D3) et à la comparaison vidéo-à-vidéo entre grimpeurs (bloc D2).
 - Chaque étape est une sous-commande de `uv run worker` (`pose-skeleton`, `pose-filter`, `pose-metrics`, `pose-movements`, `pose-detect`), sans RabbitMQ, base ni stockage.
 
 **Seuils retenus** (constantes nommées, surchargeables en ligne de commande) :
@@ -176,21 +172,21 @@ L'intérêt de séparer détection (bloc B) et pathfinding (bloc C) est de donne
 
 | Brique                       | Entrée                                                                                 | Sortie                                                                               | Technologie                                                                                                                       | Statut                                                                                                                                                         |
 | ---------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D1 Alignement vidéo et photo | Une frame de la vidéo et la photo de la voie                                           | Transformation qui place les pixels de la vidéo dans le repère de la photo           | OpenCV : correspondance de points (ORB ou SIFT) puis homographie (RANSAC)                                                         | À explorer : risque principal                                                                                                                                  |
-| D2 Écarts                    | Squelette (A), mouvements (A4), bêta (C)                                               | Écarts par étape : membre, distance, instant (`comparisons.metrics`)                 | Python, géométrie                                                                                                                 | À explorer                                                                                                                                                     |
-| D3 Conseils                  | Angles, métriques, mouvements (puis écarts et contexte de voie, morphologie plus tard) | Conseils structurés (`analyses.hints` : catégorie, priorité, zones du corps, frames) | Modèle interchangeable via un client compatible OpenAI (`LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`), validé par le schéma `Hints` | **Fait** pour les conseils sur la pose seule. Fournisseurs (Gemini, DeepSeek) **non testés en réel** ; pas encore d'écarts D2 ni de morphologie dans le prompt |
+| ~~D1 Alignement vidéo et photo~~ | ~~Une frame de la vidéo et la photo de la voie~~                                       | *Abandonné après pivot*                                                              | ~~OpenCV : ORB/SIFT + homographie~~                                                                                               | **Abandonné** : le mode fantôme est strictement sur photo de voie vide ; aucune comparaison vidéo-vs-fantôme                                                   |
+| D2 Comparaison vidéo-à-vidéo | Deux analyses de pose (`base_analysis_id`, `compared_analysis_id`) sur la **même voie** (`public` / `friends`) | Écarts cinématiques entre grimpeurs (`comparisons.metrics`)                          | Python, géométrie                                                                                                                 | À implémenter (remplace l'ancienne comparaison vidéo-vs-bêta)                                                                                                  |
+| D3 Conseils                  | Angles, métriques, mouvements, morphologie et contexte de voie                         | Conseils structurés (`analyses.hints` : catégorie, priorité, zones du corps, frames) | Modèle interchangeable via un client compatible OpenAI (`LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`), validé par le schéma `Hints` | **Fait** pour les conseils sur la pose seule. Fournisseurs (Gemini, DeepSeek) **non testés en réel** ; morphologie à intégrer dans le prompt                   |
 
 Points d'attention :
 
-- Le détecteur de prises tourne sur la photo uniquement. Pour comparer la vidéo à la bêta, il faut donc relier les deux repères (D1). Sans cela, on ne sait pas quelle prise le grimpeur touche.
-- D1 est fragile si la caméra bouge ou si l'angle diffère de la photo. Deux alternatives : demander une photo cadrée comme la vidéo, ou comparer des séquences de mouvements sans repère commun en pixels.
-- Le modèle externe ne doit recevoir que des données déjà calculées (angles, écarts), pas la vidéo brute, pour limiter le coût et les hallucinations.
+- Le détecteur de prises (Bloc B) et le mode fantôme (Bloc C) fonctionnent **uniquement sur une photo de voie**. Ils ne sont jamais superposés ni comparés à une vidéo d'escalade.
+- La comparaison (D2 / `F05`) compare exclusivement **deux vidéos de pose sur la même voie** (par exemple sa propre montée face à celle d'un ami en visibilité `friends` ou `public`).
+- Le modèle externe ne doit recevoir que des données déjà calculées (angles, métriques, morphologie), pas la vidéo brute, pour limiter le coût et les hallucinations.
 - Implémenté ainsi : le prompt ne contient que des valeurs calculées, résumées et bornées (jamais la vidéo, ni identifiant), et les conseils sont en français. Pour chaque membre, une couverture de mesure est calculée ; un membre mesuré sur moins de 70 % des images est signalé comme peu fiable et le modèle a interdiction de conclure sur lui. En cas d'échec du LLM, l'analyse reste en `success` avec `hints = NULL`.
 
 ### 6.2 Bloc E : rendu mobile
 
-- Le client Flutter dessine le squelette et les conseils par-dessus la vidéo d'origine (rendu côté client, pas de ré-encodage vidéo).
-- Le mode fantôme permet à l'utilisateur de faire défiler étape par étape la succession d'images générées, montrant visuellement chaque mouvement à effectuer sur la voie.
+- **Analyse de pose (F02) :** le client Flutter dessine le squelette 2D et les conseils par-dessus la vidéo d'origine à partir d'un JSON léger (rendu côté client, pas de ré-encodage vidéo). En **ATP**, une scène 3D interactive permettra d'inspecter la pose en 3D.
+- **Mode fantôme (F07) :** le mobile affiche étape par étape la suite d'images générées depuis la photo initiale, sans superposition vidéo ni export vidéo.
 
 ---
 
@@ -200,9 +196,9 @@ Points d'attention :
 2. **Combien d'images pour démarrer ?** Environ 300 images variées sont prévues. Est-ce suffisant pour des prises de formes et de couleurs très différentes (prises, volumes, triangles) ?
 3. **Clustering :** le k-means impose de connaître le nombre de voies. Faut-il plutôt DBSCAN ou HDBSCAN, ou demander le nombre de voies à l'utilisateur ?
 4. **Pathfinding :** déterministe ou LSTM en premier ? Comment obtenir des données d'entraînement (distillation depuis Claude, vidéos scrapées, bêtas synthétiques) ?
-5. **Alignement vidéo et photo (D1) :** l'homographie est-elle réaliste en salle (caméra à la main, angle différent) ? Existe-t-il une approche plus robuste ?
-6. **Pathfinding et analyse 2D :** nous le considérons nécessaire aux conseils (comparaison à la bêta). Peut-on livrer d'abord une analyse sans bêta (squelette, angles, règles) et ajouter la comparaison ensuite ?
-7. **Évaluation :** quelles métriques retenir pour la track technique ? Par exemple mAP50 et rappel par couleur pour YOLO, pureté des clusters, taux de bêtas jugées valides par un grimpeur.
+5. ~~**Alignement vidéo et photo (D1) :**~~ *Clôturé après pivot — l'alignement vidéo/photo et la comparaison vidéo-vs-fantôme ont été écartés.*
+6. **Pathfinding et analyse 2D :** *Résolu — l'analyse de pose 2D (squelette, angles, métriques, conseils LLM) est livrée indépendamment du pathfinding photo (Mode Fantôme).*
+7. **Évaluation :** quelles métriques retenir pour la track technique ? Par exemple mAP50 et rappel par couleur pour YOLO, pureté des clusters, taux de bêtas jugées réalisables par un grimpeur.
 
 ---
 
@@ -212,10 +208,10 @@ Points d'attention :
 | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | A1 Ingestion S3, A2 squelette, A3 angles et métriques, A4 mouvements | **Fait** (limites : mains non fiables sur la vidéo d'exemple, seuils calibrés sur une seule vidéo) |
 | D3 conseils                                                          | **Fait** pour la pose seule ; fournisseurs LLM non testés en réel                                  |
-| B2 à B5 Lecture de voie                                              | À explorer, données en cours de collecte                                                           |
-| C Pathfinding                                                        | À explorer                                                                                         |
-| D1, D2 Alignement et écarts                                          | À explorer                                                                                         |
-| E Rendu                                                              | Prévu côté mobile                                                                                  |
+| B2 à B5 Lecture de voie (photo + choix groupe/manuel)             | À explorer, données en cours de collecte                                                           |
+| C Pathfinding (bêta réalisable sur photo)                            | À explorer                                                                                         |
+| D2 Comparaison vidéo-à-vidéo (même voie, `F05`)                      | À implémenter (*D1 alignement vidéo/photo abandonné*)                                              |
+| E Rendu                                                              | Prévu côté mobile (overlay vidéo pose + visionneuse photo mode fantôme)                            |
 | Branchement du serveur Go au worker                                  | À faire (voir le handoff backend, hors dépôt)                                                      |
 
 Prochaines étapes décidées à la réunion du 29/09 :

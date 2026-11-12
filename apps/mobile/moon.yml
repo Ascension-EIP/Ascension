@@ -178,9 +178,15 @@ tasks:
     deps:
       - 'install'
 
+  reverse:
+    command: 'bash'
+    args: ['-c', 'adb reverse tcp:8080 tcp:8080 && adb reverse tcp:9000 tcp:9000 && echo "Ports 8080 and 9000 reversed for ADB"']
+    options:
+      cache: false
+
   dev:
-    command: 'flutter'
-    args: ['run', '--dart-define=BACKEND_URL=${BACKEND_URL}']
+    command: 'bash'
+    args: ['scripts/run.sh']
     options:
       persistent: true
       cache: false

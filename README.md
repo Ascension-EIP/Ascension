@@ -17,8 +17,9 @@
   - [Core Features](#core-features)
   - [Repository Structure](#repository-structure)
   - [Tech Stack](#tech-stack)
+  - [Business Model](#business-model)
   - [Getting Started](#getting-started)
-  - [Usefull Documentation](#usefull-documentation)
+  - [Documentation](#documentation)
   - [Contributing](#contributing)
 
 ---
@@ -27,7 +28,7 @@
 
 Ascension is a mobile application that analyzes climbing videos using computer vision and AI to deliver concrete, objective feedback on technique — the kind of feedback that usually requires a professional coach standing next to you.
 
-Film yourself on the wall. Upload the video. Get a biomechanical breakdown of your movement, joint-by-joint coaching advice, or photograph an empty wall to get a step-by-step Ghost Mode guide to climb the wall tailored to your morphology.
+Film yourself on the wall during a climbing session, upload the video, and get a biomechanical breakdown plus joint-by-joint coaching advice, or photograph an empty wall to get a step-by-step Ghost Mode guide to climb the wall tailored to your morphology.
 
 **The problem we solve:** Professional climbing coaching is expensive (50 €/hour), subjective, and hard to access. Most climbers train without real feedback and only correct bad habits when they plateau or get injured. Ascension makes expert-level analysis available to any climber — from beginner to competition level — at a fraction of the cost.
 
@@ -38,17 +39,15 @@ Film yourself on the wall. Upload the video. Get a biomechanical breakdown of yo
 | Feature | Description | Phase |
 | :--- | :--- | :---: |
 | **Morphological Profile** | Tailored body setup (height, weight, limbs) and interactive injury/amputation map | BTP |
-| **Video Analysis & Feedback** | Objective climb analysis from video with key movement breakdowns | MVP -> BTP |
-| **Skeleton Extraction (2D/3D)** | 33-point pose estimation (MediaPipe) in 2D, moving to 3D pose AI | MVP -> ATP |
-| **Global Score & Progress** | Session-by-session technical scores and long-term progress metrics | BTP |
-| **Ghost Mode** | Step-by-step movement guide computed from an empty route photo and user morphology | BTP -> ATP |
-| **Hold Detection & Analysis** | Automatic hold qualification and contouring with manual fallback | ATP |
-| **Interactive 3D Experience** | Interactive 3D scene (orbit, pan, zoom) for movement inspection | ATP |
-| **Targeted Coaching Advice** | Contextualized actionable technical feedback powered by LLM (Gemini API) | BTP |
+| **Climbing Sessions** | Climbing session tracking: group climb analyses, compute duration, and view end-of-session aggregated stats | BTP |
+| **2D Pose Analysis & Feedback** | Video climb analysis via 33-point MediaPipe 2D skeleton, numeric metrics, and LLM coaching advice | MVP -> BTP |
+| **Ghost Mode** | Photograph a route, select a detected hold group/color or click holds manually, and generate step-by-step images for a feasible beta | BTP |
 | **Training Programs & Routines** | Personalized routines adapted to level, goals, injuries, and history | BTP |
 | **Community & Sharing** | Climb sharing, friend performance comparison, and fine-grained privacy controls | BTP |
-| **Assisted Climbing (AR + Audio)** | Real-time ascent tracking with audio coaching cues through earphones | ATP |
-| **Subscriptions & Quotas** | Flexible tiers (Freemium, Premium, Infinity) with transparent quotas | ATP |
+| **3D Pose AI & Interactive Scene** | 3D posture extraction from climbing video with richer metrics and an interactive 3D mobile viewer (orbit, zoom) | ATP |
+| **Hold Qualification** | Advanced automatic hold qualification (type, difficulty, usability) extending BTP detection & grouping | ATP |
+| **Assisted Climbing (AR Audio)** | Accessibility mode (stationary phone + audio) providing real-time pose tracking and audio guidance | ATP |
+| **Subscriptions & Quotas** | Flexible tiers (Freemium, Premium, Infinity) with transparent quotas | BTP -> ATP |
 
 ---
 
@@ -67,7 +66,7 @@ Ascension/
 └── docs/                   # All project documentation
 ```
 
-Each app under `apps/` is independently buildable and deployable. See the [Monorepo Guide](docs/engineering/developer_guide/architecture/monorepo-guide.md) for the full structure, moonrepo task conventions, and CI/CD workflow.
+Each app under `apps/` is independently buildable and deployable. See the [Monorepo Guide](docs/Ascension/developer/architecture/monorepo-guide.md) for the full structure, moonrepo task conventions, and CI/CD workflow.
 
 ---
 
@@ -80,17 +79,27 @@ Each app under `apps/` is independently buildable and deployable. See the [Monor
 | AI Workers     | Python 3.11, MediaPipe, PyTorch, OpenCV                     |
 | Message Queue  | RabbitMQ 4.2.4 — async job dispatch between API and workers    |
 | Database       | PostgreSQL 18 — JSONB for analysis results                   |
-| Object Storage | MinIO (dev) / Hetzner Storage Box (prod) — S3-compatible     |
-| Infrastructure | Hetzner Cloud (EU), Docker Compose → Kubernetes              |
+| Object Storage | RustFS (dev) / OVHcloud Object Storage (prod) — S3-compatible |
+| Infrastructure | OVHcloud VPS-4 (Milan) + Gravelines Storage (S3), Docker Compose |
 | Monorepo       | moonrepo                                                     |
 
-For the full rationale behind every technology choice, see the [Architecture Decision Record](docs/engineering/developer_guide/architecture/readme.md).
+For the full rationale behind every technology choice, see the [Architecture Decision Record](docs/Ascension/developer/architecture/readme.md).
+
+---
+
+## Business Model
+
+| Tier | Price | Analyses / month | Ghost Mode / month | Max Routines | Ads | Server Priority |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| Freemium | Free | 10 | ✗ | 5 | ✓ | ✗ |
+| Premium | €20 / month | 30 | 30 | Unlimited | ✗ | ✗ |
+| Infinity | €30 / month | 100 | 100 | Unlimited | ✗ | ✓ |
 
 ---
 
 ## Getting Started
 
-> Full step-by-step instructions, prerequisites, and environment variables are in the **[Development Environment Setup](docs/engineering/developer_guide/architecture/deployment/development.md)** guide.
+> Full step-by-step instructions, prerequisites, and environment variables are in the **[Development Environment Setup](docs/Ascension/developer/architecture/deployment/development.md)** guide.
 
 **Quick start (local dev):**
 
@@ -105,7 +114,7 @@ curl -fsSL https://moonrepo.dev/install/moon.sh | bash
 # 3. Copy environment template and fill in values
 cp .env.example .env
 
-# 4. Start infrastructure (PostgreSQL, RabbitMQ, MinIO)
+# 4. Start infrastructure (PostgreSQL, RabbitMQ, RustFS)
 docker compose up -d
 
 # 5. Run a service
@@ -113,7 +122,7 @@ moon run server:dev     # Go API
 moon run ai:dev         # Python AI worker
 ```
 
-For production deployment, see the [Production Setup Guide](docs/engineering/developer_guide/architecture/deployment/production.md).
+For production deployment, see the [Production Setup Guide](docs/Ascension/developer/architecture/deployment/production.md).
 
 ---
 
@@ -121,16 +130,17 @@ For production deployment, see the [Production Setup Guide](docs/engineering/dev
 
 | Topic                     | Document                                                                                                 |
 | :------------------------ | :------------------------------------------------------------------------------------------------------- |
-| Architecture overview     | [Architecture README](docs/engineering/developer_guide/architecture/readme.md)                         |
-| System design & patterns  | [System Overview](docs/engineering/developer_guide/architecture/system-overview.md)                  |
-| Monorepo & moonrepo guide | [Monorepo Guide](docs/engineering/developer_guide/architecture/monorepo-guide.md)                    |
-| Database schema & ERD     | [Database Schema](docs/engineering/developer_guide/architecture/specifications/database-schema.md)   |
-| API specification         | [API Specification](docs/engineering/developer_guide/architecture/specifications/api-specification.md)|
-| Development environment   | [Dev Setup](docs/engineering/developer_guide/architecture/deployment/development.md)                 |
-| Production deployment     | [Production Setup](docs/engineering/developer_guide/architecture/deployment/production.md)           |
-| Git branch conventions    | [Branch Standards](docs/engineering/git/git-branch-standards-guide.md)                               |
-| Git commit conventions    | [Commit Standards](docs/engineering/git/git-commit-standards-guide.md)                               |
-| Markdown style guide      | [Markdown Guidelines](docs/start-here/guidelines/markdown-guidelines.md)                            |
+| Architecture overview     | [Architecture README](docs/Ascension/developer/architecture/readme.md)                         |
+| System design & patterns  | [Global Architecture](docs/Ascension/developer/architecture/globale-architecture.md)                  |
+| Product & scope audit     | [Product & Scope Pivot Audit](docs/Ascension/developer/architecture/audits/product-scope-pivot-audit.md) |
+| Monorepo & moonrepo guide | [Monorepo Guide](docs/Ascension/developer/architecture/monorepo-guide.md)                    |
+| Database schema & ERD     | [Database Schema](docs/Ascension/developer/architecture/specifications/database-schema.md)   |
+| API specification         | [API Specification](docs/Ascension/developer/architecture/specifications/api-specification.md)|
+| Development environment   | [Dev Setup](docs/Ascension/developer/architecture/deployment/development.md)                 |
+| Production deployment     | [Production Setup](docs/Ascension/developer/architecture/deployment/production.md)           |
+| Git branch conventions    | [Branch Standards](docs/Ascension/developer/git/git-branch-standards-guide.md)                               |
+| Git commit conventions    | [Commit Standards](docs/Ascension/developer/git/git-commit-standards-guide.md)                               |
+| Markdown style guide      | [Markdown Guidelines](docs/Ascension/developer/guidelines/markdown-guidelines.md)                            |
 
 ---
 
