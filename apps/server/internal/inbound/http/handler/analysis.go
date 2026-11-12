@@ -1,8 +1,8 @@
-// @date 2026-09-20
+// @date 2026-11-12
 // @file analysis.go
 // @brief File description.
 // @project Ascension
-// @author Nicolas TORO <nicolas.toro@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package handler
@@ -50,6 +50,35 @@ func (h *AnalysisHandler) Create(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusAccepted, response.AnalysisToResponse(analysis))
+}
+
+// List returns one page of the user's analyses, newest first (GET /v1/analysis?limit=&offset=).
+func (h *AnalysisHandler) List(c *gin.Context) {
+	user, err := utils.GetFromContext[model.User](c, macro.Me)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	var req request.PageQuery
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+
+	pagination, err := req.IntoPagination()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+
+	page, err := h.s.ListAnalyses(c.Request.Context(), user.ID, pagination)
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, response.AnalysisSummaryPageToResponse(page))
 }
 
 func (h *AnalysisHandler) GetByID(c *gin.Context) {
