@@ -35,16 +35,16 @@ func (t AnalysisType) Validate() error {
 type JobStatus string
 
 const (
-	JobStatusPending         JobStatus = "pending"
-	JobStatusProcessing      JobStatus = "processing"
-	JobStatusGeneratingHints JobStatus = "generating_hints"
-	JobStatusCompleted       JobStatus = "completed"
-	JobStatusFailed          JobStatus = "failed"
+	JobStatusPending JobStatus = "pending"
+	JobStatusStarted JobStatus = "started"
+	JobStatusRunning JobStatus = "running"
+	JobStatusSuccess JobStatus = "success"
+	JobStatusFailed  JobStatus = "failed"
 )
 
 func (s JobStatus) Validate() error {
 	switch s {
-	case JobStatusPending, JobStatusProcessing, JobStatusGeneratingHints, JobStatusCompleted, JobStatusFailed:
+	case JobStatusPending, JobStatusStarted, JobStatusRunning, JobStatusSuccess, JobStatusFailed:
 		return nil
 	default:
 		return fmt.Errorf("unknown")

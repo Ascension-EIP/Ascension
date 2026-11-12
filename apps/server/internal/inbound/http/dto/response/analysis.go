@@ -12,6 +12,7 @@ import (
 	"uuid"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/shared"
 )
 
 type AnalysisResponse struct {
@@ -27,6 +28,7 @@ type AnalysisResponse struct {
 	ProcessingTimeMS *time.Duration     `json:"processing_time_ms"`
 	StartedAt        *time.Time         `json:"started_at"`
 	CompletedAt      *time.Time         `json:"completed_at"`
+	Hints            *shared.Hints      `json:"hints"`
 }
 
 func AnalysisToResponse(analysis model.Analysis) AnalysisResponse {
@@ -43,5 +45,6 @@ func AnalysisToResponse(analysis model.Analysis) AnalysisResponse {
 		ProcessingTimeMS: analysis.ProcessingTimeMS,
 		StartedAt:        analysis.StartedAt,
 		CompletedAt:      analysis.CompletedAt,
+		Hints:            analysis.Hints,
 	}
 }

@@ -38,14 +38,18 @@ func (a Analysis) ToAnalysis() model.Analysis {
 	return model.Analysis{
 		ID:               a.ID,
 		VideoID:          a.VideoID,
+		Type:             a.Type,
 		Status:           a.Status,
+		Visibility:       a.Visibility,
+		Progress:         a.Progress,
 		Result:           a.Result,
 		Advice:           a.Advice,
-		Progress:         a.Progress,
 		ProcessingTimeMS: a.ProcessingTimeMS,
+		StartedAt:        a.StartedAt,
 		CompletedAt:      a.CompletedAt,
 		CreatedAt:        a.CreatedAt,
 		UpdatedAt:        a.UpdatedAt,
+		Hints:            a.Hints,
 	}
 }
 

@@ -11,15 +11,17 @@
   # env.GREET = "devenv";
 
   # https://devenv.sh/packages/
-  packages = [
-    pkgs.quicktype
-  ];
+  packages = [ ];
 
   # https://devenv.sh/languages/
   languages = {
     go = {
       enable = true;
       version = "1.27.1";
+    };
+    javascript = {
+      enable = true;
+      npm.enable = true;
     };
   };
 
@@ -118,8 +120,11 @@
 
   # https://devenv.sh/scripts/
   scripts.schemas-generate.exec = ''
-    	quicktype --src-lang schema $DEVENV_ROOT/../../schemas/*.schema.json \
-            -o $DEVENV_ROOT/internal/shared/models.go --lang go --just-types-and-package --package shared
+    out="$DEVENV_ROOT/internal/shared/models.go"
+    npx --yes quicktype --src-lang schema $DEVENV_ROOT/../../schemas/*.schema.json \
+            -o "$out" --lang go --just-types-and-package --package shared
+    sed -i '/^import /d' "$out"
+    goimports -w "$out"
   '';
 
   scripts.setup.exec = "go install -tags postgres github.com/golang-migrate/migrate/v4/cmd/migrate@v4.19.1";
