@@ -1,11 +1,10 @@
-// @date 2026-11-12
+// @date 2026-11-13
 // @file pgtest.go
 // @brief PostgreSQL integration test helpers: one migrated, throwaway database per test.
 // @project Ascension
 // @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
-
 // Package pgtest gives integration tests a real PostgreSQL database. Tests are skipped
 // unless TEST_DATABASE_DSN points at a PostgreSQL 18 server, for instance a throwaway
 // container:
@@ -107,6 +106,52 @@ func (db DB) CreateUser(t *testing.T) uuid.UUID {
 	}
 
 	return id
+}
+
+// CreateUserNamed inserts an active user with the username and returns its ID.
+func (db DB) CreateUserNamed(t *testing.T, username string) uuid.UUID {
+	t.Helper()
+
+	var id uuid.UUID
+	if err := db.Repo.Pool.QueryRow(context.Background(),
+		"INSERT INTO users (username, first_name, last_name, email, password_hash) VALUES ($1, $2, $3, $4, 'hash') RETURNING id",
+		username, "First "+username, "Last "+username, username+"@ascension.test",
+	).Scan(&id); err != nil {
+		t.Fatalf("insert user %s: %v", username, err)
+	}
+
+	return id
+}
+
+// DeactivateUser deactivates a user.
+func (db DB) DeactivateUser(t *testing.T, id uuid.UUID) {
+	t.Helper()
+
+	if _, err := db.Repo.Pool.Exec(context.Background(),
+		"UPDATE users SET status = 'deactivated', deactivated_at = NOW() WHERE id = $1", id,
+	); err != nil {
+		t.Fatalf("deactivate user: %v", err)
+	}
+}
+
+// BlockPair stores a blocked friendship, replacing the one of the pair if any. No endpoint
+// blocks a user yet: the tests set it directly.
+func (db DB) BlockPair(t *testing.T, requesterID uuid.UUID, addresseeID uuid.UUID) {
+	t.Helper()
+
+	ctx := context.Background()
+	if _, err := db.Repo.Pool.Exec(ctx,
+		"DELETE FROM friendships WHERE LEAST(requester_id, addressee_id) = LEAST($1::uuid, $2::uuid) AND GREATEST(requester_id, addressee_id) = GREATEST($1::uuid, $2::uuid)",
+		requesterID, addresseeID,
+	); err != nil {
+		t.Fatalf("delete friendship: %v", err)
+	}
+	if _, err := db.Repo.Pool.Exec(ctx,
+		"INSERT INTO friendships (requester_id, addressee_id, status, responded_at) VALUES ($1, $2, 'blocked', NOW())",
+		requesterID, addresseeID,
+	); err != nil {
+		t.Fatalf("insert blocked friendship: %v", err)
+	}
 }
 
 // CreateVideo inserts a completed video of the user, optionally linked to a climbing session.
