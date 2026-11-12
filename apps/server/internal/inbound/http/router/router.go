@@ -1,8 +1,8 @@
-// @date 2026-09-29
+// @date 2026-11-12
 // @file router.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package router
@@ -29,6 +29,7 @@ func New(
 	videoH *handler.VideoHandler,
 	analysisH *handler.AnalysisHandler,
 	profileH *handler.ProfileHandler,
+	climbingSessionH *handler.ClimbingSessionHandler,
 ) {
 	app.Use(middleware.RequestID())
 	app.Use(middleware.Logger())
@@ -66,6 +67,7 @@ func New(
 		analysesGroup := v1.Group("/analysis", middleware.RateLimiter(time.Minute, 10), authMW())
 		{
 			analysesGroup.POST("/", analysisH.Create)
+			analysesGroup.GET("", analysisH.List)
 			analysesGroup.GET("/:id", analysisH.GetByID)
 		}
 
@@ -73,6 +75,17 @@ func New(
 		{
 			profileGroup.GET("", profileH.GetMyProfile)
 			profileGroup.PUT("", profileH.UpdateMyProfile)
+		}
+
+		climbingSessionsGroup := v1.Group("/sessions", middleware.RateLimiter(time.Minute, 10), authMW())
+		{
+			climbingSessionsGroup.POST("", climbingSessionH.Create)
+			climbingSessionsGroup.GET("", climbingSessionH.List)
+			climbingSessionsGroup.GET("/active", climbingSessionH.GetActive)
+			climbingSessionsGroup.GET("/:id", climbingSessionH.GetByID)
+			climbingSessionsGroup.PUT("/:id", climbingSessionH.Update)
+			climbingSessionsGroup.DELETE("/:id", climbingSessionH.Delete)
+			climbingSessionsGroup.POST("/:id/analyses", climbingSessionH.AddAnalysis)
 		}
 	}
 }

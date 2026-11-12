@@ -1,8 +1,8 @@
-// @date 2026-09-24
+// @date 2026-11-12
 // @file ports.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package model
@@ -42,6 +42,22 @@ type AnalysisRepository interface {
 	TransactionRepository
 	CreateAnalysis(ctx context.Context, analysis Analysis) (Analysis, error)
 	GetAnalysisByFilter(ctx context.Context, filter AnalysisFilter) (Analysis, error)
+	// ListAnalysisSummariesByClimbingSessionID lists the analyses of the session's videos, newest first.
+	ListAnalysisSummariesByClimbingSessionID(ctx context.Context, climbingSessionID uuid.UUID) ([]AnalysisSummary, error)
+	// ListAnalysisSummariesByUserID returns one page of the analyses of the user's videos, newest first, and the total count.
+	ListAnalysisSummariesByUserID(ctx context.Context, userID uuid.UUID, pagination Pagination) ([]AnalysisSummary, int, error)
+}
+
+type ClimbingSessionRepository interface {
+	TransactionRepository
+	CreateClimbingSession(ctx context.Context, climbingSession ClimbingSession) (ClimbingSession, error)
+	GetClimbingSessionByFilter(ctx context.Context, filter ClimbingSessionFilter) (ClimbingSession, error)
+	// GetActiveClimbingSessionByUserID returns the user's most recently started session that has not ended.
+	GetActiveClimbingSessionByUserID(ctx context.Context, userID uuid.UUID) (ClimbingSession, error)
+	// ListClimbingSessionsByUserID returns one page of the user's sessions, most recent first, and the total count.
+	ListClimbingSessionsByUserID(ctx context.Context, userID uuid.UUID, pagination Pagination) ([]ClimbingSession, int, error)
+	UpdateClimbingSession(ctx context.Context, partial ClimbingSessionPartial) (ClimbingSession, error)
+	DeleteClimbingSession(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 }
 
 type VideoRepository interface {

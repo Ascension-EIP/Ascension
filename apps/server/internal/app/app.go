@@ -1,4 +1,4 @@
-// @date 2026-09-24
+// @date 2026-11-12
 // @file app.go
 // @brief File description.
 // @project Ascension
@@ -57,8 +57,9 @@ func Run(cfg config.Config) {
 	userS := service.NewUserService(&repo)
 	userProfileS := service.NewUserProfileService(&repo)
 	authS := service.NewAuthService(&jwtS, &sessionS, &userS, &userProfileS, &repo)
-	videoS := service.NewVideoService(cfg.Video, cfg.MinIO, &storage, &repo)
+	videoS := service.NewVideoService(cfg.Video, cfg.MinIO, &storage, &repo, &repo)
 	analysisS := service.NewAnalysisService(cfg.MinIO, &repo, &repo, &queue)
+	climbingSessionS := service.NewClimbingSessionService(&repo, &repo, &repo)
 
 	authMW := middleware.AuthMiddleware(&jwtS)
 
@@ -67,6 +68,7 @@ func Run(cfg config.Config) {
 	videoH := handler.NewVideoHandler(&videoS)
 	analysisH := handler.NewAnalysisHandler(&analysisS)
 	userProfileH := handler.NewUserProfileHandler(&userProfileS)
+	climbingSessionH := handler.NewClimbingSessionHandler(&climbingSessionS)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -80,6 +82,7 @@ func Run(cfg config.Config) {
 		&videoH,
 		&analysisH,
 		&userProfileH,
+		&climbingSessionH,
 	)
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(cfg.HTTP.Port),

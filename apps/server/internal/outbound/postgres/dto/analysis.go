@@ -1,4 +1,4 @@
-// @date 2026-09-20
+// @date 2026-11-12
 // @file analysis.go
 // @brief File description.
 // @project Ascension
@@ -22,6 +22,7 @@ type Analysis struct {
 	Visibility       model.Visibility   `db:"visibility"`
 	Result           *map[string]any    `db:"result"`
 	Advice           *string            `db:"advice"`
+	Hints            *map[string]any    `db:"hints"`
 	Error            *string            `db:"error"`
 	Progress         int16              `db:"progress"`
 	ProcessingTimeMS *time.Duration     `db:"processing_time_ms"`
@@ -44,6 +45,47 @@ func (a Analysis) ToAnalysis() model.Analysis {
 		CreatedAt:        a.CreatedAt,
 		UpdatedAt:        a.UpdatedAt,
 	}
+}
+
+// AnalysisSummary is the subset of analyses columns used in lists, with the climbing
+// session of the video.
+type AnalysisSummary struct {
+	ID                uuid.UUID          `db:"id"`
+	VideoID           uuid.UUID          `db:"video_id"`
+	ClimbingSessionID *uuid.UUID         `db:"climbing_session_id"`
+	Type              model.AnalysisType `db:"type"`
+	Status            model.JobStatus    `db:"status"`
+	Visibility        model.Visibility   `db:"visibility"`
+	Progress          int16              `db:"progress"`
+	StartedAt         *time.Time         `db:"started_at"`
+	CompletedAt       *time.Time         `db:"completed_at"`
+	CreatedAt         time.Time          `db:"created_at"`
+}
+
+// ToAnalysisSummary converts the row to the domain model.
+func (a AnalysisSummary) ToAnalysisSummary() model.AnalysisSummary {
+	return model.AnalysisSummary{
+		ID:                a.ID,
+		VideoID:           a.VideoID,
+		ClimbingSessionID: a.ClimbingSessionID,
+		Type:              a.Type,
+		Status:            a.Status,
+		Visibility:        a.Visibility,
+		Progress:          a.Progress,
+		StartedAt:         a.StartedAt,
+		CompletedAt:       a.CompletedAt,
+		CreatedAt:         a.CreatedAt,
+	}
+}
+
+// AnalysisSummariesToAnalysisSummaries converts rows to domain models.
+func AnalysisSummariesToAnalysisSummaries(rows []AnalysisSummary) []model.AnalysisSummary {
+	summaries := make([]model.AnalysisSummary, 0, len(rows))
+	for _, row := range rows {
+		summaries = append(summaries, row.ToAnalysisSummary())
+	}
+
+	return summaries
 }
 
 // type AnalysisScores struct {
