@@ -5,7 +5,7 @@ id: 615b8876-93f2-4f9d-80db-7d3e8553fe8b
 :::warning
 **Version:** 2.0
 
-[@Christophe Vandevoir](mention:5954ff40-2f0c-47db-b5cd-c8ef58875f34) tu dois refaire ce document, le but est d’expliquer comment on a setup notre
+[@Christophe Vandevoir](mention:5954ff40-2f0c-47db-b5cd-c8ef58875f34) tu dois refaire ce document (tu peux repartir de 0), le but est d’expliquer comment on a setup notre production et comment la mettre à jour
 :::
 
 ---
