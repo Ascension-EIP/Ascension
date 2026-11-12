@@ -3,7 +3,7 @@ id: d6df5f06-9ec3-4369-8e32-75830bdb5533
 ---
 
 :::success
-**Version:** 1.0
+**Version:** 1.1
 :::
 
 ---
