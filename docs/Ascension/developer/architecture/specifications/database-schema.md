@@ -93,7 +93,6 @@ erDiagram
     ROUTES ||--o{ GHOSTS : generates
     GHOSTS ||--o{ GHOST_HOLDS : uses
     HOLDS ||--o{ GHOST_HOLDS : selected_in
-    GHOSTS ||--o{ COMPARISONS : compared_in
 
     GOALS ||--o{ TRAINING_PROGRAMS : drives
     TRAINING_PROGRAMS ||--o{ TRAINING_PROGRAM_SESSIONS : schedules
@@ -105,7 +104,7 @@ erDiagram
 
 ```
 
-Summary: `users` is the root of every branch. The video branch (`climbing_sessions` → `videos` → `analyses` → `analysis_scores`) holds the biomechanical analysis. The route branch (`routes` → `holds` → `ghosts`) holds the Ghost Mode without climbing, and `comparisons` joins both branches for the Ghost Mode in comparison. The coaching branch (`goals` → `training_programs` → `training_program_sessions` → `exercises`, with `training_logs` for what was actually done) and the business branch (`subscription_plans` → `subscriptions` → `subscription_events`, `quota_usages`) are independent of the AI branches.
+Summary: `users` is the root of every branch. The video branch (`climbing_sessions` → `videos` → `analyses` → `analysis_scores`) holds the biomechanical analysis and user-to-user same-wall `comparisons`. The route branch (`routes` → `holds` → `ghosts`) holds the Ghost Mode without climbing, strictly decoupled from video analyses and comparisons. The coaching branch (`goals` → `training_programs` → `training_program_sessions` → `exercises`, with `training_logs` for what was actually done) and the business branch (`subscription_plans` → `subscriptions` → `subscription_events`, `quota_usages`) are independent of the AI branches.
 
 ---
 
@@ -731,7 +730,7 @@ Business rules:
 
 ### 7.3 `ghosts`
 
-Optimal movement path computed for a route and a user morphology (F07). Same job lifecycle as `analyses`.
+Feasible movement path computed from a route photo, selected holds, and user morphology (F07). Same job lifecycle as `analyses`.
 
 ```sql
 CREATE TABLE ghosts (
@@ -1329,7 +1328,7 @@ The migration history evolved from the initial prototype schema (`20260905000001
 | `20260918183204` – `20260918183601` | Sessions & Videos       | Tables `climbing_sessions` and `videos` (with `object_key`, `size_bytes`, `duration_ms`, `content_type`, `fps`, `visibility`, `retained`).                                                                                                                                                                                                                                 |
 | `20260918183756` – `20260918184024` | Analyses & Scores       | Tables `analyses` (with `status` enum, `processing_time_ms` INTERVAL, `result` JSONB, `advice` TEXT) and `analysis_scores`. `hints` JSONB is added by `20261030200100`.                                                                                                                                                                                                    |
 | `20260918184203` – `20260918184715` | Routes & Holds          | Tables `routes` and `holds` (with classification, coordinates, polygon points).                                                                                                                                                                                                                                                                                            |
-| `20260918184918` – `20260918185521` | Ghosts & Comparisons    | Tables `ghosts`, `ghost_holds`, and `comparisons` (with metrics and trajectory comparison data).                                                                                                                                                                                                                                                                           |
+| `20260918184918` – `20260918185521` | Ghosts & Comparisons    | Tables `ghosts`, `ghost_holds`, and `comparisons` (with metrics and trajectory comparison data). *Note:* the historical `20260918214857_create_comparaisons_table.up.sql` migration still references legacy `ghost_id` and must be superseded by a follow-up migration matching section 7.5 (`base_analysis_id` / `compared_analysis_id`). |
 | `20260918221841` – `20260918222129` | Coaching & Training     | Tables `goals`, `training_programs`, `training_program_sessions`, `exercises`, and `training_logs`.                                                                                                                                                                                                                                                                        |
 | `20260918222236` – `20260918222340` | Social & Community      | Tables `friendships` and `follows`.                                                                                                                                                                                                                                                                                                                                        |
 | `20260918222453` – `20260918222653` | Subscriptions & Quotas  | Tables `subscription_plans`, `subscriptions`, `subscription_events`, and `quota_usages`.                                                                                                                                                                                                                                                                                   |

@@ -16,7 +16,7 @@ id: 5a77e108-21d3-4916-8298-d97e6ac230f9
 
 Ce document décrit le périmètre ATP d’Ascension, c’est-à-dire la phase qui suit le GreenLight et qui mène au jury final de mars 2028.
 
-L’objectif de cette phase est de transformer un MVP crédible en version alpha solide, testable à plus grande échelle, intégrant l'analyse de pose 3D, l'expérience 3D mobile, la qualification automatique des prises, le coaching enrichi, la communauté avancée, l'assistance vocale temps réel et la monétisation.
+L’objectif de cette phase est de transformer un MVP crédible en version alpha solide, testable à plus grande échelle, intégrant l'analyse de pose 3D, l'expérience 3D mobile interactive, la qualification avancée des prises, le coaching enrichi, la communauté avancée, la monétisation et l'assistance vocale temps réel.
 
 Objectifs ATP :
 
@@ -26,12 +26,12 @@ Objectifs ATP :
 
 Flux utilisateur de référence dans l’alpha :
 
-1. Préparer la voie (détection automatique des prises, qualification et correction manuelle).
-2. Générer une bêta optimale sans grimpe sur photo ou analyser une vidéo avec reconstruction de posture 3D.
-3. Manipuler la restitution dans une scène 3D mobile interactive.
-4. Comparer sa montée réelle à celle d'autres grimpeurs avec retour biomécanique enrichi.
+1. Démarrer une session de grimpe, filmer une montée et lancer une analyse vidéo avec reconstruction de posture 3D.
+2. Préparer une voie via photo pour le Mode Fantôme (détection/qualification avancée des prises, sélection groupe ou clic manuel) et générer une bêta réalisable étape par étape.
+3. Manipuler la restitution de la pose dans une scène 3D mobile interactive (rotation, zoom, inspection des membres).
+4. Comparer sa montée vidéo à celle d'autres grimpeurs sur la même voie avec retour biomécanique enrichi.
 5. Recevoir des conseils contextualisés et suivre un programme d'entraînement adaptatif.
-6. Interagir avec la communauté (partage d'analyses, progression sociale, paramétrage de confidentialité).
+6. Interagir avec la communauté (partage d'analyses et de sessions, progression sociale, paramétrage de confidentialité).
 7. Utiliser le mode de grimpe assistée en temps réel avec guidage vocal.
 8. Gérer son abonnement de bout en bout (Freemium, Premium, Infinity).
 
@@ -54,19 +54,19 @@ Toutes les fonctionnalités listées ci-dessous font partie du scope ATP à dém
 | ID Fonctionnalité | Rôle utilisateur | Nom de la fonctionnalité | Brève description |
 | --- | --- | --- | --- |
 | ATP-F01 | Grimpeur alpha | Se connecter | Accéder au compte et aux données avancées du profil. |
-| ATP-F02 | Grimpeur alpha | Détecter automatiquement les prises | Identifier les prises sur photo de voie avec segmentation et qualification. |
+| ATP-F02 | Grimpeur alpha | Détecter et qualifier les prises | Identifier les prises sur photo de voie avec segmentation et qualification avancée (type, exploitabilité). |
 | ATP-F03 | Grimpeur alpha | Corriger manuellement les prises | Ajuster, ajouter ou supprimer des prises non détectées ou mal classées. |
-| ATP-F04 | Grimpeur alpha | Choisir un mode de sélection des prises | Basculer entre mode custom (manuel) et mode couleur détectée. |
-| ATP-F05 | Grimpeur alpha | Générer une bêta sans grimpe | Produire une trajectoire optimale à partir de la voie qualifiée et du profil utilisateur. |
-| ATP-F06 | Grimpeur alpha | Extraire la posture via modèle 3D | Reconstruire la pose en 3D et générer les sorties biomécaniques standardisées. |
+| ATP-F04 | Grimpeur alpha | Choisir un mode de sélection des prises | Basculer entre sélection par groupe/couleur détectée et sélection manuelle au clic. |
+| ATP-F05 | Grimpeur alpha | Générer une bêta réalisable sans grimpe | Produire une bêta réalisable étape par étape sur photo à partir des prises choisies et du profil utilisateur. |
+| ATP-F06 | Grimpeur alpha | Extraire la posture via modèle 3D | Reconstruire la pose en 3D sur vidéo et générer les sorties biomécaniques enrichies. |
 | ATP-F07 | Grimpeur alpha | Manipuler la scène 3D mobile | Explorer interactivement la grimpe en 3D (rotation, zoom, déplacement fluide). |
-| ATP-F08 | Grimpeur alpha | Comparer sa montée à celle d'un autre grimpeur | Visualiser les écarts biomécaniques clés, différences de posture et de rythme entre deux grimpeurs. |
-| ATP-F09 | Grimpeur alpha | Recevoir des conseils enrichis | Obtenir un feedback technique contextualisé par IA croisant prises et biomécanique. |
+| ATP-F08 | Grimpeur alpha | Comparer sa montée à un autre grimpeur | Visualiser les écarts biomécaniques clés entre deux analyses de pose sur la même voie. |
+| ATP-F09 | Grimpeur alpha | Recevoir des conseils enrichis | Obtenir un feedback technique contextualisé par IA croisant contexte de voie, morphologie et biomécanique. |
 | ATP-F10 | Grimpeur alpha | Définir des objectifs de progression avancés | Configurer niveau actuel, cible, calendrier et contraintes pour un coaching adaptatif. |
 | ATP-F11 | Grimpeur alpha | Générer et consigner des entraînements | Recevoir des programmes sur mesure et enregistrer les séances pour suivi longitudinal. |
-| ATP-F12 | Grimpeur alpha + Ami | Partager une analyse et suivre la progression sociale | Publier une montée avec gestion fine de visibilité et suivre sa dynamique collective. |
-| ATP-F13 | Grimpeur alpha + Ami | Comparer les performances entre amis | Comparer les métriques et indicateurs clés au sein de la communauté. |
-| ATP-F14 | Grimpeur alpha | Lancer le mode de grimpe assistée | Activer l’assistance en direct avec guidage vocal pendant l'effort. |
+| ATP-F12 | Grimpeur alpha + Ami | Partager une analyse et suivre la progression sociale | Publier une montée/session avec gestion fine de visibilité et suivre sa dynamique collective. |
+| ATP-F13 | Grimpeur alpha + Ami | Comparer les performances entre amis | Comparer les métriques et indicateurs clés sur des voies communes au sein de la communauté. |
+| ATP-F14 | Grimpeur alpha | Lancer le mode de grimpe assistée | Activer l’assistance temps réel avec guidage vocal pendant l'effort. |
 | ATP-F15 | Grimpeur alpha | Gérer l’abonnement de bout en bout | Souscrire, renouveler, changer d’offre (Freemium/Premium/Infinity), annuler et gérer les échecs de paiement. |
 | ATP-F16 | Grimpeur alpha | Bénéficier d'une accessibilité universelle | Utiliser l'ensemble des modules alpha avec conformité WCAG 2.2 AA / RGAA vérifiée. |
 | ATP-F17 | Admin produit & technique | Mesurer les KPI produit, business et qualité | Suivre activation, rétention, conversion, churn, latence système et SLOs. |
@@ -80,13 +80,13 @@ Période de validation ATP : août 2027 -> mars 2028.
 | ID Fonctionnalité | Critères clés de succès | Indicateur / métrique | Résultat obtenu |
 | --- | --- | --- | --- |
 | ATP-F01 | La connexion donne accès au parcours alpha sans rupture. | 40 essais, 0 blocage critique. | Achieved (40/40). |
-| ATP-F02 | La détection automatique propose une base exploitable. | 30 photos, précision macro >= 80%. | Not achieved (0/30). |
+| ATP-F02 | La détection et qualification avancée proposent une base exploitable. | 30 photos, précision macro >= 80%. | Not achieved (0/30). |
 | ATP-F03 | La correction manuelle permet de finaliser la voie rapidement. | 30 corrections, temps médian <= 90 s. | Not achieved (0/30). |
-| ATP-F04 | Le choix de mode (custom/couleur) est clair et fiable. | 30 bascules, 0 perte de sélection. | Not achieved (0/30). |
-| ATP-F05 | La bêta sans grimpe se génère et reste lisible. | 25 générations, p95 < 12 s. | Not achieved (0/25). |
+| ATP-F04 | Le choix de mode (groupe couleur / manuel) est clair et fiable. | 30 bascules, 0 perte de sélection. | Not achieved (0/30). |
+| ATP-F05 | La bêta réalisable sans grimpe se génère sur photo et reste lisible. | 25 générations, p95 < 12 s. | Not achieved (0/25). |
 | ATP-F06 | La reconstruction de pose 3D est stable et cohérente. | 30 vidéos, 0 artefact aberrant, format standardisé validé. | Not achieved (0/30). |
 | ATP-F07 | La scène 3D mobile est fluide et réactive. | FPS médian >= 30, 0 crash sur smartphones de référence. | Not achieved (0/2). |
-| ATP-F08 | La comparaison vidéo entre grimpeurs produit des écarts actionnables. | 25 comparaisons, >= 85% jugées utiles par testeurs. | Not achieved (0/25). |
+| ATP-F08 | La comparaison vidéo entre grimpeurs sur même voie produit des écarts actionnables. | 25 comparaisons, >= 85% jugées utiles par testeurs. | Not achieved (0/25). |
 | ATP-F09 | Les conseils enrichis sont cohérents avec le contexte de voie. | 25 analyses, >= 90% retours validés par revue interne. | Not achieved (0/25). |
 | ATP-F10 | L’utilisateur peut paramétrer des objectifs de coaching sans confusion. | 30 parcours, >= 90% complétés sans aide externe. | Not achieved (0/30). |
 | ATP-F11 | Les séances générées sont exploitables et alimentent le suivi. | 50 logs, 100% visibles dans l’historique. | Not achieved (0/50). |

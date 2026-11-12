@@ -16,9 +16,9 @@ id: 220e4059-a12c-4dcc-9a83-321a24decc09
 
 Dans le cadre de l'Epitech Innovative Project (EIP) et de notre engagement sur le parcours **Technical Track**, notre équipe développe **Ascension**, une application mobile qui transforme un smartphone en coach d'escalade personnel grâce à l'analyse vidéo et l'intelligence artificielle. 
 
-Au-delà des fonctionnalités classiques de suivi de progression, de programmes d'entraînement et d'échanges communautaires (partage de grimpe, comparaison de performances entre amis), la valeur ajoutée d'Ascension repose sur ses deux fonctionnalités phares d'analyse par intelligence artificielle :
-1. **L'analyse de pose :** Le grimpeur filme sa montée avec son smartphone. L'application analyse sa posture et ses mouvements image par image grâce à MediaPipe Pose, puis lui fournit des conseils personnalisés pour corriger ses erreurs techniques et progresser.
-2. **Le Mode Fantôme :** Le grimpeur prend une photo de la voie vide. L'application détecte automatiquement les prises (ou l'utilisateur les sélectionne manuellement), puis l'IA calcule la meilleure voie selon la morphologie du grimpeur et génère une suite d'images étape par étape pour visualiser chaque mouvement à réaliser.
+Au-delà des fonctionnalités classiques de suivi de sessions d'escalade, de programmes d'entraînement et d'échanges communautaires (partage de grimpe, comparaison d'analyses entre utilisateurs sur une même voie), la valeur ajoutée d'Ascension repose sur ses fonctionnalités d'analyse par intelligence artificielle :
+1. **L'analyse de pose :** Le grimpeur filme sa montée avec son smartphone. L'application analyse sa posture et ses mouvements image par image grâce à MediaPipe Pose, puis lui fournit des métriques chiffrées et des conseils personnalisés pour corriger ses erreurs techniques et progresser.
+2. **Le Mode Fantôme :** Le grimpeur prend une photo de la voie vide. L'application détecte et regroupe les prises (choix d'un groupe/couleur ou sélection manuelle), puis l'IA calcule une bêta réalisable selon la morphologie du grimpeur et génère une suite d'images étape par étape à partir de la photo initiale.
 
 Lors du **suivi pédagogique 3 du 25 septembre à 10h00**, notre équipe a formulé une demande d'accès aux ressources d'hébergement fournies par Epitech. L'équipe pédagogique nous a confirmé que nous avions droit à **deux machines virtuelles (VM)** et nous a demandé :
 1. De consulter les offres disponibles sur OVHcloud afin de sélectionner les configurations adaptées à notre architecture.
@@ -94,7 +94,7 @@ flowchart TB
 Cette machine est le cœur opérationnel du projet. Elle héberge l'ensemble des briques applicatives, communautaires et de calcul :
 1. **Moteurs de calcul IA (Workers Python) :** Traitement des deux analyses phares du projet :
    - *Analyse de pose :* traitement vidéo image par image avec MediaPipe Pose, analyse de la biomécanique et génération des conseils personnalisés.
-   - *Mode Fantôme :* traitement de la photo de la voie, détection/sélection des prises, calcul du chemin optimal par pathfinding et génération des images étape par étape.
+   - *Mode Fantôme :* traitement d'une photo de voie, détection/regroupement des prises (choix groupe/couleur ou manuel), calcul d'une bêta réalisable par pathfinding et génération des images étape par étape.
    L'exécution de ces traitements en parallèle nécessite une forte capacité multi-cœur et suffisamment de RAM pour faire tourner les workers de manière stable.
 2. **Backend API Gateway (Go / Gin) :** Serveur central recevant les requêtes de l'application mobile, gérant l'authentification, les fonctionnalités communautaires et l'orchestration des analyses.
 3. **Site vitrine du projet :** Hébergement de la page web publique d'Ascension présentant l'application, ses fonctionnalités et les liens de téléchargement.

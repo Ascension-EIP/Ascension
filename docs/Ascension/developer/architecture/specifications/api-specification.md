@@ -189,7 +189,7 @@ Authorization: Bearer <access_token>
 
 ### 4\. Start Video Analysis
 
-Enqueues an asynchronous analysis job with the specified analysis `type` (`2d`, `3d`, `hold`, `advice`) and `visibility` (`private`, `friends`, `gym`, `public`).
+Enqueues an asynchronous analysis job with the specified analysis `type` (`2d` or `3d`) and `visibility` (`private`, `friends`, `public`). Videos uploaded during an active climbing session (`climbing_session_id`) are automatically aggregated into end-of-session statistics.
 
 ```http
 POST /v1/analysis
@@ -198,6 +198,7 @@ Content-Type: application/json
 
 {
   "video_id": "0191e4b8-7a8f-7c11-9a4f-123456789abc",
+  "climbing_session_id": "0191e4b8-7a8f-7c11-9a4f-654321abcdef",
   "type": "2d",
   "visibility": "private"
 }
@@ -261,11 +262,11 @@ Authorization: Bearer <access_token>
 
 ---
 
-## Route Ghost (Optimal Path Generation)
+## Route Ghost (Feasible Beta Generation)
 
 ### 1\. Upload Route Photo
 
-Upload a photo of a climbing route to generate the optimal path (ghost).
+Upload a photo of a climbing route (no climber in frame) to detect holds and compute a feasible movement sequence (ghost).
 
 ```http
 POST /analysis/route/request-upload
@@ -291,7 +292,7 @@ Content-Type: application/json
 
 ### 2\. Generate Ghost
 
-Generate the optimal climbing path for the route.
+Detect/group holds on the route photo (letting the user pick detected color/route groups or manually select individual holds) and compute a feasible climbing beta adapted to the user's morphology, returned as step-by-step images derived from the initial photo.
 
 ```http
 POST /analysis/route/generate-ghost
@@ -299,7 +300,8 @@ Authorization: Bearer {token}
 Content-Type: application/json
 
 {
-  "route_id": "uuid"
+  "route_id": "uuid",
+  "selected_hold_ids": ["uuid-1", "uuid-2"]
 }
 
 ```
@@ -347,7 +349,7 @@ Authorization: Bearer {token}
 
 ### Compare Video Analyses Between Climbers
 
-Compare two climbing video analyses (e.g. comparing your ascent with a friend or a reference attempt) to evaluate differences in pose, trajectory, and technique.
+Compare two climbing video pose analyses on the **same wall/route** (your own ascent compared against another climber's `public` or `friends`-visible analysis) to evaluate differences in pose, trajectory, and technique.
 
 ```http
 POST /analysis/compare

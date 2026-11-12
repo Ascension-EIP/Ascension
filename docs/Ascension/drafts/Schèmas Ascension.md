@@ -235,7 +235,6 @@ erDiagram
     ROUTES ||--o{ GHOSTS : generates
     GHOSTS ||--o{ GHOST_HOLDS : uses
     HOLDS ||--o{ GHOST_HOLDS : selected_in
-    GHOSTS ||--o{ COMPARISONS : compared_in
 
     GOALS ||--o{ TRAINING_PROGRAMS : drives
     TRAINING_PROGRAMS ||--o{ TRAINING_PROGRAM_SESSIONS : schedules
@@ -259,10 +258,10 @@ flowchart TD
     subgraph B ["Mode fantôme"]
         B1["Photo de la voie (S3)"] --> B2["Détection prises (YOLOv8)"]
         B2 --> B3["Couleur dominante (OpenCV HSV)"]
-        B3 --> B4["Clustering par voie (k-means)"]
-        B4 --> B5["Validation / Correction utilisateur"]
+        B3 --> B4["Clustering par voie / couleur"]
+        B4 --> B5["Sélection groupe ou choix manuel"]
         B5 --> B6["Prises validées + Morphologie"]
-        B6 --> B7["Calcul bêta optimale par étapes"]
+        B6 --> B7["Calcul bêta réalisable par étapes"]
     end
 
     subgraph C ["Rendu mobile"]

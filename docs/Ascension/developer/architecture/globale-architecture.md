@@ -90,11 +90,11 @@ graph TD
             SkeletonExtraction -->|"Extracted skeleton"| AdviceGenerator
         end
         subgraph Ghost ["Pipeline 2 – Ghost Mode"]
-            HoldDetection["Hold detection & selection"]
+            HoldDetection["Hold detection & group/manual selection"]
             Pathfinding["Pathfinding based on body model"]
             GhostGenerator["Step-by-Step Image Generator"]
             HoldDetection -->|"Selected holds"| Pathfinding
-            Pathfinding -->|"Optimal path"| GhostGenerator
+            Pathfinding -->|"Feasible beta"| GhostGenerator
         end
         subgraph Training ["Pipeline 3 – Coaching & Program Generation"]
             ProgramGenerator["Training Program Generator"]

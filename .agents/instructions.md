@@ -107,7 +107,7 @@ Examples of what to avoid by default:
 **Core value proposition:**
 
 - **Location-agnostic:** the AI can analyze any wall without a pre-existing database.
-- **Ghost Mode:** generates step-by-step guidance images breaking down the optimal beta from a route photo and climber morphology.
+- **Ghost Mode:** generates step-by-step guidance images breaking down a feasible beta from a route photo and climber morphology.
 - **Accessible coaching:** automated and personalized feedback at a fraction of the cost of a human coach.
 
 ---
@@ -116,16 +116,17 @@ Examples of what to avoid by default:
 
 | Feature | Description |
 | --- | --- |
-| **Skeleton Extraction (2D)** | MediaPipe Pose extracts 33 body keypoints per frame from a climbing video. |
-| **Pose AI (3D)** | Rebuilt pipeline for 3D posture extraction and standardized output generation (biomechanical intermediate file). |
-| **3D Mobile Experience** | Interactive 3D scene (rotation, zoom) to visualize movement reconstruction through 3D Pose AI, smoothly on Android and iOS. |
-| **Advanced Hold Analysis** | Automatic hold detection and qualification (type, difficulty, usability), with color-based selection or manual contour fallback. |
-| **Advice Generation** | Targeted technical feedback through an external model (Gemini API-like), based on route context and user biomechanics. |
-| **Ghost Mode** | Pathfinding computes an optimal movement sequence based on holds detected/selected on an empty route photo and user morphology, generating a step-by-step image guide. |
-| **Training Programs** | Personalized programs generated from goals, injuries, level, and analysis history. |
-| **Assisted Climbing (AR)** | Advanced accessibility mode: real-time analysis with voice guidance (earphones) during ascent. |
 | **Morphological Profile** | Full body setup (height, weight, segments) plus an interactive skeleton to declare missing or injured limbs/zones. |
-| **Social & Community** | Climb sharing, friend performance comparison, and social progression mechanics with fine-grained privacy controls. |
+| **Pose Analysis 2D** | MediaPipe Pose extracts 33 body keypoints per frame from a climbing video, computing numeric metrics and coaching advice. |
+| **Advice Generation** | Targeted technical feedback through an external model (Gemini API-like), based on route context and user biomechanics. |
+| **Hold Detection & Selection** | BTP: automatic hold detection & route/color grouping with group selection or manual hold clicks. ATP: advanced hold qualification (type, difficulty, usability). |
+| **Ghost Mode** | Photo workflow on an empty wall: pathfinding computes a feasible movement sequence (not a single "optimal" beta) from selected holds and user morphology, generating step-by-step guidance images. |
+| **Climbing Sessions** | Session tracking container: start a gym session, attach climb analyses automatically, and review session duration and aggregated stats at the end. |
+| **Training Programs** | Personalized programs generated from goals, injuries, level, and analysis history. |
+| **Social & Community** | Climb sharing, user-to-user pose analysis comparison on the same wall (`public` / `friends` visibility), and social progression mechanics. |
+| **Pose Analysis 3D** | Post-Greenlight pipeline for 3D posture extraction and richer biomechanical metrics from climbing videos. |
+| **3D Mobile Experience** | Interactive 3D scene (rotation, zoom, limb inspection) to visualize movement reconstruction through 3D Pose AI, smoothly on mobile devices. |
+| **Assisted Climbing (AR Audio)** | Accessibility mode (notably for visually impaired climbers): stationary phone performs real-time pose tracking with audio voice guidance during ascent. |
 | **Business Foundations** | Full subscription lifecycle (Premium), offer management, and instrumentation (conversion/churn). |
 | **Video Management & CI/CD** | S3 lifecycle storage, robust backend pipeline (Go), and automated CI/CD to ensure stability and data security. |
 

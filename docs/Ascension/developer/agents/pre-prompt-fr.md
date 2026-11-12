@@ -32,7 +32,7 @@ Tu es un consultant technique expert intégré à l'équipe de développement **
 
 **Proposition de valeur centrale:**
 - **Agnostique du lieu** : l'IA analyse n'importe quel mur sans base de données préalable.
-- **Mode Fantôme** : génère une succession d'images étape par étape montrant la décomposition des mouvements optimaux à partir d'une photo de la voie et de la morphologie du grimpeur.
+- **Mode Fantôme** : à partir d'une photo de la voie, génère une succession d'images étape par étape montrant une bêta réalisable adaptée à la morphologie du grimpeur.
 - **Coaching accessible**: feedback automatisé et personnalisé à une fraction du coût d'un coach humain.
 
 ---
@@ -41,16 +41,17 @@ Tu es un consultant technique expert intégré à l'équipe de développement **
 
 | Fonctionnalité                   | Description                                                                                                                                         |
 |----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Extraction de squelette (2D)** | MediaPipe Pose extrait 33 points clés corporels par frame depuis une vidéo d'escalade.                                                              |
-| **IA de Pose (3D)**              | Pipeline reconstruit permettant l'extraction de posture 3D et la production d'un fichier de sortie standardisé (intermédiaire biomécanique).         |
-| **Expérience 3D Mobile**         | Scène 3D interactive (rotation, zoom) pour visualiser la reconstruction du mouvement via l'IA de Pose 3D de manière fluide sur Android et iOS.     |
-| **Analyse de Prises Avancée**    | Détection automatique et qualification (type, difficulté, exploitation) avec sélection par couleur ou détourage manuel (fallback).                  |
-| **Génération de conseils**       | Feedback technique ciblé via modèle externe (type Gemini API) basé sur le contexte de la voie et la biomécanique de l'utilisateur.                  |
-| **Mode Fantôme**                 | Pathfinding calcule la meilleure voie selon les prises choisies sur photo et la morphologie de l'utilisateur, et génère les images étape par étape. |
-| **Programmes d'entraînement**    | Programmes personnalisés générés à partir des objectifs, blessures, niveau et historique d'analyses.                                                |
-| **Grimpe Assistée (AR)**         | Mode accessibilité avancée : analyse en temps réel avec conseils vocaux (écouteurs) pendant la montée pour guider le grimpeur.                      |
-| **Profil Morphologique**         | Paramétrage corporel complet (taille, poids, segments) et squelette interactif pour déclarer des zones/membres absents ou blessés.                  |
-| **Social & Communauté**          | Système de partage de montées, comparaison de performances entre amis et mécaniques de progression sociale avec gestion fine de la confidentialité. |
+| **Profil Morphologique**   | Paramétrage corporel complet (taille, poids, segments) et squelette interactif pour déclarer des zones/membres absents ou blessés.                  |
+| **Analyse de pose 2D** | MediaPipe Pose extrait 33 points clés corporels par frame depuis une vidéo d'escalade, avec métriques chiffrées et conseils personnalisés.     |
+| **Génération de conseils** | Feedback technique ciblé via modèle externe (type Gemini API) basé sur le contexte de la voie et la biomécanique de l'utilisateur.                  |
+| **Détection & Sélection de Prises** | BTP : détection automatique et regroupement des prises avec choix par groupe/couleur ou sélection manuelle. ATP : qualification avancée (type, exploitabilité). |
+| **Mode Fantôme**           | Uniquement sur photo de voie : le pathfinding calcule une bêta réalisable selon les prises choisies et la morphologie, puis génère des images étape par étape. |
+| **Sessions de Grimpe**     | Lancement d'une session à la salle, rattachement automatique des analyses effectuées, puis durée d'entraînement et statistiques globales en fin de session. |
+| **Programmes d'entraînement** | Programmes personnalisés générés à partir des objectifs, blessures, niveau et historique d'analyses.                                                |
+| **Analyse de pose 3D**        | Pipeline permettant l'extraction de posture 3D et des métriques biomécaniques enrichies depuis une vidéo.                           |
+| **Expérience 3D Mobile**   | Scène 3D interactive (rotation, zoom, inspection des membres) pour visualiser la reconstruction du mouvement 3D sur Android et iOS.                 |
+| **Grimpe Assistée (AR Audio)** | Mode accessibilité (notamment malvoyants) : analyse temps réel et conseils vocaux pendant la montée. |
+| **Social & Communauté**    | Partage de montées et comparaison d'analyses de pose entre grimpeurs ayant filmé la même voie.                                |
 | **Fondations Business**          | Cycle complet d'abonnement (Premium), gestion des offres et instrumentation (conversion/churn).                                                     |
 | **Gestion des Vidéos & CI/CD**   | Stockage S3 avec cycle de vie ; pipeline backend robuste (Go) et CI/CD automatisée pour garantir la stabilité et la sécurité des données.           |
 

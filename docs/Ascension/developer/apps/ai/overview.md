@@ -61,12 +61,12 @@ flowchart TD
             ExtSkel -->|"Squelette extrait"| GenCons
         end
 
-        subgraph P2 ["Pipeline 2"]
-            ExtPrises["Détection des prises & sélection"]
+        subgraph P2 ["Pipeline 2 – Mode Fantôme"]
+            ExtPrises["Détection des prises & sélection groupe/manuel"]
             RechChemin["Pathfinding selon morphologie"]
             GenFantome["Générateur d'images par étape"]
             ExtPrises -->|"Prises choisies"| RechChemin
-            RechChemin -->|"Chemin optimal"| GenFantome
+            RechChemin -->|"Bêta réalisable"| GenFantome
         end
     end
 
