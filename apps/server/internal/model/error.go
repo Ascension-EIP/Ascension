@@ -1,4 +1,4 @@
-// @date 2026-11-12
+// @date 2026-11-13
 // @file error.go
 // @brief File description.
 // @project Ascension
@@ -41,6 +41,9 @@ var (
 
 	// -- Analysis -- //
 	ErrAnalysisNotFound = errors.New("analysis not found")
+
+	// -- User body constraint -- //
+	ErrUserBodyConstraintNotFound = errors.New("body constraint not found")
 
 	ErrUnknown = errors.New("unknown error")
 )

@@ -38,6 +38,22 @@ type SessionRepository interface {
 	DeleteSessionsExpired(ctx context.Context) error
 }
 
+// UserBodyConstraintRepository stores the missing or injured body zones of the users.
+type UserBodyConstraintRepository interface {
+	// UpsertActiveUserBodyConstraint creates the active constraint of the user on its zone, or
+	// replaces the type, note and start date of the one already active. created is false on a
+	// replacement. A zero StartedAt means today on creation and unchanged on replacement.
+	UpsertActiveUserBodyConstraint(ctx context.Context, constraint UserBodyConstraint) (stored UserBodyConstraint, created bool, err error)
+	// ListActiveUserBodyConstraints returns the user's constraints that have not ended, by zone.
+	ListActiveUserBodyConstraints(ctx context.Context, userID uuid.UUID) ([]UserBodyConstraint, error)
+	// GetActiveUserBodyConstraint returns one of the user's active constraints, or ErrNotFound.
+	GetActiveUserBodyConstraint(ctx context.Context, id uuid.UUID, userID uuid.UUID) (UserBodyConstraint, error)
+	// EndUserBodyConstraint sets ended_at to today on one of the user's active constraints.
+	EndUserBodyConstraint(ctx context.Context, id uuid.UUID, userID uuid.UUID) (UserBodyConstraint, error)
+	// DeleteUserBodyConstraint deletes one of the user's constraints, or returns ErrNotFound.
+	DeleteUserBodyConstraint(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
+}
+
 type AnalysisRepository interface {
 	TransactionRepository
 	CreateAnalysis(ctx context.Context, analysis Analysis) (Analysis, error)

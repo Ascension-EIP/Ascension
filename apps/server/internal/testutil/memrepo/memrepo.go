@@ -1,14 +1,14 @@
-// @date 2026-11-12
+// @date 2026-11-13
 // @file memrepo.go
 // @brief In-memory repository for unit tests of the climbing session, video and analysis services.
 // @project Ascension
 // @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
-
 // Package memrepo is an in-memory stand-in for the PostgreSQL repository, used by unit
-// tests only. It implements model.ClimbingSessionRepository, model.AnalysisRepository and
-// model.VideoRepository with the same ownership and not-found rules as the real queries.
+// tests only. It implements model.ClimbingSessionRepository, model.AnalysisRepository,
+// model.VideoRepository and model.UserBodyConstraintRepository with the same ownership and
+// not-found rules as the real queries.
 package memrepo
 
 import (
@@ -30,20 +30,22 @@ var ErrNotImplemented = errors.New("memrepo: not implemented")
 // Repo stores climbing sessions, videos and analyses in memory. The zero value is not
 // usable: build it with New.
 type Repo struct {
-	mu       sync.Mutex
-	sessions map[uuid.UUID]model.ClimbingSession
-	videos   map[uuid.UUID]model.Video
-	analyses map[uuid.UUID]model.Analysis
-	now      func() time.Time
+	mu              sync.Mutex
+	sessions        map[uuid.UUID]model.ClimbingSession
+	videos          map[uuid.UUID]model.Video
+	analyses        map[uuid.UUID]model.Analysis
+	bodyConstraints map[uuid.UUID]model.UserBodyConstraint
+	now             func() time.Time
 }
 
 // New returns an empty repository.
 func New() *Repo {
 	return &Repo{
-		sessions: map[uuid.UUID]model.ClimbingSession{},
-		videos:   map[uuid.UUID]model.Video{},
-		analyses: map[uuid.UUID]model.Analysis{},
-		now:      time.Now,
+		sessions:        map[uuid.UUID]model.ClimbingSession{},
+		videos:          map[uuid.UUID]model.Video{},
+		analyses:        map[uuid.UUID]model.Analysis{},
+		bodyConstraints: map[uuid.UUID]model.UserBodyConstraint{},
+		now:             time.Now,
 	}
 }
 

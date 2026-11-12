@@ -1,4 +1,4 @@
-// @date 2026-11-12
+// @date 2026-11-13
 // @file error.go
 // @brief File description.
 // @project Ascension
@@ -29,7 +29,8 @@ func Error(c *gin.Context, err error) {
 		c.JSON(http.StatusUnprocessableEntity, response.Error{Message: err.Error()})
 	case errors.Is(err, model.ErrEmailDuplicated):
 		c.JSON(http.StatusConflict, response.Error{Message: err.Error()})
-	case errors.Is(err, model.ErrUserNotFound), errors.Is(err, model.ErrClimbingSessionNotFound), errors.Is(err, model.ErrAnalysisNotFound):
+	case errors.Is(err, model.ErrUserNotFound), errors.Is(err, model.ErrClimbingSessionNotFound), errors.Is(err, model.ErrAnalysisNotFound),
+		errors.Is(err, model.ErrUserBodyConstraintNotFound):
 		c.JSON(http.StatusNotFound, response.Error{Message: err.Error()})
 	default:
 		_ = c.Error(err)

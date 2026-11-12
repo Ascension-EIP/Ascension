@@ -1,4 +1,4 @@
-// @date 2026-11-12
+// @date 2026-11-13
 // @file router.go
 // @brief File description.
 // @project Ascension
@@ -30,6 +30,7 @@ func New(
 	analysisH *handler.AnalysisHandler,
 	profileH *handler.ProfileHandler,
 	climbingSessionH *handler.ClimbingSessionHandler,
+	bodyConstraintH *handler.UserBodyConstraintHandler,
 ) {
 	app.Use(middleware.RequestID())
 	app.Use(middleware.Logger())
@@ -76,6 +77,9 @@ func New(
 		{
 			profileGroup.GET("", profileH.GetMyProfile)
 			profileGroup.PUT("", profileH.UpdateMyProfile)
+			profileGroup.GET("/constraints", bodyConstraintH.List)
+			profileGroup.POST("/constraints", bodyConstraintH.Declare)
+			profileGroup.DELETE("/constraints/:id", bodyConstraintH.Remove)
 		}
 
 		climbingSessionsGroup := v1.Group("/sessions", middleware.RateLimiter(time.Minute, 10), authMW())

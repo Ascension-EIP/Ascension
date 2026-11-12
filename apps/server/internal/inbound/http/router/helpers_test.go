@@ -32,15 +32,18 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-// testRepo is what the climbing session and analysis services need from the database.
+// testRepo is what the climbing session, analysis and body constraint services need from
+// the database.
 type testRepo interface {
 	model.ClimbingSessionRepository
 	model.AnalysisRepository
 	model.VideoRepository
+	model.UserBodyConstraintRepository
 }
 
 // testAPI is the real router with the real JWT middleware and rate limiters. Only the
-// climbing session and analysis handlers are wired: the others are nil and must not be called.
+// climbing session, analysis and body constraint handlers are wired: the others are nil and must
+// not be called.
 type testAPI struct {
 	t      *testing.T
 	engine *gin.Engine
@@ -55,9 +58,11 @@ func newTestAPI(t *testing.T, repo testRepo) *testAPI {
 	sessionH := handler.NewClimbingSessionHandler(&sessionS)
 	analysisS := service.NewAnalysisService(repo, repo, noQueue{})
 	analysisH := handler.NewAnalysisHandler(&analysisS)
+	bodyConstraintS := service.NewUserBodyConstraintService(repo)
+	bodyConstraintH := handler.NewUserBodyConstraintHandler(&bodyConstraintS)
 
 	engine := gin.New()
-	New(engine, config.Config{}, middleware.AuthMiddleware(&jwtS), nil, nil, nil, &analysisH, nil, &sessionH)
+	New(engine, config.Config{}, middleware.AuthMiddleware(&jwtS), nil, nil, nil, &analysisH, nil, &sessionH, &bodyConstraintH)
 
 	return &testAPI{t: t, engine: engine, jwt: jwtS}
 }
