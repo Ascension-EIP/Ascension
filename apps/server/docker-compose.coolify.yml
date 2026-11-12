@@ -45,6 +45,8 @@ services:
       dockerfile: Dockerfile
     entrypoint: ["./cron"]
     restart: unless-stopped
+    # No port to probe: Coolify takes the health of the application from the api service only.
+    exclude_from_hc: true
     environment:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - "POSTGRES_HOST=${POSTGRES_HOST:?}"
