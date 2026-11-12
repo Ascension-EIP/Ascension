@@ -38,7 +38,7 @@ Before diving into implementation, review these key documents:
    - Why Go for API, Flutter for mobile, Python for AI
    - Performance benchmarks and cost analysis
    - Decision framework and evaluation criteria
-2. [Infrastructure Architecture](./infrastructure.md) - Infrastructure and hosting setup
+2. [Infrastructure Architecture](infrastructure.md) - Infrastructure and hosting setup
    - OVHcloud VPS-4 (Milan) and Object Storage (Gravelines)
    - Domain routing (ascension-eip.fr) and security topology
    - Resource allocation and cost optimization
@@ -189,7 +189,7 @@ sequenceDiagram
     App->>User: Shows analysis (skeleton overlay, advice)
 ```
 
-_Summary: The Flutter app requests a presigned URL from the Go API, uploads the video directly to S3/RustFS, and triggers an analysis job. The Go API queues `pose.detect.requested` in RabbitMQ; the AI worker runs pose detection followed by LLM advice generation, persisting results to PostgreSQL. The app polls the API to fetch the lightweight JSON payload and renders the overlay locally._
+*Summary: The Flutter app requests a presigned URL from the Go API, uploads the video directly to S3/RustFS, and triggers an analysis job. The Go API queues `pose.detect.requested` in RabbitMQ; the AI worker runs pose detection followed by LLM advice generation, persisting results to PostgreSQL. The app polls the API to fetch the lightweight JSON payload and renders the overlay locally.*
 
 ---
 
