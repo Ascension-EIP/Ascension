@@ -3,7 +3,7 @@ id: ab77caf4-081b-4c22-8817-d8570baadf55
 ---
 
 :::success
-**Version:** 2.4
+**Version:** 2.5
 :::
 
 ---
@@ -900,7 +900,7 @@ Common causes:
 
 - The worker exits with code 1 at startup when PostgreSQL, RustFS or RabbitMQ cannot be reached, or when the bucket `videos` does not exist.
 - `PRECONDITION_FAILED` on `poses.detect` or `poses.advice`: the queues were created by an older version without the dead-letter arguments. Delete them in the RabbitMQ management UI (without touching the volumes); the worker recreates them.
-- Nothing arrives: the Go server still publishes on `vision.skeleton`, which the worker does not consume. Use `producer.py` until the server is updated.
+- Nothing arrives: check that the API and the worker use the same `events` exchange (`RABBITMQ_EXCHANGE` on the API side), and that the `poses.detect` queue has a consumer. `producer.py` can still publish a job by hand.
 - An analysis stays `pending`: its payload was invalid and went to `<queue>.dlq` without any status.
 - Database errors on `status` or `hints`: the migrations `20261030200000` and `20261030200100` are not applied.
 
