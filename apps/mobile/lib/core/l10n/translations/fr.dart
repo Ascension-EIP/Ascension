@@ -1,4 +1,4 @@
-// @date 2026-11-06
+// @date 2026-11-07
 // @file fr.dart
 // @brief File description.
 // @project Ascension
@@ -69,12 +69,12 @@ const Map<String, String> frTranslations = {
   'sessions.previousAnalysesTitle': 'Analyses précédentes',
   'sessions.noPreviousAnalyses': 'Aucune analyse précédente enregistrée',
   'sessions.newSessionTitle': 'Nouvelle session',
-  'sessions.sessionNameLabel': 'Nom de la session :',
+  'sessions.sessionNameLabel': 'Nom de la session',
   'sessions.sessionNameHint': 'Ex: Session du matin, Bloc Arkose...',
-  'sessions.sessionLocationLabel': 'Lieu :',
+  'sessions.sessionLocationLabel': 'Lieu',
   'sessions.locationDisabledNote': '(Pour l\'instant, on désactive cette option, on verra plus tard comment gérer ça)',
   'sessions.locationHint': 'Rechercher une salle ou un spot',
-  'sessions.sessionVisibilityLabel': 'Visibilité :',
+  'sessions.sessionVisibilityLabel': 'Visibilité',
   'sessions.startSessionButton': 'Démarrer la session',
   'sessions.activeSessionTitle': 'Session en cours',
   'sessions.activeSessionLabel': 'Session en cours',
@@ -82,6 +82,7 @@ const Map<String, String> frTranslations = {
   'sessions.noAnalysesYetInSession': 'Aucune analyse dans cette session.\nDémarrez votre première analyse ci-dessous !',
   'sessions.analysisSingular': 'analyse',
   'sessions.analysesPlural': 'analyses',
+  'sessions.since': 'Depuis',
   'sessions.newAnalysisButton': 'Nouvelle analyse',
   'sessions.endSessionButton': 'Terminer la session',
   'sessions.endSessionConfirmTitle': 'Terminer la session ?',
@@ -89,7 +90,7 @@ const Map<String, String> frTranslations = {
   'sessions.noSessionDialogTitle': 'Aucune session en cours',
   'sessions.noSessionDialogBody': 'Aucune session en cours.\nVoulez-vous créer une nouvelle session pour cette analyse ?',
   'sessions.analysisMenuTitle': 'Analyse',
-  'sessions.selectAnalysisPrompt': 'Sélectionnez le type d\'analyse souhaité :',
+  'sessions.selectAnalysisPrompt': 'Sélectionnez le type d\'analyse souhaité',
   'sessions.analysisPose2dTitle': 'Analyse de pose 2D',
   'sessions.analysisPose2dDesc':
       'Détection 2D des 33 points clés par MediaPipe',
@@ -100,12 +101,28 @@ const Map<String, String> frTranslations = {
   'sessions.analysisAssistedTitle': 'Grimpe assistée',
   'sessions.analysisAssistedDesc': 'Analyse temps réel avec guidage vocal',
 
+  // Visibility
+  'sessions.visibility.public': 'Publique',
+  'sessions.visibility.friends': 'Amis',
+  'sessions.visibility.private': 'Privée',
+
+  // Filters / Sorting
+  'sessions.sort.all': 'Toutes',
+  'sessions.sort.friends': 'Amis seulement',
+  'sessions.sort.public': 'Publiques',
+  'sessions.sort.private': 'Privées',
+
+  // Status
+  'sessions.status.inProgress': 'En cours',
+  'sessions.status.completed': 'Terminée',
+  'sessions.status.failed': 'Échouée',
+
   // Training
   'training.title': 'Programmes d\'entraînement',
   'training.personalized': 'Entraînements personnalisés',
 
   // Profile
-  'profile.title': 'Profil & Morphologie',
+  'profile.title': 'Profil',
   'profile.climberProfile': 'Profil Grimpeur & Paramètres',
   'profile.birthDate': 'Date de naissance',
   'profile.height': 'Taille',

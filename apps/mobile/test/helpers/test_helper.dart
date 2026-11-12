@@ -1,4 +1,4 @@
-// @date 2026-11-02
+// @date 2026-11-07
 // @file test_helper.dart
 // @brief Shared helpers, mock providers and wrappers for widget and golden tests.
 // @project Ascension
@@ -120,7 +120,7 @@ Widget createTestableWidget({
       supportedLocales: AppLocalizations.supportedLocales,
       builder: (context, child) => FTheme(
         data: isDark ? AppTheme.dark() : AppTheme.light(),
-        child: child!,
+        child: Material(type: MaterialType.transparency, child: child!),
       ),
       home: child,
     ),

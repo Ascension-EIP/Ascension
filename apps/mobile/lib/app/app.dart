@@ -1,4 +1,4 @@
-// @date 2026-10-25
+// @date 2026-11-07
 // @file app.dart
 // @brief File description.
 // @project Ascension
@@ -33,7 +33,10 @@ class AscensionApp extends ConsumerWidget {
       builder: (context, child) {
         return FTheme(
           data: AppTheme.dark(),
-          child: child ?? const SizedBox.shrink(),
+          child: Material(
+            type: MaterialType.transparency,
+            child: child ?? const SizedBox.shrink(),
+          ),
         );
       },
     );

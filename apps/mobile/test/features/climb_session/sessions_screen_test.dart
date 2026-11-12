@@ -1,4 +1,4 @@
-// @date 2026-11-06
+// @date 2026-11-07
 // @file sessions_screen_test.dart
 // @brief Widget tests for SessionsScreen, NewSessionScreen, ActiveSessionScreen, and AnalysisSelectionScreen.
 // @project Ascension
@@ -28,7 +28,10 @@ Widget createTestableWidget({
       locale: const Locale('fr'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      builder: (context, child) => FTheme(data: AppTheme.dark(), child: child!),
+      builder: (context, child) => FTheme(
+        data: AppTheme.dark(),
+        child: Material(type: MaterialType.transparency, child: child!),
+      ),
       home: child,
     ),
   );
@@ -79,6 +82,36 @@ void main() {
         expect(find.text('Non'), findsOneWidget);
       },
     );
+
+    testWidgets(
+      'shows sort popup menu with all filter options including private',
+      (tester) async {
+        await tester.pumpWidget(
+          createTestableWidget(child: const SessionsScreen(), prefs: prefs),
+        );
+        await tester.pumpAndSettle();
+
+        // Find the sort button (shows initial filter label 'Toutes')
+        final sortButton = find.text('Toutes');
+        expect(sortButton, findsOneWidget);
+
+        await tester.tap(sortButton);
+        await tester.pumpAndSettle();
+
+        // Verify all options are present in the popup menu
+        expect(find.text('Toutes'), findsWidgets);
+        expect(find.text('Amis'), findsOneWidget);
+        expect(find.text('Publiques'), findsOneWidget);
+        expect(find.text('Privées'), findsOneWidget);
+
+        // Select 'Privées'
+        await tester.tap(find.text('Privées'));
+        await tester.pumpAndSettle();
+
+        // The button text should now update to 'Privées'
+        expect(find.text('Privées'), findsOneWidget);
+      },
+    );
   });
 
   group('NewSessionScreen Widget Tests', () {
@@ -91,17 +124,41 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Nouvelle session'), findsOneWidget);
-      expect(find.text('Nom de la session :'), findsOneWidget);
-      expect(find.text('Lieu :'), findsOneWidget);
+      expect(find.text('Nom de la session'), findsOneWidget);
+      expect(find.text('Lieu'), findsOneWidget);
       expect(
         find.text(
           "(Pour l'instant, on désactive cette option, on verra plus tard comment gérer ça)",
         ),
         findsOneWidget,
       );
-      expect(find.text('Visibilité :'), findsOneWidget);
+      expect(find.text('Visibilité'), findsOneWidget);
       expect(find.text('Démarrer la session'), findsOneWidget);
     });
+
+    testWidgets(
+      'start session button is disabled when name is empty and enabled when populated',
+      (tester) async {
+        await tester.pumpWidget(
+          createTestableWidget(child: const NewSessionScreen(), prefs: prefs),
+        );
+        await tester.pumpAndSettle();
+
+        final buttonFinder = find.widgetWithText(
+          FButton,
+          'Démarrer la session',
+        );
+        final startButton = tester.widget<FButton>(buttonFinder);
+        expect(startButton.onPress, isNotNull);
+
+        final nameInputFinder = find.byType(EditableText).first;
+        await tester.enterText(nameInputFinder, '');
+        await tester.pumpAndSettle();
+
+        final disabledButton = tester.widget<FButton>(buttonFinder);
+        expect(disabledButton.onPress, isNull);
+      },
+    );
   });
 
   group('AnalysisSelectionScreen Widget Tests', () {

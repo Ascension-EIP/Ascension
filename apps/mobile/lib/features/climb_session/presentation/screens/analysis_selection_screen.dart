@@ -1,4 +1,4 @@
-// @date 2026-11-06
+// @date 2026-11-07
 // @file analysis_selection_screen.dart
 // @brief Screen presenting available climbing analysis types.
 // @project Ascension
@@ -51,10 +51,6 @@ class AnalysisSelectionScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activeSession = ref
-        .watch(climbSessionControllerProvider)
-        .activeSession;
-
     final List<_AnalysisOption> options = [
       _AnalysisOption(
         type: AnalysisType.pose2d,
@@ -95,57 +91,12 @@ class AnalysisSelectionScreen extends ConsumerWidget {
       ),
       child: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 540),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (activeSession != null) ...[
-                  FCard(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(FLucideIcons.mountain, size: 20),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  context.tr('sessions.activeSessionLabel'),
-                                  style: context.theme.typography.body.xs
-                                      .copyWith(
-                                        color: context
-                                            .theme
-                                            .colors
-                                            .mutedForeground,
-                                      ),
-                                ),
-                                Text(
-                                  activeSession.name,
-                                  style: context.theme.typography.body.sm
-                                      .copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          ),
-                          FBadge(
-                            variant: FBadgeVariant.secondary,
-                            child: Text(
-                              '${activeSession.analyses.length} ${activeSession.analyses.length > 1 ? context.tr('sessions.analysesPlural') : context.tr('sessions.analysisSingular')}',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
                 Text(
                   context.tr('sessions.selectAnalysisPrompt'),
                   style: context.theme.typography.body.md.copyWith(
@@ -153,67 +104,90 @@ class AnalysisSelectionScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 0.95,
-                  ),
-                  itemCount: visibleOptions.length,
-                  itemBuilder: (context, index) {
-                    final option = visibleOptions[index];
-                    return GestureDetector(
-                          onTap: () =>
-                              _onSelectAnalysis(context, ref, option.type),
-                          child: FCard(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    option.icon,
-                                    size: 36,
-                                    color: context.theme.colors.primary,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    option.title,
-                                    style: context.theme.typography.body.md
-                                        .copyWith(fontWeight: FontWeight.bold),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    option.description,
-                                    style: context.theme.typography.body.xs
-                                        .copyWith(
-                                          color: context
-                                              .theme
-                                              .colors
-                                              .mutedForeground,
-                                        ),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
+                Column(
+                  children: [
+                    for (int i = 0; i < visibleOptions.length; i++) ...[
+                      GestureDetector(
+                            onTap: () => _onSelectAnalysis(
+                              context,
+                              ref,
+                              visibleOptions[i].type,
+                            ),
+                            child: FCard(
+                              child: Padding(
+                                padding: const EdgeInsets.all(18),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: context.theme.colors.muted,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Icon(
+                                        visibleOptions[i].icon,
+                                        size: 26,
+                                        color: context.theme.colors.primary,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            visibleOptions[i].title,
+                                            style: context
+                                                .theme
+                                                .typography
+                                                .body
+                                                .md
+                                                .copyWith(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            visibleOptions[i].description,
+                                            style: context
+                                                .theme
+                                                .typography
+                                                .body
+                                                .xs
+                                                .copyWith(
+                                                  color: context
+                                                      .theme
+                                                      .colors
+                                                      .mutedForeground,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Icon(
+                                      FLucideIcons.chevronRight,
+                                      size: 18,
+                                      color:
+                                          context.theme.colors.mutedForeground,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        )
-                        .animate()
-                        .fadeIn(
-                          duration: 250.ms,
-                          delay: (40 * index).ms,
-                          curve: Curves.easeOut,
-                        )
-                        .slideY(begin: 0.05, end: 0);
-                  },
+                          )
+                          .animate()
+                          .fadeIn(
+                            duration: 250.ms,
+                            delay: (50 * i).ms,
+                            curve: Curves.easeOut,
+                          )
+                          .slideY(begin: 0.04, end: 0),
+                      if (i < visibleOptions.length - 1)
+                        const SizedBox(height: 14),
+                    ],
+                  ],
                 ),
               ],
             ),

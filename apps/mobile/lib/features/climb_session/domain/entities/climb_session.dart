@@ -1,4 +1,4 @@
-// @date 2026-11-06
+// @date 2026-11-07
 // @file climb_session.dart
 // @brief Domain entities for climbing sessions and analysis summaries.
 // @project Ascension
@@ -12,6 +12,17 @@ enum ClimbSessionVisibility {
   public,
   friends,
   private;
+
+  String get translationKey {
+    switch (this) {
+      case ClimbSessionVisibility.public:
+        return 'sessions.visibility.public';
+      case ClimbSessionVisibility.friends:
+        return 'sessions.visibility.friends';
+      case ClimbSessionVisibility.private:
+        return 'sessions.visibility.private';
+    }
+  }
 
   String get label {
     switch (this) {
@@ -32,6 +43,19 @@ enum AnalysisType {
   ghostMode,
   assistedClimbing;
 
+  String get translationKey {
+    switch (this) {
+      case AnalysisType.pose2d:
+        return 'sessions.analysisPose2dTitle';
+      case AnalysisType.pose3d:
+        return 'sessions.analysisPose3dTitle';
+      case AnalysisType.ghostMode:
+        return 'sessions.analysisGhostTitle';
+      case AnalysisType.assistedClimbing:
+        return 'sessions.analysisAssistedTitle';
+    }
+  }
+
   String get displayName {
     switch (this) {
       case AnalysisType.pose2d:
@@ -51,6 +75,17 @@ enum AnalysisStatus {
   inProgress,
   completed,
   failed;
+
+  String get translationKey {
+    switch (this) {
+      case AnalysisStatus.inProgress:
+        return 'sessions.status.inProgress';
+      case AnalysisStatus.completed:
+        return 'sessions.status.completed';
+      case AnalysisStatus.failed:
+        return 'sessions.status.failed';
+    }
+  }
 
   String get label {
     switch (this) {

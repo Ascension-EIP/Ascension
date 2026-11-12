@@ -1,4 +1,4 @@
-// @date 2026-11-06
+// @date 2026-11-07
 // @file active_session_screen.dart
 // @brief Screen displaying the ongoing session metrics, analyses, and live timer.
 // @project Ascension
@@ -135,65 +135,97 @@ class ActiveSessionScreen extends ConsumerWidget {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 540),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Top metrics row (Timer + Analyses count)
-                      Row(
-                        children: [
-                          Expanded(
-                            child: FCard(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  children: [
-                                    const Icon(FLucideIcons.clock, size: 24),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      state.formattedActiveDuration,
-                                      style: context.theme.typography.body.sm
-                                          .copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: FCard(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 18,
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(FLucideIcons.clock, size: 24),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        context.tr('sessions.since'),
+                                        style: context.theme.typography.body.xs
+                                            .copyWith(
+                                              color: context
+                                                  .theme
+                                                  .colors
+                                                  .mutedForeground,
+                                            ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        state.formattedActiveDuration,
+                                        style: context.theme.typography.body.sm
+                                            .copyWith(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: FCard(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  children: [
-                                    const Icon(
-                                      FLucideIcons.chartColumn,
-                                      size: 24,
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      '${analyses.length} ${analyses.length > 1 ? context.tr('sessions.analysesPlural') : context.tr('sessions.analysisSingular')}',
-                                      style: context.theme.typography.body.sm
-                                          .copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: FCard(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 18,
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        FLucideIcons.chartColumn,
+                                        size: 24,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        context.tr('sessions.title'),
+                                        style: context.theme.typography.body.xs
+                                            .copyWith(
+                                              color: context
+                                                  .theme
+                                                  .colors
+                                                  .mutedForeground,
+                                            ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        '${analyses.length} ${analyses.length > 1 ? context.tr('sessions.analysesPlural') : context.tr('sessions.analysisSingular')}',
+                                        style: context.theme.typography.body.sm
+                                            .copyWith(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.05),
 
                       const SizedBox(height: 24),
@@ -212,7 +244,9 @@ class ActiveSessionScreen extends ConsumerWidget {
                           ),
                           FBadge(
                             variant: FBadgeVariant.outline,
-                            child: Text(session.visibility.label),
+                            child: Text(
+                              context.tr(session.visibility.translationKey),
+                            ),
                           ),
                         ],
                       ),
@@ -315,7 +349,7 @@ class _ActiveSessionAnalysisCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'à $timeStr',
+                  timeStr,
                   style: context.theme.typography.body.sm.copyWith(
                     color: context.theme.colors.mutedForeground,
                   ),
@@ -324,7 +358,7 @@ class _ActiveSessionAnalysisCard extends StatelessWidget {
                   variant: analysis.isCompleted
                       ? FBadgeVariant.secondary
                       : FBadgeVariant.primary,
-                  child: Text(analysis.status.label),
+                  child: Text(context.tr(analysis.status.translationKey)),
                 ),
               ],
             ),

@@ -1,4 +1,4 @@
-// @date 2026-11-06
+// @date 2026-11-07
 // @file new_session_screen.dart
 // @brief Screen for configuring and starting a new climbing session.
 // @project Ascension
@@ -27,21 +27,33 @@ class _NewSessionScreenState extends ConsumerState<NewSessionScreen> {
   final _nameController = TextEditingController();
   final _locationController = TextEditingController();
   ClimbSessionVisibility _visibility = ClimbSessionVisibility.friends;
-  String? _nameError;
+  bool _initializedDefaultName = false;
 
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
-    final dateStr = DateFormat('EEEE d MMMM', 'fr_FR').format(now);
-    _nameController.text = 'Session du ${dateStr.toLowerCase()}';
     _nameController.addListener(_onNameChanged);
   }
 
-  void _onNameChanged() {
-    if (_nameError != null && _nameController.text.trim().isNotEmpty) {
-      setState(() => _nameError = null);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initializedDefaultName && _nameController.text.isEmpty) {
+      _initializedDefaultName = true;
+      final locale = Localizations.localeOf(context).toString();
+      final now = DateTime.now();
+      if (locale.startsWith('fr')) {
+        final dateStr = DateFormat('EEEE d MMMM', 'fr_FR').format(now);
+        _nameController.text = 'Session du ${dateStr.toLowerCase()}';
+      } else {
+        final dateStr = DateFormat('EEEE, MMMM d', 'en_US').format(now);
+        _nameController.text = '$dateStr Session';
+      }
     }
+  }
+
+  void _onNameChanged() {
+    setState(() {});
   }
 
   @override
@@ -54,12 +66,7 @@ class _NewSessionScreenState extends ConsumerState<NewSessionScreen> {
 
   Future<void> _submit() async {
     final name = _nameController.text.trim();
-    if (name.isEmpty) {
-      setState(() {
-        _nameError = context.tr('auth.requiredField');
-      });
-      return;
-    }
+    if (name.isEmpty) return;
 
     final success = await ref
         .read(climbSessionControllerProvider.notifier)
@@ -78,6 +85,7 @@ class _NewSessionScreenState extends ConsumerState<NewSessionScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(climbSessionControllerProvider);
     final isLoading = state.isLoading;
+    final isNameEmpty = _nameController.text.trim().isEmpty;
 
     return FScaffold(
       header: FHeader.nested(
@@ -88,89 +96,138 @@ class _NewSessionScreenState extends ConsumerState<NewSessionScreen> {
       ),
       child: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 540),
+            constraints: const BoxConstraints(maxWidth: 440),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Session name
-                Text(
-                  context.tr('sessions.sessionNameLabel'),
-                  style: context.theme.typography.body.md.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
                 FTextField(
                   control: FTextFieldControl.managed(
                     controller: _nameController,
                   ),
+                  label: Text(context.tr('sessions.sessionNameLabel')),
                   hint: context.tr('sessions.sessionNameHint'),
-                  error: _nameError != null ? Text(_nameError!) : null,
                   enabled: !isLoading,
                   textInputAction: TextInputAction.next,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
                 // Location (Disabled for now as specified in Excalidraw)
-                Text(
-                  context.tr('sessions.sessionLocationLabel'),
-                  style: context.theme.typography.body.md.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  context.tr('sessions.locationDisabledNote'),
-                  style: context.theme.typography.body.sm.copyWith(
-                    color: context.theme.colors.mutedForeground,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-                const SizedBox(height: 8),
                 FTextField(
                   control: FTextFieldControl.managed(
                     controller: _locationController,
                   ),
+                  label: Text(context.tr('sessions.sessionLocationLabel')),
+                  description: Text(
+                    context.tr('sessions.locationDisabledNote'),
+                  ),
                   hint: context.tr('sessions.locationHint'),
                   enabled: false,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
-                // Visibility selector
-                Text(
-                  context.tr('sessions.sessionVisibilityLabel'),
-                  style: context.theme.typography.body.md.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: ClimbSessionVisibility.values.map((v) {
-                    final isSelected = _visibility == v;
-                    return Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: FButton(
-                          variant: isSelected
-                              ? FButtonVariant.primary
-                              : FButtonVariant.outline,
-                          size: FButtonSizeVariant.sm,
-                          onPress: isLoading
-                              ? null
-                              : () => setState(() => _visibility = v),
-                          child: Text(v.label),
+                // Visibility selector (Dropdown)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.tr('sessions.sessionVisibilityLabel'),
+                      style: context.theme.typography.body.sm.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    PopupMenuButton<ClimbSessionVisibility>(
+                      initialValue: _visibility,
+                      onSelected: isLoading
+                          ? null
+                          : (visibility) =>
+                                setState(() => _visibility = visibility),
+                      color: context.theme.colors.background,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: BorderSide(color: context.theme.colors.border),
+                      ),
+                      itemBuilder: (context) =>
+                          ClimbSessionVisibility.values.map((v) {
+                            final isSelected = _visibility == v;
+                            final icon = switch (v) {
+                              ClimbSessionVisibility.public =>
+                                FLucideIcons.globe,
+                              ClimbSessionVisibility.friends =>
+                                FLucideIcons.users,
+                              ClimbSessionVisibility.private =>
+                                FLucideIcons.lock,
+                            };
+                            return PopupMenuItem(
+                              value: v,
+                              child: Row(
+                                children: [
+                                  Icon(icon, size: 16),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    context.tr(v.translationKey),
+                                    style: context.theme.typography.body.sm
+                                        .copyWith(
+                                          fontWeight: isSelected
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: context.theme.colors.background,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: context.theme.colors.border,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  switch (_visibility) {
+                                    ClimbSessionVisibility.public =>
+                                      FLucideIcons.globe,
+                                    ClimbSessionVisibility.friends =>
+                                      FLucideIcons.users,
+                                    ClimbSessionVisibility.private =>
+                                      FLucideIcons.lock,
+                                  },
+                                  size: 16,
+                                  color: context.theme.colors.mutedForeground,
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  context.tr(_visibility.translationKey),
+                                  style: context.theme.typography.body.sm,
+                                ),
+                              ],
+                            ),
+                            const Icon(FLucideIcons.chevronDown, size: 16),
+                          ],
                         ),
                       ),
-                    );
-                  }).toList(),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 36),
 
-                // Start button
+                // Start button - disabled when session name is empty
                 FButton(
-                  onPress: isLoading ? null : _submit,
+                  onPress: (isLoading || isNameEmpty) ? null : _submit,
                   prefix: isLoading
                       ? const Padding(
                           padding: EdgeInsets.only(right: 8),

@@ -1,4 +1,4 @@
-// @date 2026-11-06
+// @date 2026-11-07
 // @file home_screen.dart
 // @brief Dashboard home screen with active session status banner.
 // @project Ascension
@@ -26,7 +26,7 @@ class HomeScreen extends ConsumerWidget {
       header: FHeader(title: Text(context.tr('home.title'))),
       child: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 540),
             child: Column(
@@ -74,7 +74,9 @@ class HomeScreen extends ConsumerWidget {
                             ),
                             FBadge(
                               variant: FBadgeVariant.primary,
-                              child: Text(sessionState.formattedActiveDuration),
+                              child: Text(
+                                '${context.tr('sessions.since')} ${sessionState.formattedActiveDuration}',
+                              ),
                             ),
                           ],
                         ),

@@ -1,4 +1,4 @@
-// @date 2026-11-06
+// @date 2026-11-07
 // @file sessions_screen.dart
 // @brief Main sessions screen with active session banner, history, and analysis entry.
 // @project Ascension
@@ -20,7 +20,7 @@ import 'package:mobile/features/climb_session/presentation/widgets/no_session_di
 import 'package:mobile/routing/routes.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
-enum _SessionFilter { all, friends, public }
+enum _SessionFilter { all, friends, public, private }
 
 class SessionsScreen extends ConsumerStatefulWidget {
   const SessionsScreen({super.key});
@@ -63,6 +63,8 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
           return s.visibility == ClimbSessionVisibility.friends;
         case _SessionFilter.public:
           return s.visibility == ClimbSessionVisibility.public;
+        case _SessionFilter.private:
+          return s.visibility == ClimbSessionVisibility.private;
       }
     }).toList();
 
@@ -74,7 +76,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
               ref.read(climbSessionControllerProvider.notifier).loadSessions(),
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 540),
               child: Skeletonizer(
@@ -118,21 +120,94 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              context.tr('sessions.sortBy'),
-                              style: context.theme.typography.body.xs.copyWith(
-                                color: context.theme.colors.mutedForeground,
+                        Skeleton.ignore(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                context.tr('sessions.sortBy'),
+                                style: context.theme.typography.body.xs
+                                    .copyWith(
+                                      color:
+                                          context.theme.colors.mutedForeground,
+                                    ),
                               ),
-                            ),
-                            const SizedBox(width: 6),
-                            _FilterChip(
-                              label: _filterLabel(_selectedFilter),
-                              onTap: _cycleFilter,
-                            ),
-                          ],
+                              const SizedBox(width: 6),
+                              PopupMenuButton<_SessionFilter>(
+                                initialValue: _selectedFilter,
+                                onSelected: (filter) =>
+                                    setState(() => _selectedFilter = filter),
+                                color: context.theme.colors.background,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  side: BorderSide(
+                                    color: context.theme.colors.border,
+                                  ),
+                                ),
+                                itemBuilder: (context) => [
+                                  PopupMenuItem(
+                                    value: _SessionFilter.all,
+                                    child: Text(
+                                      context.tr('sessions.sort.all'),
+                                      style: context.theme.typography.body.sm
+                                          .copyWith(
+                                            fontWeight:
+                                                _selectedFilter ==
+                                                    _SessionFilter.all
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                          ),
+                                    ),
+                                  ),
+                                  PopupMenuItem(
+                                    value: _SessionFilter.friends,
+                                    child: Text(
+                                      context.tr('sessions.sort.friends'),
+                                      style: context.theme.typography.body.sm
+                                          .copyWith(
+                                            fontWeight:
+                                                _selectedFilter ==
+                                                    _SessionFilter.friends
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                          ),
+                                    ),
+                                  ),
+                                  PopupMenuItem(
+                                    value: _SessionFilter.public,
+                                    child: Text(
+                                      context.tr('sessions.sort.public'),
+                                      style: context.theme.typography.body.sm
+                                          .copyWith(
+                                            fontWeight:
+                                                _selectedFilter ==
+                                                    _SessionFilter.public
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                          ),
+                                    ),
+                                  ),
+                                  PopupMenuItem(
+                                    value: _SessionFilter.private,
+                                    child: Text(
+                                      context.tr('sessions.sort.private'),
+                                      style: context.theme.typography.body.sm
+                                          .copyWith(
+                                            fontWeight:
+                                                _selectedFilter ==
+                                                    _SessionFilter.private
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                          ),
+                                    ),
+                                  ),
+                                ],
+                                child: _FilterChip(
+                                  label: _filterLabel(context, _selectedFilter),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -253,25 +328,17 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
     );
   }
 
-  String _filterLabel(_SessionFilter filter) {
+  String _filterLabel(BuildContext context, _SessionFilter filter) {
     switch (filter) {
       case _SessionFilter.all:
-        return 'Toutes';
+        return context.tr('sessions.sort.all');
       case _SessionFilter.friends:
-        return 'Amis seulement';
+        return context.tr('sessions.sort.friends');
       case _SessionFilter.public:
-        return 'Publique';
+        return context.tr('sessions.sort.public');
+      case _SessionFilter.private:
+        return context.tr('sessions.sort.private');
     }
-  }
-
-  void _cycleFilter() {
-    setState(() {
-      _selectedFilter = switch (_selectedFilter) {
-        _SessionFilter.all => _SessionFilter.friends,
-        _SessionFilter.friends => _SessionFilter.public,
-        _SessionFilter.public => _SessionFilter.all,
-      };
-    });
   }
 }
 
@@ -302,8 +369,8 @@ class _ActiveSessionCard extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        width: 10,
-                        height: 10,
+                        width: 8,
+                        height: 8,
                         decoration: BoxDecoration(
                           color: context.theme.colors.primary,
                           shape: BoxShape.circle,
@@ -312,16 +379,17 @@ class _ActiveSessionCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         context.tr('sessions.resume'),
-                        style: context.theme.typography.body.sm.copyWith(
+                        style: context.theme.typography.body.xs.copyWith(
                           fontWeight: FontWeight.bold,
                           color: context.theme.colors.primary,
                         ),
                       ),
                     ],
                   ),
-                  FBadge(
-                    variant: FBadgeVariant.primary,
-                    child: Text(formattedDuration),
+                  Icon(
+                    FLucideIcons.chevronRight,
+                    size: 16,
+                    color: context.theme.colors.mutedForeground,
                   ),
                 ],
               ),
@@ -332,12 +400,23 @@ class _ActiveSessionCard extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                '${session.analyses.length} ${session.analyses.length > 1 ? context.tr('sessions.analysesPlural') : context.tr('sessions.analysisSingular')}',
-                style: context.theme.typography.body.xs.copyWith(
-                  color: context.theme.colors.mutedForeground,
-                ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${session.analyses.length} ${session.analyses.length > 1 ? context.tr('sessions.analysesPlural') : context.tr('sessions.analysisSingular')}',
+                    style: context.theme.typography.body.xs.copyWith(
+                      color: context.theme.colors.mutedForeground,
+                    ),
+                  ),
+                  FBadge(
+                    variant: FBadgeVariant.primary,
+                    child: Text(
+                      '${context.tr('sessions.since')} $formattedDuration',
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -352,15 +431,26 @@ class _PreviousSessionCard extends StatelessWidget {
 
   final ClimbSession session;
 
+  String _formatDuration(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    if (hours > 0) {
+      return '${hours}h ${minutes}min';
+    }
+    return '${minutes}min';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context).toString();
     final dateStr = DateFormat(
-      'EEEE d MMMM à HH:mm',
-      'fr_FR',
+      'EEEE d MMMM, HH:mm',
+      locale,
     ).format(session.startedAt);
     final capitalizedDate = dateStr.isNotEmpty
         ? dateStr[0].toUpperCase() + dateStr.substring(1)
         : '';
+    final durationStr = _formatDuration(session.duration);
 
     return FCard(
       child: Padding(
@@ -373,9 +463,7 @@ class _PreviousSessionCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    session.authorName != null
-                        ? '${session.authorName} | $capitalizedDate'
-                        : capitalizedDate,
+                    capitalizedDate,
                     style: context.theme.typography.body.xs.copyWith(
                       color: context.theme.colors.mutedForeground,
                       fontWeight: FontWeight.w500,
@@ -384,7 +472,7 @@ class _PreviousSessionCard extends StatelessWidget {
                 ),
                 FBadge(
                   variant: FBadgeVariant.outline,
-                  child: Text(session.visibility.label),
+                  child: Text(context.tr(session.visibility.translationKey)),
                 ),
               ],
             ),
@@ -395,29 +483,58 @@ class _PreviousSessionCard extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            if (session.analyses.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              for (final analysis in session.analyses.take(2))
-                Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: Text(
-                    '• ${analysis.title}',
-                    style: context.theme.typography.body.sm.copyWith(
-                      color: context.theme.colors.mutedForeground,
+            if (session.location != null && session.location!.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Icon(
+                    FLucideIcons.mapPin,
+                    size: 14,
+                    color: context.theme.colors.mutedForeground,
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      session.location!,
+                      style: context.theme.typography.body.xs.copyWith(
+                        color: context.theme.colors.mutedForeground,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ),
-              if (session.analyses.length > 2)
-                Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: Text(
-                    '...',
-                    style: context.theme.typography.body.sm.copyWith(
-                      color: context.theme.colors.mutedForeground,
-                    ),
-                  ),
-                ),
+                ],
+              ),
             ],
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(
+                  FLucideIcons.scan,
+                  size: 14,
+                  color: context.theme.colors.mutedForeground,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${session.analyses.length} ${session.analyses.length > 1 ? context.tr('sessions.analysesPlural') : context.tr('sessions.analysisSingular')}',
+                  style: context.theme.typography.body.xs.copyWith(
+                    color: context.theme.colors.mutedForeground,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Icon(
+                  FLucideIcons.clock,
+                  size: 14,
+                  color: context.theme.colors.mutedForeground,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  durationStr,
+                  style: context.theme.typography.body.xs.copyWith(
+                    color: context.theme.colors.mutedForeground,
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -432,9 +549,10 @@ class _PreviousAnalysisCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context).toString();
     final dateStr = DateFormat(
-      'd MMMM à HH:mm',
-      'fr_FR',
+      'd MMMM, HH:mm',
+      locale,
     ).format(analysis.createdAt);
 
     return FCard(
@@ -465,7 +583,7 @@ class _PreviousAnalysisCard extends StatelessWidget {
             ),
             FBadge(
               variant: FBadgeVariant.secondary,
-              child: Text(analysis.status.label),
+              child: Text(context.tr(analysis.status.translationKey)),
             ),
           ],
         ),
@@ -475,34 +593,30 @@ class _PreviousAnalysisCard extends StatelessWidget {
 }
 
 class _FilterChip extends StatelessWidget {
-  const _FilterChip({required this.label, required this.onTap});
+  const _FilterChip({required this.label});
 
   final String label;
-  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: context.theme.colors.muted,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: context.theme.typography.body.xs.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: context.theme.colors.muted,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: context.theme.typography.body.xs.copyWith(
+              fontWeight: FontWeight.w600,
             ),
-            const SizedBox(width: 4),
-            const Icon(FLucideIcons.chevronDown, size: 14),
-          ],
-        ),
+          ),
+          const SizedBox(width: 4),
+          const Icon(FLucideIcons.chevronDown, size: 14),
+        ],
       ),
     );
   }

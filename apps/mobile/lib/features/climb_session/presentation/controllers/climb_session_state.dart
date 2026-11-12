@@ -1,4 +1,4 @@
-// @date 2026-11-06
+// @date 2026-11-07
 // @file climb_session_state.dart
 // @brief State object for climb sessions, timer, and analyses.
 // @project Ascension
@@ -27,19 +27,17 @@ class ClimbSessionState extends Equatable {
 
   bool get hasActiveSession => activeSession != null;
 
-  /// Formatted duration for Excalidraw display: "Depuis 32min26s"
+  /// Formatted duration for Excalidraw display: "32min 26s" or "1h 15min 26s"
   String get formattedActiveDuration {
     final hours = activeDuration.inHours;
     final minutes = activeDuration.inMinutes.remainder(60);
     final seconds = activeDuration.inSeconds.remainder(60);
 
-    final String timeStr;
     if (hours > 0) {
-      timeStr = '${hours}h ${minutes}min ${seconds}s';
+      return '${hours}h ${minutes}min ${seconds}s';
     } else {
-      timeStr = '${minutes}min${seconds}s';
+      return '${minutes}min ${seconds}s';
     }
-    return 'Depuis $timeStr';
   }
 
   ClimbSessionState copyWith({

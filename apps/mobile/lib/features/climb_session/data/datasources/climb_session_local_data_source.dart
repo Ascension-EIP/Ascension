@@ -1,4 +1,4 @@
-// @date 2026-11-06
+// @date 2026-11-07
 // @file climb_session_local_data_source.dart
 // @brief Local persistence for active session and session history.
 // @project Ascension
@@ -114,7 +114,7 @@ class ClimbSessionLocalDataSourceImpl implements ClimbSessionLocalDataSource {
       ClimbSessionModel(
         id: 'seed-session-1',
         name: 'Session du matin',
-        location: 'Arkose Nation',
+        location: 'Arkose Saint-Isidor',
         visibility: ClimbSessionVisibility.friends,
         startedAt: now.subtract(const Duration(days: 2, hours: 3)),
         endedAt: now.subtract(const Duration(days: 2, hours: 1)),
@@ -143,7 +143,7 @@ class ClimbSessionLocalDataSourceImpl implements ClimbSessionLocalDataSource {
       ClimbSessionModel(
         id: 'seed-session-2',
         name: 'Session du soir',
-        location: 'Climb Up Paris',
+        location: 'Climb Up Saint-Isidor',
         visibility: ClimbSessionVisibility.public,
         startedAt: now.subtract(const Duration(days: 5, hours: 6)),
         endedAt: now.subtract(const Duration(days: 5, hours: 4)),

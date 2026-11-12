@@ -1,4 +1,4 @@
-// @date 2026-10-25
+// @date 2026-11-07
 // @file register_screen.dart
 // @brief Registration screen with Forui components, validation, auto-generated username, and auto-login.
 // @project Ascension
@@ -173,16 +173,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           ),
         ],
       ),
-      child: Center(
-        child: SafeArea(
+      child: SafeArea(
+        child: Align(
+          alignment: Alignment.topCenter,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 440),
               child: Form(
                 key: _formKey,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     if (errorMessage != null) ...[
@@ -190,7 +190,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         variant: FAlertVariant.destructive,
                         title: Text(errorMessage),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 12),
                     ],
                     // First Name and Last Name first!
                     Row(

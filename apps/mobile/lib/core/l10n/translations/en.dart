@@ -1,4 +1,4 @@
-// @date 2026-11-06
+// @date 2026-11-07
 // @file en.dart
 // @brief File description.
 // @project Ascension
@@ -70,13 +70,13 @@ const Map<String, String> enTranslations = {
   'sessions.previousAnalysesTitle': 'Previous analyses',
   'sessions.noPreviousAnalyses': 'No previous analyses recorded',
   'sessions.newSessionTitle': 'New Session',
-  'sessions.sessionNameLabel': 'Session name:',
+  'sessions.sessionNameLabel': 'Session name',
   'sessions.sessionNameHint': 'E.g., Morning session, Arkose boulder...',
-  'sessions.sessionLocationLabel': 'Location:',
+  'sessions.sessionLocationLabel': 'Location',
   'sessions.locationDisabledNote':
       '(For now, this option is disabled, we will handle it later)',
   'sessions.locationHint': 'Search climbing gym or crag',
-  'sessions.sessionVisibilityLabel': 'Visibility:',
+  'sessions.sessionVisibilityLabel': 'Visibility',
   'sessions.startSessionButton': 'Start session',
   'sessions.activeSessionTitle': 'Active Session',
   'sessions.activeSessionLabel': 'Current session',
@@ -85,6 +85,7 @@ const Map<String, String> enTranslations = {
       'No analyses in this session yet.\nStart your first analysis below!',
   'sessions.analysisSingular': 'analysis',
   'sessions.analysesPlural': 'analyses',
+  'sessions.since': 'Since',
   'sessions.newAnalysisButton': 'New analysis',
   'sessions.endSessionButton': 'End session',
   'sessions.endSessionConfirmTitle': 'End session?',
@@ -92,7 +93,7 @@ const Map<String, String> enTranslations = {
   'sessions.noSessionDialogTitle': 'No active session',
   'sessions.noSessionDialogBody': 'No active session.\nDo you want to create a new session for this analysis?',
   'sessions.analysisMenuTitle': 'Analysis',
-  'sessions.selectAnalysisPrompt': 'Select the desired analysis type:',
+  'sessions.selectAnalysisPrompt': 'Select the desired analysis type',
   'sessions.analysisPose2dTitle': '2D Pose Analysis',
   'sessions.analysisPose2dDesc': '2D extraction of 33 keypoints via MediaPipe',
   'sessions.analysisPose3dTitle': '3D Pose Analysis',
@@ -102,12 +103,28 @@ const Map<String, String> enTranslations = {
   'sessions.analysisAssistedTitle': 'Assisted Climbing',
   'sessions.analysisAssistedDesc': 'Real-time analysis with audio guidance',
 
+  // Visibility
+  'sessions.visibility.public': 'Public',
+  'sessions.visibility.friends': 'Friends only',
+  'sessions.visibility.private': 'Private',
+
+  // Filters / Sorting
+  'sessions.sort.all': 'All',
+  'sessions.sort.friends': 'Friends only',
+  'sessions.sort.public': 'Public',
+  'sessions.sort.private': 'Private',
+
+  // Status
+  'sessions.status.inProgress': 'In progress',
+  'sessions.status.completed': 'Completed',
+  'sessions.status.failed': 'Failed',
+
   // Training
   'training.title': 'Training Programs',
   'training.personalized': 'Personalized workouts',
 
   // Profile
-  'profile.title': 'Profile & Morphology',
+  'profile.title': 'Profile',
   'profile.climberProfile': 'Climber Profile & Settings',
   'profile.birthDate': 'Birth date',
   'profile.height': 'Height',
