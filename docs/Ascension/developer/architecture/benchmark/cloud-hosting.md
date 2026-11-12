@@ -3,14 +3,14 @@ id: 083fd41c-212f-4bcc-9911-e53570055da5
 ---
 
 :::success
-**Version:** 1.0
+**Version:** 1.1
 :::
 
 ---
 
-# Cloud Hosting & Infrastructure Benchmark: Hetzner vs OVH vs AWS
+# Cloud Hosting & Infrastructure Benchmark: Initial Hetzner Selection & OVHcloud Transition
 
-This benchmark evaluates cloud infrastructure providers for the Ascension platform. It analyzes the compute, bandwidth, and storage requirements for self-hosting the API Gateway, PostgreSQL, RabbitMQ, and object storage, presents the team's initial skill baseline, compares three major cloud providers, and justifies selecting Hetzner Cloud.
+This benchmark evaluates cloud infrastructure providers for the Ascension platform. It analyzes the compute, bandwidth, and storage requirements for hosting the API Gateway, PostgreSQL, RabbitMQ, and object storage, presents the team's initial skill baseline, compares three major cloud providers, and documents both the initial selection of Hetzner Cloud and the subsequent institutional transition to OVHcloud.
 
 ---
 
@@ -21,25 +21,25 @@ The Ascension backend infrastructure must reliably host five interconnected serv
 - **API Gateway**: Go/Gin container handling client REST/WebSocket traffic.
 - **Relational Database**: PostgreSQL 18 storing user, session, and biomechanical telemetry.
 - **Message Broker**: RabbitMQ 4.x managing asynchronous video analysis queues.
-- **Object Storage**: S3-compatible engine (MinIO / RustFS) hosting climbing videos and extracted frames.
-- **Reverse Proxy & Monitoring**: Caddy/Nginx with SSL termination and Prometheus/Grafana metric scrapers.
+- **Object Storage**: S3-compatible engine (`RustFS` in dev / managed S3 object storage in prod) hosting climbing videos and extracted frames.
+- **Reverse Proxy & Monitoring**: Traefik/Caddy/Nginx with SSL termination and metric scrapers.
 
 Because Ascension handles continuous video uploads (50 MB to 2 GB) and streams high-definition playback back to mobile clients, **network egress bandwidth** and **compute memory ratios** directly dominate infrastructure costs.
 
 ```mermaid
 flowchart TB
-    Internet((Client Traffic)) -->|"HTTPS (Port 443)"| Proxy["Caddy / Reverse Proxy"]
-    subgraph Host ["Hetzner Cloud VPS (CX31 Instance - Nuremberg / Helsinki)"]
+    Internet((Client Traffic)) -->|"HTTPS (Port 443)"| Proxy["Reverse Proxy (TLS Termination)"]
+    subgraph Host ["Cloud VPS Instance (Compute Node)"]
         direction TB
         Proxy --> Gateway["Go API Gateway (Port 8080)"]
         Gateway --> DB[("PostgreSQL 18 (Port 5432)")]
         Gateway --> Broker["RabbitMQ Broker (Port 5672)"]
-        Gateway --> Storage["Object Storage MinIO / RustFS (Port 9000)"]
     end
+    Gateway --> Storage["S3-Compatible Object Storage (Self-Hosted or Managed)"]
 
 ```
 
-*Figure: Unified containerized topology deployed on a Hetzner Cloud virtual instance.*
+*Figure: Containerized backend topology hosted on a European cloud VPS paired with S3-compatible object storage.*
 
 ---
 
@@ -104,9 +104,9 @@ Providers were evaluated across three real-world deployment scenarios correspond
 
 ---
 
-## 6\. Strategic Decision: Hetzner Cloud
+## 6\. Initial Decision: Hetzner Cloud
 
-**Hetzner Cloud** was selected as the exclusive infrastructure provider for Ascension's development, staging, and production environments.
+At the conclusion of the initial benchmark phase, **Hetzner Cloud** was initially selected as the target infrastructure provider for Ascension's staging and production environments.
 
 ### Key Justifications
 
@@ -119,3 +119,30 @@ Providers were evaluated across three real-world deployment scenarios correspond
    - Climber video recordings and morphological metrics represent sensitive personal biometric data under GDPR. Hetzner's datacenters in Nuremberg and Helsinki ensure that all customer data remains strictly within European jurisdiction without exposure to US extraterritorial data retrieval.
 4. **Developer Experience for a Small Team**:
    - Hetzner's modern web console, Terraform provider, and REST API allow our 5-person team to provision, snapshot, and manage servers in minutes without navigating the Byzantine complexity of AWS IAM policies.
+
+---
+
+## 7\. Institutional Constraint & Pivot to OVHcloud
+
+### 7.1 Epitech Infrastructure Allocation Constraint
+
+During the EIP cloud resource allocation phase, **Epitech** mandated that student projects select their hosting infrastructure exclusively from **OVHcloud**'s VPS catalog using the school's budget.
+
+While Hetzner remained optimal on raw self-funded pricing, pivoting to **OVHcloud** preserved the project's core architectural non-negotiables established in this benchmark: **100% European data sovereignty (GDPR)**, **immunity from the US CLOUD Act**, and **unmetered/predictable bandwidth** without AWS egress traps.
+
+### 7.2 Selected Production Stack (Current Architecture)
+
+To maximize performance and storage elasticity within the allocated OVHcloud catalog, the team opted for a decoupled architecture (detailed in [Infrastructure Architecture](../infrastructure.md)):
+
+- **Compute & Services Server — OVHcloud VPS-4**:
+  - **Specifications**: 8 vCores, 24 GB RAM, 200 GB SSD NVMe, 3 Gbps unmetered bandwidth.
+  - **Location**: Milan Datacenter (Italy - `IT-MIL`).
+  - **Role**: Single high-capacity compute node managed via **Coolify**, hosting the Go API Gateway, Python AI Workers (Pose & Ghost Mode), PostgreSQL 18, RabbitMQ 4.x, and CI/CD tooling (Jenkins, SonarQube, n8n).
+- **Media Storage — OVHcloud Object Storage Standard**:
+  - **Location**: Gravelines Datacenter (France - `GRA`).
+  - **Role**: Managed, elastic S3-compatible object storage hosting climbing ascent videos and route photos with free ingress, free egress, and included API transactions — replacing the need for a second fixed-disk VPS and preventing the 200 GB NVMe disk on the VPS-4 from filling up. (In local/development environments, **RustFS** provides identical S3 API parity; see [Object Storage Benchmark](./object-storage.md).)
+- **Domain & TLS**: Official domain `ascension-eip.fr` with Anycast DNS, DNSSEC, and automated Let's Encrypt TLS termination.
+
+### 7.3 Outcome Validation
+
+This transition to **OVHcloud VPS-4 + OVHcloud Object Storage Standard** satisfies Epitech's institutional requirements while delivering stronger isolation and scalability than an all-in-one VPS setup: heavy video storage and bandwidth scale elastically in Gravelines at negligible cost (~0.01 €/GB/month, zero egress fees), leaving the VPS-4's 24 GB RAM and 8 vCores fully dedicated to backend APIs, AI inference, and CI/CD pipelines.
