@@ -1,4 +1,4 @@
-// @date 2026-11-12
+// @date 2026-11-13
 // @file ports.go
 // @brief File description.
 // @project Ascension
@@ -93,7 +93,8 @@ type VideoStorage interface {
 // -- Queue -- //
 
 type AnalysisQueue interface {
-	PublishJSONIntoQueueAI(ctx context.Context, body []byte) error
+	// PublishPoseDetectRequested publishes a pose detection job for the AI worker.
+	PublishPoseDetectRequested(ctx context.Context, body []byte) error
 }
 
 // -- //

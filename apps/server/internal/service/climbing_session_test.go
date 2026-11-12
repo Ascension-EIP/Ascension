@@ -1,4 +1,4 @@
-// @date 2026-11-12
+// @date 2026-11-13
 // @file climbing_session_test.go
 // @brief Unit tests of the climbing session service and of the session link held by videos.
 // @project Ascension
@@ -270,7 +270,7 @@ func TestTriggeredAnalysisJoinsTheSessionOfItsVideo(t *testing.T) {
 	ctx := context.Background()
 	repo := memrepo.New()
 	sessionS := newTestClimbingSessionService(repo)
-	analysisS := NewAnalysisService(config.MinIOConfig{BucketName: "videos"}, repo, repo, fakeQueue{})
+	analysisS := NewAnalysisService(repo, repo, fakeQueue{})
 	userID := uuid.NewV7()
 	session := mustStart(t, sessionS, userID, model.ClimbingSessionConfig{Visibility: model.VisibilityPrivate})
 
@@ -379,7 +379,7 @@ func TestListAnalyses(t *testing.T) {
 	ctx := context.Background()
 	repo := memrepo.New()
 	sessionS := newTestClimbingSessionService(repo)
-	analysisS := NewAnalysisService(config.MinIOConfig{}, repo, repo, fakeQueue{})
+	analysisS := NewAnalysisService(repo, repo, fakeQueue{})
 	userID := uuid.NewV7()
 	session := mustStart(t, sessionS, userID, model.ClimbingSessionConfig{Visibility: model.VisibilityPrivate})
 
@@ -468,4 +468,4 @@ func (fakeStorage) Delete(context.Context, string) error { return nil }
 
 type fakeQueue struct{}
 
-func (fakeQueue) PublishJSONIntoQueueAI(context.Context, []byte) error { return nil }
+func (fakeQueue) PublishPoseDetectRequested(context.Context, []byte) error { return nil }

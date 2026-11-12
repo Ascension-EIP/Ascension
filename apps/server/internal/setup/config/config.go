@@ -1,4 +1,4 @@
-// @date 2026-09-20
+// @date 2026-11-13
 // @file config.go
 // @brief File description.
 // @project Ascension
@@ -46,13 +46,13 @@ type (
 	}
 
 	RabbitMQConfig struct {
-		Host        string `env:"HOST" envDefault:"localhost"`
-		Port        int    `env:"PORT" envDefault:"5672"`
-		User        string `env:"USER,unset,required"`
-		Password    string `env:"PASS,unset,required"`
-		TLS         bool   `env:"TLS" envDefault:"false"`
-		QueueAI     string `env:"QUEUE_AI" envDefault:"vision.skeleton"`
-		QueueServer string `env:"QUEUE_SERVER" envDefault:"ascension.events"`
+		Host     string `env:"HOST" envDefault:"localhost"`
+		Port     int    `env:"PORT" envDefault:"5672"`
+		User     string `env:"USER,unset,required"`
+		Password string `env:"PASS,unset,required"`
+		TLS      bool   `env:"TLS" envDefault:"false"`
+		// Topic exchange shared with the AI worker (schemas/routing_key.schema.json).
+		Exchange string `env:"EXCHANGE" envDefault:"events"`
 	}
 
 	VideoConfig struct {

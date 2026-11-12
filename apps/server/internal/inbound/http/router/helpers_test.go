@@ -1,4 +1,4 @@
-// @date 2026-11-12
+// @date 2026-11-13
 // @file helpers_test.go
 // @brief Test helpers: build the real router around a climbing session service and call it over HTTP.
 // @project Ascension
@@ -53,7 +53,7 @@ func newTestAPI(t *testing.T, repo testRepo) *testAPI {
 	jwtS := service.NewJWTService(config.JWTConfig{Exp: time.Hour, Secret: "climbing-session-test-secret"})
 	sessionS := service.NewClimbingSessionService(repo, repo, repo)
 	sessionH := handler.NewClimbingSessionHandler(&sessionS)
-	analysisS := service.NewAnalysisService(config.MinIOConfig{BucketName: "videos"}, repo, repo, noQueue{})
+	analysisS := service.NewAnalysisService(repo, repo, noQueue{})
 	analysisH := handler.NewAnalysisHandler(&analysisS)
 
 	engine := gin.New()
@@ -123,7 +123,7 @@ func expect(t *testing.T, rec *httptest.ResponseRecorder, want int, out any) {
 // noQueue drops the analysis jobs.
 type noQueue struct{}
 
-func (noQueue) PublishJSONIntoQueueAI(context.Context, []byte) error { return nil }
+func (noQueue) PublishPoseDetectRequested(context.Context, []byte) error { return nil }
 
 type analysisSummaryBody struct {
 	ID                uuid.UUID  `json:"id"`
