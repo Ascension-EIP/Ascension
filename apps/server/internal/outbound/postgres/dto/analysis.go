@@ -1,8 +1,8 @@
-// @date 2026-11-12
+// @date 2026-11-13
 // @file analysis.go
 // @brief File description.
 // @project Ascension
-// @author Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package dto
@@ -36,11 +36,16 @@ func (a Analysis) ToAnalysis() model.Analysis {
 	return model.Analysis{
 		ID:               a.ID,
 		VideoID:          a.VideoID,
+		Type:             a.Type,
 		Status:           a.Status,
+		Visibility:       a.Visibility,
 		Result:           a.Result,
 		Advice:           a.Advice,
+		Hints:            a.Hints,
+		Error:            a.Error,
 		Progress:         a.Progress,
 		ProcessingTimeMS: a.ProcessingTimeMS,
+		StartedAt:        a.StartedAt,
 		CompletedAt:      a.CompletedAt,
 		CreatedAt:        a.CreatedAt,
 		UpdatedAt:        a.UpdatedAt,
