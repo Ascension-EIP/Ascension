@@ -3,7 +3,7 @@ id: bfb575e1-a621-48a9-8452-4d113ee0e10e
 ---
 
 :::success
-**Version:** 1.3
+**Version:** 1.4
 :::
 
 ---
@@ -490,13 +490,13 @@ pending → processing → completed
 
 ### GET /healthz — Liveness probe
 
-Simple unauthenticated liveness check.
+Simple unauthenticated liveness check, also answered to `HEAD` (`curl -I`). Used by the container healthcheck and the production monitoring.
 
 **Responses:**
 
 | Status | Meaning |
 | --- | --- |
-| `204 No Content` | Server is running and healthy |
+| `200 OK` | Server is running and healthy (empty body) |
 
 ---
 

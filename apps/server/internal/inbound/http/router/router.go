@@ -1,8 +1,8 @@
-// @date 2026-09-29
+// @date 2026-11-12
 // @file router.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package router
@@ -34,7 +34,8 @@ func New(
 	app.Use(middleware.Logger())
 	app.Use(middleware.Recovery())
 
-	app.GET("/healthz", func(c *gin.Context) { c.Status(http.StatusNoContent) })
+	app.GET("/healthz", Healthz)
+	app.HEAD("/healthz", Healthz)
 
 	v1 := app.Group("/v1")
 
@@ -75,4 +76,10 @@ func New(
 			profileGroup.PUT("", profileH.UpdateMyProfile)
 		}
 	}
+}
+
+// Healthz is the liveness probe of the API. It answers 200 OK to GET and
+// HEAD, so `curl -I` and the container healthchecks can use it.
+func Healthz(c *gin.Context) {
+	c.Status(http.StatusOK)
 }
