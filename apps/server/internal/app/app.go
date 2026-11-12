@@ -61,6 +61,8 @@ func Run(cfg config.Config) {
 	analysisS := service.NewAnalysisService(&repo, &repo, &queue)
 	climbingSessionS := service.NewClimbingSessionService(&repo, &repo, &repo)
 	bodyConstraintS := service.NewUserBodyConstraintService(&repo)
+	friendshipS := service.NewFriendshipService(&repo)
+	feedS := service.NewFeedService(&repo)
 
 	authMW := middleware.AuthMiddleware(&jwtS)
 
@@ -71,6 +73,8 @@ func Run(cfg config.Config) {
 	userProfileH := handler.NewUserProfileHandler(&userProfileS)
 	climbingSessionH := handler.NewClimbingSessionHandler(&climbingSessionS)
 	bodyConstraintH := handler.NewUserBodyConstraintHandler(&bodyConstraintS)
+	friendshipH := handler.NewFriendshipHandler(&friendshipS)
+	feedH := handler.NewFeedHandler(&feedS)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -86,6 +90,8 @@ func Run(cfg config.Config) {
 		&userProfileH,
 		&climbingSessionH,
 		&bodyConstraintH,
+		&friendshipH,
+		&feedH,
 	)
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(cfg.HTTP.Port),

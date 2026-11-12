@@ -27,10 +27,10 @@ func Error(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, model.ErrInvalidInput):
 		c.JSON(http.StatusUnprocessableEntity, response.Error{Message: err.Error()})
-	case errors.Is(err, model.ErrEmailDuplicated):
+	case errors.Is(err, model.ErrEmailDuplicated), errors.Is(err, model.ErrFriendshipExists):
 		c.JSON(http.StatusConflict, response.Error{Message: err.Error()})
 	case errors.Is(err, model.ErrUserNotFound), errors.Is(err, model.ErrClimbingSessionNotFound), errors.Is(err, model.ErrAnalysisNotFound),
-		errors.Is(err, model.ErrUserBodyConstraintNotFound):
+		errors.Is(err, model.ErrUserBodyConstraintNotFound), errors.Is(err, model.ErrFriendRequestNotFound):
 		c.JSON(http.StatusNotFound, response.Error{Message: err.Error()})
 	default:
 		_ = c.Error(err)
