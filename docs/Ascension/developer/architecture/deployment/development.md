@@ -3,7 +3,7 @@ id: ab77caf4-081b-4c22-8817-d8570baadf55
 ---
 
 :::success
-**Version:** 2.3
+**Version:** 2.4
 :::
 
 ---
@@ -67,7 +67,6 @@ graph TB
    sudo sh get-docker.sh
 
    ```
-
 2. **Docker Compose** (v2.0+)
    - Included with Docker Desktop on macOS/Windows
    - Linux: `sudo apt-get install docker-compose-plugin`
@@ -81,7 +80,6 @@ graph TB
    export PATH=$PATH:/usr/local/go/bin
 
    ```
-
 4. **Flutter SDK** (3.16+)
 
    ```bash
@@ -91,7 +89,6 @@ graph TB
    # Or download from https://docs.flutter.dev/get-started/install
 
    ```
-
 5. **uv** (Python package & environment manager)
 
 # Install uv
@@ -210,16 +207,16 @@ Environment Variable Strategy
 
 We follow a dual-strategy for environment variables to balance local developer experience with production security and reliability.
 
-| Feature       | Local Development (Native) | Production / Docker (`--profile prod`)            |
-| ------------- | -------------------------- | ------------------------------------------------- |
-| **Source**    | Root `.env` file           | Hardcoded in `docker-compose.yml`                 |
-| **Hostnames** | `localhost`                | Internal service names (`rabbitmq`, `postgresql`) |
-| **Ports**     | Forwarded to host machine  | Internal container ports                          |
+| Feature | Local Development (Native) | Production / Docker (`--profile prod`) |
+| --- | --- | --- |
+| **Source** | Root `.env` file | Hardcoded in `docker-compose.yml` |
+| **Hostnames** | `localhost` | Internal service names (`rabbitmq`, `postgresql`) |
+| **Ports** | Forwarded to host machine | Internal container ports |
 
 **Why this dual-approach?**
 
 - **Native Context:** Allows you to run `moon run ai:dev` or `go run ./cmd/server` directly on your host machine while connecting to Dockerized infra services.
-- **Docker Context:** Ensures that when the AI worker runs _inside_ a container (production), it uses internal network hostnames and avoids `.env` host mismatches.
+- **Docker Context:** Ensures that when the AI worker runs *inside* a container (production), it uses internal network hostnames and avoids `.env` host mismatches.
 
 Edit `.env`:
 
@@ -742,55 +739,6 @@ curl -X POST http://localhost:8080/v1/auth/login \
 
 Save the returned `access_token` and `refresh_token` for subsequent requests.
 
-### 4\. Request Upload URL
-
-```bash
-curl -X GET "http://localhost:8080/v1/videos/upload-url?content_type=video/mp4&size=102400" \
-  -H "Authorization: Bearer <your_token>"
-
-```
-
-### 5\. Upload Video (Direct to RustFS)
-
-Use the presigned `upload_url` from the previous step:
-
-```bash
-curl -X PUT "<upload_url>" \
-  --upload-file /path/to/your/video.mp4 \
-  -H "Content-Type: video/mp4"
-
-```
-
-### 6\. Notify Upload Complete
-
-```bash
-curl -X PUT http://localhost:8080/v1/videos/upload-done/<video_id> \
-  -H "Authorization: Bearer <your_token>"
-
-```
-
-### 7\. Start Analysis
-
-```bash
-curl -X POST http://localhost:8080/v1/analysis \
-  -H "Authorization: Bearer <your_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "video_id": "<video_id_from_step_4>",
-    "type": "2d",
-    "visibility": "private"
-  }'
-
-```
-
-### 8\. Poll for Results
-
-```bash
-curl http://localhost:8080/v1/analysis/<analysis_id> \
-  -H "Authorization: Bearer <your_token>"
-
-```
-
 ---
 
 ## Common Development Tasks
@@ -995,7 +943,6 @@ For faster iteration during development:
    moon run server:dev
 
    ```
-
 2. **Python Auto-reload**:
 
    ```bash
@@ -1011,7 +958,6 @@ For faster iteration during development:
    moon run ai:dev
 
    ```
-
 3. **Reduce Model Size**: Use quantized models for faster inference during development.
 
 ---
@@ -1021,7 +967,3 @@ For faster iteration during development:
 - Read [API Gateway Documentation](../components/api-gateway.md)
 - Review [AI Workers Implementation](../components/ai-workers.md)
 - Understand [Video Analysis Workflow](../workflows/video-analysis-flow.md)
-
----
-
-**Last Updated**: 2026-10-30 **Maintainer**: Ascension Development Team
