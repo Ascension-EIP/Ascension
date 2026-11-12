@@ -1,0 +1,403 @@
+{
+  "id": "AscTechWatch0001",
+  "name": "Technology watch",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "509aebb9-f9d3-50d5-8e30-92d9e72d92db",
+      "name": "Every day at 08:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {},
+      "id": "40d5dce3-f61c-5962-a056-d2a68446e50f",
+      "name": "Run manually",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 480]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Single place to tune the technology watch: keywords, sources and limits.\nreturn [\n  {\n    json: {\n      keywords: {\n        // An entry matching a core keyword is always kept.\n        core: [\n          'climbing',\n          'bouldering',\n          'boulderer',\n          'climber',\n          'climbers',\n          'climbing hold',\n          'hold detection',\n          'route setting',\n        ],\n        // Related keywords are kept too, but capped to limit the noise.\n        related: ['pathfinding', 'path finding', 'motion planning', 'contact planning', 'multi-contact'],\n        // Removed from the text before matching, e.g. the \"hill climbing\" algorithm.\n        excluded: ['hill climbing', 'hill-climbing'],\n        // Only used to rank the entries: technical subjects first.\n        boost: [\n          'hold',\n          'holds',\n          'route',\n          'routes',\n          'beta',\n          'pose',\n          'detection',\n          'segmentation',\n          'biomechanics',\n          'biomechanical',\n          'computer vision',\n          'deep learning',\n          'neural',\n          'robot',\n          'dataset',\n        ],\n      },\n      limits: {\n        core: 15,\n        related: 5,\n        paperMaxAgeDays: 7,\n        releaseMaxAgeDays: 3,\n        repositoryMaxAgeDays: 2,\n        openAlexLookbackDays: 30,\n      },\n      arxivCategories: ['cs.RO', 'cs.CV'],\n      arxivSearch:\n        'abs:\"climbing hold\" OR abs:\"climbing holds\" OR abs:bouldering OR abs:\"rock climbing\" OR abs:\"sport climbing\" OR abs:\"climbing wall\" OR ti:climber OR ti:climbing',\n      githubReleases: [\n        'google-ai-edge/mediapipe',\n        'opencv/opencv',\n        'ultralytics/ultralytics',\n        'OpenBeta/open-tacos',\n      ],\n      githubSearches: ['\"climbing hold\"', '\"climbing route\"', 'bouldering'],\n      openAlexSearches: ['\"climbing hold\"', '\"rock climbing\"', '\"sport climbing\"', '\"climbing wall\"', 'bouldering'],\n    },\n  },\n];\n"
+      },
+      "id": "dce0a53d-06c0-5bb3-a53e-df4dbfe65622",
+      "name": "Watch settings",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// RSS and Atom feeds, read by the \"Read feeds\" node.\nconst settings = $('Watch settings').first().json;\n// The Code node sandbox has no URLSearchParams.\nconst toQuery = (params) =>\n  Object.entries(params)\n    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)\n    .join('&');\nconst sources = [];\n\nfor (const category of settings.arxivCategories) {\n  sources.push({\n    source: `arXiv ${category}`,\n    type: 'paper',\n    url: `https://rss.arxiv.org/rss/${category}`,\n    filtered: true,\n    maxAgeDays: settings.limits.paperMaxAgeDays,\n  });\n}\n\nconst arxivQuery = toQuery({\n  search_query: settings.arxivSearch,\n  sortBy: 'submittedDate',\n  sortOrder: 'descending',\n  max_results: '50',\n});\nsources.push({\n  source: 'arXiv search',\n  type: 'paper',\n  url: `https://export.arxiv.org/api/query?${arxivQuery}`,\n  filtered: true,\n  maxAgeDays: settings.limits.paperMaxAgeDays,\n});\n\nfor (const repository of settings.githubReleases) {\n  sources.push({\n    source: `GitHub ${repository}`,\n    type: 'release',\n    url: `https://github.com/${repository}/releases.atom`,\n    filtered: false,\n    maxAgeDays: settings.limits.releaseMaxAgeDays,\n  });\n}\n\nreturn sources.map((json) => ({ json }));\n"
+      },
+      "id": "76d99901-9530-5252-bd18-ccad0625bb39",
+      "name": "List feeds",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 200]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {}
+      },
+      "id": "7b7296b0-1455-5729-a894-8a6f98bbe02d",
+      "name": "Read feeds",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [660, 200],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Turns every feed entry into a common entry shape.\nconst clean = (text) =>\n  String(text ?? '')\n    .replace(/<[^>]*>/g, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim();\n\nconst authorsOf = (entry) => {\n  const author = entry.creator ?? entry.author ?? entry['dc:creator'];\n  if (Array.isArray(author)) return author.map((a) => a?.name ?? a).join(', ');\n  return clean(author?.name ?? author);\n};\n\nconst entries = [];\n$input.all().forEach((item, index) => {\n  const entry = item.json;\n  if (entry.error || !entry.link) return;\n  const source = $('List feeds').itemMatching(index).json;\n  entries.push({\n    source: source.source,\n    type: source.type,\n    filtered: source.filtered,\n    maxAgeDays: source.maxAgeDays,\n    title: clean(entry.title),\n    url: entry.link,\n    authors: authorsOf(entry),\n    summary: clean(entry.contentSnippet ?? entry.content ?? entry.summary).replace(\n      /^arXiv:\\S+ Announce Type: \\S+ Abstract: /,\n      '',\n    ),\n    published: entry.isoDate ?? entry.pubDate ?? null,\n  });\n});\n\nreturn entries.map((json) => ({ json }));\n"
+      },
+      "id": "63928da3-0b95-5fd6-98b1-e4c158a9e5b1",
+      "name": "Normalize feed entries",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// JSON APIs, called by the \"Call APIs\" node.\nconst settings = $('Watch settings').first().json;\n// The Code node sandbox has no URLSearchParams.\nconst toQuery = (params) =>\n  Object.entries(params)\n    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)\n    .join('&');\nconst daysAgo = (days) => new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);\nconst sources = [];\n\nfor (const search of settings.githubSearches) {\n  const query = toQuery({\n    q: `${search} in:name,description,topics created:>=${daysAgo(settings.limits.repositoryMaxAgeDays)}`,\n    sort: 'updated',\n    per_page: '30',\n  });\n  sources.push({\n    api: 'github',\n    source: 'GitHub search',\n    type: 'repository',\n    url: `https://api.github.com/search/repositories?${query}`,\n    filtered: true,\n    maxAgeDays: settings.limits.repositoryMaxAgeDays + 1,\n  });\n}\n\n// One OpenAlex call for every search (\"|\" means OR): OpenAlex answers 429 to close calls.\nconst openAlexQuery = toQuery({\n  filter: `title_and_abstract.search:${settings.openAlexSearches.join('|')},from_publication_date:${daysAgo(settings.limits.openAlexLookbackDays)}`,\n  sort: 'publication_date:desc',\n  'per-page': '100',\n  select: 'id,doi,type,display_name,publication_date,authorships,abstract_inverted_index,primary_location',\n});\nsources.push({\n  api: 'openalex',\n  source: 'OpenAlex',\n  type: 'paper',\n  url: `https://api.openalex.org/works?${openAlexQuery}`,\n  filtered: true,\n  maxAgeDays: null,\n});\n\nreturn sources.map((json) => ({ json }));\n"
+      },
+      "id": "5aaed3de-52a6-5fd6-9be1-ec6e58dfb07e",
+      "name": "List APIs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 400]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000,
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 1500
+            }
+          }
+        }
+      },
+      "id": "4950303a-0050-5d3c-9dd8-e3c582233296",
+      "name": "Call APIs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 400],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Turns GitHub search and OpenAlex results into a common entry shape.\nconst clean = (text) =>\n  String(text ?? '')\n    .replace(/<[^>]*>/g, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim();\n\n// OpenAlex ships abstracts as an inverted index: { word: [positions] }.\nconst abstractOf = (index) => {\n  if (!index) return '';\n  const words = [];\n  for (const [word, positions] of Object.entries(index)) {\n    for (const position of positions) words[position] = word;\n  }\n  return words.filter(Boolean).join(' ');\n};\n\nconst entries = [];\n$input.all().forEach((item, index) => {\n  const response = item.json;\n  if (response.error) return;\n  const source = $('List APIs').itemMatching(index).json;\n  const base = {\n    source: source.source,\n    type: source.type,\n    filtered: source.filtered,\n    maxAgeDays: source.maxAgeDays,\n  };\n\n  if (source.api === 'github') {\n    for (const repository of response.items ?? []) {\n      entries.push({\n        ...base,\n        title: repository.full_name,\n        url: repository.html_url,\n        authors: repository.owner?.login ?? '',\n        summary: clean(\n          [repository.description, repository.language, `${repository.stargazers_count} stars`]\n            .filter(Boolean)\n            .join(' · '),\n        ),\n        published: repository.created_at,\n      });\n    }\n  }\n\n  if (source.api === 'openalex') {\n    for (const work of response.results ?? []) {\n      // Datasets and supplementary material duplicate the paper they belong to.\n      if (['dataset', 'paratext', 'erratum'].includes(work.type)) continue;\n      entries.push({\n        ...base,\n        title: clean(work.display_name),\n        url: work.doi ?? work.primary_location?.landing_page_url ?? work.id,\n        authors: (work.authorships ?? [])\n          .slice(0, 5)\n          .map((authorship) => authorship.author?.display_name)\n          .filter(Boolean)\n          .join(', '),\n        summary: clean(abstractOf(work.abstract_inverted_index)),\n        published: work.publication_date,\n      });\n    }\n  }\n});\n\nreturn entries.map((json) => ({ json }));\n"
+      },
+      "id": "875d0123-1092-580d-b1ce-9cea33469b14",
+      "name": "Normalize API results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 400]
+    },
+    {
+      "parameters": {},
+      "id": "a4661676-c96b-545f-bde5-fe1825f6d1c9",
+      "name": "Merge sources",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [1100, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Keeps fresh entries that match the keywords, without duplicates inside this run.\nconst settings = $('Watch settings').first().json;\nconst escape = (text) => text.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');\nconst matcher = (keyword) => new RegExp(`\\\\b${escape(keyword.toLowerCase())}\\\\b`, 'i');\nconst compile = (keywords) => keywords.map((keyword) => [keyword, matcher(keyword)]);\nconst core = compile(settings.keywords.core);\nconst related = compile(settings.keywords.related);\nconst boost = compile(settings.keywords.boost);\nconst matches = (list, text) => list.filter(([, regex]) => regex.test(text)).map(([keyword]) => keyword);\n\n// Force HTTPS and drop the arXiv version suffix.\nconst canonical = (url) =>\n  String(url)\n    .trim()\n    .replace(/^http:\\/\\//, 'https://')\n    .replace(/(arxiv\\.org\\/abs\\/[^v\\s]+)v\\d+$/, '$1');\n\n// The same paper comes from arXiv and OpenAlex with two URLs, so papers are keyed by title.\nconst keyOf = (entry, url) =>\n  entry.type === 'paper' ? `paper:${entry.title.toLowerCase().replace(/[^\\p{L}\\p{N}]+/gu, ' ').trim()}` : url;\n\nconst now = Date.now();\nconst seen = new Set();\nconst latestRelease = new Map();\nconst kept = [];\n\nfor (const { json: entry } of $input.all()) {\n  if (!entry.url || !entry.title) continue;\n  const url = canonical(entry.url);\n  const key = keyOf(entry, url);\n  if (seen.has(key)) continue;\n  seen.add(key);\n\n  const published = Date.parse(entry.published);\n  if (entry.maxAgeDays && published && now - published > entry.maxAgeDays * 86400000) continue;\n\n  let text = `${entry.title} ${entry.summary}`.toLowerCase();\n  for (const excluded of settings.keywords.excluded) text = text.split(excluded.toLowerCase()).join(' ');\n  const coreTags = matches(core, text);\n  const relatedTags = matches(related, text);\n  if (entry.filtered && !coreTags.length && !relatedTags.length) continue;\n\n  const result = {\n    key,\n    source: entry.source,\n    type: entry.type,\n    title: entry.title,\n    url,\n    authors: entry.authors,\n    summary: entry.summary,\n    published: published ? new Date(published).toISOString() : null,\n    tier: coreTags.length || !entry.filtered ? 'core' : 'related',\n    tags: entry.type === 'release' ? ['release'] : [...coreTags, ...relatedTags],\n    // Ranking only: climbing keywords count double, technical subjects once.\n    score: entry.type === 'release' ? 3 : coreTags.length * 2 + relatedTags.length + matches(boost, text).length,\n  };\n\n  // A repository can publish several releases a day: only the newest one is posted.\n  if (entry.type === 'release') {\n    const previous = latestRelease.get(entry.source);\n    if (previous && (Date.parse(previous.published) || 0) >= (published || 0)) continue;\n    latestRelease.set(entry.source, result);\n    continue;\n  }\n  kept.push(result);\n}\n\nreturn [...kept, ...latestRelease.values()].map((json) => ({ json }));\n"
+      },
+      "id": "87c39477-43d0-5324-8cb0-32076495b77b",
+      "name": "Filter by keywords",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1320, 300]
+    },
+    {
+      "parameters": {
+        "operation": "removeItemsSeenInPreviousExecutions",
+        "dedupeValue": "={{ $json.key }}",
+        "options": {
+          "historySize": 10000
+        }
+      },
+      "id": "8184af6b-c6d2-57fc-91c4-21a656f5ce67",
+      "name": "Skip already posted",
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [1540, 300],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ranks the new entries and packs them into Discord messages.\n// Discord limits: 10 embeds and 6000 embed characters per message.\nconst settings = $('Watch settings').first().json;\n// \"Skip already posted\" always outputs an item, so an empty run still reports failed sources.\nconst entries = $input\n  .all()\n  .map((item) => item.json)\n  .filter((entry) => entry.key);\n\n// Sources that failed this morning (unreachable feed, API error...).\nconst failed = new Set();\nfor (const [fetchNode, listNode] of [\n  ['Read feeds', 'List feeds'],\n  ['Call APIs', 'List APIs'],\n]) {\n  const sources = $(listNode).all();\n  for (const item of $(fetchNode).all()) {\n    if (!item.json.error) continue;\n    const paired = Array.isArray(item.pairedItem) ? item.pairedItem[0] : item.pairedItem;\n    const source = sources[typeof paired === 'number' ? paired : (paired?.item ?? 0)]?.json;\n    failed.add(source ? `${source.source} (${source.url.split('?')[0]})` : fetchNode);\n  }\n}\nconst byDate = (a, b) => (Date.parse(b.published) || 0) - (Date.parse(a.published) || 0);\n// Releases of the monitored repositories are always posted (one per repository at most).\nconst releases = entries.filter((e) => e.type === 'release').sort(byDate);\nconst core = entries\n  .filter((e) => e.tier === 'core' && e.type !== 'release')\n  .sort((a, b) => b.score - a.score || byDate(a, b));\nconst related = entries.filter((e) => e.tier === 'related').sort(byDate);\nconst picked = [...core.slice(0, settings.limits.core), ...related.slice(0, settings.limits.related), ...releases];\nconst warning = failed.size ? `\\n:warning: Sources en erreur : ${[...failed].join(', ')}` : '';\nif (!picked.length) {\n  return warning ? [{ json: { content: `**Veille technique** : aucune nouveauté.${warning}`.slice(0, 2000), embeds: [] } }] : [];\n}\n\nconst cut = (text, max) => {\n  const value = String(text ?? '').trim();\n  return value.length > max ? `${value.slice(0, max - 1).trimEnd()}…` : value;\n};\nconst colors = { paper: 0x5865f2, release: 0x57f287, repository: 0xfee75c };\n\nconst embeds = picked.map((entry) => {\n  const embed = {\n    title: cut(entry.title, 256),\n    url: entry.url,\n    color: colors[entry.type] ?? 0x99aab5,\n    footer: { text: cut([entry.source, entry.tags.join(', ')].filter(Boolean).join(' · '), 200) },\n  };\n  if (entry.summary) embed.description = cut(entry.summary, 350);\n  if (entry.authors) embed.author = { name: cut(entry.authors, 200) };\n  if (entry.published) embed.timestamp = entry.published;\n  return embed;\n});\n\nconst size = (embed) =>\n  embed.title.length + (embed.description?.length ?? 0) + (embed.author?.name.length ?? 0) + embed.footer.text.length;\n\nconst messages = [];\nlet current = [];\nlet currentSize = 0;\nfor (const embed of embeds) {\n  if (current.length === 10 || currentSize + size(embed) > 5500) {\n    messages.push(current);\n    current = [];\n    currentSize = 0;\n  }\n  current.push(embed);\n  currentSize += size(embed);\n}\nmessages.push(current);\n\nconst date = new Date().toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris', dateStyle: 'long' });\nconst skipped = entries.length - picked.length;\nconst header =\n  `**Veille technique du ${date}** : ${picked.length} nouveauté${picked.length > 1 ? 's' : ''}` +\n  (skipped ? ` (${skipped} autre${skipped > 1 ? 's' : ''} non affichée${skipped > 1 ? 's' : ''})` : '') +\n  warning;\n\nreturn messages.map((chunk, index) => ({ json: { content: index === 0 ? header.slice(0, 2000) : '', embeds: chunk } }));\n"
+      },
+      "id": "8b07f625-fab4-5618-b4e7-28dc4cbf06fd",
+      "name": "Build Discord messages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1760, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "operation": "sendLegacy",
+        "content": "={{ $json.content }}",
+        "options": {
+          "username": "Veille technique"
+        },
+        "embeds": {
+          "values": [
+            {
+              "inputMethod": "json",
+              "json": "={{ JSON.stringify($json.embeds[0] ?? {}) }}"
+            },
+            {
+              "inputMethod": "json",
+              "json": "={{ JSON.stringify($json.embeds[1] ?? {}) }}"
+            },
+            {
+              "inputMethod": "json",
+              "json": "={{ JSON.stringify($json.embeds[2] ?? {}) }}"
+            },
+            {
+              "inputMethod": "json",
+              "json": "={{ JSON.stringify($json.embeds[3] ?? {}) }}"
+            },
+            {
+              "inputMethod": "json",
+              "json": "={{ JSON.stringify($json.embeds[4] ?? {}) }}"
+            },
+            {
+              "inputMethod": "json",
+              "json": "={{ JSON.stringify($json.embeds[5] ?? {}) }}"
+            },
+            {
+              "inputMethod": "json",
+              "json": "={{ JSON.stringify($json.embeds[6] ?? {}) }}"
+            },
+            {
+              "inputMethod": "json",
+              "json": "={{ JSON.stringify($json.embeds[7] ?? {}) }}"
+            },
+            {
+              "inputMethod": "json",
+              "json": "={{ JSON.stringify($json.embeds[8] ?? {}) }}"
+            },
+            {
+              "inputMethod": "json",
+              "json": "={{ JSON.stringify($json.embeds[9] ?? {}) }}"
+            }
+          ]
+        }
+      },
+      "id": "c86da568-1916-5551-a277-be34510b43bb",
+      "name": "Post to #veille-technique",
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [1980, 300],
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "AscDiscordVeille",
+          "name": "Discord #veille-technique"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "width": 640,
+        "height": 260,
+        "content": "## Technology watch\nEvery morning, reads arXiv, GitHub and OpenAlex, keeps the entries that match the keywords and posts the new ones to `#veille-technique`.\n\n- Keywords, sources and limits: edit the **Watch settings** node only.\n- Already posted links are remembered by **Skip already posted**.\n- The Discord webhook URL is stored in the `Discord #veille-technique` credential.\n\nGuide: docs/Ascension/developer/architecture/deployment/n8n-technology-watch-guide.md"
+      },
+      "id": "e37b54fa-faec-5e61-91e7-c96ede1d7291",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-40, -60]
+    }
+  ],
+  "connections": {
+    "Every day at 08:00": {
+      "main": [
+        [
+          {
+            "node": "Watch settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run manually": {
+      "main": [
+        [
+          {
+            "node": "Watch settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Watch settings": {
+      "main": [
+        [
+          {
+            "node": "List feeds",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "List APIs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List feeds": {
+      "main": [
+        [
+          {
+            "node": "Read feeds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read feeds": {
+      "main": [
+        [
+          {
+            "node": "Normalize feed entries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize feed entries": {
+      "main": [
+        [
+          {
+            "node": "Merge sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List APIs": {
+      "main": [
+        [
+          {
+            "node": "Call APIs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call APIs": {
+      "main": [
+        [
+          {
+            "node": "Normalize API results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize API results": {
+      "main": [
+        [
+          {
+            "node": "Merge sources",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge sources": {
+      "main": [
+        [
+          {
+            "node": "Filter by keywords",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter by keywords": {
+      "main": [
+        [
+          {
+            "node": "Skip already posted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skip already posted": {
+      "main": [
+        [
+          {
+            "node": "Build Discord messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Discord messages": {
+      "main": [
+        [
+          {
+            "node": "Post to #veille-technique",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Paris",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "tags": []
+}
