@@ -1,4 +1,4 @@
-// @date 2026-09-20
+// @date 2026-11-12
 // @file analysis.go
 // @brief File description.
 // @project Ascension
@@ -64,6 +64,28 @@ type Analysis struct {
 	CompletedAt      *time.Time
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
+}
+
+// AnalysisSummary is the light view of an analysis used in lists: it leaves out the
+// result, advice and error payloads. ClimbingSessionID is the session of its video.
+type AnalysisSummary struct {
+	ID                uuid.UUID
+	VideoID           uuid.UUID
+	ClimbingSessionID *uuid.UUID
+	Type              AnalysisType
+	Status            JobStatus
+	Visibility        Visibility
+	Progress          int16
+	StartedAt         *time.Time
+	CompletedAt       *time.Time
+	CreatedAt         time.Time
+}
+
+// AnalysisSummaryPage is one page of a user's analyses.
+type AnalysisSummaryPage struct {
+	Analyses   []AnalysisSummary
+	Total      int
+	Pagination Pagination
 }
 
 type AnalysisFilter struct {
