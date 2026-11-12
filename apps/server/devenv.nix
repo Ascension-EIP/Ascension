@@ -1,8 +1,6 @@
 {
   pkgs,
-  lib,
   config,
-  inputs,
   ...
 }:
 
@@ -33,9 +31,9 @@
       '';
       cwd = "${config.git.root}/apps/server";
       after = [
-        # "devenv:processes:postgres"
-        # "devenv:processes:rabbitmq"
-        # "devenv:processes:rustfs"
+        "devenv:processes:postgres"
+        "devenv:processes:rabbitmq"
+        "devenv:processes:rustfs"
       ];
       restart = {
         on = "on_failure";
@@ -66,8 +64,8 @@
       '';
       cwd = "${config.git.root}/apps/server";
       after = [
-        # "devenv:processes:postgres"
-        # "devenv:processes:rustfs"
+        "devenv:processes:postgres"
+        "devenv:processes:rustfs"
       ];
       restart = {
         on = "on_failure";
@@ -93,26 +91,28 @@
       package = pkgs.postgresql_18;
       initialDatabases = [
         {
-          name = "name";
-          user = "user";
-          pass = "pass";
+          name = "ascension";
+          user = "ascension";
+          pass = "ascension";
         }
       ];
       listen_addresses = "localhost";
-      port = 5432;
     };
 
     rustfs = {
       enable = true;
-      port = 9000;
       consoleEnable = true;
-      consolePort = 9001;
-      accessKey = "accesskey";
-      secretKey = "secretkey";
+      accessKey = "ascension";
+      secretKey = "ascension";
     };
 
     rabbitmq = {
       enable = true;
+      managementPlugin.enable = true;
+      configItems = {
+        default_user = "ascension";
+        default_pass = "ascension";
+      };
     };
   };
 
