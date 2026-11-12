@@ -3,7 +3,7 @@ id: 2f73e756-4920-4208-ae1e-6928976f81ec
 ---
 
 :::success
-**Version:** 2.3
+**Version:** 2.4
 :::
 
 ---
@@ -560,6 +560,7 @@ Business rules:
 - The status flow is `pending` → `started` → `running` → `success`, or `failed` from any state. The server creates the row as `pending`. The worker sets `started` and `started_at` when it picks the job (`progress` 0), `running` while it processes it (`progress` up to 90), then `success` and `progress` 100.
 - `success` is set only after the advice step, so `result` and `completed_at` are always present on a `success` row (enforced by `chk_analyses_completed`). `hints` may stay `NULL` on a `success` row if the LLM call failed: the advice step then publishes `failed` on `pose.advice.status` and can be relaunched with `pose.advice.requested`.
 - `video_id` is currently `UNIQUE` in the real database (migration `20260918172427`): a video can have only one analysis, so a `2d` and a `3d` run, or a retry after a failure, cannot coexist. The intended model is several analyses per video, with no uniqueness on `(video_id, type)`. The constraint is not changed yet (see `task/handoff-server-go.md`); the worker does not depend on it.
+- An analysis has no `climbing_session_id`: it belongs to the climbing session of its video (`videos.climbing_session_id`), and an analysis outside any session is allowed. The server links a video only to a session of the same user (`GET /v1/videos/upload-url`, `POST /v1/sessions/:id/analyses`). Deleting the session sets `videos.climbing_session_id` to `NULL` and keeps the videos and their analyses.
 - `processing_time_ms` is an `INTERVAL` (the Go server reads it as a `time.Duration`), despite its name. The worker writes `NOW() - started_at` when it completes the job. `ghosts` and `comparisons` use an `INTEGER` of milliseconds.
 - `advice` (`TEXT`) is the legacy free-text advice, still read by the Go server. The worker writes the structured `hints` instead. `advice` will be dropped once the server exposes `hints`.
 - The worker writes `status`, `progress`, `result`, `hints`, `error`, `started_at`, `completed_at` and `processing_time_ms`: the migrations must be applied before it starts.
@@ -1334,6 +1335,7 @@ The migration history evolved from the initial prototype schema (`20260905000001
 | `20260918222453` – `20260918222653` | Subscriptions & Quotas  | Tables `subscription_plans`, `subscriptions`, `subscription_events`, and `quota_usages`.                                                                                                                                                                                                                                                                                   |
 | `20261030200000`                    | Job status alignment    | `job_status` becomes `pending, started, running, success, failed` (same values as the RabbitMQ statuses). `processing` and `generating_hints` become `running`, `completed` becomes `success`. The `chk_*_completed` checks and `idx_analyses_status` are recreated. The `down` migration maps `started`/`running` back to `processing` and `success` back to `completed`. |
 | `20261030200100`                    | Analyses hints          | Adds `analyses.hints JSONB` (nullable), written by the AI worker (`schemas/hints.schema.json`). `advice TEXT` is kept for the Go server.                                                                                                                                                                                                                                   |
+| `20261112120000`                    | Video session link      | `videos.climbing_session_id` now references `climbing_sessions(id)` instead of `users(id)` (`ON DELETE SET NULL`), since the `videos` migration runs before `climbing_sessions` exists. Values that are not climbing session IDs become `NULL`.                                                                                                                            |
 
 All tables conform to the foreign key constraints, indexes, and check constraints detailed in sections 3 through 10.
 

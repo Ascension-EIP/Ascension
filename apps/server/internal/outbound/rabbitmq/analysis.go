@@ -1,8 +1,8 @@
-// @date 2026-03-18
+// @date 2026-11-13
 // @file analysis.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package rabbitmq
@@ -14,8 +14,10 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 )
 
-func (q *RabbitMQ) PublishJSONIntoQueueAI(ctx context.Context, body []byte) error {
-	if err := q.ch.PublishWithContext(ctx, "", q.qAI.Name, false, false, amqp091.Publishing{
+// PublishPoseDetectRequested publishes a pose detection job (schemas/pose_detect_request.schema.json)
+// for the AI worker.
+func (q *RabbitMQ) PublishPoseDetectRequested(ctx context.Context, body []byte) error {
+	if err := q.ch.PublishWithContext(ctx, q.cfg.Exchange, RoutingKeyPoseDetectRequested, false, false, amqp091.Publishing{
 		Timestamp:    time.Now(),
 		Body:         body,
 		ContentType:  "application/json",

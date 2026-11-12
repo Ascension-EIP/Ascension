@@ -1,8 +1,8 @@
-// @date 2026-09-24
+// @date 2026-11-13
 // @file app.go
 // @brief File description.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package app
@@ -57,8 +57,12 @@ func Run(cfg config.Config) {
 	userS := service.NewUserService(&repo)
 	userProfileS := service.NewUserProfileService(&repo)
 	authS := service.NewAuthService(&jwtS, &sessionS, &userS, &userProfileS, &repo)
-	videoS := service.NewVideoService(cfg.Video, cfg.MinIO, &storage, &repo)
-	analysisS := service.NewAnalysisService(cfg.MinIO, &repo, &repo, &queue)
+	videoS := service.NewVideoService(cfg.Video, cfg.MinIO, &storage, &repo, &repo)
+	analysisS := service.NewAnalysisService(&repo, &repo, &queue)
+	climbingSessionS := service.NewClimbingSessionService(&repo, &repo, &repo)
+	bodyConstraintS := service.NewUserBodyConstraintService(&repo)
+	friendshipS := service.NewFriendshipService(&repo)
+	feedS := service.NewFeedService(&repo)
 
 	authMW := middleware.AuthMiddleware(&jwtS)
 
@@ -67,6 +71,10 @@ func Run(cfg config.Config) {
 	videoH := handler.NewVideoHandler(&videoS)
 	analysisH := handler.NewAnalysisHandler(&analysisS)
 	userProfileH := handler.NewUserProfileHandler(&userProfileS)
+	climbingSessionH := handler.NewClimbingSessionHandler(&climbingSessionS)
+	bodyConstraintH := handler.NewUserBodyConstraintHandler(&bodyConstraintS)
+	friendshipH := handler.NewFriendshipHandler(&friendshipS)
+	feedH := handler.NewFeedHandler(&feedS)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -80,6 +88,10 @@ func Run(cfg config.Config) {
 		&videoH,
 		&analysisH,
 		&userProfileH,
+		&climbingSessionH,
+		&bodyConstraintH,
+		&friendshipH,
+		&feedH,
 	)
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(cfg.HTTP.Port),

@@ -1,8 +1,8 @@
-// @date 2026-09-20
+// @date 2026-11-13
 // @file analysis.go
 // @brief File description.
 // @project Ascension
-// @author Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Nicolas TORO <nicolas.toro@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package model
@@ -32,17 +32,19 @@ func (t AnalysisType) Validate() error {
 
 type JobStatus string
 
+// Job statuses written by the AI worker, as in schemas/job_status.schema.json and the
+// job_status database enum.
 const (
-	JobStatusPending         JobStatus = "pending"
-	JobStatusProcessing      JobStatus = "processing"
-	JobStatusGeneratingHints JobStatus = "generating_hints"
-	JobStatusCompleted       JobStatus = "completed"
-	JobStatusFailed          JobStatus = "failed"
+	JobStatusPending JobStatus = "pending"
+	JobStatusStarted JobStatus = "started"
+	JobStatusRunning JobStatus = "running"
+	JobStatusSuccess JobStatus = "success"
+	JobStatusFailed  JobStatus = "failed"
 )
 
 func (s JobStatus) Validate() error {
 	switch s {
-	case JobStatusPending, JobStatusProcessing, JobStatusGeneratingHints, JobStatusCompleted, JobStatusFailed:
+	case JobStatusPending, JobStatusStarted, JobStatusRunning, JobStatusSuccess, JobStatusFailed:
 		return nil
 	default:
 		return fmt.Errorf("unknown")
@@ -58,12 +60,35 @@ type Analysis struct {
 	Progress         int16
 	Result           *map[string]any
 	Advice           *string
+	Hints            *map[string]any
 	Error            *string
 	ProcessingTimeMS *time.Duration
 	StartedAt        *time.Time
 	CompletedAt      *time.Time
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
+}
+
+// AnalysisSummary is the light view of an analysis used in lists: it leaves out the
+// result, advice and error payloads. ClimbingSessionID is the session of its video.
+type AnalysisSummary struct {
+	ID                uuid.UUID
+	VideoID           uuid.UUID
+	ClimbingSessionID *uuid.UUID
+	Type              AnalysisType
+	Status            JobStatus
+	Visibility        Visibility
+	Progress          int16
+	StartedAt         *time.Time
+	CompletedAt       *time.Time
+	CreatedAt         time.Time
+}
+
+// AnalysisSummaryPage is one page of a user's analyses.
+type AnalysisSummaryPage struct {
+	Analyses   []AnalysisSummary
+	Total      int
+	Pagination Pagination
 }
 
 type AnalysisFilter struct {

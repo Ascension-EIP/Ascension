@@ -1,8 +1,8 @@
-// @date 2026-09-12
+// @date 2026-11-13
 // @file error.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package model
@@ -35,6 +35,19 @@ var (
 
 	// -- Video -- //
 	ErrVideoUploading = errors.New("video is uploading")
+
+	// -- Climbing session -- //
+	ErrClimbingSessionNotFound = errors.New("climbing session not found")
+
+	// -- Analysis -- //
+	ErrAnalysisNotFound = errors.New("analysis not found")
+
+	// -- User body constraint -- //
+	ErrUserBodyConstraintNotFound = errors.New("body constraint not found")
+
+	// -- Friendship -- //
+	ErrFriendRequestNotFound = errors.New("friend request not found")
+	ErrFriendshipExists      = errors.New("friendship already exists")
 
 	ErrUnknown = errors.New("unknown error")
 )

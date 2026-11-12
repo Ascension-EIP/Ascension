@@ -1,8 +1,8 @@
-# @date 2026-11-01
+# @date 2026-11-12
 # @file test_rustfs.py
 # @brief Unit tests for the RustFS service (mocked boto3 client).
 # @project Ascension
-# @author Gianni TUERO <gianni.tuero@epitech.eu>
+# @author Gianni TUERO <gianni.tuero@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
 from pathlib import Path
@@ -96,3 +96,14 @@ def test_failed_download_leaves_no_file():
             pass
     assert created
     assert not created[0].exists()
+
+
+def test_region_defaults_to_us_east_1(monkeypatch):
+    monkeypatch.delenv("RUSTFS_REGION", raising=False)
+    assert RustFS().setup_config().config.region == "us-east-1"
+
+
+def test_region_is_read_from_env(monkeypatch):
+    # OVHcloud Object Storage rejects signatures made for another region.
+    monkeypatch.setenv("RUSTFS_REGION", "gra")
+    assert RustFS().setup_config().config.region == "gra"

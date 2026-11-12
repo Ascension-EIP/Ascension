@@ -3,21 +3,21 @@ id: 8f669aa8-75b7-45de-a63c-8981d50169f4
 ---
 
 :::success
-**Version:** 1.0
+**Version:** 1.1
 :::
 
 # Caractérisation du point dur et dispositif de veille opérationnel
 
 ---
 
-## 1. Le problème à résoudre : le Mode Fantôme
+## 1\. Le problème à résoudre : le Mode Fantôme
 
-- **Ce qu'on veut faire :** L'utilisateur prend une photo d'une voie d'escalade et sélectionne ses prises ou laisse l'IA les détecter. En fonction de la morphologie du grimpeur, l'application doit lui donner la séquence de mouvements étape par étape pour réussir la voie (ex. _Étape 1 : pied gauche sur la prise 2, main droite sur la prise 4..._).
+- **Ce qu'on veut faire :** L'utilisateur prend une photo d'une voie d'escalade et sélectionne ses prises ou laisse l'IA les détecter. En fonction de la morphologie du grimpeur, l'application doit lui donner la séquence de mouvements étape par étape pour réussir la voie (ex. *Étape 1 : pied gauche sur la prise 2, main droite sur la prise 4...*).
 - **Ce qu'on ne sait pas faire aujourd'hui :** Trouver automatiquement une suite de mouvements logique, humaine et réalisable sans que le grimpeur se retrouve coincé ou dans une posture impossible.
 
 ---
 
-## 2. Pourquoi c'est dur
+## 2\. Pourquoi c'est dur
 
 1. **Pas de solution unique (« pas de bêta parfaite ») :** Deux grimpeurs ne grimpent pas de la même façon. Quelqu'un de plus petit va monter ses pieds plus haut, quelqu'un de grand va chercher des prises plus loin. Il n'y a pas une seule bonne réponse qu'on pourrait simplement copier.
 2. **Les erreurs de la photo se répercutent sur l'algo :** Si la détection sur la photo décale une prise de 10 cm ou rate une petite prise de pied, l'algorithme va calculer un mouvement sur du vide ou penser qu'une prise est inatteignable.
@@ -26,7 +26,7 @@ id: 8f669aa8-75b7-45de-a63c-8981d50169f4
 
 ---
 
-## 3. Pourquoi une solution toute simple (naïve) ne marche pas
+## 3\. Pourquoi une solution toute simple (naïve) ne marche pas
 
 - **La solution naïve :** Relier simplement les prises de bas en haut en allant à chaque fois à la prise la plus proche au-dessus.
 - **Pourquoi ça échoue à tous les coups :**
@@ -36,16 +36,16 @@ id: 8f669aa8-75b7-45de-a63c-8981d50169f4
 
 ---
 
-## 4. Critères de réussite chiffrés
+## 4\. Critères de réussite chiffrés
 
 1. **Faisabilité physique (100 %) :** 100 % des mouvements proposés doivent respecter la portée du grimpeur (aucune prise demandée au-delà de ce que ses bras et jambes peuvent atteindre).
-2. **Maintien de l'équilibre ($\ge$ 85 %) :** Lors de chaque changement de prise, le grimpeur doit garder au moins 3 appuis stables (règle des 3 points d'appui) sur au moins 85 % des étapes de la voie.
-3. **Différenciation selon la morphologie ($\ge$ 20 %) :** Sur une même voie standard comportant des prises intermédiaires (12 à 20 prises), l'algorithme doit proposer au moins 20 % d'étapes différentes entre un profil petit (~1m60) et un profil grand (~1m85) (ex. saut d'une prise intermédiaire par le grand, ou replacement de pied supplémentaire pour compenser la taille), tout en restant faisable pour les deux.
+2. **Maintien de l'équilibre (**$\ge$ **85 %) :** Lors de chaque changement de prise, le grimpeur doit garder au moins 3 appuis stables (règle des 3 points d'appui) sur au moins 85 % des étapes de la voie.
+3. **Différenciation selon la morphologie (**$\ge$ **20 %) :** Sur une même voie standard comportant des prises intermédiaires (12 à 20 prises), l'algorithme doit proposer au moins 20 % d'étapes différentes entre un profil petit (~1m60) et un profil grand (~1m85) (ex. saut d'une prise intermédiaire par le grand, ou replacement de pied supplémentaire pour compenser la taille), tout en restant faisable pour les deux.
 4. **Temps de calcul (< 30 secondes) :** Le calcul complet de la voie doit prendre **moins de 25 secondes en moyenne**, et jamais plus de 30 secondes pour une voie standard (moins de 20 prises).
 
 ---
 
-## 5. Notre dispositif de veille opérationnel
+## 5\. Notre dispositif de veille opérationnel
 
 ### 5.1 Ce qu'on regarde (sources)
 
@@ -55,7 +55,7 @@ id: 8f669aa8-75b7-45de-a63c-8981d50169f4
 
 ### 5.2 Nos outils
 
-- **Instance n8n auto-hébergée sur VPS :** workflow d'automatisation déployé sur notre VPS (via Docker) qui s'exécute chaque matin pour interroger les flux RSS (arXiv, releases GitHub, Google Scholar) et filtrer les publications par mots-clés pertinents.
+- **Instance n8n auto-hébergée sur VPS :** workflow d'automatisation déployé sur notre VPS (via Docker et Coolify) qui s'exécute chaque matin à 8 h pour interroger arXiv (flux RSS cs.RO et cs.CV, et recherche dans toutes les catégories), les releases et nouveaux dépôts GitHub, et OpenAlex, puis filtrer les publications par mots-clés pertinents. OpenAlex remplace Google Scholar, qui n'a ni flux RSS ni API : ses alertes n'arrivent que par e-mail. Le fonctionnement est décrit dans le [guide n8n de la veille technique](../../../developer/architecture/deployment/n8n-technology-watch-guide.md).
 - **Salon Discord `#veille-technique` :** relié directement à n8n via un webhook pour recevoir automatiquement les alertes formatées (titre, lien, extrait et tags).
 - **Documentation partagée :** fiches de synthèse écrites dans la doc du projet pour tracer ce que l'on retient ou élimine.
 
@@ -74,7 +74,7 @@ id: 8f669aa8-75b7-45de-a63c-8981d50169f4
 
 ---
 
-## 6. Journal de recherche (Research Log)
+## 6\. Journal de recherche (Research Log)
 
 ### 6.1 Format d'une fiche
 

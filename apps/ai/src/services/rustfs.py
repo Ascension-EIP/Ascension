@@ -1,8 +1,8 @@
-# @date 2026-11-01
+# @date 2026-11-12
 # @file rustfs.py
 # @brief RustFS (S3-compatible) storage service.
 # @project Ascension
-# @author Gianni TUERO <gianni.tuero@epitech.eu>
+# @author Gianni TUERO <gianni.tuero@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
 import os
@@ -59,6 +59,7 @@ class RustFS:
             access_key=os.getenv("RUSTFS_ACCESS_KEY", "ascension"),
             secret_key=os.getenv("RUSTFS_SECRET_KEY", "ascension"),
             bucket=os.getenv("RUSTFS_BUCKET", "videos"),
+            region=os.getenv("RUSTFS_REGION", "us-east-1"),
         )
         throw_if_none(self.config)
         log.info("Storage config: %s bucket=%s", self.config.endpoint, self.config.bucket)

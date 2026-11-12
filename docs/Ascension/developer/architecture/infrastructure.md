@@ -3,7 +3,7 @@ id: 21d0fedf-482c-479f-8d1c-6a3fc7b68679
 ---
 
 :::success
-**Version:** 1.0
+**Version:** 1.1
 :::
 
 ---
@@ -223,7 +223,8 @@ The infrastructure follows defense-in-depth principles to isolate user data and 
 3. **Internal Tools Hardening:**
    - Development subdomains (`jenkins.ascension-eip.fr` and `sonarqube.ascension-eip.fr`) require role-based authentication and IP allowlisting where appropriate.
 4. **Automated Backups:**
-   - Scheduled, encrypted PostgreSQL 18 database dumps are exported directly to a dedicated private bucket on the Gravelines Object Storage, ensuring cross-region redundancy between Milan and France.
+   - Every night, Coolify dumps the PostgreSQL 18 databases (application and SonarQube) and archives the Jenkins and n8n data and its own database, then uploads them to the dedicated private bucket `ascension-backups` in Gravelines, encrypted on the server side. The backups therefore live away from the Milan VPS.
+   - Retention: 7 copies on the VPS, 30 days in the bucket. The restore procedure, tested on 13 November 2026, is described in the [Backup and Restore Guide](./deployment/backup-and-restore-guide.md).
 
 ---
 

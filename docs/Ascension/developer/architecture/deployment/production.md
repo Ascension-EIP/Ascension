@@ -2,980 +2,294 @@
 id: 615b8876-93f2-4f9d-80db-7d3e8553fe8b
 ---
 
+:::success
+**Version:** 3.1
+:::
+
+---
+
+# Production Environment
+
+This runbook explains how the production of Ascension is set up and how to work with it: reaching the VPS and Coolify, deploying, restarting and reading the logs of a service, changing a secret, backing up and restoring, and updating the server. The choice of the architecture itself is described in [Infrastructure Architecture](../infrastructure.md).
+
 :::warning
-**Version:** 2.0
-
-[@Christophe Vandevoir](mention:5954ff40-2f0c-47db-b5cd-c8ef58875f34) tu dois refaire ce document (tu peux repartir de 0), le but est d’expliquer comment on a setup notre production et comment la mettre à jour, pas besoin de parler des différences entre les diffrents héberger, on part du principe que notre infrstructure est connu.
+This page never holds a password, a key or the IP address of the VPS. They live in the team's password storage, in the environment variables of Coolify and in the OVHcloud console, never in the repository, which is public.
 :::
 
 ---
 
-# Production Environment Setup
+## 1\. How production is set up
 
----
+Everything runs on one OVHcloud VPS-4 in Milan (8 vCores, 24 GB RAM, Ubuntu 26.04), managed by **Coolify**. Coolify builds and starts every container, configures the Traefik reverse proxy and its Let's Encrypt certificates, keeps the secrets and schedules the backups. The videos live outside the VPS, in OVHcloud Object Storage in Gravelines. The DNS of `ascension-eip.fr` is on Cloudflare, with proxied records.
 
-## Overview
-
-:::note
-**Official Production Target**: Following cloud resource allocation and EIP reviews, Ascension production runs on **OVHcloud VPS-4 (Milan: 8 vCores, 24 GB RAM, 200 GB SSD NVMe)** with **OVHcloud Object Storage Standard (Gravelines - S3)** and the domain `ascension-eip.fr`. See [Infrastructure Architecture](../infrastructure.md) for the single-node VPS architecture. This document presents the scaling topology and production environment configuration.
-:::
-
-All components use **RabbitMQ** as the message broker, **OVHcloud Object Storage Standard** for S3-compatible managed object storage (and **RustFS** in local/dev), and **PostgreSQL 18** for the database.
-
----
-
-## Architecture Diagram
+The diagram below shows the path of a request: Cloudflare forwards it to Traefik on the VPS, which routes it by domain to the right container. The containers reach the database and the broker on the internal `coolify` Docker network, and the videos and the backups in the Gravelines buckets.
 
 ```mermaid
-graph TB
-    subgraph "Users"
-        Mobile[Mobile Apps<br/>iOS and Android]
+flowchart LR
+    Users[Mobile app<br/>team browsers] --> CF[Cloudflare DNS + proxy]
+    GH[GitHub] -->|webhooks| CF
+    CF -->|80 / 443| Traefik
+    subgraph VPS ["OVHcloud VPS-4 (Milan), managed by Coolify"]
+        Traefik[Traefik]
+        Traefik --> API[ascension-api]
+        Traefik --> Tools[Jenkins, SonarQube, n8n, Coolify]
+        API --> PG[(ascension-postgres)]
+        API --> MQ[ascension-rabbitmq]
+        MQ --> Worker[ascension-worker]
+        Worker --> PG
     end
-
-    subgraph "Edge"
-        CF[Domain ascension-eip.fr<br/>Anycast DNS + DNSSEC]
-    end
-
-    subgraph "Srv-API — Compute"
-        Nginx[Nginx / Reverse Proxy<br/>Let's Encrypt TLS Termination]
-        API1[Go API Instance 1]
-        API2[Go API Instance 2]
-    end
-
-    subgraph "Srv-DB — Database & Broker"
-        PG_Master[PostgreSQL 18<br/>Master]
-        PG_Replica[PostgreSQL 18<br/>Read Replica]
-        RabbitMQ[RabbitMQ 4.2.4<br/>Message Broker]
-    end
-
-    subgraph "Srv-ML — AI Workers"
-        W1[Python AI Worker 1]
-        W2[Python AI Worker 2]
-        Wn[Python AI Worker N]
-    end
-
-    subgraph "Storage — OVHcloud Object Storage (Gravelines)"
-        S3Storage[OVHcloud S3<br/>Object Storage Standard]
-    end
-
-    subgraph "Monitoring — Self-hosted"
-        Prom[Prometheus]
-        Grafana[Grafana]
-        Loki[Loki]
-    end
-
-    Mobile -->|HTTPS| CF
-    CF --> Nginx
-    Nginx --> API1
-    Nginx --> API2
-
-    API1 --> PG_Master
-    API2 --> PG_Master
-    API1 --> PG_Replica
-    API2 --> PG_Replica
-    API1 --> RabbitMQ
-    API2 --> RabbitMQ
-    API1 --> S3Storage
-    API2 --> S3Storage
-
-    W1 --> RabbitMQ
-    W2 --> RabbitMQ
-    Wn --> RabbitMQ
-    W1 --> S3Storage
-    W2 --> S3Storage
-    Wn --> S3Storage
-    W1 --> PG_Master
-    W2 --> PG_Master
-    Wn --> PG_Master
-
-    Mobile -.->|Direct Upload<br/>Presigned URL| S3Storage
-
-    API1 -.-> Prom
-    API2 -.-> Prom
-    W1 -.-> Prom
-    RabbitMQ -.-> Prom
-    PG_Master -.-> Prom
-    Prom --> Grafana
-    Loki --> Grafana
-
-    style API1 fill:#e1f5ff
-    style API2 fill:#e1f5ff
-    style W1 fill:#fff4e1
-    style W2 fill:#fff4e1
-    style Wn fill:#fff4e1
-    style PG_Master fill:#f0f0f0
-    style PG_Replica fill:#f0f0f0
-    style RabbitMQ fill:#ffe1e1
-    style S3Storage fill:#e1ffe1
+    API --> Videos[(ascension-videos<br/>Gravelines)]
+    Worker --> Videos
+    Tools -.->|nightly backups| Backups[(ascension-backups<br/>Gravelines)]
 ```
 
----
+All the resources are in the Coolify project **Ascension**, environment **production**:
 
-## Infrastructure Requirements
-
-### Hetzner Machines
-
-| Machine | Role | Specs | Cost |
-| --- | --- | --- | --- |
-| **Srv-API** | Nginx + Go API (×2) + Monitoring | CX31: 4 vCPU, 8 GB RAM, 80 GB SSD | 15€/month |
-| **Srv-DB** | PostgreSQL Master + Replica + RabbitMQ | CX41: 4 vCPU, 16 GB RAM, 160 GB SSD | 25€/month |
-| **Srv-ML** | Python AI Workers (×2-4) | CX51: 8 vCPU, 16 GB RAM, 240 GB SSD | 45€/month |
-| **Storage** | OVHcloud Object Storage Standard | S3-compatible, Gravelines | Included / Pay-as-you-go |
-| **Domain** | DNS | `ascension-eip.fr` (Anycast DNS + DNSSEC) | Included in OVHcloud plan |
-| **SSL** | TLS Certificates | Let's Encrypt via Cloudflare | 0€ |
-| **Monitoring** | Prometheus + Grafana + Loki | Self-hosted on Srv-API | 0€ |
-|  |  | **Total (MVP)** | **96€/month** |
-
-### GPU Machine (AI Workers — Optional Upgrade)
-
-For production performance, consider upgrading the ML server:
-
-Option A: Hetzner GPU Server
-
-- **Instance**: Hetzner CCX or dedicated GPU server
-- **GPU**: NVIDIA A4000 or equivalent
-- **Cost**: ~60-100€/month
-- **Benefit**: Same provider, low latency to other services
-
-Option B: On-Premise GPU Machine
-
-- **Hardware**: Team member's GPU machine (RTX 3060+)
-- **Connection**: SSH tunnel to Hetzner VPS
-- **Cost**: 0€ (hardware already owned)
-- **Trade-off**: Must maintain uptime, potential home network limitations
-
----
-
-## Network Configuration
-
-### Cloudflare + Nginx
-
-Traffic flows through Cloudflare for DDoS protection and CDN caching, then reaches Nginx on the server which reverse-proxies to API instances.
-
-```mermaid
-graph LR
-    Internet -->|HTTPS :443| Cloudflare[Cloudflare<br/>CDN / DDoS / DNS]
-    Cloudflare -->|Origin Pull| Nginx[Nginx<br/>Reverse Proxy]
-
-    subgraph "Docker Compose Network"
-        Nginx -->|:8080| API1[Go API 1]
-        Nginx -->|:8081| API2[Go API 2]
-        API1 --> DB[(PostgreSQL)]
-        API2 --> DB
-        API1 --> RMQ[(RabbitMQ)]
-        API2 --> RMQ
-        Workers[AI Workers] --> RMQ
-        Workers --> MinIO[MinIO]
-        Workers --> DB
-    end
-
-```
-
-### Firewall Rules
-
-```bash
-# Allow SSH (restrict to your IP)
-sudo ufw allow from YOUR_IP to any port 22
-
-# Allow HTTP/HTTPS (for Cloudflare origin pull)
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-
-# Internal Docker network handles all inter-service communication
-# No need to expose PostgreSQL, RabbitMQ, or MinIO externally
-
-sudo ufw enable
-
-```
-
----
-
-## Docker Compose Configuration
-
-### Production `docker-compose.yml`
-
-```yaml
-version: "3.8"
-
-services:
-  # Nginx Reverse Proxy
-  nginx:
-    image: nginx:alpine
-    container_name: ascension-nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - server
-    restart: always
-
-  # Go API Server (from apps/server/)
-  server:
-    image: ${IMAGE_PREFIX:-ghcr.io/ascension-eip}/ascension-server:latest
-    container_name: ascension-server
-    environment:
-      POSTGRES_HOST: postgresql
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_MIGRATION: "true"
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: 5672
-      RABBITMQ_USER: ${RABBITMQ_DEFAULT_USER}
-      RABBITMQ_PASS: ${RABBITMQ_DEFAULT_PASS}
-      MINIO_ENDPOINT: http://minio:9000
-      MINIO_ID: ${MINIO_ROOT_USER}
-      MINIO_SECRET: ${MINIO_ROOT_PASSWORD}
-      MINIO_BUCKET: ${MINIO_BUCKET:-videos}
-      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET}
-      AUTH_JWT_EXP: 15m
-      AUTH_SESSION_SECRET: ${AUTH_SESSION_SECRET}
-      AUTH_SESSION_EXP: 168h
-      AUTH_SESSION_REMEMBER_EXP: 720h
-      LOG_LEVEL: info
-    expose:
-      - "8080"
-    depends_on:
-      postgresql:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-    restart: always
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/healthz"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # PostgreSQL Database
-  postgresql:
-    image: postgres:18
-    container_name: ascension-postgres
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql
-      - ./backups:/backups
-    restart: always
-    command:
-      - "postgres"
-      - "-c"
-      - "max_connections=200"
-      - "-c"
-      - "shared_buffers=512MB"
-      - "-c"
-      - "effective_cache_size=2GB"
-      - "-c"
-      - "wal_level=replica"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # RabbitMQ Message Broker
-  rabbitmq:
-    image: rabbitmq:4.3.5-management
-    container_name: ascension-rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    restart: always
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # MinIO Object Storage
-  minio:
-    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
-    container_name: ascension-minio
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    volumes:
-      - minio_data:/data
-    restart: always
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # MinIO Bucket Init
-  minio-init:
-    image: minio/mc:latest
-    depends_on:
-      - minio
-    entrypoint: >
-      /bin/sh -c "
-      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
-      /usr/bin/mc mb myminio/${MINIO_BUCKET:-videos} --ignore-existing;
-      exit 0;
-      "
-
-  # Python AI Workers (from apps/ai/)
-  ai-worker:
-    image: ${IMAGE_PREFIX:-ghcr.io/ascension-eip}/ascension-ai-worker:latest
-    container_name: ascension-ai-worker
-    environment:
-      POSTGRES_HOST: postgresql
-      POSTGRES_DB_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgresql:5432/${POSTGRES_DB}
-      RABBITMQ_HOST: rabbitmq
-      MINIO_ENDPOINT: http://minio:9000
-      MINIO_ID: ${MINIO_ROOT_USER}
-      MINIO_SECRET: ${MINIO_ROOT_PASSWORD}
-      MINIO_BUCKET: ${MINIO_BUCKET:-videos}
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.1-flash-lite}
-    depends_on:
-      postgresql:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-    restart: always
-    deploy:
-      replicas: 2
-    # Uncomment for GPU support:
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: 1
-    #           capabilities: [gpu]
-
-  # --- Monitoring Stack ---
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: ascension-prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
-    restart: always
-
-  loki:
-    image: grafana/loki:latest
-    container_name: ascension-loki
-    ports:
-      - "3100:3100"
-    volumes:
-      - loki_data:/loki
-    restart: always
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: ascension-grafana
-    ports:
-      - "3000:3000"
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
-    volumes:
-      - grafana_data:/var/lib/grafana
-    restart: always
-
-volumes:
-  pg_data:
-  rabbitmq_data:
-  minio_data:
-  prometheus_data:
-  loki_data:
-  grafana_data:
-
-```
-
-### Nginx Configuration
-
-Create `/etc/nginx/nginx.conf`:
-
-```nginx
-upstream api_backend {
-    least_conn;
-    server api:8080;
-    # Add more instances as needed:
-    # server api-2:8080;
-}
-
-server {
-    listen 80;
-    server_name api.ascension.app;
-    return 301 https://$server_name$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name api.ascension.app;
-
-    ssl_certificate /etc/nginx/ssl/fullchain.pem;
-    ssl_certificate_key /etc/nginx/ssl/privkey.pem;
-
-    # API endpoints
-    location /v1/ {
-        proxy_pass http://api_backend;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # Health check
-    location /healthz {
-        proxy_pass http://api_backend;
-    }
-
-    # Metrics (internal only)
-    location /metrics {
-        proxy_pass http://api_backend;
-        allow 10.0.0.0/8;
-        allow 172.16.0.0/12;
-        deny all;
-    }
-}
-
-```
-
-### MinIO Lifecycle Policy
-
-Create `lifecycle.json` (auto-delete unsaved videos after 7 days):
-
-```json
-{
-  "Rules": [
-    {
-      "Id": "DeleteUnsavedVideos",
-      "Status": "Enabled",
-      "Filter": {
-        "Prefix": "uploads/"
-      },
-      "Expiration": {
-        "Days": 7
-      }
-    }
-  ]
-}
-
-```
-
-Apply:
-
-```bash
-mc ilm import myminio/ascension-production < lifecycle.json
-
-```
-
-### Environment Variables
-
-```bash
-# Database
-POSTGRES_USER=ascension
-POSTGRES_PASSWORD=<STRONG_GENERATED_PASSWORD>
-POSTGRES_DB=ascension_production
-
-# RabbitMQ
-RABBITMQ_URL=amqp://ascension:<password>@rabbitmq:5672
-
-# MinIO
-MINIO_ROOT_USER=ascension
-MINIO_ROOT_PASSWORD=<STRONG_GENERATED_PASSWORD>
-MINIO_ENDPOINT=http://minio:9000
-MINIO_BUCKET=ascension-production
-
-# API
-JWT_SECRET=<GENERATE_SECURE_SECRET>
-LOG_LEVEL=info
-
-# Workers
-WORKER_CONCURRENCY=4
-
-# Monitoring
-GRAFANA_PASSWORD=<STRONG_PASSWORD>
-
-# Environment
-ENVIRONMENT=production
-
-```
-
----
-
-## Deployment Process
-
-### 1\. Build Docker Images
-
-From the monorepo root:
-
-```bash
-# Build API image
-docker build -t ascension/api:v${VERSION} \
-  -f apps/server/Dockerfile --target production ./apps/server
-
-# Build Worker image
-docker build -t ascension/worker:v${VERSION} ./apps/ai
-
-```
-
-### 2\. Push to Container Registry
-
-Using Docker Hub or a private registry:
-
-```bash
-docker tag ascension/api:v${VERSION} your-registry/ascension-api:v${VERSION}
-docker push your-registry/ascension-api:v${VERSION}
-
-docker tag ascension/worker:v${VERSION} your-registry/ascension-worker:v${VERSION}
-docker push your-registry/ascension-worker:v${VERSION}
-
-```
-
-### 3\. Deploy to Hetzner VPS
-
-```bash
-# SSH into production server
-ssh deploy@production.ascension.app
-
-# Pull latest images
-docker pull your-registry/ascension-server:v${VERSION}
-docker pull your-registry/ascension-ai-worker:v${VERSION}
-
-# Tag as latest
-docker tag your-registry/ascension-server:v${VERSION} ascension/server:latest
-docker tag your-registry/ascension-ai-worker:v${VERSION} ascension/ai-worker:latest
-
-# Restart services (zero-downtime with health checks)
-docker-compose --profile prod up -d --no-deps server ai-worker
-
-```
-
-### 4\. Database Migrations
-
-In Go, database migrations are automatically run by the server on startup when the container boots. No manual execution steps are required in production. You can simply verify the migration logs to confirm:
-
-```bash
-docker-compose logs api
-
-```
-
----
-
-## CI/CD Pipeline (GitHub Actions)
-
-**Note**: moonrepo enables affected-only pipelines — only changed projects are built and tested.
-
-### Unified CI with moon
-
-`.github/workflows/ci.yml`:
-
-```yaml
-name: CI
-
-on:
-  push:
-    branches: [main, dev]
-  pull_request:
-    branches: [main]
-
-jobs:
-  ci:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - name: Install moon
-        run: curl -fsSL https://moonrepo.dev/install/moon.sh | bash
-
-      - name: Run affected tests
-        run: moon run :test --affected
-
-      - name: Run affected lint
-        run: moon run :lint --affected
-
-```
-
-### Production Deployment
-
-`.github/workflows/deploy-production.yml`:
-
-```yaml
-name: Deploy to Production
-
-on:
-  push:
-    tags:
-      - "v*"
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Install moon
-        run: curl -fsSL https://moonrepo.dev/install/moon.sh | bash
-
-      - name: Login to Docker Registry
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and push API image
-        run: |
-          docker build -t ${{ secrets.DOCKER_REGISTRY }}/ascension-server:${{ github.ref_name }} \
-            -f apps/server/Dockerfile --target production ./apps/server
-          docker push ${{ secrets.DOCKER_REGISTRY }}/ascension-server:${{ github.ref_name }}
-
-      - name: Build and push Worker image
-        run: |
-          docker build -t ${{ secrets.DOCKER_REGISTRY }}/ascension-ai-worker:${{ github.ref_name }} \
-            ./apps/ai
-          docker push ${{ secrets.DOCKER_REGISTRY }}/ascension-ai-worker:${{ github.ref_name }}
-
-      - name: Deploy to Hetzner
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.PRODUCTION_HOST }}
-          username: deploy
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /opt/ascension
-            docker pull ${{ secrets.DOCKER_REGISTRY }}/ascension-server:${{ github.ref_name }}
-            docker pull ${{ secrets.DOCKER_REGISTRY }}/ascension-ai-worker:${{ github.ref_name }}
-            docker-compose --profile prod up -d --no-deps server ai-worker
-
-      - name: Verify deployment
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.PRODUCTION_HOST }}
-          username: deploy
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            sleep 10
-            curl -f http://localhost:8080/healthz || exit 1
-
-```
-
----
-
-## Security Configuration
-
-### System Hardening
-
-```bash
-# Disable root SSH login
-sudo sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
-
-# Key-only authentication
-sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
-
-# Restart SSH
-sudo systemctl restart sshd
-
-# Auto security updates
-sudo apt install unattended-upgrades
-sudo dpkg-reconfigure -plow unattended-upgrades
-
-# Fail2Ban
-sudo apt install fail2ban
-sudo systemctl enable fail2ban
-
-```
-
-### Secrets Management
-
-All secrets are stored in `.env` files on the server (never committed to Git):
-
-```bash
-# Generate secure secrets
-openssl rand -hex 32  # For JWT_SECRET
-openssl rand -hex 32  # For POSTGRES_PASSWORD
-openssl rand -hex 32  # For MINIO_ROOT_PASSWORD
-
-```
-
-Secrets are injected into containers via Docker Compose `env_file` directive.
-
-### Network Security
-
-- **External access**: Only ports 22 (SSH), 80, 443 exposed via UFW
-- **Inter-service**: All communication via Docker bridge network (not exposed)
-- **Database**: Not accessible from outside Docker network
-- **RabbitMQ Management UI**: Accessible only via SSH tunnel
-- **MinIO Console**: Accessible only via SSH tunnel
-- **TLS**: All external traffic encrypted (Cloudflare origin certificates or Let's Encrypt)
-
-### Data Protection
-
-- **In Transit**: TLS 1.3 for all external communication
-- **At Rest**: Encrypted Hetzner volumes
-- **RGPD**: Data stored in EU (Hetzner Germany/Finland), `ON DELETE CASCADE` for right-to-erasure
-- **Passwords**: Hashed with bcrypt (`golang.org/x/crypto/bcrypt`)
-- **API Keys**: Presigned URLs expire after 15 minutes
-
----
-
-## Monitoring and Observability
-
-**Stack**: Prometheus (metrics) + Grafana (dashboards & alerting) + Loki (logs)
-
-### Prometheus Configuration
-
-```yaml
-# prometheus/prometheus.yml
-global:
-  scrape_interval: 15s
-
-scrape_configs:
-  - job_name: "ascension-api"
-    static_configs:
-      - targets: ["server:8080"]
-
-  - job_name: "rabbitmq"
-    static_configs:
-      - targets: ["rabbitmq:15692"]
-
-  - job_name: "postgres"
-    static_configs:
-      - targets: ["postgres-exporter:9187"]
-
-  - job_name: "node"
-    static_configs:
-      - targets: ["node-exporter:9100"]
-
-```
-
-### Grafana Data Sources
-
-- **Prometheus** → `http://prometheus:9090`
-- **Loki** → `http://loki:3100`
-
-### Key Metrics
-
-| Component | Metrics |
-| --- | --- |
-| **API** | Request rate, error rate (%), response time (p50/p95/p99), active WebSocket connections |
-| **AI Workers** | RabbitMQ queue depth, processing time per video, failed jobs count |
-| **Database** | Query time (p50/p95), connection pool usage, cache hit rate |
-| **Storage** | Upload success rate, storage used (GB), download bandwidth |
-| **System** | CPU, RAM, disk usage per machine |
-
-### Alerting Rules (Grafana → Slack)
-
-| Condition | Severity | Action |
-| --- | --- | --- |
-| API error rate > 5% for 5 min | Critical | Page on-call |
-| RabbitMQ queue depth > 200 jobs | Warning | Scale workers |
-| Database CPU > 80% for 10 min | Warning | Investigate |
-| Disk usage > 90% | Critical | Expand volume |
-| API latency p95 > 500ms | Warning | Investigate |
-| Worker processing > 5 min | Warning | Check worker health |
-
-### Application Metrics (Go API)
-
-We export metrics from the Gin engine to Prometheus using the standard github.com/zsais/go-gin-prometheus package.
-
-```go
-import (
-	"github.com/zsais/go-gin-prometheus"
-	"github.com/gin-gonic/gin"
-)
-
-func main() {
-	r := gin.New()
-	p := ginprometheus.NewPrometheus("gin")
-	p.Use(r)
-	// ...
-}
-
-```
-
----
-
-## Backup & Disaster Recovery
-
-### PostgreSQL Backups
-
-```bash
-#!/usr/bin/env bash
-# backup.sh — Run daily via cron at 3:00 AM
-
-DATE=$(date +%Y%m%d_%H%M%S)
-
-# Full dump
-docker-compose exec -T db pg_dump -U ascension ascension_production \
-  | gzip > /backups/backup_${DATE}.sql.gz
-
-# Keep last 7 daily backups
-find /backups -name "backup_*.sql.gz" -mtime +7 -delete
-
-```
-
-Cron setup:
-
-```bash
-crontab -e
-# 0 3 * * * /opt/ascension/backup.sh
-
-```
-
-**RPO (Recovery Point Objective)**: < 15 minutes (via WAL archiving) **RTO (Recovery Time Objective)**: < 2 hours (restore + restart services)
-
-### MinIO Backups
-
-MinIO uses distributed mode with data redundancy. Additional backups to Hetzner Storage Box:
-
-```bash
-# Sync MinIO data to backup storage
-mc mirror local/ascension-production backup/ascension-production --overwrite
-
-```
-
-### Recovery Procedures
-
-**Database Failure**:
-
-1. Stop API services
-2. Restore from latest backup: `gunzip < backup.sql.gz | docker-compose exec -T db psql -U ascension ascension_production`
-3. Replay WAL logs for point-in-time recovery
-4. Restart services
-
-**Full Server Failure**:
-
-1. Provision new Hetzner VPS
-2. Install Docker + Docker Compose
-3. Pull Docker images from registry
-4. Restore database from backup
-5. Restore `.env` from secure storage
-6. Start services
-7. Update Cloudflare DNS
-
-**RabbitMQ Failure**:
-
-- Persistent queues survive restarts
-- If data lost: restart RabbitMQ, re-queue any in-flight jobs from database (status = 'processing')
-
----
-
-## Scaling Strategy
-
-### Phase 1: Docker Compose (Current — up to ~5,000 users)
-
-Single set of VPS instances with Docker Compose. Scale by:
-
-- Adding API replicas (Nginx upstream)
-- Adding worker replicas (`deploy: replicas: N`)
-- Upgrading VPS tiers (vertical scaling)
-
-### Phase 2: Multi-VPS (5,000–20,000 users)
-
-Separate machines for each concern:
-
-- **Srv-API (×2)**: Nginx + multiple Go API instances
-- **Srv-DB**: Dedicated PostgreSQL with streaming replication
-- **Srv-ML (×2-3)**: Dedicated AI worker machines
-- **Srv-Storage**: Dedicated MinIO cluster
-- **Srv-Monitor**: Dedicated monitoring stack
-
-Estimated cost: **€200-400/month**
-
-### Phase 3: K3s Kubernetes (20,000+ users)
-
-Migrate to K3s cluster on Hetzner dedicated servers:
-
-- Horizontal Pod Autoscaling (HPA) for API and workers
-- RabbitMQ operator for cluster management
-- PostgreSQL operator (e.g., CloudNativePG)
-- Ingress controller replacing Nginx
-- Persistent volumes on Hetzner
-
-Estimated cost: **€500-1,500/month**
-
-### Phase 4: Full Scale (100,000+ users)
-
-- Hetzner Dedicated Servers (3× AX41): ~€150/month
-- Hetzner GPU Servers for AI workers: ~€200-500/month
-- PostgreSQL with replication: included
-- RabbitMQ cluster: included
-- MinIO distributed: included
-- Hetzner Volume Storage (50 TB): ~€2,500/month
-
-Estimated cost: **€3,000-3,500/month (~€0.035/user)**
-
----
-
-## Cost Analysis
-
-### Cost by Scale
-
-| Phase | Users | Infrastructure | Monthly Cost | Cost/User |
+| Resource | Kind in Coolify | Domain or internal host | Data | Guide |
 | --- | --- | --- | --- | --- |
-| MVP | 100 | 3 VPS + Volume | 96€ | 0.96€ |
-| Scale | 1,000 | Upgraded VPS + extra workers | 231€ | 0.23€ |
-| Scale+ | 10,000 | Multi-VPS | 655€ | 0.07€ |
-| Production | 100,000 | K3s cluster + dedicated servers | ~3,500€ | 0.035€ |
+| `ascension-api` | Application (compose), branch `main` | `https://api.ascension-eip.fr` | None (stateless) | [API Deployment Guide](./api-deployment-guide.md) |
+| `ascension-worker` | Application (compose), branch `main` | None, internal only | None (stateless) | [AI Worker Deployment Guide](./worker-deployment-guide.md) |
+| `ascension-postgres` | Database, `postgres:18-alpine` | `i8hc7tklpho8bwo92gzdnzrl:5432` | Docker volume `postgres-data-i8hc7tklpho8bwo92gzdnzrl`, managed by Coolify | This page, section 5 |
+| `ascension-rabbitmq` | Service, `rabbitmq:4.4.0-management-alpine` | `rabbitmq-qqu2ictjftetdiyyif9ffctg:5672` | Jobs in transit only | [AI Worker Deployment Guide](./worker-deployment-guide.md) |
+| Jenkins | Service | `https://jenkins.ascension-eip.fr` | `/opt/ascension/jenkins/data`, caches in `/opt/ascension/jenkins/cache` | [Jenkins & SonarQube Administration Guide](../../git/jenkins-sonarqube-administration-guide.md) |
+| SonarQube | Service, with its own PostgreSQL | `https://sonarqube.ascension-eip.fr` | `/opt/ascension/sonarqube/data` | [Jenkins & SonarQube Administration Guide](../../git/jenkins-sonarqube-administration-guide.md) |
+| n8n | Service, `n8nio/n8n:2.47.5` | `https://n8n.ascension-eip.fr` | `/opt/ascension/n8n/data` | [n8n Technology Watch Guide](./n8n-technology-watch-guide.md) |
+| Coolify | Installed on the host | `https://coolify.ascension-eip.fr` | `/data/coolify` | This page |
+| Object Storage | OVHcloud buckets `ascension-videos` and `ascension-backups` | `https://s3.gra.io.cloud.ovh.net` | Videos, backups | [S3 Object Storage Guide](./s3-object-storage-guide.md) |
 
-### Comparison with Cloud Providers
+The data of the tools follows one convention: a bind mount under `/opt/ascension/<service>/`, so it is easy to find, to back up and to move. Only the databases created by Coolify keep their Docker volume.
 
-| Provider | MVP Cost | 100k Users | Extra Cost vs Hetzner |
-| --- | --- | --- | --- |
-| **Hetzner** | 96€/month | ~3,500€/month | Reference |
-| OVH | 140€/month | ~5,000€/month | +46% |
-| DigitalOcean | 207€/month | ~7,000€/month | +116% |
-| AWS | 312€/month | ~11,700€/month | +225% |
-
-**Annual savings vs AWS**: 2,592€ (MVP) → 98,400€ (100k users)
+From the Internet, the VPS only answers on SSH (22), HTTP (80) and HTTPS (443). PostgreSQL, RabbitMQ and the Coolify ports stay internal.
 
 ---
 
-## Security Best Practices Checklist
+## 2\. Access
 
-- [ ] All data encrypted in transit (TLS 1.3) and at rest (encrypted volumes)
-- [ ] Secrets stored in `.env` files (not in Git), rotated quarterly
-- [ ] SSH key-only authentication, root login disabled
-- [ ] UFW firewall active (only ports 22, 80, 443 exposed)
-- [ ] Fail2Ban active for SSH brute-force protection
-- [ ] Database not exposed to public internet
-- [ ] RabbitMQ and MinIO consoles accessible only via SSH tunnel
-- [ ] Automatic security updates via `unattended-upgrades`
-- [ ] Docker images rebuilt weekly with latest base images
-- [ ] Dependabot enabled for dependency vulnerability scanning
-- [ ] RGPD: EU-only data storage (Hetzner Germany/Finland)
-- [ ] RGPD: `ON DELETE CASCADE` implements right-to-erasure
-- [ ] Rate limiting via Nginx (100 req/min per IP)
-- [ ] JWT tokens expire after 1 hour, refresh tokens secured
-- [ ] Presigned upload URLs expire after 15 minutes
+### 2.1 SSH
+
+Each team member has a personal Linux account on the VPS, named after the first 3 letters of the first name and the first 4 letters of the last name (for instance `chr_vand`), with `sudo`. Never share an account and never log in as another member.
+
+Log in with an SSH key, by the IP address of the VPS (team password storage, or the OVHcloud console › _Bare Metal Cloud › VPS_). Cloudflare proxies the domains, so `ascension-eip.fr` does not lead to the SSH port.
+
+To add your key:
+
+1. Create a key if you have none: `ssh-keygen -t ed25519 -C "<your name>"`.
+2. Send the **public** key (`~/.ssh/id_ed25519.pub`) to a member who already has access. Never send the private key.
+3. That member adds it to your account:
+
+```bash
+sudo install -d -m 700 -o <user> -g <user> /home/<user>/.ssh
+echo '<public key>' | sudo tee -a /home/<user>/.ssh/authorized_keys
+sudo chown <user>:<user> /home/<user>/.ssh/authorized_keys
+sudo chmod 600 /home/<user>/.ssh/authorized_keys
+```
+
+Then add the VPS to your `~/.ssh/config`:
+
+```text
+Host ascension-vps
+    HostName <vps-ip>
+    User <user>
+    IdentityFile ~/.ssh/id_ed25519
+```
+
+and log in with `ssh ascension-vps`. Every command of this page that starts with `sudo` runs on the VPS.
+
+### 2.2 Coolify
+
+The web interface is `https://coolify.ascension-eip.fr`. Its login is in the team's password storage.
+
+| Need | Where |
+| --- | --- |
+| Every resource of production | _Projects › Ascension › production_ |
+| Backups of the Coolify instance, updates | _Settings_ |
+| S3 destinations of the backups | _S3 Storages_ |
+| API token for a script | _Keys & Tokens › API tokens_ (abilities _read_, _write_, _deploy_ as needed) |
+
+The Coolify API answers on `https://coolify.ascension-eip.fr/api/v1` with a token in the `Authorization: Bearer` header. Create a token for a task and delete it when the task is done.
+
+### 2.3 Other consoles
+
+| Console | Used for |
+| --- | --- |
+| OVHcloud | The VPS (reboot, rescue mode, snapshots) and the Public Cloud project `Ascension Storage` (buckets and their users) |
+| Cloudflare | DNS records of `ascension-eip.fr` |
+| GitHub, repository settings | Webhooks to Coolify (automatic deployments), and the GitHub App of Jenkins (CI) |
 
 ---
 
-## Next Steps
+## 3\. Deploying, restarting and reading the logs
 
-- Implement blue-green deployments for zero-downtime updates
-- Set up K3s cluster for auto-scaling (Phase 3)
-- Add comprehensive E2E testing in CI/CD
-- Configure Grafana alerting to Slack/Discord
-- Set up log retention policies in Loki
-- Implement chaos engineering tests
+### 3.1 How a change reaches production
+
+- **API and AI worker:** they deploy themselves. A push to `main` (release from `staging`) sends a GitHub webhook to Coolify, which builds the compose file of the application and replaces its containers. Nothing to do by hand.
+- **Tools and data services** (PostgreSQL, RabbitMQ, Jenkins, SonarQube, n8n): their compose file is stored in Coolify (the n8n one is also versioned in `infra/n8n/`). A change is made in Coolify, then the service is restarted.
+
+### 3.2 Actions on a resource
+
+Open the resource in _Projects › Ascension › production_:
+
+| Action | Button | Effect |
+| --- | --- | --- |
+| Deploy the latest code | **Redeploy** (application) | Builds the image again from the branch, then replaces the containers |
+| Apply a new variable or a new compose file | **Redeploy** (application) or **Restart** (service, database) | Recreates the containers with the new configuration |
+| Restart without change | **Restart** | Restarts the containers, same image and configuration |
+| Stop | **Stop** | Stops the containers. The data is kept |
+| Follow a deployment | _Deployments_ (application) | Build and start logs of each deployment, with its commit |
+
+To roll back an application, revert the faulty commit on `main`: the push deploys the previous code (see the [API Deployment Guide](./api-deployment-guide.md), section 2.3).
+
+### 3.3 Logs
+
+- **In Coolify:** the resource › _Logs_ shows the live output of each container.
+- **On the VPS:** each container name contains the UUID of its resource in Coolify:
+
+```bash
+# Containers of a resource and their health
+sudo docker ps --filter name=<uuid> --format '{{.Names}} {{.Status}}'
+
+# Last lines, then follow
+sudo docker logs --tail 100 -f <container>
+```
+
+| Resource | UUID |
+| --- | --- |
+| `ascension-api` | `xwraxbcreb0niv0lhfobogs9` |
+| `ascension-worker` | `vbqckodgvkbiuadqxswr1zvx` |
+| `ascension-postgres` | `i8hc7tklpho8bwo92gzdnzrl` |
+| `ascension-rabbitmq` | `qqu2ictjftetdiyyif9ffctg` |
+| Jenkins | `26gf8t8lwp6qnarlolqnhkuw` |
+| SonarQube | `7lslat4tmau1eufkztvsflu2` |
+| n8n | `cyhrddq3q1fjcacytghlqfq9` |
+
+### 3.4 A shell in a container
+
+Use the resource › _Terminal_ in Coolify, or `sudo docker exec -it <container> sh` on the VPS. For the database:
+
+```bash
+sudo docker exec -it i8hc7tklpho8bwo92gzdnzrl psql -U ascension -d ascension
+```
+
+### 3.5 Checking that production is healthy
+
+```bash
+# API: must answer HTTP/2 200
+curl -IL https://api.ascension-eip.fr/healthz
+
+# Tools: must answer 200
+curl -s -o /dev/null -w '%{http_code}\n' https://jenkins.ascension-eip.fr/login
+curl -s https://sonarqube.ascension-eip.fr/api/system/status   # "status":"UP"
+curl -s -o /dev/null -w '%{http_code}\n' https://n8n.ascension-eip.fr/healthz
+```
+
+On the VPS, `sudo docker ps --format '{{.Names}} {{.Status}}'` must show every container `Up`, and `healthy` for those with a healthcheck. The worker has no healthcheck yet: check that it consumes its queues with the commands of the [AI Worker Deployment Guide](./worker-deployment-guide.md), section 4.
+
+### 3.6 Alerts
+
+Coolify posts its alerts in the team's Discord alerts channel, through a webhook set in Coolify › _Notifications › Discord_. The critical ones mention `@here`.
+
+| Group | Events sent |
+| --- | --- |
+| Deployments | Deployment failure |
+| Backups | Backup failure, and a schedule without a successful backup for 2 days |
+| Resources | Restart limit reached: a container that keeps crashing |
+| Scheduled tasks | Scheduled task failure |
+| Servers | Docker cleanup failure, disk usage warning, server unreachable, operating system updates pending, Traefik outdated |
+
+The successful events (deployments, backups, cleanups) are not sent, so that every message in the channel needs a look. Use **Send Test** on the same page to check the webhook after a change.
+
+---
+
+## 4\. Secrets
+
+### 4.1 Where they live
+
+| Secret | Where |
+| --- | --- |
+| Variables of every resource (database and broker passwords, S3 keys, JWT and session secrets, LLM key, n8n encryption key) | Coolify › the resource › _Environment Variables_. Coolify stores them encrypted in its database |
+| `APP_KEY` of Coolify, which encrypts the variables above | `/data/coolify/source/.env` on the VPS, and a copy in the team's password storage |
+| Logins of Coolify, Jenkins, SonarQube and n8n | Team's password storage |
+| S3 keys | OVHcloud console (users of the project `Ascension Storage`), then copied into Coolify |
+| GitHub webhook secrets | Coolify (_Webhooks_ of the application) and the repository settings |
+| Discord webhook of the alerts | Coolify › _Notifications › Discord_, and the team's password storage. Anyone with this URL can post in the channel |
+
+A secret never goes into the repository, a commit, an issue, a pull request or a Discord message.
+
+### 4.2 Changing a secret
+
+1. Change it at its source when it has one: OVHcloud for an S3 key, the Gemini console for the LLM key, the database itself for a database password (see the table below).
+2. Update the variable in Coolify › the resource › _Environment Variables_, and in every other resource that uses it (the API and the worker share the database, broker and S3 variables).
+3. **Redeploy** the applications, **Restart** the services: a running container keeps its old values until then.
+4. Check the resource (section 3.5), then update the team's password storage.
+
+| Secret | Before changing it |
+| --- | --- |
+| `AUTH_JWT_SECRET`, `AUTH_SESSION_SECRET` (API) | Every user is logged out at once. Change them only on purpose |
+| Password of `ascension-postgres` | Change it in Coolify on the database, then in the variables of the API and of the worker, and restart all three |
+| Password of `ascension-rabbitmq` | Same: the service, then the API and the worker |
+| S3 keys of `ascension-app` | Generate the new keys in OVHcloud, update the API and the worker, then delete the old keys (see the [S3 Object Storage Guide](./s3-object-storage-guide.md), section 2.3) |
+| S3 keys of `ascension-backup-writer` | Update _S3 Storages › ascension-backups_ in Coolify and **Validate** it |
+| `LLM_API_KEY` (worker) | No side effect: the next analysis uses the new key |
+| `N8N_ENCRYPTION_KEY` | **Never change it**: the credentials stored in n8n become unreadable |
+| `APP_KEY` of Coolify | **Never change it by hand**: every variable stored in Coolify becomes unreadable |
+
+---
+
+## 5\. Backups
+
+Every night, Coolify backs up the application database (02:00 UTC), the SonarQube database (02:10), n8n (02:20), Jenkins (02:30) and its own database (02:40) to the bucket `ascension-backups` in Gravelines. It keeps 7 copies on the VPS and 30 days in the bucket.
+
+Each resource shows its backups in Coolify (_Backups_, or _Settings › Backup_ for Coolify itself), with a **Back Up Now** button. Take a backup by hand before any risky operation: an update, a migration by hand, a restore.
+
+The details, and how to restore each backup, are in the [Backup and Restore Guide](./backup-and-restore-guide.md).
+
+---
+
+## 6\. Updating
+
+### 6.1 The operating system
+
+Security updates install themselves every day (`unattended-upgrades`). The other updates, and the reboot they sometimes need, are done by hand:
+
+1. Check that no Jenkins build is running, and warn the team on Discord.
+2. Take a backup of the databases (**Back Up Now**, section 5).
+3. On the VPS:
+
+```bash
+sudo apt update && sudo apt full-upgrade
+# A reboot is needed when this file exists
+test -f /var/run/reboot-required && cat /var/run/reboot-required.pkgs
+sudo reboot
+```
+
+4. Docker and Coolify start again on their own, and every container restarts with them. A few minutes later, check production (section 3.5).
+
+### 6.2 Coolify
+
+Coolify updates itself every night at 00:58 UTC (_Settings › Updates_), and backs up its database before each update. Read the release notes before a major version, and check production the next morning.
+
+### 6.3 The tools and data services
+
+| Service | How to update |
+| --- | --- |
+| Jenkins (`jenkins/jenkins:lts-jdk21`), SonarQube (`sonarqube:community`) | Their tags follow the latest release: **Pull latest and restart** in Coolify, after a backup. Update the Jenkins plugins from Jenkins. For SonarQube, follow the upgrade procedure of the [administration guide](../../git/jenkins-sonarqube-administration-guide.md), section 8: a database migration cannot be started from `/setup` |
+| n8n (`n8nio/n8n:2.47.5`) | Change the version in `infra/n8n/docker-compose.yml` with a pull request, then in the compose file of the service in Coolify, and restart it |
+| `ascension-postgres`, `ascension-rabbitmq` | Patch versions only, after a backup. A major PostgreSQL version needs a dump and a restore: plan it as a task of its own |
+
+Docker images that are no longer used are deleted every night at 00:00 UTC by Coolify.
+
+---
+
+## 7\. Related documentation
+
+| Page | Content |
+| --- | --- |
+| [Infrastructure Architecture](../infrastructure.md) | Why one VPS and Object Storage, sizing, costs |
+| [API Deployment Guide](./api-deployment-guide.md) | Variables, automatic deployment and troubleshooting of the API |
+| [AI Worker Deployment Guide](./worker-deployment-guide.md) | Variables, resource limits and troubleshooting of the worker |
+| [S3 Object Storage Guide](./s3-object-storage-guide.md) | Videos bucket, keys and policy |
+| [Backup and Restore Guide](./backup-and-restore-guide.md) | Backups and restores |
+| [n8n Technology Watch Guide](./n8n-technology-watch-guide.md) | The technology watch workflow |
+| [Jenkins & SonarQube Guide](../../git/jenkins-sonarqube-guide.md) | Using the CI on pull requests |
+| [Jenkins & SonarQube Administration Guide](../../git/jenkins-sonarqube-administration-guide.md) | Administering Jenkins and SonarQube |
+| [Development Environment Setup](./development.md) | The local environment |

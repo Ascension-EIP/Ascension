@@ -3,7 +3,7 @@ id: 2f835188-7fa7-46eb-84ab-0f2bcdda5321
 ---
 
 :::success
-**Version:** 1.2
+**Version:** 1.3
 :::
 
 ---
@@ -109,8 +109,7 @@ Copy `.env.example` to `.env` at the repository root and fill in the values. The
 | `RABBITMQ_USER` | ✅ | — | RabbitMQ username |
 | `RABBITMQ_PASS` | ✅ | — | RabbitMQ password |
 | `RABBITMQ_TLS` | ❌ | `false` | Enable TLS connection |
-| `RABBITMQ_QUEUE_AI` | ❌ | `vision.skeleton` | Target queue dispatched to AI workers |
-| `RABBITMQ_QUEUE_SERVER` | ❌ | `ascension.events` | Incoming events exchange / queue |
+| `RABBITMQ_EXCHANGE` | ❌ | `events` | Topic exchange shared with the AI worker: analysis jobs are published with the `pose.detect.requested` routing key |
 
 ### Auth & Tokens (`AUTH_*`)
 

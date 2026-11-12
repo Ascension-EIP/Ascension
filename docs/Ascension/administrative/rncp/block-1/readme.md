@@ -16,4 +16,6 @@ order:
   - folder-files
 ---
 
+Les fichiers et dossiers de ce répertoire sont des archives. Ainsi, certaines choses ne sont volontairement pas à jour par rapport au projet actuel. Ce répertoire contient l’ensemble du travail fourni pour le bloc 1 du RNCP en mars 2026.
+
 :::subpages cards 3

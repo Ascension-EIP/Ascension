@@ -1,8 +1,8 @@
-// @date 2026-09-11
+// @date 2026-11-12
 // @file error.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package dto
@@ -34,6 +34,9 @@ func Error(err error) error {
 			return model.ErrInvalidInput
 
 		case "23502": // not_null_violation
+			return model.ErrInvalidInput
+
+		case "23514": // check_violation
 			return model.ErrInvalidInput
 
 		default:
