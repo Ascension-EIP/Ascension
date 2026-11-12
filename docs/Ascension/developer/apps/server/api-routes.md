@@ -3,7 +3,7 @@ id: bfb575e1-a621-48a9-8452-4d113ee0e10e
 ---
 
 :::success
-**Version:** 1.4
+**Version:** 1.5
 :::
 
 ---
@@ -722,6 +722,100 @@ Deletes the session. Its videos and their analyses are kept, outside any session
 | `204 No Content` | Session deleted | empty |
 | `400 Bad Request` | Invalid UUID | `{"error": "<msg>"}` |
 | `404 Not Found` | Unknown session, or another user's session | `{"error": "climbing session not found"}` |
+
+---
+
+## Body Constraints
+
+**Rate limit:** 10 req/min (shared with `/v1/profile`).\
+**Authentication:** Required (`user` or `admin`).
+
+The missing or injured body zones declared on the interactive skeleton of the morphological profile (F01). They are used by the analysis, the Ghost Mode, the advice and the training programs. A constraint is **active** while `ended_at` is `null`, and a user has at most one active constraint per zone. Every route only sees the caller's own constraints: another user's constraint answers `404 Not Found`.
+
+**`BodyConstraint` object:**
+
+```json
+{
+  "id": "018e6e5a-7777-7abc-8def-0123456789ab",
+  "zone": "left_knee",
+  "type": "injured",
+  "note": "Sprain, no heel hooks",
+  "started_at": "2026-10-01T00:00:00Z",
+  "ended_at": null,
+  "created_at": "2026-11-13T09:12:00Z",
+  "updated_at": "2026-11-13T09:12:00Z"
+}
+
+```
+
+| Field | Values |
+| --- | --- |
+| `zone` | `head`, `neck`, `torso`, `lower_back`, then `left_` / `right_` + `shoulder`, `upper_arm`, `elbow`, `forearm`, `wrist`, `hand`, `fingers`, `hip`, `thigh`, `knee`, `shin`, `ankle`, `foot` (30 zones, as the `body_zone` database enum) |
+| `type` | `injured` (an injury: it ends when it heals) or `missing` (a missing limb or body part: it never ends) |
+
+`started_at` and `ended_at` are dates: only their day is stored.
+
+### GET /v1/profile/constraints — List the active constraints
+
+Returns the caller's active constraints, from head to feet.
+
+**Responses:**
+
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `200 OK` | Active constraints, possibly none | `{"constraints": [BodyConstraint, ...]}` |
+
+---
+
+### POST /v1/profile/constraints — Declare a constraint on a zone
+
+Declares a constraint on a zone. When the zone already has an active constraint, it is replaced: its type and note take the new values, and its start date changes only when `started_at` is given.
+
+**Request body (JSON):**
+
+```json
+{
+  "zone": "left_knee",
+  "type": "injured",
+  "note": "Sprain, no heel hooks",
+  "started_at": "2026-10-01T00:00:00Z"
+}
+
+```
+
+| Field | Type | Rules |
+| --- | --- | --- |
+| `zone` | string | Required, one of the 30 zones |
+| `type` | string | Required, `injured` or `missing` |
+| `note` | string | Optional, up to 1000 characters. Omitted on a replacement, it is cleared |
+| `started_at` | RFC 3339 date-time | Optional, defaults to today. Not later than tomorrow |
+
+**Responses:**
+
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `201 Created` | New active constraint on the zone | `BodyConstraint` |
+| `200 OK` | The active constraint of the zone was replaced | `BodyConstraint` |
+| `400 Bad Request` | Malformed body, `zone` or `type` missing | `{"error": "<msg>"}` |
+| `422 Unprocessable Entity` | Unknown zone or type, note too long, start in the future | `{"error": "<msg>"}` |
+
+---
+
+### DELETE /v1/profile/constraints/:id — Remove a constraint
+
+Removes one of the caller's active constraints:
+
+- an `injured` constraint is **resolved**: `ended_at` is set to today and the constraint stays in the history, which the training programs use;
+- a `missing` constraint is **deleted**: it never ends, so removing it means it was declared by mistake.
+
+**Responses:**
+
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `204 No Content` | Constraint resolved or deleted | empty |
+| `400 Bad Request` | Invalid UUID | `{"error": "<msg>"}` |
+| `404 Not Found` | Unknown or already resolved constraint, or another user's constraint | `{"error": "body constraint not found"}` |
+| `422 Unprocessable Entity` | The injury starts after today, so it cannot end today | `{"error": "<msg>"}` |
 
 ---
 
