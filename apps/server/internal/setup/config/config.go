@@ -1,4 +1,4 @@
-// @date 2026-09-20
+// @date 2026-11-12
 // @file config.go
 // @brief File description.
 // @project Ascension
@@ -41,6 +41,7 @@ type (
 		Secret      string        `env:"SECRET,unset,required"`
 		BucketName  string        `env:"BUCKET,required"`
 		SSL         bool          `env:"SSL" envDefault:"false"`
+		Region      string        `env:"REGION"`
 		UploadExp   time.Duration `env:"UPLOAD_EXP" envDefault:"1h"`
 		DownloadExp time.Duration `env:"DOWNLAOD_EXP" envDefault:"1h"`
 	}
