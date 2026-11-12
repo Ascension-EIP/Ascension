@@ -31,6 +31,8 @@ func New(
 	profileH *handler.ProfileHandler,
 	climbingSessionH *handler.ClimbingSessionHandler,
 	bodyConstraintH *handler.UserBodyConstraintHandler,
+	friendshipH *handler.FriendshipHandler,
+	feedH *handler.FeedHandler,
 ) {
 	app.Use(middleware.RequestID())
 	app.Use(middleware.Logger())
@@ -50,6 +52,8 @@ func New(
 			usersGroup.PUT("/:id", userH.Update)
 			usersGroup.DELETE("/:id", userH.Delete)
 		}
+		// Outside the admin group: every user can search the others.
+		v1.GET("/users/search", middleware.RateLimiter(time.Minute, 30), authMW(), friendshipH.SearchUsers)
 
 		authGroup := v1.Group("/auth")
 		{
@@ -92,6 +96,16 @@ func New(
 			climbingSessionsGroup.DELETE("/:id", climbingSessionH.Delete)
 			climbingSessionsGroup.POST("/:id/analyses", climbingSessionH.AddAnalysis)
 		}
+
+		friendsGroup := v1.Group("/friends", middleware.RateLimiter(time.Minute, 10), authMW())
+		{
+			friendsGroup.GET("", friendshipH.ListFriends)
+			friendsGroup.GET("/requests", friendshipH.ListRequests)
+			friendsGroup.POST("/requests/:userId", friendshipH.SendRequest)
+			friendsGroup.PUT("/requests/:id", friendshipH.AnswerRequest)
+		}
+
+		v1.GET("/feed", middleware.RateLimiter(time.Minute, 30), authMW(), feedH.Get)
 	}
 }
 

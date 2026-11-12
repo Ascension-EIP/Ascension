@@ -54,6 +54,36 @@ type UserBodyConstraintRepository interface {
 	DeleteUserBodyConstraint(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 }
 
+// FriendshipRepository stores the friendships and finds users. Users who are not active,
+// and pairs that are blocked, never appear in what it returns.
+type FriendshipRepository interface {
+	// CreateFriendRequest inserts a pending request from requesterID to addresseeID. It
+	// returns ErrNotFound when the addressee is not an active user or when the pair already
+	// has a friendship, whatever its status.
+	CreateFriendRequest(ctx context.Context, requesterID uuid.UUID, addresseeID uuid.UUID) (Friendship, error)
+	// GetFriendshipBetween returns the friendship of the pair, whichever side requested, or ErrNotFound.
+	GetFriendshipBetween(ctx context.Context, userID uuid.UUID, otherID uuid.UUID) (Friendship, error)
+	// ListFriendRequests returns the pending requests the user received and sent, newest first.
+	ListFriendRequests(ctx context.Context, userID uuid.UUID) (FriendRequests, error)
+	// AcceptFriendRequest accepts a pending request addressed to addresseeID, or returns ErrNotFound.
+	AcceptFriendRequest(ctx context.Context, id uuid.UUID, addresseeID uuid.UUID) (Friendship, error)
+	// DeleteFriendRequest deletes a pending request addressed to addresseeID, or returns ErrNotFound.
+	DeleteFriendRequest(ctx context.Context, id uuid.UUID, addresseeID uuid.UUID) error
+	// ListFriends returns one page of the user's friends by username, and the total count.
+	ListFriends(ctx context.Context, userID uuid.UUID, pagination Pagination) ([]Friend, int, error)
+	// SearchUsers returns one page of the users whose username contains query, the exact
+	// match first, then the prefixes, then by username, and the total count. The viewer is
+	// left out.
+	SearchUsers(ctx context.Context, viewerID uuid.UUID, query string, pagination Pagination) ([]UserSearchResult, int, error)
+}
+
+// FeedRepository reads the climbing sessions other users share with a viewer.
+type FeedRepository interface {
+	// ListFeed returns one page of the sessions visible to the viewer in the scope, most
+	// recent first, and the total count. The viewer's own sessions are left out.
+	ListFeed(ctx context.Context, viewerID uuid.UUID, scope FeedScope, pagination Pagination) ([]FeedItem, int, error)
+}
+
 type AnalysisRepository interface {
 	TransactionRepository
 	CreateAnalysis(ctx context.Context, analysis Analysis) (Analysis, error)

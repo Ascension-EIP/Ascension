@@ -7,8 +7,9 @@
 // @status done
 // Package memrepo is an in-memory stand-in for the PostgreSQL repository, used by unit
 // tests only. It implements model.ClimbingSessionRepository, model.AnalysisRepository,
-// model.VideoRepository and model.UserBodyConstraintRepository with the same ownership and
-// not-found rules as the real queries.
+// model.VideoRepository, model.UserBodyConstraintRepository, model.FriendshipRepository and
+// model.FeedRepository with the same ownership, visibility and not-found rules as the real
+// queries.
 package memrepo
 
 import (
@@ -35,6 +36,8 @@ type Repo struct {
 	videos          map[uuid.UUID]model.Video
 	analyses        map[uuid.UUID]model.Analysis
 	bodyConstraints map[uuid.UUID]model.UserBodyConstraint
+	users           map[uuid.UUID]model.User
+	friendships     map[uuid.UUID]model.Friendship
 	now             func() time.Time
 }
 
@@ -45,6 +48,8 @@ func New() *Repo {
 		videos:          map[uuid.UUID]model.Video{},
 		analyses:        map[uuid.UUID]model.Analysis{},
 		bodyConstraints: map[uuid.UUID]model.UserBodyConstraint{},
+		users:           map[uuid.UUID]model.User{},
+		friendships:     map[uuid.UUID]model.Friendship{},
 		now:             time.Now,
 	}
 }

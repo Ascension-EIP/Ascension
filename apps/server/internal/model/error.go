@@ -45,5 +45,9 @@ var (
 	// -- User body constraint -- //
 	ErrUserBodyConstraintNotFound = errors.New("body constraint not found")
 
+	// -- Friendship -- //
+	ErrFriendRequestNotFound = errors.New("friend request not found")
+	ErrFriendshipExists      = errors.New("friendship already exists")
+
 	ErrUnknown = errors.New("unknown error")
 )

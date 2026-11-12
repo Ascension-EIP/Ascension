@@ -3,7 +3,7 @@ id: bfb575e1-a621-48a9-8452-4d113ee0e10e
 ---
 
 :::success
-**Version:** 1.5
+**Version:** 1.6
 :::
 
 ---
@@ -54,8 +54,8 @@ Authentication is enforced via `middleware.AuthMiddleware` (`internal/inbound/ht
 | Access Level | Routes | Required Role |
 | --- | --- | --- |
 | **Public** | `/healthz`, `/v1/auth/register`, `/v1/auth/login`, `/v1/auth/refresh` | None |
-| **Authenticated** | `DELETE /v1/auth/logout`, `/v1/videos/*`, `/v1/analysis/*`, `/v1/sessions/*` | `user` or `admin` |
-| **Admin Only** | `/v1/users/*` | `admin` |
+| **Authenticated** | `DELETE /v1/auth/logout`, `/v1/videos/*`, `/v1/analysis/*`, `/v1/sessions/*`, `/v1/profile/*`, `/v1/friends/*`, `GET /v1/users/search`, `GET /v1/feed` | `user` or `admin` |
+| **Admin Only** | `/v1/users/*`, except `GET /v1/users/search` | `admin` |
 
 ---
 
@@ -73,6 +73,9 @@ Rate limiting is enforced per client IP via `middleware.RateLimiter`:
 | `/v1/videos/*` | 10 requests / minute |
 | `/v1/analysis/*` | 10 requests / minute |
 | `/v1/sessions/*` | 10 requests / minute |
+| `/v1/friends/*` | 10 requests / minute |
+| `GET /v1/users/search` | 30 requests / minute |
+| `GET /v1/feed` | 30 requests / minute |
 
 Excess requests receive `429 Too Many Requests`.
 
@@ -833,6 +836,230 @@ Removes one of the caller's active constraints:
 
 ---
 
+## Community
+
+**Rate limit:** 10 req/min on `/v1/friends/*`, 30 req/min on `GET /v1/users/search` and on `GET /v1/feed`.\
+**Authentication:** Required (`user` or `admin`).
+
+Friendships, the user search and the feed of the community features (F11). A friendship is symmetric: one side sends a request, the other accepts it. The `friendships` table holds one row per pair of users, whichever side asked.
+
+Privacy rules applied by every route:
+
+- A user who is not active (deactivated account) never appears: not in the search, the friends, the requests or the feed, and a request to them answers `404 Not Found`.
+- A **blocked** pair hides everything in both directions, public sessions included. A request to or from a blocked user answers `404 Not Found`, so a blocked user cannot tell they were blocked. No route blocks a user yet: the rule is ready for it.
+- What any user sees of another one is their `id` and `username`. The first and last names are shown to friends only, in `GET /v1/friends`.
+
+**`Friendship` object** (returned when a request is sent or accepted):
+
+```json
+{
+  "id": "018e6e5a-8888-7abc-8def-0123456789ab",
+  "requester_id": "018e6e5a-1111-7abc-8def-0123456789ab",
+  "addressee_id": "018e6e5a-2222-7abc-8def-0123456789ab",
+  "status": "pending",
+  "responded_at": null,
+  "created_at": "2026-11-13T09:12:00Z"
+}
+
+```
+
+`status` is `pending` until the addressee answers, then `accepted`; `responded_at` is set on acceptance.
+
+### POST /v1/friends/requests/:userId — Send a friend request
+
+Sends a friend request from the caller to the user `:userId`.
+
+**Responses:**
+
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `201 Created` | Request sent, pending | `Friendship` |
+| `400 Bad Request` | Invalid UUID | `{"error": "<msg>"}` |
+| `404 Not Found` | Unknown or deactivated user, or blocked pair | `{"error": "user not found"}` |
+| `409 Conflict` | Already friends, request already sent, or request already received from this user (accept it instead) | `{"error": "friendship already exists: <reason>"}` |
+| `422 Unprocessable Entity` | Request to yourself | `{"error": "<msg>"}` |
+
+---
+
+### GET /v1/friends/requests — List the pending requests
+
+Returns the pending requests the caller received (to accept or decline) and sent, newest first. `user` is the other side of the request.
+
+**Response `200 OK`:**
+
+```json
+{
+  "incoming": [
+    {
+      "id": "018e6e5a-8888-7abc-8def-0123456789ab",
+      "user": { "id": "018e6e5a-1111-7abc-8def-0123456789ab", "username": "alice" },
+      "created_at": "2026-11-13T09:12:00Z"
+    }
+  ],
+  "outgoing": []
+}
+
+```
+
+---
+
+### PUT /v1/friends/requests/:id — Accept or decline a request
+
+Answers a pending request addressed to the caller. Only the addressee can answer.
+
+**Request body (JSON):**
+
+```json
+{ "action": "accept" }
+
+```
+
+| Field | Type | Rules |
+| --- | --- | --- |
+| `action` | string | Required, `accept` or `decline` |
+
+A declined request is **deleted**: nothing is kept, and either side can send a new request later.
+
+**Responses:**
+
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `200 OK` | Request accepted | `Friendship` with `status: "accepted"` |
+| `204 No Content` | Request declined and deleted | empty |
+| `400 Bad Request` | Invalid UUID, malformed body or `action` missing | `{"error": "<msg>"}` |
+| `404 Not Found` | Unknown request, already answered, or not addressed to the caller | `{"error": "friend request not found"}` |
+| `422 Unprocessable Entity` | Unknown `action` | `{"error": "<msg>"}` |
+
+---
+
+### GET /v1/friends — List friends
+
+Returns one page of the caller's friends, by username.
+
+**Query parameters:** `limit` (1 to 100, default 20) and `offset` (default 0).
+
+**Response `200 OK`:**
+
+```json
+{
+  "friends": [
+    {
+      "friendship_id": "018e6e5a-8888-7abc-8def-0123456789ab",
+      "user": {
+        "id": "018e6e5a-2222-7abc-8def-0123456789ab",
+        "username": "bob",
+        "first_name": "Bob",
+        "last_name": "Martin"
+      },
+      "since": "2026-11-13T10:00:00Z"
+    }
+  ],
+  "total": 1,
+  "limit": 20,
+  "offset": 0
+}
+
+```
+
+`400 Bad Request` answers an invalid `limit` or `offset`.
+
+---
+
+### GET /v1/users/search — Search users by username
+
+Finds the active users whose username contains `q`, other than the caller: the exact match first, then the usernames starting with `q`, then the others, each group by username. Each result carries its relation to the caller, so the app can show the right button.
+
+**Query parameters:**
+
+| Parameter | Rules |
+| --- | --- |
+| `q` | Required, 2 to 30 characters, letters, digits and `_` only (the characters of a username). Trimmed and lowercased |
+| `limit`, `offset` | Pagination, as `GET /v1/friends` |
+
+**Response `200 OK`:**
+
+```json
+{
+  "users": [
+    {
+      "id": "018e6e5a-2222-7abc-8def-0123456789ab",
+      "username": "bob",
+      "relation": "request_received",
+      "friendship_id": "018e6e5a-8888-7abc-8def-0123456789ab"
+    }
+  ],
+  "total": 1,
+  "limit": 20,
+  "offset": 0
+}
+
+```
+
+| `relation` | Meaning | `friendship_id` |
+| --- | --- | --- |
+| `none` | No link | `null` |
+| `request_sent` | The caller sent a pending request | The request |
+| `request_received` | The user sent a pending request: `PUT /v1/friends/requests/:id` with this id answers it | The request |
+| `friends` | Accepted friendship | The friendship |
+
+`422 Unprocessable Entity` answers a missing, too short, too long or invalid `q`.
+
+---
+
+### GET /v1/feed — Get the feed of climbing sessions
+
+Returns one page of the climbing sessions other users share with the caller, most recent first. The caller's own sessions are listed by `GET /v1/sessions`.
+
+| Session `visibility` | Shown to |
+| --- | --- |
+| `private` | Nobody but its author |
+| `friends` | Friends of the author (accepted friendship only, not a pending request) |
+| `public` | Everyone, with `scope=all` |
+
+**Query parameters:**
+
+| Parameter | Rules |
+| --- | --- |
+| `scope` | Optional. `all` (default): every public session and the sessions friends share. `friends`: only the sessions friends share, public or friends-only |
+| `limit`, `offset` | Pagination, as `GET /v1/friends` |
+
+**Response `200 OK`:**
+
+```json
+{
+  "sessions": [
+    {
+      "id": "018e6e5a-9999-7abc-8def-0123456789ab",
+      "author": { "id": "018e6e5a-2222-7abc-8def-0123456789ab", "username": "bob" },
+      "gym_id": null,
+      "title": "Evening bouldering",
+      "started_at": "2026-11-12T18:00:00Z",
+      "ended_at": "2026-11-12T20:00:00Z",
+      "overall_score": 72.5,
+      "technique_score": 70,
+      "power_score": 80,
+      "endurance_score": 65,
+      "scored_at": "2026-11-12T20:05:00Z",
+      "visibility": "friends",
+      "created_at": "2026-11-12T18:00:00Z"
+    }
+  ],
+  "total": 1,
+  "limit": 20,
+  "offset": 0
+}
+
+```
+
+The session `notes` are never in the feed: they stay private to their author.
+
+| Status | Meaning |
+| --- | --- |
+| `400 Bad Request` | Invalid `limit` or `offset` |
+| `422 Unprocessable Entity` | Unknown `scope` |
+
+---
+
 ## Health
 
 ### GET /healthz — Liveness probe
@@ -859,7 +1086,7 @@ Simple unauthenticated liveness check, also answered to `HEAD` (`curl -I`). Used
 | `401 Unauthorized` | Missing, expired, or invalid JWT token |
 | `403 Forbidden` | Valid token but insufficient role privileges |
 | `404 Not Found` | Requested entity not found |
-| `409 Conflict` | Unique constraint violation (duplicate email or username) |
+| `409 Conflict` | Unique constraint violation (duplicate email or username), or a friendship that already exists |
 | `422 Unprocessable Entity` | Domain validation rules rejected the input |
 | `429 Too Many Requests` | IP rate limit exceeded |
 | `500 Internal Server Error` | Unexpected internal failure |
