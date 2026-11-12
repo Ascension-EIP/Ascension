@@ -5,6 +5,9 @@ order:
   - production
   - development
   - n8n-technology-watch-guide
+  - s3-object-storage-guide
+  - api-deployment-guide
+  - worker-deployment-guide
 ---
 
 :::subpages cards 2

@@ -11,6 +11,12 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 	-ldflags="-s -w" \
 	-o a.out \
 	cmd/server/main.go
+# Same image for the cron jobs (expired sessions and videos): run it with `./cron`.
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+	go build \
+	-ldflags="-s -w" \
+	-o cron \
+	cmd/cron/main.go
 
 
 FROM alpine:3.24
@@ -20,6 +26,7 @@ RUN addgroup -g 1000 bob && adduser -D -u 1000 -G bob bob
 
 COPY migrations migrations
 COPY --from=go-builder --chown=bob:bob /app/a.out ./a.out
+COPY --from=go-builder --chown=bob:bob /app/cron ./cron
 
 USER bob
 

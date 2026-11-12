@@ -35,7 +35,8 @@ func New(
 	app.Use(middleware.Logger())
 	app.Use(middleware.Recovery())
 
-	app.GET("/healthz", func(c *gin.Context) { c.Status(http.StatusNoContent) })
+	app.GET("/healthz", Healthz)
+	app.HEAD("/healthz", Healthz)
 
 	v1 := app.Group("/v1")
 
@@ -88,4 +89,10 @@ func New(
 			climbingSessionsGroup.POST("/:id/analyses", climbingSessionH.AddAnalysis)
 		}
 	}
+}
+
+// Healthz is the liveness probe of the API. It answers 200 OK to GET and
+// HEAD, so `curl -I` and the container healthchecks can use it.
+func Healthz(c *gin.Context) {
+	c.Status(http.StatusOK)
 }
