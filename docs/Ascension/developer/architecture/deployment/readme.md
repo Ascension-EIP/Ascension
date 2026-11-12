@@ -6,6 +6,7 @@ order:
   - development
   - n8n-technology-watch-guide
   - s3-object-storage-guide
+  - api-deployment-guide
 ---
 
 :::subpages cards 2
