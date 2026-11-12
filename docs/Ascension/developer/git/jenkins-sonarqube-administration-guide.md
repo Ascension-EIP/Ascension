@@ -3,7 +3,7 @@ id: 157bff42-b388-4ae5-b2f3-2e16faa74f00
 ---
 
 :::success
-**Version:** 1.1
+**Version:** 1.2
 :::
 
 ---
@@ -170,7 +170,7 @@ To give Jenkins access to another repository, add it to the installation (_Insta
 Jenkins runs in Docker with the host's `docker.sock` and a `docker` CLI mounted. The `dockerRun` step of the shared library starts each pipeline step as a sibling container of Jenkins, with the Jenkins volumes (`--volumes-from`): the workspace and the caches have the same paths as in Jenkins.
 
 - Steps run as root in their container, then the workspace is handed back to the `jenkins` user, so the workspace cleanup always works.
-- The caches live in `/var/jenkins_home/ci-cache` and are kept across builds:
+- The caches live in `/var/jenkins_home/ci-cache` and are kept across builds. On the host, `ci-cache` and `workspace` are separate mounts under `/opt/ascension/jenkins/cache`, outside the backed-up data directory (see the [Backup and Restore Guide](../architecture/deployment/backup-and-restore-guide.md), section 6):
 
 | Path                      | Content                                          |
 | ------------------------- | ------------------------------------------------ |
@@ -195,6 +195,7 @@ Flutter and `uv` are installed in the cache because their images are not publish
 | Host settings for SonarQube        | `/etc/sysctl.d/99-sonarqube.conf` sets `vm.max_map_count=1048576` and `fs.file-max=2097152`. Never set them lower: SonarQube needs at least 524288 and 131072 |
 | Add a team member                  | Create the Jenkins and SonarQube accounts, then assign the Jenkins role (section 2)                                                                           |
 | Restart Jenkins or SonarQube       | From Coolify, on the matching service                                                                                                                         |
+| Upgrade SonarQube | Back up its database first (_Backups › db › Back Up Now_), then redeploy the service. When the new version needs a database migration (status `DB_MIGRATION_NEEDED`), the healthcheck keeps the container out of Traefik and `/setup` answers `503`: open the Coolify terminal of the `sonarqube` container and run `curl -X POST http://127.0.0.1:9000/api/system/migrate_db`, then follow `curl -s http://127.0.0.1:9000/api/system/db_migration_status` until `MIGRATION_SUCCEEDED` |
 
 ---
 
