@@ -1344,4 +1344,4 @@ All tables conform to the foreign key constraints, indexes, and check constraint
 
 - [API Specification](api-specification.md)
 - [Feature catalogue](../../../administrative/features-catalog.md)
-- [System Overview](../system-overview.md)
+- [Global Architecture](../globale-architecture.md)
