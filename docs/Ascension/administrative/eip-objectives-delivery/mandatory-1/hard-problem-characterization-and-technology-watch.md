@@ -3,7 +3,7 @@ id: 8f669aa8-75b7-45de-a63c-8981d50169f4
 ---
 
 :::success
-**Version:** 1.0
+**Version:** 1.1
 :::
 
 # Caractérisation du point dur et dispositif de veille opérationnel
@@ -55,7 +55,7 @@ id: 8f669aa8-75b7-45de-a63c-8981d50169f4
 
 ### 5.2 Nos outils
 
-- **Instance n8n auto-hébergée sur VPS :** workflow d'automatisation déployé sur notre VPS (via Docker) qui s'exécute chaque matin pour interroger les flux RSS (arXiv, releases GitHub, Google Scholar) et filtrer les publications par mots-clés pertinents.
+- **Instance n8n auto-hébergée sur VPS :** workflow d'automatisation déployé sur notre VPS (via Docker et Coolify) qui s'exécute chaque matin à 8 h pour interroger arXiv (flux RSS cs.RO et cs.CV, et recherche dans toutes les catégories), les releases et nouveaux dépôts GitHub, et OpenAlex, puis filtrer les publications par mots-clés pertinents. OpenAlex remplace Google Scholar, qui n'a ni flux RSS ni API : ses alertes n'arrivent que par e-mail. Le fonctionnement est décrit dans le [guide n8n de la veille technique](../../../developer/architecture/deployment/n8n-technology-watch-guide.md).
 - **Salon Discord `#veille-technique` :** relié directement à n8n via un webhook pour recevoir automatiquement les alertes formatées (titre, lien, extrait et tags).
 - **Documentation partagée :** fiches de synthèse écrites dans la doc du projet pour tracer ce que l'on retient ou élimine.
 
