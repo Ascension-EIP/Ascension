@@ -5,6 +5,7 @@ order:
   - production
   - development
   - n8n-technology-watch-guide
+  - s3-object-storage-guide
 ---
 
 :::subpages cards 2
