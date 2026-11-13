@@ -26,7 +26,7 @@ This guide never holds a password or a secret. They live in the Coolify environm
 | Source              | `https://github.com/Ascension-EIP/Ascension`, branch `main`, base directory `/apps/server`                                           | Code deployed in production                                             |
 | Compose file        | [apps/server/docker-compose.coolify.yml](https://github.com/Ascension-EIP/Ascension/blob/dev/apps/server/docker-compose.coolify.yml) | Two services built from `apps/server/Dockerfile`                        |
 | Service `api`       | `https://api.ascension-eip.fr`, container port `8080`                                                                                | The API, behind Traefik and Cloudflare                                  |
-| Service `cron`      | No domain, runs `./cron` from the same image                                                                                         | Deletes expired sessions and videos                                     |
+| Service `cron`      | No domain, runs `./cron` from the same image                                                                                         | Five jobs: expired sessions, expired videos, unfinished uploads, old quota usage, stale analyses |
 | PostgreSQL 18       | Coolify database `ascension-postgres`, host `i8hc7tklpho8bwo92gzdnzrl`                                                               | Data, migrations applied by hand (see section 2.4)                      |
 | RabbitMQ            | Coolify service `ascension-rabbitmq`, host `rabbitmq-qqu2ictjftetdiyyif9ffctg`                                                       | Analysis jobs for the AI worker                                         |
 | Object Storage      | OVHcloud bucket `ascension-videos`                                                                                                   | Videos, see the [S3 Object Storage Guide](./s3-object-storage-guide.md) |
@@ -42,6 +42,8 @@ flowchart LR
     API -->|coolify network| PG[(PostgreSQL)]
     API --> MQ[RabbitMQ]
     Cron --> PG
+    Cron --> MQ
+    Cron --> S3
     API -->|HTTPS| S3[(OVHcloud S3)]
     User[Mobile app] -->|https://api.ascension-eip.fr| API
 ```
@@ -129,6 +131,8 @@ Every variable is set in Coolify › `ascension-api` › _Environment Variables_
 
 Optional: `LOG_LEVEL` (default `info`), `POSTGRES_PORT` (`5432`), `POSTGRES_PARAMS` (`sslmode=disable`, the database is only reachable on the internal network), `RABBITMQ_PORT` (`5672`).
 
+The server reads its storage settings from `STORAGE_*` and its broker settings from `QUEUE_*`. The Coolify variables keep their `MINIO_*` and `RABBITMQ_*` names, and the compose file maps them: `MINIO_ENDPOINT` becomes `STORAGE_ENDPOINT`, `RABBITMQ_HOST` becomes `QUEUE_HOST`, and so on, for both the `api` and the `cron` services. When a variable is renamed in the server, map it in the compose file in the same pull request: otherwise both containers stop at boot, as after the `v0.3.0` release.
+
 :::danger
 Changing `AUTH_JWT_SECRET` logs every user out at once: their access tokens no longer verify. Changing `AUTH_SESSION_SECRET` invalidates the refresh sessions. Rotate them only on purpose, and expect every client to log in again.
 :::
@@ -165,6 +169,7 @@ The first deployment, on 12 November 2026, was checked end to end against produc
 | Symptom                                                    | Cause and fix                                                                                                                                          |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Deployment fails with `required variable ... is missing`   | A `${VAR:?}` variable is empty in Coolify: set it and redeploy                                                                                         |
+| `api` and `cron` restart in a loop, `failed to load config` | A variable the server requires is missing, for example `required environment variable "STORAGE_ENDPOINT" is not set`: map it in the compose file (section 3.1) |
 | A route answers `500` after a deployment, the logs show a missing table, column or constraint | A migration was not applied: compare `migrate version` with `/app/migrations` and apply it (section 2.4) |
 | `failed to create a new rabbitmq queue`                    | Wrong `RABBITMQ_*` values, or the application lost the `coolify` network                                                                               |
 | `failed to create a new minio storage`                     | See the troubleshooting of the [S3 Object Storage Guide](./s3-object-storage-guide.md)                                                                 |
