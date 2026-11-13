@@ -3,7 +3,7 @@ id: bfb575e1-a621-48a9-8452-4d113ee0e10e
 ---
 
 :::success
-**Version:** 1.8
+**Version:** 1.9
 :::
 
 ---
@@ -385,7 +385,7 @@ Generates a presigned PUT URL allowing direct upload from the mobile client to O
 
 ### PUT /v1/videos/upload-done/:id — Complete upload
 
-Notifies the server that the mobile client has finished uploading the file to object storage. The server verifies the object in storage, extracts metadata, and marks the video as completed.
+Notifies the server that the mobile client has finished uploading the file to object storage. The server checks that the object exists in storage, then marks the video as completed. The metadata of the video (duration, resolution, frame rate) is not extracted yet: the service holds a `TODO` for it, so these fields stay `null`.
 
 **Responses:**
 
@@ -393,7 +393,9 @@ Notifies the server that the mobile client has finished uploading the file to ob
 | --- | --- | --- |
 | `204 No Content` | Upload verified and completed | empty |
 | `400 Bad Request` | Invalid UUID | `{"error": "<msg>"}` |
-| `404 Not Found` | Video not found | `{"error": "<msg>"}` |
+| `500 Internal Server Error` | Unknown video, another user's video, or no file in storage yet | `{"error": "<msg>"}`, e.g. `video not found` for a missing file |
+
+These errors answer `500` instead of `404`: the not found errors of the videos are not mapped by `utils.Error`, a known bug covered by a skipped test (`RUN_KNOWN_BUGS=1`).
 
 ---
 
@@ -406,7 +408,10 @@ Generates a time-limited presigned GET URL to stream or download the video.
 | Status | Meaning | Body |
 | --- | --- | --- |
 | `200 OK` | Download URL generated | `{"download_url": "<presigned-url>", "expires_at": "<time>"}` |
-| `404 Not Found` | Video not found | `{"error": "<msg>"}` |
+| `400 Bad Request` | Invalid UUID | `{"error": "invalid uuid"}` |
+| `500 Internal Server Error` | Unknown video, another user's video, or a video still uploading | `{"error": "<msg>"}`, e.g. `video is uploading` |
+
+As for `upload-done`, these errors answer `500` instead of a `4xx`: the video errors are not mapped by `utils.Error`, a known bug.
 
 ---
 
