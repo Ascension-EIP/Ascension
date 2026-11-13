@@ -2,14 +2,15 @@
 // @file memrepo.go
 // @brief In-memory repository for unit tests of the climbing session, video and analysis services.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 // Package memrepo is an in-memory stand-in for the PostgreSQL repository, used by unit
 // tests only. It implements model.ClimbingSessionRepository, model.AnalysisRepository,
-// model.VideoRepository, model.UserBodyConstraintRepository, model.FriendshipRepository and
-// model.FeedRepository with the same ownership, visibility and not-found rules as the real
-// queries.
+// model.VideoRepository, model.UserBodyConstraintRepository, model.FriendshipRepository,
+// model.FeedRepository, model.UserRepository, model.SessionRepository and
+// model.QuotaUsageRepository with the same ownership, visibility and not-found rules as the
+// real queries.
 package memrepo
 
 import (
@@ -38,6 +39,9 @@ type Repo struct {
 	bodyConstraints map[uuid.UUID]model.UserBodyConstraint
 	users           map[uuid.UUID]model.User
 	friendships     map[uuid.UUID]model.Friendship
+	profiles        map[uuid.UUID]model.UserProfile
+	refreshSessions map[uuid.UUID]model.Session
+	quotaCleanups   int
 	now             func() time.Time
 }
 
@@ -50,6 +54,8 @@ func New() *Repo {
 		bodyConstraints: map[uuid.UUID]model.UserBodyConstraint{},
 		users:           map[uuid.UUID]model.User{},
 		friendships:     map[uuid.UUID]model.Friendship{},
+		profiles:        map[uuid.UUID]model.UserProfile{},
+		refreshSessions: map[uuid.UUID]model.Session{},
 		now:             time.Now,
 	}
 }
@@ -284,11 +290,7 @@ func (r *Repo) ListAnalysisByFilter(_ context.Context, filter model.AnalysisFilt
 		return cmp.Compare(b.ID.String(), a.ID.String())
 	})
 
-	total := len(matches)
-	start := min(pagination.Offset, total)
-	end := min(start+pagination.Limit, total)
-
-	return matches[start:end], nil
+	return unboundedPage(matches, pagination), nil
 }
 
 func (r *Repo) UpdateAnalysis(_ context.Context, partial model.AnalysisPartial) (model.Analysis, error) {
@@ -421,11 +423,39 @@ func (r *Repo) GetVideoByFilter(_ context.Context, filter model.VideoFilter) (mo
 	return model.Video{}, model.ErrNotFound
 }
 
-func (r *Repo) ListVideosByFilter(context.Context, model.VideoFilter, model.Pagination) ([]model.Video, error) {
-	return nil, ErrNotImplemented
+// ListVideosByFilter returns the matching videos, oldest first. Like the PostgreSQL query,
+// a zero limit means no limit.
+func (r *Repo) ListVideosByFilter(_ context.Context, filter model.VideoFilter, pagination model.Pagination) ([]model.Video, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	matches := []model.Video{}
+	for _, video := range r.videos {
+		switch {
+		case filter.ID != nil && video.ID != *filter.ID,
+			filter.UserID != nil && video.UserID != *filter.UserID,
+			filter.ObjectKey != nil && video.ObjectKey != *filter.ObjectKey,
+			filter.Status != nil && video.Status != *filter.Status,
+			filter.Visibility != nil && video.Visibility != *filter.Visibility,
+			filter.ContentType != nil && video.ContentType != *filter.ContentType,
+			filter.Retained != nil && video.Retained != *filter.Retained:
+			continue
+		}
+		matches = append(matches, video)
+	}
+	slices.SortFunc(matches, func(a, b model.Video) int {
+		if c := a.CreatedAt.Compare(b.CreatedAt); c != 0 {
+			return c
+		}
+		return cmp.Compare(a.ID.String(), b.ID.String())
+	})
+
+	return unboundedPage(matches, pagination), nil
 }
 
-// UpdateVideo only supports changing the climbing session of a video.
+// UpdateVideo changes the given fields of the video. Like the PostgreSQL query, it finds
+// the video by ID only and an empty partial returns model.ErrNotFound. A climbing session
+// that does not exist returns model.ErrInvalidInput (foreign key).
 func (r *Repo) UpdateVideo(_ context.Context, partial model.VideoPartial) (model.Video, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -434,27 +464,102 @@ func (r *Repo) UpdateVideo(_ context.Context, partial model.VideoPartial) (model
 	if !ok {
 		return model.Video{}, model.ErrNotFound
 	}
-	if partial.ClimbingSessionID == nil {
-		return model.Video{}, ErrNotImplemented
-	}
-	if sessionID := *partial.ClimbingSessionID; sessionID != nil {
-		if _, ok := r.sessions[*sessionID]; !ok {
-			return model.Video{}, model.ErrInvalidInput
+
+	changed := false
+	if partial.ClimbingSessionID != nil {
+		if sessionID := *partial.ClimbingSessionID; sessionID != nil {
+			if _, ok := r.sessions[*sessionID]; !ok {
+				return model.Video{}, model.ErrInvalidInput
+			}
 		}
+		video.ClimbingSessionID, changed = *partial.ClimbingSessionID, true
 	}
-	video.ClimbingSessionID = *partial.ClimbingSessionID
+	if partial.Title != nil {
+		video.Title, changed = *partial.Title, true
+	}
+	if partial.ObjectKey != nil {
+		video.ObjectKey, changed = *partial.ObjectKey, true
+	}
+	if partial.Status != nil {
+		video.Status, changed = *partial.Status, true
+	}
+	if partial.Visibility != nil {
+		video.Visibility, changed = *partial.Visibility, true
+	}
+	if partial.ContentType != nil {
+		video.ContentType, changed = *partial.ContentType, true
+	}
+	if partial.Retained != nil {
+		video.Retained, changed = *partial.Retained, true
+	}
+	if partial.UploadURLExpiresAt != nil {
+		video.UploadURLExpiresAt, changed = *partial.UploadURLExpiresAt, true
+	}
+	if partial.Width != nil {
+		video.Width, changed = *partial.Width, true
+	}
+	if partial.Height != nil {
+		video.Height, changed = *partial.Height, true
+	}
+	if partial.FPS != nil {
+		video.FPS, changed = *partial.FPS, true
+	}
+	if partial.DurationMs != nil {
+		video.DurationMS, changed = *partial.DurationMs, true
+	}
+	if partial.SizeBytes != nil {
+		video.SizeBytes, changed = *partial.SizeBytes, true
+	}
+	if !changed {
+		return model.Video{}, model.ErrNotFound
+	}
 	video.UpdatedAt = r.now()
 	r.videos[video.ID] = video
 
 	return video, nil
 }
 
+// DeleteVideosUploadExpired deletes the videos whose upload URL expired before they were
+// completed.
 func (r *Repo) DeleteVideosUploadExpired(context.Context) error {
-	return ErrNotImplemented
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	now := r.now()
+	for id, video := range r.videos {
+		if video.UploadURLExpiresAt != nil && video.UploadURLExpiresAt.Before(now) && video.Status != model.VideoStatusCompleted {
+			delete(r.videos, id)
+		}
+	}
+
+	return nil
 }
 
-func (r *Repo) DeleteVideosExpired(context.Context, time.Duration) error {
-	return ErrNotImplemented
+// DeleteVideosExpired deletes the completed videos that are not retained and were created
+// more than retainPeriod ago.
+func (r *Repo) DeleteVideosExpired(_ context.Context, retainPeriod time.Duration) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	now := r.now()
+	for id, video := range r.videos {
+		if video.Status == model.VideoStatusCompleted && !video.Retained && video.CreatedAt.Add(retainPeriod).Before(now) {
+			delete(r.videos, id)
+		}
+	}
+
+	return nil
+}
+
+// unboundedPage returns the page of items, a zero limit meaning no limit like the
+// PostgreSQL queries that only add LIMIT when it is set.
+func unboundedPage[T any](items []T, pagination model.Pagination) []T {
+	start := min(pagination.Offset, len(items))
+	if pagination.Limit == 0 {
+		return items[start:]
+	}
+
+	return items[start:min(start+pagination.Limit, len(items))]
 }
 
 // -- Test helpers -- //
