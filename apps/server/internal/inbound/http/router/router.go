@@ -77,6 +77,7 @@ func New(
 			analysesGroup.POST("/", analysisH.Create)
 			analysesGroup.GET("", analysisH.List)
 			analysesGroup.GET("/:id", analysisH.GetByID)
+			analysesGroup.POST("/:id/retry-advice", analysisH.RetryAdvice)
 		}
 
 		profileGroup := v1.Group("/profile", middleware.RateLimiter(time.Minute, 10), authMW())

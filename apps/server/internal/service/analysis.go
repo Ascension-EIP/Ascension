@@ -10,7 +10,9 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"time"
 
 	"uuid"
 
@@ -90,4 +92,37 @@ func (s *AnalysisService) ListAnalyses(ctx context.Context, userID uuid.UUID, pa
 	}
 
 	return model.AnalysisSummaryPage{Analyses: analyses, Total: total, Pagination: pagination}, nil
+}
+
+func (s *AnalysisService) AnalysisStaleDetection(ctx context.Context) error {
+	analyses, err := s.analysisR.ListAnalysisByFilter(ctx, model.AnalysisFilter{Status: new(model.JobStatusPending)}, model.Pagination{Limit: 0, Offset: 0})
+	if err != nil {
+		return err
+	}
+
+	errStack := []error{}
+	s.analysisR.WithTransaction(ctx, func(ctx context.Context) error {
+		for _, analysis := range analyses {
+			if analysis.CreatedAt.Before(time.Now().Add(-time.Minute * 15)) {
+				if _, err := s.analysisR.UpdateAnalysis(ctx, model.AnalysisPartial{ID: analysis.ID, Status: new(model.JobStatusFailed), Error: new(new("Job processing timed out"))}); err != nil {
+					errStack = append(errStack, fmt.Errorf("%v: %w", analysis.ID, err))
+				}
+			}
+		}
+
+		return nil
+	})
+
+	if len(errStack) > 0 {
+		return errors.Join(errStack...)
+	}
+
+	return nil
+}
+
+func (s *AnalysisService) RetryAdvice(ctx context.Context, id uuid.UUID) (model.Analysis, error) {
+	// s.analysisR.GetAnalysisByFilter(ctx, model.AnalysisFilter{ID: new(id), Status: new(model.JobStatusFailed)})
+	// TODO
+
+	return model.Analysis{}, nil
 }

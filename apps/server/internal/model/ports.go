@@ -88,10 +88,13 @@ type AnalysisRepository interface {
 	TransactionRepository
 	CreateAnalysis(ctx context.Context, analysis Analysis) (Analysis, error)
 	GetAnalysisByFilter(ctx context.Context, filter AnalysisFilter) (Analysis, error)
+	ListAnalysisByFilter(ctx context.Context, filter AnalysisFilter, pagination Pagination) ([]Analysis, error)
 	// ListAnalysisSummariesByClimbingSessionID lists the analyses of the session's videos, newest first.
 	ListAnalysisSummariesByClimbingSessionID(ctx context.Context, climbingSessionID uuid.UUID) ([]AnalysisSummary, error)
 	// ListAnalysisSummariesByUserID returns one page of the analyses of the user's videos, newest first, and the total count.
 	ListAnalysisSummariesByUserID(ctx context.Context, userID uuid.UUID, pagination Pagination) ([]AnalysisSummary, int, error)
+	UpdateAnalysis(ctx context.Context, partial AnalysisPartial) (Analysis, error)
+	DeleteAnalysis(ctx context.Context, id uuid.UUID) error
 }
 
 type ClimbingSessionRepository interface {

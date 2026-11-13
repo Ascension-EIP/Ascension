@@ -98,6 +98,23 @@ type AnalysisFilter struct {
 	VideoID *uuid.UUID
 	Type    *AnalysisType
 	Status  *JobStatus
+	Error   **string
+}
+
+type AnalysisPartial struct {
+	ID               uuid.UUID
+	Status           *JobStatus
+	Visibility       *Visibility
+	Progress         *int16
+	Result           **shared.AnalysisResult
+	Advice           **string
+	Error            **string
+	ProcessingTimeMS **time.Duration
+	StartedAt        **time.Time
+	CompletedAt      **time.Time
+	CreatedAt        *time.Time
+	UpdatedAt        *time.Time
+	Hints            **shared.Hints
 }
 
 type AnalysisConfig struct {

@@ -16,6 +16,7 @@ import (
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/job"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/rabbitmq"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/rustfs"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
@@ -51,8 +52,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	queue, err := rabbitmq.New(cfg.Queue)
+	if err != nil {
+		slog.Error("failed to create a new rabbitmq queue", slog.String("err", err.Error()))
+		os.Exit(1)
+	}
+
 	sessionS := service.NewSessionService(cfg.Auth.Session, &repo)
 	videoS := service.NewVideoService(cfg.Video, cfg.Storage, &storage, &repo, &repo)
+	analysisS := service.NewAnalysisService(cfg.Storage, &repo, &repo, &queue)
 	quotaUsageS := service.NewQuotaUsageService(&repo)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
@@ -73,6 +81,10 @@ func main() {
 	}
 	if err := job.ClearOldQuotaUsage(c, ctx, &quotaUsageS); err != nil {
 		slog.Error("start the job: ClearOldQuotaUsage", slog.String("err", err.Error()))
+		os.Exit(1)
+	}
+	if err := job.AnalysisStaleDetection(c, ctx, &analysisS); err != nil {
+		slog.Error("start the job: AnalysisStaleDetection", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
 	c.Start()

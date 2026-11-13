@@ -54,6 +54,15 @@ func (a Analysis) ToAnalysis() model.Analysis {
 	}
 }
 
+func AnalysesToAnalyses(dto []Analysis) []model.Analysis {
+	list := []model.Analysis{}
+	for _, item := range dto {
+		list = append(list, item.ToAnalysis())
+	}
+
+	return list
+}
+
 // AnalysisSummary is the subset of analyses columns used in lists, with the climbing
 // session of the video.
 type AnalysisSummary struct {

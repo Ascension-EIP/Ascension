@@ -215,6 +215,15 @@ func (r *Repo) GetAnalysisByFilter(_ context.Context, filter model.AnalysisFilte
 		if filter.VideoID != nil && analysis.VideoID != *filter.VideoID {
 			continue
 		}
+		if filter.Type != nil && analysis.Type != *filter.Type {
+			continue
+		}
+		if filter.Status != nil && analysis.Status != *filter.Status {
+			continue
+		}
+		if filter.Error != nil && analysis.Error != *filter.Error {
+			continue
+		}
 		return analysis, nil
 	}
 
@@ -243,6 +252,106 @@ func (r *Repo) ListAnalysisSummariesByUserID(_ context.Context, userID uuid.UUID
 	end := min(start+pagination.Limit, total)
 
 	return summaries[start:end], total, nil
+}
+
+func (r *Repo) ListAnalysisByFilter(_ context.Context, filter model.AnalysisFilter, pagination model.Pagination) ([]model.Analysis, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	matches := []model.Analysis{}
+	for _, analysis := range r.analyses {
+		if filter.ID != nil && analysis.ID != *filter.ID {
+			continue
+		}
+		if filter.VideoID != nil && analysis.VideoID != *filter.VideoID {
+			continue
+		}
+		if filter.Type != nil && analysis.Type != *filter.Type {
+			continue
+		}
+		if filter.Status != nil && analysis.Status != *filter.Status {
+			continue
+		}
+		if filter.Error != nil && analysis.Error != *filter.Error {
+			continue
+		}
+		matches = append(matches, analysis)
+	}
+	slices.SortFunc(matches, func(a, b model.Analysis) int {
+		if c := b.CreatedAt.Compare(a.CreatedAt); c != 0 {
+			return c
+		}
+		return cmp.Compare(b.ID.String(), a.ID.String())
+	})
+
+	total := len(matches)
+	start := min(pagination.Offset, total)
+	end := min(start+pagination.Limit, total)
+
+	return matches[start:end], nil
+}
+
+func (r *Repo) UpdateAnalysis(_ context.Context, partial model.AnalysisPartial) (model.Analysis, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	analysis, ok := r.analyses[partial.ID]
+	if !ok {
+		return model.Analysis{}, model.ErrNotFound
+	}
+
+	if partial.Status != nil {
+		analysis.Status = *partial.Status
+	}
+	if partial.Visibility != nil {
+		analysis.Visibility = *partial.Visibility
+	}
+	if partial.Progress != nil {
+		analysis.Progress = *partial.Progress
+	}
+	if partial.Result != nil {
+		analysis.Result = *partial.Result
+	}
+	if partial.Advice != nil {
+		analysis.Advice = *partial.Advice
+	}
+	if partial.Error != nil {
+		analysis.Error = *partial.Error
+	}
+	if partial.ProcessingTimeMS != nil {
+		analysis.ProcessingTimeMS = *partial.ProcessingTimeMS
+	}
+	if partial.StartedAt != nil {
+		analysis.StartedAt = *partial.StartedAt
+	}
+	if partial.CompletedAt != nil {
+		analysis.CompletedAt = *partial.CompletedAt
+	}
+	if partial.CreatedAt != nil {
+		analysis.CreatedAt = *partial.CreatedAt
+	}
+	if partial.UpdatedAt != nil {
+		analysis.UpdatedAt = *partial.UpdatedAt
+	} else {
+		analysis.UpdatedAt = r.now()
+	}
+	if partial.Hints != nil {
+		analysis.Hints = *partial.Hints
+	}
+	r.analyses[analysis.ID] = analysis
+
+	return analysis, nil
+}
+
+func (r *Repo) DeleteAnalysis(_ context.Context, id uuid.UUID) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, ok := r.analyses[id]; !ok {
+		return model.ErrNotFound
+	}
+	delete(r.analyses, id)
+	return nil
 }
 
 // summaries lists the analyses kept by keep, newest first, with the session of their video.

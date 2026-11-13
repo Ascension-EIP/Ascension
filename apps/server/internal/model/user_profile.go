@@ -94,7 +94,7 @@ func (p UserProfilePartial) Validate() error {
 	}
 
 	if p.WeightKG != nil {
-		if v := *p.HeightCM; v != nil {
+		if v := *p.WeightKG; v != nil {
 			if err := validateRange(*v, 15, 300); err != nil {
 				return fmt.Errorf("weight: %w", err)
 			}
