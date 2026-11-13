@@ -189,64 +189,66 @@ flowchart LR
 
 ---
 
+```mermaid
 flowchart TD
 
-subgraph A \["A. Analyse vidéo"\]
+    subgraph A ["A. Analyse vidéo"]
 
-A1\["A1 Vidéo du grimpeur"\] --> A2\["A2 Squelette MediaPipe\\n33 points par image"\]
+        A1["A1 Vidéo du grimpeur"] --> A2["A2 Squelette MediaPipe\n33 points par image"]
 
-A2 --> A3\["A3 Angles et métriques"\]
+        A2 --> A3["A3 Angles et métriques"]
 
-A3 --> A4\["A4 Découpage en mouvements"\]
+        A3 --> A4["A4 Découpage en mouvements"]
 
-end
+    end
 
-subgraph B \["B. Lecture de voie"\]
+    subgraph B ["B. Lecture de voie"]
 
-B1\["B1 Photo de la voie"\] --> B2\["B2 Détection des prises\\nYOLOv8"\]
+        B1["B1 Photo de la voie"] --> B2["B2 Détection des prises\nYOLOv8"]
 
-B2 --> B3\["B3 Couleur dominante\\nOpenCV"\]
+        B2 --> B3["B3 Couleur dominante\nOpenCV"]
 
-B3 --> B4\["B4 Clustering\\npar voie"\]
+        B3 --> B4["B4 Clustering\npar voie"]
 
-B4 --> B5\["B5 Validation utilisateur"\]
+        B4 --> B5["B5 Validation utilisateur"]
 
-end
+    end
 
-subgraph C \["C. Pathfinding"\]
+    subgraph C ["C. Pathfinding"]
 
-C1\["C1 Prises de la voie\\n+ morphologie"\] --> C2\["C2 Calcul de la bêta\\npar étapes"\]
+        C1["C1 Prises de la voie\n+ morphologie"] --> C2["C2 Calcul de la bêta\npar étapes"]
 
-end
+    end
 
-subgraph D \["D. Comparaison et conseils"\]
+    subgraph D ["D. Comparaison et conseils"]
 
-D1\["D1 Alignement vidéo et photo"\] --> D2\["D2 Écarts vidéo et bêta"\]
+        D1["D1 Alignement vidéo et photo"] --> D2["D2 Écarts vidéo et bêta"]
 
-D2 --> D3\["D3 Conseils\\nmodèle externe"\]
+        D2 --> D3["D3 Conseils\nmodèle externe"]
 
-end
+    end
 
-subgraph E \["E. Rendu mobile Flutter"\]
+    subgraph E ["E. Rendu mobile Flutter"]
 
-E1\["E1 Overlay squelette"\]
+        E1["E1 Overlay squelette"]
 
-E2\["E2 Overlay fantôme"\]
+        E2["E2 Overlay fantôme"]
 
-end
+    end
 
-B5 --> C1
+    B5 --> C1
 
-C2 --> E2
+    C2 --> E2
 
-C2 --> D2
+    C2 --> D2
 
-A4 --> D2
+    A4 --> D2
 
-A2 --> D1
+    A2 --> D1
 
-B1 --> D1
+    B1 --> D1
 
-A2 --> E1
+    A2 --> E1
 
-D3 --> E1
+    D3 --> E1
+```
