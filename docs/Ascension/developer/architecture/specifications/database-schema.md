@@ -3,7 +3,7 @@ id: 2f73e756-4920-4208-ae1e-6928976f81ec
 ---
 
 :::success
-**Version:** 2.4
+**Version:** 2.5
 :::
 
 ---
@@ -648,6 +648,26 @@ Business rules:
 
 - `details` holds the intermediate metrics that produced the scores (average joint angles, time on wall, number of pauses, and so on). Anything that must be charted over time gets promoted to a column.
 - Scores are immutable once written; a new analysis produces a new row.
+
+### 6.5 `video_contexts`
+
+A placeholder for the context of a video, created ahead of its feature (migration `20261114003000_create_video_contexts_table`). It holds an identifier only, has no relation yet, and no code reads or writes it.
+
+```sql
+CREATE TABLE IF NOT EXISTS video_contexts (
+    id UUID PRIMARY KEY
+);
+
+CREATE OR REPLACE TRIGGER update_video_contexts_updated_at
+    BEFORE UPDATE ON video_contexts
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+```
+
+:::warning
+The trigger sets `updated_at`, a column the table does not have: any `UPDATE` on `video_contexts` fails until the table gets its real columns, `updated_at` included.
+:::
 
 ---
 
