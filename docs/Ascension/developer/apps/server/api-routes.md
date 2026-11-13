@@ -3,7 +3,7 @@ id: bfb575e1-a621-48a9-8452-4d113ee0e10e
 ---
 
 :::success
-**Version:** 1.6
+**Version:** 1.7
 :::
 
 ---
@@ -515,10 +515,17 @@ Returns the current progress, status, and results of an analysis.
 
 **Analysis Status Lifecycle:**
 
-```
-pending → started → running → success
-                           ↘ failed
+An analysis starts as `pending`, moves to `started` then `running` while the worker processes it, and ends as `success` or `failed`.
 
+```mermaid
+stateDiagram-v2
+    [*] --> pending
+    pending --> started
+    started --> running
+    running --> success
+    running --> failed
+    success --> [*]
+    failed --> [*]
 ```
 
 The statuses are written by the AI worker (`schemas/job_status.schema.json`). `hints` holds the structured advice written by the worker; `advice` is the legacy free-text field and stays `null`.
