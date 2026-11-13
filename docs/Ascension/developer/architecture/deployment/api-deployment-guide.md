@@ -3,7 +3,7 @@ id: 67f09eaf-15d6-4df0-88dc-a0b6e3d207d7
 ---
 
 :::success
-**Version:** 1.0
+**Version:** 1.1
 :::
 
 ---
@@ -27,7 +27,7 @@ This guide never holds a password or a secret. They live in the Coolify environm
 | Compose file        | [apps/server/docker-compose.coolify.yml](https://github.com/Ascension-EIP/Ascension/blob/dev/apps/server/docker-compose.coolify.yml) | Two services built from `apps/server/Dockerfile`                        |
 | Service `api`       | `https://api.ascension-eip.fr`, container port `8080`                                                                                | The API, behind Traefik and Cloudflare                                  |
 | Service `cron`      | No domain, runs `./cron` from the same image                                                                                         | Deletes expired sessions and videos                                     |
-| PostgreSQL 18       | Coolify database `ascension-postgres`, host `i8hc7tklpho8bwo92gzdnzrl`                                                               | Data, migrated by the API on boot                                       |
+| PostgreSQL 18       | Coolify database `ascension-postgres`, host `i8hc7tklpho8bwo92gzdnzrl`                                                               | Data, migrations applied by hand (see section 2.4)                      |
 | RabbitMQ            | Coolify service `ascension-rabbitmq`, host `rabbitmq-qqu2ictjftetdiyyif9ffctg`                                                       | Analysis jobs for the AI worker                                         |
 | Object Storage      | OVHcloud bucket `ascension-videos`                                                                                                   | Videos, see the [S3 Object Storage Guide](./s3-object-storage-guide.md) |
 
@@ -56,7 +56,7 @@ flowchart LR
 2. GitHub sends the `push` event to `https://coolify.ascension-eip.fr/webhooks/source/github/events/manual`, signed with the application's webhook secret.
 3. Coolify checks the signature and the branch, then builds `docker-compose.coolify.yml`.
 4. Coolify stops the old `api` and `cron` containers and starts the new ones: the API is unavailable for a few seconds.
-5. The new `api` container applies the database migrations, then answers `/healthz`.
+5. The new `api` container answers `/healthz`. It does not apply the database migrations: see section 2.4.
 
 Coolify is the only deployment path. The GitHub Actions workflow `deploy.yml` still publishes images to GHCR on version tags, as release artifacts, but nothing deploys them.
 
@@ -78,6 +78,35 @@ Check a delivery in _Webhooks › Recent Deliveries_: Coolify answers `200` with
 - **Redeploy:** Coolify › `ascension-api` › **Redeploy**, or `POST /api/v1/applications/xwraxbcreb0niv0lhfobogs9/restart` with a Coolify API token.
 - **Roll back:** revert the faulty commit on `main`. The push redeploys the previous code. A migration is never reverted automatically: write a new migration that undoes it.
 - **Follow a deployment:** Coolify › `ascension-api` › _Deployments_ shows the build logs of every deployment, with its commit.
+
+### 2.4 Database migrations
+
+:::warning
+Since the `v0.3.0` release (13 November 2026), the API no longer applies the migrations when it starts: the call is commented out in `internal/app/app.go` and in `cmd/cron/main.go`. A deployment that brings a new migration leaves the database behind until someone applies it by hand. On 13 November 2026, production was at version `20261030200100`, without `20261112120000_fix_videos_climbing_session_fkey`.
+:::
+
+The migrations ship in the API image (`/app/migrations`), so the ones applied always match the deployed code. On the VPS, run the `migrate` CLI of the same version as the project (`v4.19.1`) on the `coolify` network:
+
+```bash
+API=$(sudo docker ps -q --filter name=api-xwraxbcreb0niv0lhfobogs9)
+DIR=$(mktemp -d)
+sudo docker cp -q "$API":/app/migrations "$DIR"/
+PW=$(sudo docker exec i8hc7tklpho8bwo92gzdnzrl printenv POSTGRES_PASSWORD)
+DB="postgres://ascension:$PW@i8hc7tklpho8bwo92gzdnzrl:5432/ascension?sslmode=disable"
+migrate() {
+  sudo docker run --rm --network coolify -v "$DIR"/migrations:/migrations:ro \
+    migrate/migrate:v4.19.1 -path /migrations -database "$DB" "$@"
+}
+
+migrate version   # Current version, read only
+migrate up        # Applies every missing migration
+sudo rm -rf "$DIR"
+```
+
+- Take a backup of `ascension-postgres` first (_Backups_ › **Back Up Now**, see the [Backup and Restore Guide](./backup-and-restore-guide.md)).
+- Compare `migrate version` with the last file of `/app/migrations`: the same timestamp means nothing is missing.
+- `migrate up` only applies the migrations newer than the current version. A migration added later with an older timestamp is skipped for good: `20260924221631_create_video_contexts_table` never reached production for this reason. Give a new migration the timestamp of the day it is written.
+- After a failed migration, the version is marked `dirty`. Fix the database by hand, then mark the version with `migrate force <version>` before running `migrate up` again.
 
 ---
 
@@ -123,7 +152,7 @@ On the VPS:
 # Containers of the application: api must be healthy, cron running
 sudo docker ps --filter name=xwraxbcreb0niv0lhfobogs9 --format '{{.Names}} {{.Status}}'
 
-# Last lines of the API: "migration completed successfully" then "server starting on :8080"
+# Last lines of the API: "server starting on :8080", then the /healthz requests
 sudo docker logs --tail 20 $(sudo docker ps -q --filter name=api-xwraxbcreb0niv0lhfobogs9)
 ```
 
@@ -136,7 +165,7 @@ The first deployment, on 12 November 2026, was checked end to end against produc
 | Symptom                                                    | Cause and fix                                                                                                                                          |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Deployment fails with `required variable ... is missing`   | A `${VAR:?}` variable is empty in Coolify: set it and redeploy                                                                                         |
-| `api` restarts in a loop, `failed to migrate the database` | Migration error: read the logs. A `dirty` migration must be fixed by hand in `schema_migrations` before the next deployment                            |
+| A route answers `500` after a deployment, the logs show a missing table, column or constraint | A migration was not applied: compare `migrate version` with `/app/migrations` and apply it (section 2.4) |
 | `failed to create a new rabbitmq queue`                    | Wrong `RABBITMQ_*` values, or the application lost the `coolify` network                                                                               |
 | `failed to create a new minio storage`                     | See the troubleshooting of the [S3 Object Storage Guide](./s3-object-storage-guide.md)                                                                 |
 | A push to `main` deploys nothing                           | Check _Webhooks › Recent Deliveries_ on GitHub. A `401` means the secret differs from Coolify's                                                        |
