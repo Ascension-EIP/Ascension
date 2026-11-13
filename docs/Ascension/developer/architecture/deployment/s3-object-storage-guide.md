@@ -3,7 +3,7 @@ id: 9a3156a1-fada-4467-b30e-27aafa64b9b8
 ---
 
 :::success
-**Version:** 1.0
+**Version:** 1.1
 :::
 
 ---
@@ -75,7 +75,7 @@ For a user that owns nothing, the `Allow` statements alone already restrict it: 
 
 ## 3\. Application configuration
 
-The API (Go, minio-go) and the worker (Python, boto3) read different variable names.
+The API (Go, AWS SDK for Go v2) and the worker (Python, boto3) read different variable names. The table gives the names set in Coolify: the compose file of the API maps its `MINIO_*` variables to the `STORAGE_*` names the server reads (`STORAGE_ENDPOINT`, `STORAGE_REGION`, `STORAGE_BUCKET`, `STORAGE_ID`, `STORAGE_SECRET`), see the [API Deployment Guide](./api-deployment-guide.md).
 
 | Setting    | API                                              | Worker                                            |
 | ---------- | ------------------------------------------------ | ------------------------------------------------- |
@@ -86,7 +86,7 @@ The API (Go, minio-go) and the worker (Python, boto3) read different variable na
 | Secret key | `MINIO_SECRET`                                   | `RUSTFS_SECRET_KEY`                               |
 
 - The endpoint is written without a final `/`.
-- The API takes TLS from the scheme of `MINIO_ENDPOINT`: `https://` uses HTTPS, `http://` does not. `MINIO_SSL` only applies to an endpoint written without a scheme.
+- The endpoint is written with its scheme: `https://` uses HTTPS, `http://` does not. The API has no TLS setting of its own since `v0.3.0` (`MINIO_SSL` is no longer read).
 - The region is part of every signature, presigned URLs included. With a wrong region, OVHcloud rejects the requests with `AuthorizationHeaderMalformed` or `SignatureDoesNotMatch`.
 - In development, the same variables point to the local RustFS container (`http://rustfs:9000`). Its region can be any value: the defaults in `.env.example` keep working.
 - The mobile app sends the video with a native HTTP client, not from a browser, so the bucket needs no CORS rule.
@@ -133,8 +133,7 @@ The last end-to-end check, on 12 November 2026, ran the real code against the bu
 | Symptom                                                        | Cause and fix                                                                                             |
 | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `AuthorizationHeaderMalformed` or `SignatureDoesNotMatch`      | Wrong region: set `MINIO_REGION=gra` and `RUSTFS_REGION=gra`                                              |
-| `Endpoint url scheme "https" conflicts with the secure option` | API older than the TLS change: update it, or write the endpoint without a scheme and set `MINIO_SSL=true` |
-| Presigned URLs start with `http://`                            | Endpoint without scheme and `MINIO_SSL=false`: write `https://` in `MINIO_ENDPOINT`                       |
+| Presigned URLs start with `http://`                            | The endpoint is written with `http://`: write `https://` in `MINIO_ENDPOINT`                              |
 | `AccessDenied` on an upload                                    | Keys of another user, or a policy that lost the `s3:PutObject` statement: re-import the versioned policy  |
 | The policy changes nothing                                     | The keys belong to the bucket owner: use the `ascension-app` keys (see section 2.1)                       |
 
