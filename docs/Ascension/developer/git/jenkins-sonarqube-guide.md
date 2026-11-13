@@ -3,7 +3,7 @@ id: 64cd6da4-a0ca-4ce3-aa19-6ddebbd38b44
 ---
 
 :::success
-**Version:** 1.3
+**Version:** 1.4
 :::
 
 ---
@@ -58,13 +58,13 @@ What each stage runs:
 
 | Application | Format | Lint | Build | Tests |
 | --- | --- | --- | --- | --- |
-| Server (Go) | `gofmt -l .` must list no file | `go vet ./...` | `go build ./cmd/server` | `go test` next to a throwaway PostgreSQL, with the coverage of every package and a JUnit report (`gotestsum`) |
+| Server (Go) | `gofmt -l .` must list no file | `go vet ./...` | `go build ./cmd/server` | `go test` next to a throwaway PostgreSQL and RabbitMQ, with the coverage of every package and a JUnit report (`gotestsum`) |
 | AI (Python) | Not checked | `uv run ruff check src tests` | `uv build` | `pytest` with coverage and a JUnit report |
 | Mobile (Flutter) | `dart format --set-exit-if-changed .` | `flutter analyze` | Not built | `flutter test --coverage` |
 
 Every step runs in an official Docker image (`golang`, `python`, a Flutter image), with the same tool versions as the GitHub Actions CI.
 
-The server tests run next to a throwaway PostgreSQL, so the integration tests run too: they are skipped without a database. For each build, the `withPostgres` step of the library creates a Docker network named after the job and the build (`ci-ascension-server-<branch>-<build>`), starts `postgres:18-alpine` on it with its data in memory, and passes its address to the tests in `TEST_DATABASE_DSN`. The container and the network are removed at the end of the stage, even when the tests fail or the build is aborted. Both carry the label `ascension-ci=true`: `docker ps -a --filter label=ascension-ci=true` on the VPS lists any leftover.
+The server tests run next to a throwaway PostgreSQL and RabbitMQ, so the integration tests run too: they are skipped without these services. For each build, the `withPostgres` step of the library creates a Docker network named after the job and the build (`ci-ascension-server-<branch>-<build>`) and starts `postgres:18-alpine` on it with its data in memory. The `withRabbitMQ` step starts `rabbitmq:4-alpine` on the same network. The tests receive their addresses in `TEST_DATABASE_DSN` and `TEST_RABBITMQ_URL`. The containers and the network are removed at the end of the stage, even when the tests fail or the build is aborted. They carry the label `ascension-ci=true`: `docker ps -a --filter label=ascension-ci=true` on the VPS lists any leftover. When RabbitMQ does not start, the stage prints its state and its last log lines before failing.
 
 ---
 
@@ -125,7 +125,7 @@ Run the same check locally before pushing again:
 | Build | `moon run server:build` | `moon run ai:build` | Not built |
 | Tests | `moon run server:test` | `moon run ai:test` | `moon run mobile:test` |
 
-Without a database, the server integration tests are skipped locally while Jenkins runs them. To run them like Jenkins, start a throwaway PostgreSQL 18 and pass its address, for instance `docker run -d --rm --name ci-postgres -e POSTGRES_USER=ascension -e POSTGRES_PASSWORD=ascension -e POSTGRES_DB=ascension -p 55432:5432 postgres:18-alpine`, then `TEST_DATABASE_DSN="postgres://ascension:ascension@localhost:55432/ascension?sslmode=disable" go test ./...` in `apps/server`.
+Without a database and a broker, the server integration tests are skipped locally while Jenkins runs them. To run them like Jenkins, start a throwaway PostgreSQL 18 and RabbitMQ 4 and pass their addresses: the commands are in the *Testing* section of the [server overview](../apps/server/overview.md).
 
 The Format stage fails when a file is not formatted: run the format task, commit the result and push again. The build log lists the files to format.
 
@@ -142,6 +142,8 @@ Edit the `Jenkinsfile` of the application. The available variables:
 | `goVersion` | Server | Go version, used as the `golang:<goVersion>` image |
 | `testDatabase` | Server | Runs the tests next to a throwaway PostgreSQL (default `true`); `false` runs the unit tests alone |
 | `postgresImage` | Server | Image of that PostgreSQL (default `postgres:18-alpine`, the major version of production) |
+| `testRabbitmq` | Server | Runs the tests next to a throwaway RabbitMQ (default `true`) |
+| `rabbitmqImage` | Server | Image of that RabbitMQ (default `rabbitmq:4-alpine`) |
 | `pythonVersion` | AI | Python version, used as the `python:<pythonVersion>-bookworm` image |
 | `uvVersion` | AI | `uv` version. It must build the `uv_build` backend pinned in `apps/ai/pyproject.toml` |
 | `flutterVersion` | Mobile | Flutter SDK version, installed once in the Jenkins cache |
@@ -153,7 +155,7 @@ Keep the versions aligned with `.moon/toolchain.yml` and the GitHub Actions CI.
 
 ### 7.2 Changing the stages
 
-The stages live in the [jenkins-shared-library](https://github.com/Ascension-EIP/jenkins-shared-library) repository: `vars/runServerCI.groovy`, `vars/runAiCI.groovy` and `vars/runMobileCI.groovy`, with the shared helpers `dockerRun`, `hasChanges`, `sonarAnalysis` and `withPostgres`. Its `README.md` documents every variable.
+The stages live in the [jenkins-shared-library](https://github.com/Ascension-EIP/jenkins-shared-library) repository: `vars/runServerCI.groovy`, `vars/runAiCI.groovy` and `vars/runMobileCI.groovy`, with the shared helpers `dockerRun`, `hasChanges`, `sonarAnalysis`, `withPostgres` and `withRabbitMQ`. Its `README.md` documents every variable.
 
 To test a change of the library before merging it:
 

@@ -3,7 +3,7 @@ id: 2f835188-7fa7-46eb-84ab-0f2bcdda5321
 ---
 
 :::success
-**Version:** 1.5
+**Version:** 1.6
 :::
 
 ---
@@ -236,17 +236,27 @@ go test ./...
 
 ```
 
-The integration tests (files named `*_integration_test.go`) need a PostgreSQL: without `TEST_DATABASE_DSN` they are skipped. Each test gets a fresh database, created from that server with every migration applied, so a throwaway container is enough:
+The integration tests (files named `*_integration_test.go`) need real services, and are skipped without them:
+
+- the PostgreSQL tests need `TEST_DATABASE_DSN`. Each test gets a fresh database, created from that server with every migration applied;
+- the RabbitMQ tests (message flow to the AI worker) need `TEST_RABBITMQ_URL`. They purge the job queues, so never point them at a broker in use.
+
+Throwaway containers are enough:
 
 ```bash
 docker run -d --rm --name test-postgres -e POSTGRES_USER=ascension -e POSTGRES_PASSWORD=ascension \
   -e POSTGRES_DB=ascension -p 55432:5432 postgres:18-alpine
-TEST_DATABASE_DSN="postgres://ascension:ascension@localhost:55432/ascension?sslmode=disable" go test ./...
-docker stop test-postgres
+docker run -d --rm --name test-rabbitmq -e RABBITMQ_DEFAULT_USER=ascension -e RABBITMQ_DEFAULT_PASS=ascension \
+  -p 55672:5672 rabbitmq:4-alpine
+# Wait until RabbitMQ accepts connections, as its own user (as root, the check breaks the broker start)
+until docker exec -u rabbitmq test-rabbitmq rabbitmq-diagnostics -q check_port_connectivity >/dev/null 2>&1; do sleep 1; done
+TEST_DATABASE_DSN="postgres://ascension:ascension@localhost:55432/ascension?sslmode=disable" \
+TEST_RABBITMQ_URL="amqp://ascension:ascension@localhost:55672/" go test ./...
+docker stop test-postgres test-rabbitmq
 
 ```
 
-Jenkins runs them the same way, next to a throwaway PostgreSQL of its own (see the [Jenkins and SonarQube guide](../../git/jenkins-sonarqube-guide.md)).
+Jenkins runs them the same way, next to a throwaway PostgreSQL and RabbitMQ of its own (see the [Jenkins and SonarQube guide](../../git/jenkins-sonarqube-guide.md)).
 
 Some tests describe a bug that is not fixed yet: they are skipped by default, and `RUN_KNOWN_BUGS=1 go test ./...` runs them to show them failing.
 
