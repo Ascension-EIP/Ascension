@@ -96,7 +96,7 @@ Copy `.env.example` to `.env` at the repository root and fill in the values. The
 | `STORAGE_SECRET` | ✅ | — | Secret key |
 | `STORAGE_BUCKET` | ✅ | — | Target bucket for video uploads |
 | `STORAGE_UPLOAD_EXP` | ❌ | `1h` | Presigned PUT URL validity duration |
-| `STORAGE_DOWNLAOD_EXP` | ❌ | `1h` | Presigned GET URL validity duration (the name is misspelled in the code) |
+| `STORAGE_DOWNLOAD_EXP` | ❌ | `1h` | Presigned GET URL validity duration |
 
 The AI worker reads its own `RUSTFS_*` variables for the same storage. In production, Coolify keeps the `MINIO_*` names and the compose file maps them to `STORAGE_*`, see the [API Deployment Guide](../../architecture/deployment/api-deployment-guide.md).
 

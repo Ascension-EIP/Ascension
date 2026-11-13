@@ -238,7 +238,7 @@ STORAGE_BUCKET=videos
 STORAGE_ID=ascension
 STORAGE_SECRET=ascension
 STORAGE_UPLOAD_EXP=1h
-STORAGE_DOWNLAOD_EXP=1h
+STORAGE_DOWNLOAD_EXP=1h
 
 # Object storage, read by the AI worker
 RUSTFS_ENDPOINT=http://localhost:9000
