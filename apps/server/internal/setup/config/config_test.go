@@ -2,7 +2,7 @@
 // @file config_test.go
 // @brief Unit tests of the environment configuration: required variables, defaults and DSNs.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package config

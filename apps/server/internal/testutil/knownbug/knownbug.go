@@ -4,13 +4,7 @@
 // @project Ascension
 // @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
-// @status done
-// Package knownbug marks the tests written for a bug that is not fixed yet. They are
-// skipped by default so the suite stays green, and run when RUN_KNOWN_BUGS is set:
-//
-//	RUN_KNOWN_BUGS=1 go test ./...
-//
-// Once the bug is fixed, remove the Skip call so the test guards against a regression.
+// @status done Package knownbug marks the tests written for a bug that is not fixed yet. They are skipped by default so the suite stays green, and run when RUN_KNOWN_BUGS is set: RUN_KNOWN_BUGS=1 go test ./... Once the bug is fixed, remove the Skip call so the test guards against a regression.
 package knownbug
 
 import (
