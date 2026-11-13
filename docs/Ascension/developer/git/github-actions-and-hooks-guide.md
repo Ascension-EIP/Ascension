@@ -3,7 +3,7 @@ id: aa084479-25cf-4486-9a98-c2609adbf9c7
 ---
 
 :::success
-**Version:** 1.3
+**Version:** 1.4
 :::
 
 ---
@@ -47,7 +47,8 @@ Both layers rely on the same shared Python validation scripts located in `.githu
 │   ├── dev-to-staging.yml    # Auto create/update PR dev → staging
 │   ├── docs-to-wiki.yml      # Sync docs/ to GitHub Wiki on staging-to-main completion
 │   ├── gemini-pr-review.yml  # AI code review for pull requests
-│   ├── staging-to-main.yml   # Merge staging → main, tag semver, changelog, mirror
+│   ├── mirror.yml            # Mirror repository to external targets
+│   ├── staging-to-main.yml   # Merge staging → main, tag semver, changelog
 ├── dependabot.yml            # Dependabot configuration
 ├── keywords.txt              # Allowed types for branch names and commit messages
 └── pull_request_template.md  # Default pull request description template
@@ -364,7 +365,6 @@ Creates or updates an automated Pull Request from `dev` to `staging`, lists incl
 3. Generates and commits `CHANGELOG.md` via `git-cliff`.
 4. Pushes the new version tag to `main` (triggering `deploy.yml`).
 5. Creates a GitHub Release with release notes.
-6. Parses `MIRROR_REPOSITORY_URL` into a dynamic matrix and mirrors all branches, tags, and history to each target repository using `pixta-dev/repository-mirroring-action@v1`.
 
 ---
 
@@ -391,6 +391,17 @@ Executes `.github/scripts/gemini_pr_review` using Gemini API to perform automate
 
 ---
 
+### 5.8 Mirror workflow (`mirror.yml`)
+
+**Name:** `ascension-mirror` **Triggers:**
+
+- `workflow_run` after successful completion of `ascension-deploy`.
+- Manual dispatch (`workflow_dispatch`).
+
+Parses `MIRROR_REPOSITORY_URL` into a dynamic matrix and mirrors all branches, tags, and history to each target repository using `pixta-dev/repository-mirroring-action@v1`. By running only after `ascension-deploy` succeeds, it ensures only validated, building releases are mirrored.
+
+---
+
 ## 6\. Secrets and variables
 
 The following secrets and variables must be configured in the GitHub repository settings:
@@ -400,6 +411,6 @@ The following secrets and variables must be configured in the GitHub repository 
 | `GITHUB_TOKEN` | Secret | `deploy.yml` | Built-in GitHub token for GHCR auth and GitHub releases |
 | `APP_ID` | Secret | `dev-to-staging.yml`, `staging-to-main.yml`, `gemini-pr-review.yml` | GitHub App ID for scoped token generation |
 | `APP_PRIVATE_KEY` | Secret | `dev-to-staging.yml`, `staging-to-main.yml`, `gemini-pr-review.yml` | GitHub App private key for token generation |
-| `MIRROR_SSH_KEY` | Secret | `staging-to-main.yml` | SSH private key for external mirror repositories |
-| `MIRROR_REPOSITORY_URL` | Variable | `staging-to-main.yml` | Comma-separated list of target repositories to mirror to |
+| `MIRROR_SSH_KEY` | Secret | `mirror.yml` | SSH private key for external mirror repositories |
+| `MIRROR_REPOSITORY_URL` | Variable | `mirror.yml` | Comma-separated list of target repositories to mirror to |
 | `GEMINI_API_KEY` | Secret | `gemini-pr-review.yml` | API Key for Google Gemini model access |

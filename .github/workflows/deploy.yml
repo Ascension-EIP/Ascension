@@ -22,6 +22,7 @@ jobs:
   ########################## SERVER (GO) ####################################
   build_and_push_server:
     runs-on: ubuntu-latest
+    if: github.repository == 'Ascension-EIP/Ascension'
 
     ######################## STEPS ############################################
     steps:
@@ -65,6 +66,7 @@ jobs:
   ########################## AI (PYTHON) ######################################
   build_and_push_ai:
     runs-on: ubuntu-latest
+    if: github.repository == 'Ascension-EIP/Ascension'
 
     ######################## STEPS ############################################
     steps:
@@ -106,6 +108,7 @@ jobs:
   ########################## MOBILE (FLUTTER) #################################
   build_and_push_mobile:
     runs-on: ubuntu-latest
+    if: github.repository == 'Ascension-EIP/Ascension'
 
     ######################## STEPS ############################################
     steps:

@@ -19,6 +19,7 @@ jobs:
   ########################## NO-CI DETECTION ##################################
   detect_no_ci:
     runs-on: ubuntu-latest
+    if: github.repository == 'Ascension-EIP/Ascension'
     outputs:
       skip: ${{ steps.check.outputs.skip }}
 
