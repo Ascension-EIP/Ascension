@@ -58,10 +58,11 @@ tasks:
 
   build-android:
     command: 'flutter'
-    args: ['build', 'apk', '--dart-define=BACKEND_URL=${BACKEND_URL}']
+    args: ['build', 'apk', '--dart-define-from-file=config/production.json']
     inputs:
       - 'lib/**/*'
       - 'assets/**/*'
+      - 'config/**/*'
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'android/**/*'
@@ -74,10 +75,11 @@ tasks:
 
   build-ios:
     command: 'flutter'
-    args: ['build', 'ios', '--no-codesign', '--dart-define=BACKEND_URL=${BACKEND_URL}']
+    args: ['build', 'ios', '--no-codesign', '--dart-define-from-file=config/production.json']
     inputs:
       - 'lib/**/*'
       - 'assets/**/*'
+      - 'config/**/*'
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'ios/**/*'
@@ -94,6 +96,7 @@ tasks:
     inputs:
       - 'lib/**/*'
       - 'assets/**/*'
+      - 'config/**/*'
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'android/**/*'

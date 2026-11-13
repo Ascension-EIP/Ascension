@@ -1,4 +1,4 @@
-// @date 2026-10-25
+// @date 2026-11-13
 // @file env.dart
 // @brief File description.
 // @project Ascension
@@ -11,10 +11,7 @@
 class AppEnv {
   AppEnv._();
 
-  static const String backendUrl = String.fromEnvironment(
-    'BACKEND_URL',
-    defaultValue: 'http://localhost:8080',
-  );
+  static const String backendUrl = String.fromEnvironment('BACKEND_URL');
 
   static const String appName = 'Ascension';
   static const bool isProduction = bool.fromEnvironment('dart.vm.product');

@@ -10,4 +10,6 @@ if command -v adb >/dev/null 2>&1; then
   fi
 fi
 
-exec flutter run "--dart-define=BACKEND_URL=${BACKEND_URL:-http://localhost:8080}" "$@"
+CONFIG_FILE="${CONFIG_FILE:-config/development.json}"
+
+exec flutter run --dart-define-from-file="$CONFIG_FILE" "$@"

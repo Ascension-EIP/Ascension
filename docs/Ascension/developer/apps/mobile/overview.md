@@ -347,11 +347,16 @@ The app uses a single dark theme defined in `lib/shared/theme/app_theme.dart`. `
 
 ---
 
-## Environment Variables
+## Environment Configuration
+
+The app relies on compile-time environment configuration via `--dart-define-from-file`:
+
+* `config/development.json`: `BACKEND_URL=http://localhost:8080` (used by `moon run mobile:dev` and `scripts/run.sh`).
+* `config/production.json`: `BACKEND_URL=https://api.ascension-eip.fr` (used by `moon run mobile:build-*`, `scripts/build.sh`, and GitHub Actions release workflow).
 
 | Variable | How it is set | Description |
 | --- | --- | --- |
-| `BACKEND_URL` | `--dart-define=BACKEND_URL=http://...` | Overrides the auto-detected backend URL at build time |
+| `BACKEND_URL` | `--dart-define-from-file=config/<env>.json` or `--dart-define=BACKEND_URL=...` | Sets the API backend URL |
 | `BUILD_PLATFORM` | Shell env var when running `moon run mobile:build` | `ios` or `android` — forces the target platform |
 
 ---
