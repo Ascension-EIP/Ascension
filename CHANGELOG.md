@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] - 2026-11-13
+
+### 🏗️ Build System
+
+- *(deps)* Bump rustfs/rustfs
+- *(deps)* Bump rustfs/rustfs from 1.0.4 to 1.0.5 in the docker-compose-dependencies group
+- *(deps)* Bump the pip-dependencies group in /apps/ai with 9 updates
+- *(deps)* Bump the pip-dependencies group in /apps/ai with 9 updates
+- *(deps)* Bump the go-dependencies group
+- *(deps)* Bump the go-dependencies group in /apps/server with 6 updates
+
+### 🐛 Bug Fixes
+
+- *(server)* Map the coolify variables to the storage and queue names
+
+### 📚 Documentation
+
+- Update "user"
+- Update "user"
+
+### 🔀 Merges
+
+- "fix/coolify-compose-env-names" into "dev"
+- `dev` into `staging`
+- `staging` into `main`
+
+### 🚀 Features
+
+- *(ci)* Migrate repository mirroring to dedicated workflow
+
 ## [0.3.0] - 2026-11-13
 
 ### ⚡ Performance
@@ -834,6 +864,7 @@ merge: golang server cleaning
 - *(meta)* Update file headers across projects
 - Update project file metadata
 - Update author in config_test.go and knownbug.go
+- *(release)* Update changelog for v0.3.0
 
 ## [0.2.0] - 2026-09-03
 
