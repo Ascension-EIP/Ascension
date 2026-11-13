@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @date 2026-09-10
+# @date 2026-11-13
 # @file stand_up.py
 # @brief Script to generate Discord stand-up messages using Git history and Gemini API.
 # @project Ascension
@@ -22,6 +22,85 @@ FRENCH_MONTHS = [
     "janvier", "février", "mars", "avril", "mai", "juin",
     "juillet", "août", "septembre", "octobre", "novembre", "décembre"
 ]
+
+TEAM_MEMBERS: Dict[str, Dict[str, Any]] = {
+    "gianni": {
+        "display_name": "Gianni TUERO",
+        "first_name": "Gianni",
+        "aliases": ["gianni", "gianni tuero", "tuero", "xjundo", "jundo"],
+        "git_patterns": [
+            "Gianni TUERO",
+            "Gianni Tuero",
+            "xJundo",
+            "gianni.tuero@epitech.eu",
+            "146185507+xJundo@users.noreply.github.com",
+        ],
+    },
+    "lou": {
+        "display_name": "Lou PELLEGRINO",
+        "first_name": "Lou",
+        "aliases": ["lou", "lou pellegrino", "pellegrino", "dimitrilapoudre", "dimitri"],
+        "git_patterns": [
+            "Lou PELLEGRINO",
+            "Lou Pellegrino",
+            "DimitriLaPoudre",
+            "lou.pellegrino@epitech.eu",
+            "146720520+DimitriLaPoudre@users.noreply.github.com",
+        ],
+    },
+    "christophe": {
+        "display_name": "Christophe VANDEVOIR",
+        "first_name": "Christophe",
+        "aliases": ["christophe", "christophe vandevoir", "vandevoir", "itskarmaoff", "karma"],
+        "git_patterns": [
+            "Christophe VANDEVOIR",
+            "Christophe Vandevoir",
+            "christophe",
+            "ItsKarmaOff",
+            "christophe.vandevoir@epitech.eu",
+            "115950432+ItsKarmaOff@users.noreply.github.com",
+        ],
+    },
+    "olivier": {
+        "display_name": "Olivier POUECH",
+        "first_name": "Olivier",
+        "aliases": ["olivier", "olivier pouech", "pouech", "livoooo", "livoo"],
+        "git_patterns": [
+            "Olivier POUECH",
+            "Olivier Pouech",
+            "Livoooo",
+            "olivier.pouech@epitech.eu",
+            "zarigu92@gmail.com",
+        ],
+    },
+    "nicolas": {
+        "display_name": "Nicolas TORO",
+        "first_name": "Nicolas",
+        "aliases": ["nicolas", "nicolas toro", "toro", "toro-nicolas"],
+        "git_patterns": [
+            "Nicolas TORO",
+            "Nicolas Toro",
+            "toro-nicolas",
+            "nicolas.toro@epitech.eu",
+            "146118419+toro-nicolas@users.noreply.github.com",
+        ],
+    },
+}
+
+def find_team_member(query: Optional[str]) -> Optional[Dict[str, Any]]:
+    """Find a team member by nickname, name, alias, email, or git pattern."""
+    if not query:
+        return None
+    query_norm = query.strip().lower()
+    for key, member in TEAM_MEMBERS.items():
+        if query_norm == key:
+            return member
+        if any(query_norm == alias.lower() for alias in member["aliases"]):
+            return member
+        if any(query_norm in pattern.lower() for pattern in member["git_patterns"]):
+            return member
+    return None
+
 
 def run_cmd(args: List[str], cwd: Optional[str] = None) -> str:
     """Run a shell command and return its stripped stdout, or empty string on error."""
@@ -100,13 +179,12 @@ def format_french_date(d: datetime.date) -> str:
     return f"{d.day} {FRENCH_MONTHS[d.month - 1]} {d.year}"
 
 def get_commits(
-    author_name: str,
-    author_email: str,
+    author_patterns: List[str],
     since_date: datetime.date,
     until_date: datetime.date,
     all_branches: bool = True
 ) -> List[Dict[str, str]]:
-    """Retrieve commits matching author and date range."""
+    """Retrieve commits matching any of the author patterns and date range."""
     cmd = [
         "git", "log",
         "--no-merges",
@@ -116,10 +194,10 @@ def get_commits(
     if all_branches:
         cmd.append("--all")
 
-    if author_name:
-        cmd.extend(["--author", author_name])
-    if author_email:
-        cmd.extend(["--author", author_email])
+    unique_patterns = list(dict.fromkeys(p.strip() for p in author_patterns if p and p.strip()))
+    for pattern in unique_patterns:
+        cmd.extend(["--author", pattern])
+
 
     delimiter = "---COMMIT_DELIMITER---"
     cmd.append(f"--pretty=format:{delimiter}%n%h%n%ad%n%an <%ae>%n%s%n%b")
@@ -292,13 +370,40 @@ def main():
     parser = argparse.ArgumentParser(
         description="Génère un message de stand-up Discord à partir des commits Git et de Gemini."
     )
-    parser.add_argument("--author", help="Nom ou email de l'auteur Git (par défaut: profil git local)")
+    parser.add_argument(
+        "-m", "--member", "--user",
+        dest="member",
+        help="Membre de l'équipe pour lequel générer le stand-up (ex: gianni, xjundo, lou, christophe, olivier, nicolas)"
+    )
+    parser.add_argument(
+        "-c", "--choose",
+        action="store_true",
+        help="Choisir interactivement le membre de l'équipe dans une liste"
+    )
+    parser.add_argument(
+        "--list-members",
+        action="store_true",
+        help="Afficher la liste des membres configurés et quitter"
+    )
+    parser.add_argument(
+        "-3", "--third-person",
+        action="store_true",
+        help="Rédiger le stand-up à la 3ème personne (ex: 'Voici ce que Gianni a fait...') plutôt qu'à la 1ère personne"
+    )
+    parser.add_argument("--author", help="Nom ou email brut de l'auteur Git (par défaut: profil git local ou membre)")
     parser.add_argument("--since", help="Date de début au format YYYY-MM-DD (par défaut: dernier mercredi)")
     parser.add_argument("--until", help="Date de fin au format YYYY-MM-DD (par défaut: aujourd'hui)")
     parser.add_argument("--days", type=int, help="Nombre de jours en arrière (outrepasse la règle du mercredi)")
     parser.add_argument("--no-all", action="store_true", help="Ne chercher que dans la branche courante plutôt que toutes les branches")
     parser.add_argument("--print-only", action="store_true", help="Ne pas faire d'interaction, générer et afficher directement")
     args = parser.parse_args()
+
+    if args.list_members:
+        print("👥 Membres de l'équipe Ascension configurés :")
+        for key, m in TEAM_MEMBERS.items():
+            aliases_str = ", ".join(m["aliases"])
+            print(f"  • {m['display_name']} (clé: {key}) -> alias: {aliases_str}")
+        sys.exit(0)
 
     print("🚀 Initialisation du script stand_up Ascension...")
 
@@ -319,25 +424,105 @@ def main():
 
     print(f"🤖 Modèle IA utilisé : {model}")
 
-    # 2. Get Git profile
+    # 2. Get target member / Git profile
     git_name, git_email = get_git_user()
-    if args.author:
-        author_name = args.author
-        author_email = args.author
-        print(f"👤 Auteur forcé via argument : {args.author}")
-    else:
-        author_name = git_name
-        author_email = git_email
-        if not author_name and not author_email:
-            print("⚠️ Aucun profil Git (user.name / user.email) configuré localement.")
-            try:
-                author_name = input("Veuillez saisir votre nom ou email d'auteur Git : ").strip()
-                author_email = author_name
-            except (KeyboardInterrupt, EOFError):
-                print("\nAnnulé.")
+    current_user_member = find_team_member(git_name) or find_team_member(git_email)
+
+    target_member: Optional[Dict[str, Any]] = None
+    target_name: str = ""
+    first_name: str = ""
+    author_patterns: List[str] = []
+    is_for_self = False
+
+    if args.choose:
+        print("\n👥 Choisissez un membre de l'équipe :")
+        members_list = list(TEAM_MEMBERS.values())
+        for idx, m in enumerate(members_list, start=1):
+            is_cur = " (vous)" if current_user_member and m["display_name"] == current_user_member["display_name"] else ""
+            print(f"  {idx}. {m['display_name']} ({m['aliases'][0]}){is_cur}")
+        try:
+            choice_str = input(f"Votre choix [1-{len(members_list)}] : ").strip()
+            idx = int(choice_str) - 1
+            if 0 <= idx < len(members_list):
+                target_member = members_list[idx]
+            else:
+                print("❌ Choix invalide.", file=sys.stderr)
                 sys.exit(1)
+        except (KeyboardInterrupt, EOFError):
+            print("\nAnnulé.")
+            sys.exit(0)
+        except ValueError:
+            print("❌ Valeur numérique attendue.", file=sys.stderr)
+            sys.exit(1)
+
+    elif args.member:
+        target_member = find_team_member(args.member)
+        if not target_member:
+            available = ", ".join(TEAM_MEMBERS.keys())
+            print(f"❌ Membre inconnu : '{args.member}'", file=sys.stderr)
+            print(f"Membres disponibles : {available}", file=sys.stderr)
+            print("💡 Utilisez --list-members pour voir les détails ou --author pour un filtre git brut.", file=sys.stderr)
+            sys.exit(1)
+
+    elif args.author:
+        target_member = find_team_member(args.author)
+        if not target_member:
+            target_name = args.author
+            first_name = args.author.strip().split()[0]
+            author_patterns = [args.author]
+            print(f"👤 Auteur personnalisé forcé via --author : {args.author}")
+
+    if target_member:
+        target_name = target_member["display_name"]
+        first_name = target_member["first_name"]
+        author_patterns = target_member["git_patterns"]
+        is_for_self = bool(current_user_member and target_member["display_name"] == current_user_member["display_name"])
+        print(f"👤 Membre de l'équipe sélectionné : {target_name} ({target_member['aliases'][0]})")
+    elif not author_patterns:
+        # No --member, --choose, or --author specified: default to current local git user
+        if current_user_member:
+            target_member = current_user_member
+            target_name = target_member["display_name"]
+            first_name = target_member["first_name"]
+            author_patterns = target_member["git_patterns"]
+            is_for_self = True
+            print(f"👤 Membre de l'équipe détecté (local) : {target_name} <{git_email}>")
         else:
-            print(f"👤 Profil Git détecté : {author_name} <{author_email}>")
+            target_name = git_name
+            first_name = git_name.strip().split()[0] if git_name else "Moi"
+            author_patterns = [p for p in [git_name, git_email] if p]
+            is_for_self = True
+            if not author_patterns:
+                print("⚠️ Aucun profil Git (user.name / user.email) configuré localement.")
+                try:
+                    manual_author = input("Veuillez saisir votre nom ou email d'auteur Git : ").strip()
+                    if not manual_author:
+                        sys.exit(1)
+                    target_name = manual_author
+                    first_name = manual_author.split()[0]
+                    author_patterns = [manual_author]
+                except (KeyboardInterrupt, EOFError):
+                    print("\nAnnulé.")
+                    sys.exit(1)
+            else:
+                print(f"👤 Profil Git détecté : {git_name} <{git_email}>")
+
+    # Determine grammatical person (1st vs 3rd person)
+    if args.third_person:
+        is_third_person = True
+    elif is_for_self or args.print_only:
+        is_third_person = False
+    else:
+        print(f"\n📝 Vous générez le stand-up pour {target_name}.")
+        print("Sous quelle forme souhaitez-vous rédiger le message ?")
+        print(f"  1. À la 1ère personne (\"Voici ce que j'ai fait...\", prêt à copier-coller par {first_name})")
+        print(f"  2. À la 3ème personne (\"Voici ce que {first_name} a fait...\", idéal pour suivi/synthèse)")
+        try:
+            style_choice = input("Votre choix [1/2] (défaut: 1) : ").strip()
+        except (KeyboardInterrupt, EOFError):
+            print("\nAnnulé.")
+            sys.exit(0)
+        is_third_person = (style_choice == "2")
 
     # 3. Date range determination
     today = datetime.date.today()
@@ -358,11 +543,18 @@ def main():
     str_end_fr = format_french_date(end_date)
     print(f"📅 Période sélectionnée : du {str_start_fr} au {str_end_fr}")
 
+    # Set headers based on grammatical person
+    if is_third_person:
+        header_past = f"**Voici ce que {first_name} a fait entre le {str_start_fr} et le {str_end_fr} :**"
+        header_next = f"**Voici ce que {first_name} va maintenant faire :**"
+    else:
+        header_past = f"**Voici ce que j'ai fait entre le {str_start_fr} et le {str_end_fr} :**"
+        header_next = "**Voici ce que je vais maintenant faire :**"
+
     # 4. Fetch commits
     print("🔍 Récupération des commits correspondants...")
     commits = get_commits(
-        author_name=author_name,
-        author_email=author_email,
+        author_patterns=author_patterns,
         since_date=start_date,
         until_date=end_date,
         all_branches=not args.no_all
@@ -370,10 +562,10 @@ def main():
 
     commits_text = ""
     if not commits:
-        print(f"\n⚠️ Aucun commit trouvé pour {author_name} entre le {str_start_fr} et le {str_end_fr}.")
+        print(f"\n⚠️ Aucun commit trouvé pour {target_name} entre le {str_start_fr} et le {str_end_fr}.")
         print("Que souhaitez-vous faire ?")
         print("  1. Élargir la recherche aux 7 derniers jours")
-        print("  2. Saisir manuellement vos réalisations")
+        print("  2. Saisir manuellement les réalisations" if is_for_self else f"  2. Saisir manuellement les réalisations de {first_name}")
         print("  3. Quitter")
         try:
             choice = input("Votre choix [1/2/3] (défaut: 1) : ").strip()
@@ -382,31 +574,37 @@ def main():
             sys.exit(0)
 
         if choice == "2":
-            manual_work = prompt_multiline("Saisissez vos réalisations pour la période :")
+            prompt_msg = "Saisissez vos réalisations pour la période :" if is_for_self else f"Saisissez les réalisations de {first_name} pour la période :"
+            manual_work = prompt_multiline(prompt_msg)
             if not manual_work:
                 print("Aucune réalisation saisie. Fin du script.")
                 sys.exit(0)
-            commits_text = f"Notes manuelles de l'utilisateur :\n{manual_work}"
+            commits_text = f"Notes manuelles :\n{manual_work}"
         elif choice == "3":
             sys.exit(0)
         else:
             start_date = today - datetime.timedelta(days=7)
             str_start_fr = format_french_date(start_date)
             print(f"🔄 Nouvelle recherche du {str_start_fr} au {str_end_fr}...")
+            if is_third_person:
+                header_past = f"**Voici ce que {first_name} a fait entre le {str_start_fr} et le {str_end_fr} :**"
+            else:
+                header_past = f"**Voici ce que j'ai fait entre le {str_start_fr} et le {str_end_fr} :**"
+
             commits = get_commits(
-                author_name=author_name,
-                author_email=author_email,
+                author_patterns=author_patterns,
                 since_date=start_date,
                 until_date=end_date,
                 all_branches=not args.no_all
             )
             if not commits:
                 print("⚠️ Toujours aucun commit trouvé. Passage en saisie manuelle.")
-                manual_work = prompt_multiline("Saisissez vos réalisations pour la période :")
+                prompt_msg = "Saisissez vos réalisations pour la période :" if is_for_self else f"Saisissez les réalisations de {first_name} pour la période :"
+                manual_work = prompt_multiline(prompt_msg)
                 if not manual_work:
                     print("Aucune réalisation fournie. Fin du script.")
                     sys.exit(0)
-                commits_text = f"Notes manuelles de l'utilisateur :\n{manual_work}"
+                commits_text = f"Notes manuelles :\n{manual_work}"
             else:
                 print(f"✅ {len(commits)} commit(s) trouvé(s).")
     else:
@@ -421,9 +619,24 @@ def main():
             formatted_list.append(commit_entry)
         commits_text = "\n".join(formatted_list)
 
-    # 5. Generate "Voici ce que j'ai fait..." with Gemini
-    header_past = f"**Voici ce que j'ai fait entre le {str_start_fr} et le {str_end_fr} :**"
-    system_prompt_past = f"""Tu es un assistant chargé de rédiger des messages de stand-up pour une équipe de développeurs sur Discord.
+    # 5. Generate past section with Gemini
+    if is_third_person:
+        system_prompt_past = f"""Tu es un assistant chargé de rédiger des messages de stand-up pour une équipe de développeurs sur Discord.
+L'ambiance est conviviale, amicale et familière tout en restant professionnelle, claire et axée sur le travail accompli par {first_name}.
+
+Consignes impératives :
+1. Titre obligatoire exact dès la première ligne :
+{header_past}
+2. Ne mets AUCUNE ligne vide entre le titre et le premier élément de la liste à puces.
+3. Utilise EXCLUSIVEMENT des tirets '-' pour toutes les listes à puces (JAMAIS d'astérisques '*').
+4. Liste à puces concise en français avec des phrases bien rédigées et naturelles à la 3ème personne (ex: "A implémenté...", "A corrigé...", "A mis à jour...").
+5. Regroupe intelligemment les commits liés ou techniques pour ne pas faire une simple répétition ligne à ligne des hash git.
+6. Mets en avant les composants clés (backend, mobile, base de données, CI, doc...) quand c'est pertinent.
+7. Reste factuel basé sur les commits/notes fournis.
+8. Ne commence JAMAIS par une salutation, ne mets pas de texte d'introduction ("Voici le résumé...") ni de conclusion. Retourne UNIQUEMENT le texte au format Markdown attendu.
+"""
+    else:
+        system_prompt_past = f"""Tu es un assistant chargé de rédiger des messages de stand-up pour une équipe de développeurs sur Discord.
 L'ambiance est conviviale, amicale et familière tout en restant professionnelle, claire et axée sur le travail accompli.
 
 Consignes impératives :
@@ -443,7 +656,7 @@ Consignes impératives :
             "role": "user",
             "parts": [
                 {
-                    "text": f"Voici mes commits récents pour la période :\n\n{commits_text}\n\nGénère la section stand-up correspondante."
+                    "text": f"Voici les commits récents pour la période :\n\n{commits_text}\n\nGénère la section stand-up correspondante."
                 }
             ]
         }
@@ -453,13 +666,13 @@ Consignes impératives :
     try:
         past_section = call_gemini(
             api_key, model, past_conversation, system_prompt_past,
-            start_marker="**Voici ce que j'ai"
+            start_marker="**Voici ce que"
         )
     except Exception as e:
         print(f"❌ {e}", file=sys.stderr)
         sys.exit(1)
 
-    # 6. Interactive review loop for "Voici ce que j'ai fait"
+    # 6. Interactive review loop for past section
     while True:
         print("\n" + "=" * 60)
         print(past_section)
@@ -479,7 +692,7 @@ Consignes impératives :
             break
         elif user_feedback.lower() in ["n", "non"]:
             try:
-                modifs = input("Quels changements apporter ? (ex: 'Supprimer la phrase sur...', 'Ajouter que j'ai...') :\n> ").strip()
+                modifs = input("Quels changements apporter ? (ex: 'Supprimer la phrase sur...', 'Ajouter...') :\n> ").strip()
             except (KeyboardInterrupt, EOFError):
                 print("\nOpération interrompue.")
                 sys.exit(0)
@@ -503,26 +716,46 @@ Consignes impératives :
         try:
             past_section = call_gemini(
                 api_key, model, past_conversation, system_prompt_past,
-                start_marker="**Voici ce que j'ai"
+                start_marker="**Voici ce que"
             )
         except Exception as e:
             print(f"❌ {e}", file=sys.stderr)
             print("Conservation de la version précédente.")
             break
 
-    # 7. Next tasks: "Voici ce que je vais maintenant faire :"
+    # 7. Next tasks
     next_section = ""
     if not args.print_only:
-        print("\n🔮 Que prévoyez-vous de faire maintenant ?")
-        next_raw = prompt_multiline("Listez vos prochaines tâches :")
+        if is_for_self:
+            print("\n🔮 Que prévoyez-vous de faire maintenant ?")
+            next_raw = prompt_multiline("Listez vos prochaines tâches :")
+        else:
+            print(f"\n🔮 Que prévoit de faire {first_name} maintenant ? (Optionnel)")
+            next_raw = prompt_multiline(f"Listez les prochaines tâches de {first_name} (ou Entrée pour ignorer) :")
     else:
         next_raw = ""
 
     if next_raw:
-        system_prompt_next = """Tu es un assistant pour un stand-up de dev sur Discord.
+        if is_third_person:
+            system_prompt_next = f"""Tu es un assistant pour un stand-up de dev sur Discord.
+À partir des notes brutes fournies concernant les prochaines tâches de {first_name}, génère une section propre au format exact :
+
+{header_next}
+- <tâche 1 rédigée clairement à l'infinitif ou phrase active à la 3e personne>
+- <tâche 2>
+
+Consignes impératives :
+1. Ton professionnel mais détendu/familier, naturel pour un développeur.
+2. Ne mets AUCUNE ligne vide entre le titre et la liste de tâches.
+3. Utilise EXCLUSIVEMENT des tirets '-' pour toutes les listes à puces (JAMAIS d'astérisques '*').
+4. Formule clairement chaque point (ex: "Rajouter...", "Corriger...", "Avancer sur...").
+5. Ne mets AUCUN texte d'introduction ni de conclusion, retourne UNIQUEMENT le bloc Markdown débutant par le titre en gras.
+"""
+        else:
+            system_prompt_next = f"""Tu es un assistant pour un stand-up de dev sur Discord.
 À partir des notes brutes fournies par l'utilisateur concernant ses prochaines tâches, génère une section propre au format exact :
 
-**Voici ce que je vais maintenant faire :**
+{header_next}
 - <tâche 1 rédigée clairement à l'infinitif ou phrase active>
 - <tâche 2>
 
@@ -536,22 +769,22 @@ Consignes impératives :
         next_conversation = [
             {
                 "role": "user",
-                "parts": [{"text": f"Voici mes prochaines tâches prévues :\n\n{next_raw}"}]
+                "parts": [{"text": f"Voici les prochaines tâches prévues :\n\n{next_raw}"}]
             }
         ]
-        print("\n🧠 Reformulation de vos prochaines tâches avec Gemini...")
+        print("\n🧠 Reformulation des prochaines tâches avec Gemini...")
         try:
             next_section = call_gemini(
                 api_key, model, next_conversation, system_prompt_next,
-                start_marker="**Voici ce que je vais"
+                start_marker="**Voici ce que"
             )
         except Exception as e:
             print(f"⚠️ Erreur lors de la mise en forme des prochaines tâches : {e}", file=sys.stderr)
             lines = [line.strip() for line in next_raw.split("\n") if line.strip()]
             next_bullets = "\n".join(f"- {line.lstrip('-* ')}" for line in lines)
-            next_section = f"**Voici ce que je vais maintenant faire :**\n{next_bullets}"
+            next_section = f"{header_next}\n{next_bullets}"
     else:
-        next_section = "**Voici ce que je vais maintenant faire :**\n- Poursuivre les développements en cours"
+        next_section = f"{header_next}\n- Poursuivre les développements en cours"
 
     # 8. Assemble full message and verify 2000 character limit
     full_message = clean_output(f"{past_section}\n\n{next_section}")
@@ -568,7 +801,7 @@ Condense, raccourcis et synthétise le texte pour qu'il fasse STRICTEMENT moins 
 Conserve obligatoirement les deux titres en gras :
 {header_past}
 et
-**Voici ce que je vais maintenant faire :**
+{header_next}
 
 Consignes impératives :
 - Ne saute AUCUNE ligne vide entre un titre et la liste à puces associée.
@@ -582,7 +815,7 @@ Texte à condenser :
         try:
             compressed = call_gemini(
                 api_key, model, compress_convo,
-                start_marker="**Voici ce que j'ai"
+                start_marker="**Voici ce que"
             )
             compressed = clean_output(compressed)
             if len(compressed) <= max_discord_len:
