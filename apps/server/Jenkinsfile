@@ -1,4 +1,4 @@
-@Library('jenkins-shared-library@main') _
+@Library('jenkins-shared-library@feat/server-test-rabbitmq') _
 
 // Go API pipeline: format, vet, build, tests, then SonarQube on dev.
 // The stages live in runServerCI (Ascension-EIP/jenkins-shared-library);
