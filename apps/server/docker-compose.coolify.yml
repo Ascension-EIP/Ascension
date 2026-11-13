@@ -1,6 +1,8 @@
 # Production deployment of the Go API, as a Coolify "Docker Compose" application.
 # Coolify builds this file from the main branch and redeploys it on every push.
 # Values come from the Coolify environment variables: ${VAR:?} marks a required one.
+# The server reads STORAGE_* and QUEUE_*; the Coolify variables keep their MINIO_* and
+# RABBITMQ_* names, so they are mapped here.
 # Guide: docs/Ascension/developer/architecture/deployment/api-deployment-guide.md
 services:
   api:
@@ -18,15 +20,15 @@ services:
       - "POSTGRES_USER=${POSTGRES_USER:?}"
       - "POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?}"
       - "POSTGRES_PARAMS=${POSTGRES_PARAMS:-sslmode=disable}"
-      - "RABBITMQ_HOST=${RABBITMQ_HOST:?}"
-      - "RABBITMQ_PORT=${RABBITMQ_PORT:-5672}"
-      - "RABBITMQ_USER=${RABBITMQ_USER:?}"
-      - "RABBITMQ_PASS=${RABBITMQ_PASS:?}"
-      - "MINIO_ENDPOINT=${MINIO_ENDPOINT:?}"
-      - "MINIO_REGION=${MINIO_REGION:?}"
-      - "MINIO_BUCKET=${MINIO_BUCKET:?}"
-      - "MINIO_ID=${MINIO_ID:?}"
-      - "MINIO_SECRET=${MINIO_SECRET:?}"
+      - "QUEUE_HOST=${RABBITMQ_HOST:?}"
+      - "QUEUE_PORT=${RABBITMQ_PORT:-5672}"
+      - "QUEUE_USER=${RABBITMQ_USER:?}"
+      - "QUEUE_PASS=${RABBITMQ_PASS:?}"
+      - "STORAGE_ENDPOINT=${MINIO_ENDPOINT:?}"
+      - "STORAGE_REGION=${MINIO_REGION:?}"
+      - "STORAGE_BUCKET=${MINIO_BUCKET:?}"
+      - "STORAGE_ID=${MINIO_ID:?}"
+      - "STORAGE_SECRET=${MINIO_SECRET:?}"
       - "AUTH_JWT_SECRET=${AUTH_JWT_SECRET:?}"
       - "AUTH_SESSION_SECRET=${AUTH_SESSION_SECRET:?}"
     healthcheck:
@@ -55,11 +57,13 @@ services:
       - "POSTGRES_USER=${POSTGRES_USER:?}"
       - "POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?}"
       - "POSTGRES_PARAMS=${POSTGRES_PARAMS:-sslmode=disable}"
-      - "RABBITMQ_USER=${RABBITMQ_USER:?}"
-      - "RABBITMQ_PASS=${RABBITMQ_PASS:?}"
-      - "MINIO_ENDPOINT=${MINIO_ENDPOINT:?}"
-      - "MINIO_REGION=${MINIO_REGION:?}"
-      - "MINIO_BUCKET=${MINIO_BUCKET:?}"
-      - "MINIO_ID=${MINIO_ID:?}"
-      - "MINIO_SECRET=${MINIO_SECRET:?}"
+      - "QUEUE_HOST=${RABBITMQ_HOST:?}"
+      - "QUEUE_PORT=${RABBITMQ_PORT:-5672}"
+      - "QUEUE_USER=${RABBITMQ_USER:?}"
+      - "QUEUE_PASS=${RABBITMQ_PASS:?}"
+      - "STORAGE_ENDPOINT=${MINIO_ENDPOINT:?}"
+      - "STORAGE_REGION=${MINIO_REGION:?}"
+      - "STORAGE_BUCKET=${MINIO_BUCKET:?}"
+      - "STORAGE_ID=${MINIO_ID:?}"
+      - "STORAGE_SECRET=${MINIO_SECRET:?}"
       - "AUTH_SESSION_SECRET=${AUTH_SESSION_SECRET:?}"
