@@ -19,7 +19,7 @@ This guide explains how the Jenkins pipelines and the SonarQube analyses check y
 
 ---
 
-## 1\. Overview,
+## 1\. Overview
 
 Jenkins runs one pipeline per application (server, AI, mobile) on the project VPS. Each pipeline checks the code (format, lint, build, tests), then sends the analysis to SonarQube on the `dev` branch. The results come back on the pull request as GitHub checks.
 
