@@ -88,6 +88,13 @@ tasks:
       - 'not e2e and not integration'
       - '--cov=src'
       - '--cov-report=term-missing'
+      - '--cov-report=xml:coverage.xml'
+    inputs:
+      - '**/*.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+    outputs:
+      - 'coverage.xml'
     options:
       cache: false
     deps:
@@ -148,7 +155,7 @@ tasks:
 
   clean:
     script: |
-      rm -rf .venv .ruff_cache .pytest_cache
+      rm -rf .venv .ruff_cache .pytest_cache coverage.xml
       find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
     options:
       cache: false

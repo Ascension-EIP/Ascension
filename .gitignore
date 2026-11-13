@@ -78,6 +78,7 @@ apps/ai/src/tools/
 .nox/
 .coverage
 .coverage.*
+coverage.xml
 htmlcov/
 pose_landmarker.task
 worker.pid
