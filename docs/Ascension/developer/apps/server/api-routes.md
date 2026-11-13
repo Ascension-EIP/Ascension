@@ -3,7 +3,7 @@ id: bfb575e1-a621-48a9-8452-4d113ee0e10e
 ---
 
 :::success
-**Version:** 1.7
+**Version:** 1.8
 :::
 
 ---
@@ -69,9 +69,10 @@ Rate limiting is enforced per client IP via `middleware.RateLimiter`:
 | `POST /v1/auth/login` | 10 requests / minute |
 | `DELETE /v1/auth/logout` | 10 requests / minute |
 | `PUT /v1/auth/refresh` | 10 requests / minute |
-| `/v1/users/*` | 100 requests / minute |
+| `/v1/users/*` | None |
 | `/v1/videos/*` | 10 requests / minute |
 | `/v1/analysis/*` | 10 requests / minute |
+| `/v1/profile/*` | 10 requests / minute |
 | `/v1/sessions/*` | 10 requests / minute |
 | `/v1/friends/*` | 10 requests / minute |
 | `GET /v1/users/search` | 30 requests / minute |
@@ -241,7 +242,7 @@ Generates a new access token using a valid refresh token.
 
 All endpoints under `/v1/users` require the `admin` role (`authMW(model.UserRoleAdmin)`).
 
-**Rate limit:** 100 req/min.
+**Rate limit:** none.
 
 ### POST /v1/users — Create a user
 
@@ -345,7 +346,7 @@ Permanently deletes the specified user.
 **Rate limit:** 10 req/min.\
 **Authentication:** Required (`user` or `admin`).
 
-### GET /v1/videos/upload-url — Get a presigned upload URL
+### POST /v1/videos/upload-url — Get a presigned upload URL
 
 Generates a presigned PUT URL allowing direct upload from the mobile client to Object Storage (RustFS / OVHcloud S3).
 
