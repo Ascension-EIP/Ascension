@@ -1,8 +1,8 @@
-# @date 2026-11-01
+# @date 2026-11-13
 # @file test_coverage_gaps.py
 # @brief Unit tests of decisions and error branches that no other test reaches (found with pytest-cov).
 # @project Ascension
-# @author Gianni TUERO <gianni.tuero@epitech.eu>
+# @author Gianni TUERO <gianni.tuero@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
 import json
@@ -85,7 +85,9 @@ def test_llm_client_never_retries_itself_and_accepts_no_key(monkeypatch):
     monkeypatch.delenv("LLM_API_KEY", raising=False)
     LLM().setup_config("http://llm.test/v1", "m").connect()
     kwargs = client.call_args.kwargs
-    assert kwargs["max_retries"] == 0 and kwargs["api_key"] == "EMPTY" and kwargs["base_url"] == "http://llm.test/v1"
+    assert kwargs["max_retries"] == 0
+    assert kwargs["api_key"] == "EMPTY"
+    assert kwargs["base_url"] == "http://llm.test/v1"
 
 
 def test_generate_json_connects_on_first_use(monkeypatch):

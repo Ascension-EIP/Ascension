@@ -36,7 +36,7 @@ Le serveur Go n'est pas encore branché sur ces queues : il publie encore sur l'
 
 ---
 
-## Schèma du flow IA
+## Schéma du flow IA
 
 *Résumé : l'application envoie la vidéo directement à RustFS, puis l'API publie le job. Le worker analyse la vidéo, écrit le résultat et les conseils dans PostgreSQL et publie ses statuts. Le pipeline 2 (mode fantôme) est prévu, pas implémenté.*
 

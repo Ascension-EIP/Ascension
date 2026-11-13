@@ -16,7 +16,9 @@ id: 5d09b283-adb5-4bde-b3a4-5d9d79c195d2
 
 This document describes the Ascension REST API for video analysis, route visualization, and climbing coaching.
 
-**Base URL**: `https://api.ascension-eip.fr/v1` **Authentication**: JWT Bearer tokens **Format**: JSON
+- **Base URL**: `https://api.ascension-eip.fr/v1`
+- **Authentication**: JWT Bearer tokens
+- **Format**: JSON
 
 ---
 

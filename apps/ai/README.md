@@ -267,6 +267,5 @@ The contract between the worker and the server lives in `schemas/` at the reposi
 - **The Go server is not wired to the worker.** It still publishes on `vision.skeleton`, which nobody consumes, and still uses the old status values. Only `producer.py` triggers jobs. The wiring to do on the Go side is described in the backend handoff note (not versioned in the repository).
 - **An invalid payload goes to the dead-letter queue without any status.** The analysis stays `pending` in the database. The server has to detect it (for example by watching `<queue>.dlq` or a timeout).
 - **Progress 75 is never written.** Skeleton, filtering, metrics and movements run in one call, so the progress goes from 70 to 80.
-- **`LOG_LEVEL` is ignored.** `moon run ai:dev` sets `LOG_LEVEL=debug`, but the logger is fixed at `INFO`, so the debug traceback of a failed command is not shown.
 - **No reconnection.** If the RabbitMQ connection drops, the process exits with a non-zero code and Docker restarts it. The worker finishes the running job first.
 - **The end-to-end test is not in the CI.** It needs `docker compose`. Processing time of `example-2.mp4` (10 s, 1.6 MB) was measured at about 6 s on a CPU, with a simulated LLM. This is a baseline from a single video.

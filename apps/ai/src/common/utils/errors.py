@@ -1,8 +1,8 @@
-# @date 2026-11-01
+# @date 2026-11-13
 # @file errors.py
 # @brief File description.
 # @project Ascension
-# @author Gianni TUERO <gianni.tuero@epitech.eu>
+# @author Gianni TUERO <gianni.tuero@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
 import time
@@ -37,6 +37,8 @@ def with_retry(func: Callable[[], T], attempts: int = 3, base_delay: float = 2.0
     The last `TransientError` is raised once ``attempts`` is exhausted; any other
     exception propagates immediately.
     """
+    if attempts < 1:
+        raise ValueError("attempts must be >= 1")
     for attempt in range(1, attempts + 1):
         try:
             return func()
@@ -44,4 +46,4 @@ def with_retry(func: Callable[[], T], attempts: int = 3, base_delay: float = 2.0
             if attempt == attempts:
                 raise
             time.sleep(base_delay * 2 ** (attempt - 1))
-    raise ValueError("attempts must be >= 1")
+    raise AssertionError("unreachable")

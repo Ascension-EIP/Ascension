@@ -36,7 +36,7 @@ Ascension transforme un smartphone en coach d’escalade assisté par IA.
 Le produit permet de :
 
 - analyser une grimpe à partir d’une vidéo,
-- fournir des conseils personnalisés suite a une grimpe,
+- fournir des conseils personnalisés suite à une grimpe,
 - obtenir un guide étape par étape pour grimper une voie via le mode fantôme,
 - accompagner la progression dans le temps.
 
