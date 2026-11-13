@@ -85,7 +85,7 @@ func (h *AnalysisHandler) GetByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.Status(http.StatusInternalServerError)
+		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -96,4 +96,21 @@ func (h *AnalysisHandler) GetByID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response.AnalysisToResponse(analysis))
+}
+
+func (h *AnalysisHandler) RetryAdvice(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	_, err = h.s.RetryAdvice(c.Request.Context(), id)
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }

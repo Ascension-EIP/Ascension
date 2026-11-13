@@ -35,6 +35,7 @@ var (
 
 	// -- Video -- //
 	ErrVideoUploading = errors.New("video is uploading")
+	ErrVideoNotFound  = errors.New("video not found")
 
 	// -- Climbing session -- //
 	ErrClimbingSessionNotFound = errors.New("climbing session not found")

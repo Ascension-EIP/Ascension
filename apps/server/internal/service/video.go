@@ -21,19 +21,19 @@ import (
 )
 
 type VideoService struct {
-	cfgVideo config.VideoConfig
-	cfgMinIO config.MinIOConfig
-	storage  model.VideoStorage
-	repo     model.VideoRepository
-	sessionR model.ClimbingSessionRepository
+	cfgVideo   config.VideoConfig
+	cfgStorage config.StorageConfig
+	storage    model.VideoStorage
+	videoR     model.VideoRepository
+	sessionR   model.ClimbingSessionRepository
 }
 
-func NewVideoService(cfgVideo config.VideoConfig, cfgMinIO config.MinIOConfig, storage model.VideoStorage, repo model.VideoRepository, sessionR model.ClimbingSessionRepository) VideoService {
-	return VideoService{cfgVideo: cfgVideo, cfgMinIO: cfgMinIO, storage: storage, repo: repo, sessionR: sessionR}
+func NewVideoService(cfgVideo config.VideoConfig, cfgStorage config.StorageConfig, storage model.VideoStorage, videoR model.VideoRepository, sessionR model.ClimbingSessionRepository) VideoService {
+	return VideoService{cfgVideo: cfgVideo, cfgStorage: cfgStorage, storage: storage, videoR: videoR, sessionR: sessionR}
 }
 
 func (s *VideoService) GetDownloadURL(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (model.VideoDownloadURL, error) {
-	video, err := s.repo.GetVideoByFilter(ctx, model.VideoFilter{ID: &videoID, UserID: &userID})
+	video, err := s.videoR.GetVideoByFilter(ctx, model.VideoFilter{ID: &videoID, UserID: &userID})
 	if err != nil {
 		return model.VideoDownloadURL{}, err
 	}
@@ -74,8 +74,8 @@ func (s *VideoService) GetUploadURL(ctx context.Context, userID uuid.UUID, video
 
 	objectKey := fmt.Sprintf("%s/%s.%s", userID.String(), videoID.String(), videoMetadata.Extension)
 
-	if err := s.repo.WithTransaction(ctx, func(ctx context.Context) error {
-		if err := s.repo.CreateVideo(ctx, model.Video{
+	if err := s.videoR.WithTransaction(ctx, func(ctx context.Context) error {
+		if err := s.videoR.CreateVideo(ctx, model.Video{
 			ID:                 videoID,
 			UserID:             userID,
 			ClimbingSessionID:  videoConfig.ClimbingSessionID,
@@ -86,7 +86,7 @@ func (s *VideoService) GetUploadURL(ctx context.Context, userID uuid.UUID, video
 			ContentType:        videoMetadata.ContentType,
 			SizeBytes:          new(videoMetadata.Size),
 			Retained:           videoConfig.Retained,
-			UploadURLExpiresAt: new(time.Now().Add(s.cfgMinIO.UploadExp)),
+			UploadURLExpiresAt: new(time.Now().Add(s.cfgStorage.UploadExp)),
 		}); err != nil {
 			return err
 		}
@@ -109,28 +109,50 @@ func (s *VideoService) GetUploadURL(ctx context.Context, userID uuid.UUID, video
 }
 
 func (s *VideoService) UploadComplete(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) error {
-	video, err := s.repo.GetVideoByFilter(ctx, model.VideoFilter{ID: &videoID, UserID: &userID})
+	video, err := s.videoR.GetVideoByFilter(ctx, model.VideoFilter{ID: &videoID, UserID: &userID})
 	if err != nil {
 		return err
 	}
 
-	if err := s.storage.FileExist(ctx, video.ObjectKey); err != nil {
-		return err
+	if ok, err := s.storage.FileExist(ctx, video.ObjectKey); !ok {
+		if err == nil {
+			return model.ErrVideoNotFound
+		} else {
+			return err
+		}
 	}
 
 	// collect missing value for video row
 	//TODO faut installer ffprobe pour cette merde
 
-	if _, err := s.repo.UpdateVideo(ctx, model.VideoPartial{ID: videoID, UserID: userID, Status: new(model.VideoStatusCompleted), UploadURLExpiresAt: new((*time.Time)(nil))}); err != nil {
+	if _, err := s.videoR.UpdateVideo(ctx, model.VideoPartial{ID: videoID, UserID: userID, Status: new(model.VideoStatusCompleted), UploadURLExpiresAt: new((*time.Time)(nil))}); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (s *VideoService) ClearUploadExpiredVideos(ctx context.Context) error {
-	return s.repo.DeleteVideosUploadExpired(ctx)
+	return s.videoR.DeleteVideosUploadExpired(ctx)
 }
 
 func (s *VideoService) ClearExpiredVideos(ctx context.Context) error {
-	return s.repo.DeleteVideosExpired(ctx, s.cfgVideo.Retention)
+	return s.videoR.DeleteVideosExpired(ctx, s.cfgVideo.Retention)
+}
+
+func (s *VideoService) GetVideoByUserID(ctx context.Context, videoID uuid.UUID, userID uuid.UUID) (model.Video, error) {
+	video, err := s.videoR.GetVideoByFilter(ctx, model.VideoFilter{ID: &videoID, UserID: &userID})
+	if err != nil {
+		return model.Video{}, fmt.Errorf("get video by filter from db: %w", err)
+	}
+
+	return video, nil
+}
+
+func (s *VideoService) ListVideosByUserID(ctx context.Context, userID uuid.UUID, pagination model.Pagination) ([]model.Video, error) {
+	videos, err := s.videoR.ListVideosByFilter(ctx, model.VideoFilter{UserID: &userID}, pagination)
+	if err != nil {
+		return nil, fmt.Errorf("list videos by filter from db: %w", err)
+	}
+
+	return videos, nil
 }

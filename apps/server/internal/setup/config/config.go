@@ -17,13 +17,13 @@ import (
 
 type (
 	Config struct {
-		DB       DBConfig       `envPrefix:"POSTGRES_"`
-		MinIO    MinIOConfig    `envPrefix:"MINIO_"`
-		RabbitMQ RabbitMQConfig `envPrefix:"RABBITMQ_"`
-		Video    VideoConfig    `envPrefix:"VIDEO_"`
-		Auth     AuthConfig     `envPrefix:"AUTH_"`
-		HTTP     HTTPConfig
-		Log      LogConfig `envPrefix:"LOG_"`
+		DB      DBConfig      `envPrefix:"POSTGRES_"`
+		Storage StorageConfig `envPrefix:"STORAGE_"`
+		Queue   QueueConfig   `envPrefix:"QUEUE_"`
+		Video   VideoConfig   `envPrefix:"VIDEO_"`
+		Auth    AuthConfig    `envPrefix:"AUTH_"`
+		HTTP    HTTPConfig
+		Log     LogConfig `envPrefix:"LOG_"`
 	}
 
 	DBConfig struct {
@@ -35,25 +35,23 @@ type (
 		Params   string `env:"PARAMS" envDefault:"sslmode=disable"`
 	}
 
-	MinIOConfig struct {
-		Endpoint    string        `env:"ENDPOINT,unset,required"`
-		ID          string        `env:"ID,unset,required"`
-		Secret      string        `env:"SECRET,unset,required"`
-		BucketName  string        `env:"BUCKET,required"`
-		SSL         bool          `env:"SSL" envDefault:"false"`
-		Region      string        `env:"REGION"`
-		UploadExp   time.Duration `env:"UPLOAD_EXP" envDefault:"1h"`
-		DownloadExp time.Duration `env:"DOWNLAOD_EXP" envDefault:"1h"`
+	StorageConfig struct {
+		Endpoint        string        `env:"ENDPOINT,unset,required"`
+		Region          string        `env:"REGION,unset,required"`
+		AccessKeyID     string        `env:"ID,unset,required"`
+		SecretAccessKey string        `env:"SECRET,unset,required"`
+		BucketName      string        `env:"BUCKET,required"`
+		UploadExp       time.Duration `env:"UPLOAD_EXP" envDefault:"1h"`
+		DownloadExp     time.Duration `env:"DOWNLAOD_EXP" envDefault:"1h"`
 	}
 
-	RabbitMQConfig struct {
-		Host     string `env:"HOST" envDefault:"localhost"`
-		Port     int    `env:"PORT" envDefault:"5672"`
-		User     string `env:"USER,unset,required"`
-		Password string `env:"PASS,unset,required"`
-		TLS      bool   `env:"TLS" envDefault:"false"`
-		// Topic exchange shared with the AI worker (schemas/routing_key.schema.json).
-		Exchange string `env:"EXCHANGE" envDefault:"events"`
+	QueueConfig struct {
+		Host          string `env:"HOST" envDefault:"localhost"`
+		Port          int    `env:"PORT" envDefault:"5672"`
+		User          string `env:"USER,unset,required"`
+		Password      string `env:"PASS,unset,required"`
+		TLS           bool   `env:"TLS" envDefault:"false"`
+		ExchangeEvent string `env:"EXCHANGE_EVENT" envDefault:"events"`
 	}
 
 	VideoConfig struct {
@@ -98,7 +96,7 @@ func (c *DBConfig) DSN() string {
 	return u.String()
 }
 
-func (c *RabbitMQConfig) DSN() string {
+func (c *QueueConfig) DSN() string {
 	scheme := "amqp"
 	if c.TLS {
 		scheme += "s"

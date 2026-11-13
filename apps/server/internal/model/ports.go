@@ -88,10 +88,13 @@ type AnalysisRepository interface {
 	TransactionRepository
 	CreateAnalysis(ctx context.Context, analysis Analysis) (Analysis, error)
 	GetAnalysisByFilter(ctx context.Context, filter AnalysisFilter) (Analysis, error)
+	ListAnalysisByFilter(ctx context.Context, filter AnalysisFilter, pagination Pagination) ([]Analysis, error)
 	// ListAnalysisSummariesByClimbingSessionID lists the analyses of the session's videos, newest first.
 	ListAnalysisSummariesByClimbingSessionID(ctx context.Context, climbingSessionID uuid.UUID) ([]AnalysisSummary, error)
 	// ListAnalysisSummariesByUserID returns one page of the analyses of the user's videos, newest first, and the total count.
 	ListAnalysisSummariesByUserID(ctx context.Context, userID uuid.UUID, pagination Pagination) ([]AnalysisSummary, int, error)
+	UpdateAnalysis(ctx context.Context, partial AnalysisPartial) (Analysis, error)
+	DeleteAnalysis(ctx context.Context, id uuid.UUID) error
 }
 
 type ClimbingSessionRepository interface {
@@ -110,10 +113,14 @@ type VideoRepository interface {
 	TransactionRepository
 	CreateVideo(ctx context.Context, video Video) error
 	GetVideoByFilter(ctx context.Context, filter VideoFilter) (Video, error)
-	ListVideosByFilter(ctx context.Context, filter VideoFilter) ([]Video, error)
+	ListVideosByFilter(ctx context.Context, filter VideoFilter, pagination Pagination) ([]Video, error)
 	UpdateVideo(ctx context.Context, partial VideoPartial) (Video, error)
 	DeleteVideosUploadExpired(ctx context.Context) error
 	DeleteVideosExpired(ctx context.Context, retainPeriod time.Duration) error
+}
+
+type QuotaUsageRepository interface {
+	DeleteOldQuotaUsage(ctx context.Context) error
 }
 
 type TransactionRepository interface {
@@ -130,7 +137,7 @@ type Migrator interface {
 type VideoStorage interface {
 	PresignedUploadURL(context.Context, string) (*url.URL, time.Time, error)
 	PresignedDownloadURL(context.Context, string) (*url.URL, time.Time, error)
-	FileExist(context.Context, string) error
+	FileExist(context.Context, string) (bool, error)
 	Delete(context.Context, string) error
 }
 
@@ -139,7 +146,6 @@ type VideoStorage interface {
 // -- Queue -- //
 
 type AnalysisQueue interface {
-	// PublishPoseDetectRequested publishes a pose detection job for the AI worker.
 	PublishPoseDetectRequested(ctx context.Context, body []byte) error
 }
 

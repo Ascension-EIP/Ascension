@@ -241,7 +241,7 @@ func TestGetUploadURLChecksClimbingSessionOwner(t *testing.T) {
 	ctx := context.Background()
 	repo := memrepo.New()
 	sessionS := newTestClimbingSessionService(repo)
-	videoS := NewVideoService(config.VideoConfig{}, config.MinIOConfig{UploadExp: time.Hour}, fakeStorage{}, repo, repo)
+	videoS := NewVideoService(config.VideoConfig{}, config.StorageConfig{UploadExp: time.Hour}, fakeStorage{}, repo, repo)
 	userID, otherID := uuid.NewV7(), uuid.NewV7()
 	session := mustStart(t, sessionS, userID, model.ClimbingSessionConfig{Visibility: model.VisibilityPrivate})
 	metadata, err := model.NewVideoMetadata("video/mp4", 1024)
@@ -270,7 +270,7 @@ func TestTriggeredAnalysisJoinsTheSessionOfItsVideo(t *testing.T) {
 	ctx := context.Background()
 	repo := memrepo.New()
 	sessionS := newTestClimbingSessionService(repo)
-	analysisS := NewAnalysisService(repo, repo, fakeQueue{})
+	analysisS := NewAnalysisService(config.StorageConfig{}, repo, repo, fakeQueue{})
 	userID := uuid.NewV7()
 	session := mustStart(t, sessionS, userID, model.ClimbingSessionConfig{Visibility: model.VisibilityPrivate})
 
@@ -379,7 +379,7 @@ func TestListAnalyses(t *testing.T) {
 	ctx := context.Background()
 	repo := memrepo.New()
 	sessionS := newTestClimbingSessionService(repo)
-	analysisS := NewAnalysisService(repo, repo, fakeQueue{})
+	analysisS := NewAnalysisService(config.StorageConfig{}, repo, repo, fakeQueue{})
 	userID := uuid.NewV7()
 	session := mustStart(t, sessionS, userID, model.ClimbingSessionConfig{Visibility: model.VisibilityPrivate})
 
@@ -462,7 +462,7 @@ func (fakeStorage) PresignedDownloadURL(_ context.Context, key string) (*url.URL
 	return &url.URL{Scheme: "https", Host: "storage.test", Path: "/" + key}, testNow.Add(time.Hour), nil
 }
 
-func (fakeStorage) FileExist(context.Context, string) error { return nil }
+func (fakeStorage) FileExist(context.Context, string) (bool, error) { return true, nil }
 
 func (fakeStorage) Delete(context.Context, string) error { return nil }
 

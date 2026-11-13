@@ -10,26 +10,28 @@ package dto
 import (
 	"time"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"uuid"
+
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/shared"
 )
 
 type Analysis struct {
-	ID               uuid.UUID          `db:"id"`
-	VideoID          uuid.UUID          `db:"video_id"`
-	Type             model.AnalysisType `db:"type"`
-	Status           model.JobStatus    `db:"status"`
-	Visibility       model.Visibility   `db:"visibility"`
-	Result           *map[string]any    `db:"result"`
-	Advice           *string            `db:"advice"`
-	Hints            *map[string]any    `db:"hints"`
-	Error            *string            `db:"error"`
-	Progress         int16              `db:"progress"`
-	ProcessingTimeMS *time.Duration     `db:"processing_time_ms"`
-	StartedAt        *time.Time         `db:"started_at"`
-	CompletedAt      *time.Time         `db:"completed_at"`
-	CreatedAt        time.Time          `db:"created_at"`
-	UpdatedAt        time.Time          `db:"updated_at"`
+	ID               uuid.UUID              `db:"id"`
+	VideoID          uuid.UUID              `db:"video_id"`
+	Type             model.AnalysisType     `db:"type"`
+	Status           model.JobStatus        `db:"status"`
+	Visibility       model.Visibility       `db:"visibility"`
+	Result           *shared.AnalysisResult `db:"result"`
+	Advice           *string                `db:"advice"`
+	Error            *string                `db:"error"`
+	Progress         int16                  `db:"progress"`
+	ProcessingTimeMS *time.Duration         `db:"processing_time_ms"`
+	StartedAt        *time.Time             `db:"started_at"`
+	CompletedAt      *time.Time             `db:"completed_at"`
+	CreatedAt        time.Time              `db:"created_at"`
+	UpdatedAt        time.Time              `db:"updated_at"`
+	Hints            *shared.Hints          `db:"hints"`
 }
 
 func (a Analysis) ToAnalysis() model.Analysis {
@@ -39,17 +41,26 @@ func (a Analysis) ToAnalysis() model.Analysis {
 		Type:             a.Type,
 		Status:           a.Status,
 		Visibility:       a.Visibility,
+		Progress:         a.Progress,
 		Result:           a.Result,
 		Advice:           a.Advice,
-		Hints:            a.Hints,
 		Error:            a.Error,
-		Progress:         a.Progress,
 		ProcessingTimeMS: a.ProcessingTimeMS,
 		StartedAt:        a.StartedAt,
 		CompletedAt:      a.CompletedAt,
 		CreatedAt:        a.CreatedAt,
 		UpdatedAt:        a.UpdatedAt,
+		Hints:            a.Hints,
 	}
+}
+
+func AnalysesToAnalyses(dto []Analysis) []model.Analysis {
+	list := []model.Analysis{}
+	for _, item := range dto {
+		list = append(list, item.ToAnalysis())
+	}
+
+	return list
 }
 
 // AnalysisSummary is the subset of analyses columns used in lists, with the climbing

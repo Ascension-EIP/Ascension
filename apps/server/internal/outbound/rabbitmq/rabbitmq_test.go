@@ -12,8 +12,8 @@ import "testing"
 // The AI worker declares the same queue (apps/ai/src/services/rabbitmq.py): any other
 // argument makes RabbitMQ refuse the second declaration with PRECONDITION_FAILED.
 func TestPoseDetectQueueMatchesTheWorker(t *testing.T) {
-	if QueuePoseDetect != "poses.detect" || RoutingKeyPoseDetectRequested != "pose.detect.requested" {
-		t.Errorf("queue %q / routing key %q, want poses.detect / pose.detect.requested", QueuePoseDetect, RoutingKeyPoseDetectRequested)
+	if queuePoseDetect != "poses.detect" || routingKeyPoseDetectRequested != "pose.detect.requested" {
+		t.Errorf("queue %q / routing key %q, want poses.detect / pose.detect.requested", queuePoseDetect, routingKeyPoseDetectRequested)
 	}
 
 	args := poseDetectQueueArgs()

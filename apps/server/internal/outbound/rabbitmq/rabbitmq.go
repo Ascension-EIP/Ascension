@@ -19,18 +19,18 @@ import (
 // arguments: both sides declare them, so a job published before the worker ever started
 // waits in its queue instead of being dropped.
 const (
-	RoutingKeyPoseDetectRequested = "pose.detect.requested"
-	QueuePoseDetect               = "poses.detect"
+	routingKeyPoseDetectRequested = "pose.detect.requested"
+	queuePoseDetect               = "poses.detect"
 	deadLetterExchange            = "events.dlx"
 )
 
 type RabbitMQ struct {
 	conn *amqp091.Connection
 	ch   *amqp091.Channel
-	cfg  config.RabbitMQConfig
+	cfg  config.QueueConfig
 }
 
-func New(cfg config.RabbitMQConfig) (RabbitMQ, error) {
+func New(cfg config.QueueConfig) (RabbitMQ, error) {
 	conn, err := amqp091.Dial(cfg.DSN())
 	if err != nil {
 		return RabbitMQ{}, fmt.Errorf("RabbitMQ.New: %w", err)
@@ -41,7 +41,7 @@ func New(cfg config.RabbitMQConfig) (RabbitMQ, error) {
 		return RabbitMQ{}, fmt.Errorf("RabbitMQ.New: %w", err)
 	}
 
-	if err := declareTopology(ch, cfg.Exchange); err != nil {
+	if err := declareTopology(ch, cfg.ExchangeEvent); err != nil {
 		return RabbitMQ{}, fmt.Errorf("RabbitMQ.New: %w", err)
 	}
 
@@ -54,11 +54,11 @@ func declareTopology(ch *amqp091.Channel, exchange string) error {
 	if err := ch.ExchangeDeclare(exchange, amqp091.ExchangeTopic, true, false, false, false, nil); err != nil {
 		return fmt.Errorf("declare exchange %s: %w", exchange, err)
 	}
-	if _, err := ch.QueueDeclare(QueuePoseDetect, true, false, false, false, poseDetectQueueArgs()); err != nil {
-		return fmt.Errorf("declare queue %s: %w", QueuePoseDetect, err)
+	if _, err := ch.QueueDeclare(queuePoseDetect, true, false, false, false, poseDetectQueueArgs()); err != nil {
+		return fmt.Errorf("declare queue %s: %w", queuePoseDetect, err)
 	}
-	if err := ch.QueueBind(QueuePoseDetect, RoutingKeyPoseDetectRequested, exchange, false, nil); err != nil {
-		return fmt.Errorf("bind queue %s: %w", QueuePoseDetect, err)
+	if err := ch.QueueBind(queuePoseDetect, routingKeyPoseDetectRequested, exchange, false, nil); err != nil {
+		return fmt.Errorf("bind queue %s: %w", queuePoseDetect, err)
 	}
 	return nil
 }
@@ -68,6 +68,6 @@ func declareTopology(ch *amqp091.Channel, exchange string) error {
 func poseDetectQueueArgs() amqp091.Table {
 	return amqp091.Table{
 		"x-dead-letter-exchange":    deadLetterExchange,
-		"x-dead-letter-routing-key": QueuePoseDetect + ".dlq",
+		"x-dead-letter-routing-key": queuePoseDetect + ".dlq",
 	}
 }

@@ -10,28 +10,26 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"time"
 
 	"uuid"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/shared"
 )
 
-// PoseDetectRequest is the job sent to the AI worker (schemas/pose_detect_request.schema.json):
-// JobID is the id of the analysis row, ObjectKey the video in the bucket.
-type PoseDetectRequest struct {
-	JobID     uuid.UUID `json:"job_id"`
-	ObjectKey string    `json:"object_key"`
-}
-
 type AnalysisService struct {
+	cfg       config.StorageConfig
 	analysisR model.AnalysisRepository
 	videoR    model.VideoRepository
 	queue     model.AnalysisQueue
 }
 
-func NewAnalysisService(analysisR model.AnalysisRepository, videoR model.VideoRepository, queue model.AnalysisQueue) AnalysisService {
-	return AnalysisService{analysisR: analysisR, videoR: videoR, queue: queue}
+func NewAnalysisService(cfg config.StorageConfig, analysisR model.AnalysisRepository, videoR model.VideoRepository, queue model.AnalysisQueue) AnalysisService {
+	return AnalysisService{cfg: cfg, analysisR: analysisR, videoR: videoR, queue: queue}
 }
 
 func (s *AnalysisService) TriggerAnalysis(ctx context.Context, userID uuid.UUID, analysisConfig model.AnalysisConfig) (model.Analysis, error) {
@@ -55,7 +53,11 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, userID uuid.UUID,
 			return err
 		}
 
-		data, err := json.Marshal(PoseDetectRequest{JobID: analysis.ID, ObjectKey: video.ObjectKey})
+		data, err := json.Marshal(
+			shared.PoseDetectRequest{
+				JobID:     analysis.ID.String(),
+				ObjectKey: video.ObjectKey,
+			})
 		if err != nil {
 			return err
 		}
@@ -90,4 +92,37 @@ func (s *AnalysisService) ListAnalyses(ctx context.Context, userID uuid.UUID, pa
 	}
 
 	return model.AnalysisSummaryPage{Analyses: analyses, Total: total, Pagination: pagination}, nil
+}
+
+func (s *AnalysisService) AnalysisStaleDetection(ctx context.Context) error {
+	analyses, err := s.analysisR.ListAnalysisByFilter(ctx, model.AnalysisFilter{Status: new(model.JobStatusPending)}, model.Pagination{Limit: 0, Offset: 0})
+	if err != nil {
+		return err
+	}
+
+	errStack := []error{}
+	s.analysisR.WithTransaction(ctx, func(ctx context.Context) error {
+		for _, analysis := range analyses {
+			if analysis.CreatedAt.Before(time.Now().Add(-time.Minute * 15)) {
+				if _, err := s.analysisR.UpdateAnalysis(ctx, model.AnalysisPartial{ID: analysis.ID, Status: new(model.JobStatusFailed), Error: new(new("Job processing timed out"))}); err != nil {
+					errStack = append(errStack, fmt.Errorf("%v: %w", analysis.ID, err))
+				}
+			}
+		}
+
+		return nil
+	})
+
+	if len(errStack) > 0 {
+		return errors.Join(errStack...)
+	}
+
+	return nil
+}
+
+func (s *AnalysisService) RetryAdvice(ctx context.Context, id uuid.UUID) (model.Analysis, error) {
+	// s.analysisR.GetAnalysisByFilter(ctx, model.AnalysisFilter{ID: new(id), Status: new(model.JobStatusFailed)})
+	// TODO
+
+	return model.Analysis{}, nil
 }

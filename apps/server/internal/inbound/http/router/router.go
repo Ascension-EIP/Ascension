@@ -65,9 +65,11 @@ func New(
 
 		videosGroup := v1.Group("/videos", middleware.RateLimiter(time.Minute, 10), authMW())
 		{
-			videosGroup.GET("/upload-url", videoH.GetUploadURL)
+			videosGroup.POST("/upload-url", videoH.GetUploadURL)
 			videosGroup.PUT("/upload-done/:id", videoH.UploadComplete)
 			videosGroup.GET("/download-url/:id", videoH.GetDownloadURL)
+			videosGroup.GET("/", videoH.ListVideos)
+			videosGroup.GET("/:id", videoH.GetVideo)
 		}
 
 		analysesGroup := v1.Group("/analysis", middleware.RateLimiter(time.Minute, 10), authMW())
@@ -75,6 +77,7 @@ func New(
 			analysesGroup.POST("/", analysisH.Create)
 			analysesGroup.GET("", analysisH.List)
 			analysesGroup.GET("/:id", analysisH.GetByID)
+			analysesGroup.POST("/:id/retry-advice", analysisH.RetryAdvice)
 		}
 
 		profileGroup := v1.Group("/profile", middleware.RateLimiter(time.Minute, 10), authMW())

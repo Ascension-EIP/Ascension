@@ -58,7 +58,7 @@ func newTestAPI(t *testing.T, repo testRepo) *testAPI {
 	jwtS := service.NewJWTService(config.JWTConfig{Exp: time.Hour, Secret: "climbing-session-test-secret"})
 	sessionS := service.NewClimbingSessionService(repo, repo, repo)
 	sessionH := handler.NewClimbingSessionHandler(&sessionS)
-	analysisS := service.NewAnalysisService(repo, repo, noQueue{})
+	analysisS := service.NewAnalysisService(config.StorageConfig{}, repo, repo, noQueue{})
 	analysisH := handler.NewAnalysisHandler(&analysisS)
 	bodyConstraintS := service.NewUserBodyConstraintService(repo)
 	bodyConstraintH := handler.NewUserBodyConstraintHandler(&bodyConstraintS)

@@ -47,6 +47,7 @@ func videoFilterQuery(filter model.VideoFilter) (string, []any) {
 	if len(setParts) > 0 {
 		query += " WHERE " + strings.Join(setParts, " AND ")
 	}
+	query += " ORDER BY created_at"
 
 	return query, args
 }
@@ -70,8 +71,14 @@ func (r *PostgresRepository) GetVideoByFilter(ctx context.Context, filter model.
 	return dbVideo.ToVideo(), nil
 }
 
-func (r *PostgresRepository) ListVideosByFilter(ctx context.Context, filter model.VideoFilter) ([]model.Video, error) {
+func (r *PostgresRepository) ListVideosByFilter(ctx context.Context, filter model.VideoFilter, pagination model.Pagination) ([]model.Video, error) {
 	query, args := videoFilterQuery(filter)
+	if pagination.Limit != 0 {
+		query += fmt.Sprintf(" LIMIT %d", pagination.Limit)
+	}
+	if pagination.Offset != 0 {
+		query += fmt.Sprintf(" OFFSET %d", pagination.Offset)
+	}
 
 	tx := r.getTx(ctx)
 

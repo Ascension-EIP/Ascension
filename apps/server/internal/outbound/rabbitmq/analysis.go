@@ -14,15 +14,18 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 )
 
-// PublishPoseDetectRequested publishes a pose detection job (schemas/pose_detect_request.schema.json)
-// for the AI worker.
 func (q *RabbitMQ) PublishPoseDetectRequested(ctx context.Context, body []byte) error {
-	if err := q.ch.PublishWithContext(ctx, q.cfg.Exchange, RoutingKeyPoseDetectRequested, false, false, amqp091.Publishing{
-		Timestamp:    time.Now(),
-		Body:         body,
-		ContentType:  "application/json",
-		DeliveryMode: amqp091.Persistent,
-	}); err != nil {
+	if err := q.ch.PublishWithContext(ctx,
+		q.cfg.ExchangeEvent,
+		routingKeyPoseDetectRequested,
+		false, false,
+		amqp091.Publishing{
+			Timestamp:    time.Now(),
+			Body:         body,
+			ContentType:  "application/json",
+			DeliveryMode: amqp091.Persistent,
+		},
+	); err != nil {
 		return err
 	}
 

@@ -16,6 +16,7 @@ import (
 	"uuid"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/testutil/memrepo"
 )
 
@@ -33,7 +34,7 @@ func (q *recordingQueue) PublishPoseDetectRequested(_ context.Context, body []by
 func TestTriggerAnalysisPublishesThePoseDetectRequest(t *testing.T) {
 	repo := memrepo.New()
 	queue := &recordingQueue{}
-	s := NewAnalysisService(repo, repo, queue)
+	s := NewAnalysisService(config.StorageConfig{}, repo, repo, queue)
 	userID := uuid.NewV7()
 	video := model.Video{ID: uuid.NewV7(), UserID: userID, ObjectKey: "user/video.mp4", Status: model.VideoStatusCompleted}
 	repo.PutVideo(video)
@@ -59,7 +60,7 @@ func TestTriggerAnalysisPublishesThePoseDetectRequest(t *testing.T) {
 
 func TestTriggerAnalysisFailsWhenTheJobCannotBePublished(t *testing.T) {
 	repo := memrepo.New()
-	s := NewAnalysisService(repo, repo, &recordingQueue{err: errors.New("broker down")})
+	s := NewAnalysisService(config.StorageConfig{}, repo, repo, &recordingQueue{err: errors.New("broker down")})
 	userID := uuid.NewV7()
 	video := model.Video{ID: uuid.NewV7(), UserID: userID, ObjectKey: "k.mp4", Status: model.VideoStatusCompleted}
 	repo.PutVideo(video)
