@@ -3,7 +3,7 @@ id: 2f835188-7fa7-46eb-84ab-0f2bcdda5321
 ---
 
 :::success
-**Version:** 1.4
+**Version:** 1.5
 :::
 
 ---
@@ -235,6 +235,20 @@ moon run server:test
 go test ./...
 
 ```
+
+The integration tests (files named `*_integration_test.go`) need a PostgreSQL: without `TEST_DATABASE_DSN` they are skipped. Each test gets a fresh database, created from that server with every migration applied, so a throwaway container is enough:
+
+```bash
+docker run -d --rm --name test-postgres -e POSTGRES_USER=ascension -e POSTGRES_PASSWORD=ascension \
+  -e POSTGRES_DB=ascension -p 55432:5432 postgres:18-alpine
+TEST_DATABASE_DSN="postgres://ascension:ascension@localhost:55432/ascension?sslmode=disable" go test ./...
+docker stop test-postgres
+
+```
+
+Jenkins runs them the same way, next to a throwaway PostgreSQL of its own (see the [Jenkins and SonarQube guide](../../git/jenkins-sonarqube-guide.md)).
+
+Some tests describe a bug that is not fixed yet: they are skipped by default, and `RUN_KNOWN_BUGS=1 go test ./...` runs them to show them failing.
 
 ---
 
