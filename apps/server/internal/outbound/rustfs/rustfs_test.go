@@ -205,8 +205,6 @@ func TestFileExist(t *testing.T) {
 	})
 
 	t.Run("reports a missing object without error", func(t *testing.T) {
-		knownbug.Skip(t, "HEAD returns types.NotFound, not types.NoSuchKey, so a missing object is an error")
-
 		storage, _ := newTestStorage(t, map[string]int{objectPath: http.StatusNotFound})
 
 		exists, err := storage.FileExist(context.Background(), "users/42/video.mp4")
