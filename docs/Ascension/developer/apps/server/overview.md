@@ -3,7 +3,7 @@ id: 2f835188-7fa7-46eb-84ab-0f2bcdda5321
 ---
 
 :::success
-**Version:** 1.3
+**Version:** 1.4
 :::
 
 ---
@@ -54,16 +54,14 @@ apps/server/
 ├── cmd/
 │   ├── server/
 │   │   └── main.go     # API Server HTTP entry point
-│   ├── cron/
-│   │   └── main.go     # Background cron worker (session & video cleanup)
-│   └── migrate/
-│       └── main.go     # Standalone CLI tool to execute DB migrations
+│   └── cron/
+│       └── main.go     # Background cron worker (cleanups, stale analyses)
 └── internal/
     ├── app/            # App lifecycle, DI wiring, and graceful shutdown
     ├── inbound/        # HTTP layer — Gin router, handlers, DTOs, middlewares
-    ├── job/            # Scheduled job definitions (expired sessions/videos)
+    ├── job/            # Scheduled job definitions (cleanups, stale analyses)
     ├── model/          # Domain entities, validation rules, and repository ports
-    ├── outbound/       # Infrastructure adapters — pgx, rabbitmq, minio
+    ├── outbound/       # Infrastructure adapters — pgx, rabbitmq, rustfs (AWS SDK for Go v2)
     ├── service/        # Domain business logic (analysis, auth, jwt, user, video)
     └── setup/          # Configuration loading (env) and structured logger (slog)
 
@@ -88,28 +86,32 @@ Copy `.env.example` to `.env` at the repository root and fill in the values. The
 | `POSTGRES_PASSWORD` | ✅ | — | PostgreSQL database password |
 | `POSTGRES_PARAMS` | ❌ | `sslmode=disable` | Connection query parameters |
 
-### Storage (`MINIO_*`)
+### Storage (`STORAGE_*`)
 
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
-| `MINIO_ENDPOINT` | ✅ | — | Object storage URL (e.g. `http://localhost:9000`) |
-| `MINIO_ID` | ✅ | — | Access key / Root user |
-| `MINIO_SECRET` | ✅ | — | Secret key / Root password |
-| `MINIO_BUCKET` | ✅ | — | Target bucket for video uploads |
-| `MINIO_SSL` | ❌ | `false` | Enable TLS/SSL |
-| `MINIO_UPLOAD_EXP` | ❌ | `1h` | Presigned PUT URL validity duration |
-| `MINIO_DOWNLAOD_EXP` | ❌ | `1h` | Presigned GET URL validity duration |
+| `STORAGE_ENDPOINT` | ✅ | — | Object storage URL with its scheme (e.g. `http://localhost:9000`): `https://` enables TLS |
+| `STORAGE_REGION` | ✅ | — | Signing region: any value for RustFS, `gra` for OVHcloud Object Storage |
+| `STORAGE_ID` | ✅ | — | Access key |
+| `STORAGE_SECRET` | ✅ | — | Secret key |
+| `STORAGE_BUCKET` | ✅ | — | Target bucket for video uploads |
+| `STORAGE_UPLOAD_EXP` | ❌ | `1h` | Presigned PUT URL validity duration |
+| `STORAGE_DOWNLOAD_EXP` | ❌ | `1h` | Presigned GET URL validity duration |
 
-### Message Broker (`RABBITMQ_*`)
+The AI worker reads its own `RUSTFS_*` variables for the same storage. In production, Coolify keeps the `MINIO_*` names and the compose file maps them to `STORAGE_*`, see the [API Deployment Guide](../../architecture/deployment/api-deployment-guide.md).
+
+### Message Broker (`QUEUE_*`)
 
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
-| `RABBITMQ_HOST` | ❌ | `localhost` | RabbitMQ host |
-| `RABBITMQ_PORT` | ❌ | `5672` | RabbitMQ AMQP port |
-| `RABBITMQ_USER` | ✅ | — | RabbitMQ username |
-| `RABBITMQ_PASS` | ✅ | — | RabbitMQ password |
-| `RABBITMQ_TLS` | ❌ | `false` | Enable TLS connection |
-| `RABBITMQ_EXCHANGE` | ❌ | `events` | Topic exchange shared with the AI worker: analysis jobs are published with the `pose.detect.requested` routing key |
+| `QUEUE_HOST` | ❌ | `localhost` | RabbitMQ host |
+| `QUEUE_PORT` | ❌ | `5672` | RabbitMQ AMQP port |
+| `QUEUE_USER` | ✅ | — | RabbitMQ username |
+| `QUEUE_PASS` | ✅ | — | RabbitMQ password |
+| `QUEUE_TLS` | ❌ | `false` | Enable TLS connection |
+| `QUEUE_EXCHANGE_EVENT` | ❌ | `events` | Topic exchange shared with the AI worker: analysis jobs are published with the `pose.detect.requested` routing key |
+
+The AI worker reads its own `RABBITMQ_*` variables for the same broker.
 
 ### Auth & Tokens (`AUTH_*`)
 

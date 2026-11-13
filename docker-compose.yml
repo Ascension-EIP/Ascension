@@ -69,9 +69,12 @@ services:
       - "${PORT:-8080}:8080"
     env_file: .env
     environment:
+      - PORT=8080
       - POSTGRES_HOST=postgresql
-      - RABBITMQ_HOST=rabbitmq
-      - MINIO_ENDPOINT=http://rustfs:${MINIO_PORT:-9000}
+      - POSTGRES_PORT=5432
+      - QUEUE_HOST=rabbitmq
+      - QUEUE_PORT=5672
+      - STORAGE_ENDPOINT=http://rustfs:9000
     networks:
       - ascension-network
     depends_on:

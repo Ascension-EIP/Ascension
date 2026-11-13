@@ -1,4 +1,4 @@
-// @date 2026-11-13
+// @date 2026-11-14
 // @file config.go
 // @brief File description.
 // @project Ascension
@@ -42,7 +42,7 @@ type (
 		SecretAccessKey string        `env:"SECRET,unset,required"`
 		BucketName      string        `env:"BUCKET,required"`
 		UploadExp       time.Duration `env:"UPLOAD_EXP" envDefault:"1h"`
-		DownloadExp     time.Duration `env:"DOWNLAOD_EXP" envDefault:"1h"`
+		DownloadExp     time.Duration `env:"DOWNLOAD_EXP" envDefault:"1h"`
 	}
 
 	QueueConfig struct {

@@ -3,7 +3,7 @@ id: ab77caf4-081b-4c22-8817-d8570baadf55
 ---
 
 :::success
-**Version:** 2.5
+**Version:** 2.6
 :::
 
 ---
@@ -231,30 +231,40 @@ POSTGRES_PARAMS="sslmode=disable"
 POSTGRES_MIGRATION=true
 POSTGRES_DB_URL=postgres://ascension:ascension@localhost:5432/ascension
 
-# RabbitMQ
-RABBITMQ_HOST=localhost
-RABBITMQ_PORT=5672
-RABBITMQ_USER=ascension
-RABBITMQ_PASS=ascension
-RABBITMQ_TLS=false
+# Object storage, read by the Go server
+STORAGE_ENDPOINT=http://localhost:9000
+STORAGE_REGION=us-east-1
+STORAGE_BUCKET=videos
+STORAGE_ID=ascension
+STORAGE_SECRET=ascension
+STORAGE_UPLOAD_EXP=1h
+STORAGE_DOWNLOAD_EXP=1h
 
-# RustFS (S3-compatible storage), read by the AI worker
+# Object storage, read by the AI worker
 RUSTFS_ENDPOINT=http://localhost:9000
 RUSTFS_ACCESS_KEY=ascension
 RUSTFS_SECRET_KEY=ascension
 RUSTFS_BUCKET=videos
+RUSTFS_REGION=us-east-1
 
-# Legacy MINIO_* names, still read by the Go server and by docker-compose.
-# Their values must stay equal to the RUSTFS_* ones above.
-MINIO_ENDPOINT=http://localhost:9000
+# RustFS container of docker-compose.yml: host port and root credentials
+MINIO_PORT=9000
 MINIO_ID=ascension
 MINIO_SECRET=ascension
-MINIO_BUCKET=videos
-MINIO_SSL=false
-MINIO_ROOT_USER=ascension
-MINIO_ROOT_PASSWORD=ascension
-MINIO_HOST=minio
-MINIO_PORT=9000
+
+# RabbitMQ, read by the Go server
+QUEUE_HOST=localhost
+QUEUE_PORT=5672
+QUEUE_USER=ascension
+QUEUE_PASS=ascension
+QUEUE_TLS=false
+QUEUE_EXCHANGE_EVENT=events
+
+# RabbitMQ, read by the AI worker
+RABBITMQ_HOST=localhost
+RABBITMQ_PORT=5672
+RABBITMQ_USER=ascension
+RABBITMQ_PASS=ascension
 
 # Backend Server
 PORT=8080
@@ -506,7 +516,7 @@ This file orchestrates all services from the `apps/` directory:
 ```yaml
 services:
   rustfs:
-    image: rustfs/rustfs:1.0.4
+    image: rustfs/rustfs:1.0.5
     container_name: ascension-rustfs
     restart: unless-stopped
     ports:
@@ -579,9 +589,12 @@ services:
       - "${PORT:-8080}:8080"
     env_file: .env
     environment:
+      - PORT=8080
       - POSTGRES_HOST=postgresql
-      - RABBITMQ_HOST=rabbitmq
-      - MINIO_ENDPOINT=http://rustfs:${MINIO_PORT:-9000}
+      - POSTGRES_PORT=5432
+      - QUEUE_HOST=rabbitmq
+      - QUEUE_PORT=5672
+      - STORAGE_ENDPOINT=http://rustfs:9000
     networks:
       - ascension-network
     depends_on:
