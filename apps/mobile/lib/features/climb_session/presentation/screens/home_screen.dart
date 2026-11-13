@@ -42,36 +42,53 @@ class HomeScreen extends ConsumerWidget {
                           vertical: 14,
                         ),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                const Icon(FLucideIcons.mountain, size: 20),
-                                const SizedBox(width: 10),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      context.tr('home.currentSession'),
-                                      style: context.theme.typography.body.sm
-                                          .copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  const Icon(FLucideIcons.mountain, size: 20),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          context.tr('home.currentSession'),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: context
+                                              .theme
+                                              .typography
+                                              .body
+                                              .sm
+                                              .copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                        Text(
+                                          activeSession.name,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: context
+                                              .theme
+                                              .typography
+                                              .body
+                                              .xs
+                                              .copyWith(
+                                                color: context
+                                                    .theme
+                                                    .colors
+                                                    .mutedForeground,
+                                              ),
+                                        ),
+                                      ],
                                     ),
-                                    Text(
-                                      activeSession.name,
-                                      style: context.theme.typography.body.xs
-                                          .copyWith(
-                                            color: context
-                                                .theme
-                                                .colors
-                                                .mutedForeground,
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                  ),
+                                ],
+                              ),
                             ),
+                            const SizedBox(width: 8),
                             FBadge(
                               variant: FBadgeVariant.primary,
                               child: Text(

@@ -1,4 +1,4 @@
-// @date 2026-11-07
+// @date 2026-11-13
 // @file active_session_screen.dart
 // @brief Screen displaying the ongoing session metrics, analyses, and live timer.
 // @project Ascension
@@ -66,8 +66,11 @@ class ActiveSessionScreen extends ConsumerWidget {
       final success = await ref
           .read(climbSessionControllerProvider.notifier)
           .endSession();
-      if (success && context.mounted) {
-        context.goNamed(AppRoute.sessions.name);
+      if (context.mounted) {
+        final active = ref.read(climbSessionControllerProvider).activeSession;
+        if (success || active == null) {
+          context.goNamed(AppRoute.sessions.name);
+        }
       }
     }
   }

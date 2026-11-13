@@ -1,4 +1,4 @@
-// @date 2026-11-07
+// @date 2026-11-13
 // @file sessions_screen_test.dart
 // @brief Widget tests for SessionsScreen, NewSessionScreen, ActiveSessionScreen, and AnalysisSelectionScreen.
 // @project Ascension
@@ -12,18 +12,28 @@ import 'package:forui/forui.dart';
 import 'package:mobile/app/app_theme.dart';
 import 'package:mobile/core/l10n/app_localizations.dart';
 import 'package:mobile/core/storage/local_storage_service.dart';
+import 'package:mobile/features/climb_session/data/repositories/climb_session_repository_impl.dart';
+import 'package:mobile/features/climb_session/domain/repositories/climb_session_repository.dart';
 import 'package:mobile/features/climb_session/presentation/screens/active_session_screen.dart';
 import 'package:mobile/features/climb_session/presentation/screens/analysis_selection_screen.dart';
 import 'package:mobile/features/climb_session/presentation/screens/new_session_screen.dart';
 import 'package:mobile/features/climb_session/presentation/screens/sessions_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../helpers/test_helper.dart';
+
 Widget createTestableWidget({
   required Widget child,
   required SharedPreferences prefs,
+  ClimbSessionRepository? climbSessionRepo,
 }) {
   return ProviderScope(
-    overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+    overrides: [
+      sharedPreferencesProvider.overrideWithValue(prefs),
+      climbSessionRepositoryProvider.overrideWithValue(
+        climbSessionRepo ?? TestClimbSessionRepository(),
+      ),
+    ],
     child: MaterialApp(
       locale: const Locale('fr'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -100,7 +110,7 @@ void main() {
 
         // Verify all options are present in the popup menu
         expect(find.text('Toutes'), findsWidgets);
-        expect(find.text('Amis'), findsOneWidget);
+        expect(find.text('Amis seulement'), findsOneWidget);
         expect(find.text('Publiques'), findsOneWidget);
         expect(find.text('Privées'), findsOneWidget);
 

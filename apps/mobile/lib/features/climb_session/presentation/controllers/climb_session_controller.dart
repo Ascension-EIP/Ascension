@@ -1,4 +1,4 @@
-// @date 2026-11-06
+// @date 2026-11-13
 // @file climb_session_controller.dart
 // @brief Riverpod controller managing climbing sessions and live timer.
 // @project Ascension
@@ -76,6 +76,7 @@ class ClimbSessionController extends Notifier<ClimbSessionState> {
 
     state = state.copyWith(
       activeSession: activeSession,
+      clearActiveSession: activeSession == null,
       previousSessions: prevSessions,
       previousAnalyses: prevAnalyses,
       activeDuration: duration,
@@ -93,7 +94,10 @@ class ClimbSessionController extends Notifier<ClimbSessionState> {
   Future<bool> startSession({
     required String name,
     String? location,
+    String? notes,
+    String? gymId,
     required ClimbSessionVisibility visibility,
+    DateTime? startedAt,
   }) async {
     state = state.copyWith(isLoading: true);
     final repo = ref.read(climbSessionRepositoryProvider);
@@ -101,7 +105,10 @@ class ClimbSessionController extends Notifier<ClimbSessionState> {
     final result = await repo.startSession(
       name: name,
       location: location,
+      notes: notes,
+      gymId: gymId,
       visibility: visibility,
+      startedAt: startedAt,
     );
 
     if (_isDisposed) return false;
@@ -136,11 +143,44 @@ class ClimbSessionController extends Notifier<ClimbSessionState> {
     switch (result) {
       case Success(:final data):
         _stopTicker();
-        final previous = [data, ...state.previousSessions];
+        final previous = [
+          data,
+          ...state.previousSessions.where((s) => s.id != data.id),
+        ];
         state = state.copyWith(
           clearActiveSession: true,
           previousSessions: previous,
           activeDuration: Duration.zero,
+          isLoading: false,
+          clearError: true,
+        );
+        return true;
+      case Error(:final failure):
+        state = state.copyWith(isLoading: false, errorMessage: failure.message);
+        return false;
+    }
+  }
+
+  Future<bool> deleteSession(String sessionId) async {
+    state = state.copyWith(isLoading: true);
+    final repo = ref.read(climbSessionRepositoryProvider);
+
+    final result = await repo.deleteSession(sessionId);
+
+    if (_isDisposed) return false;
+
+    switch (result) {
+      case Success():
+        final updatedPrev = state.previousSessions
+            .where((s) => s.id != sessionId)
+            .toList();
+        final wasActive = state.activeSession?.id == sessionId;
+        if (wasActive) {
+          _stopTicker();
+        }
+        state = state.copyWith(
+          clearActiveSession: wasActive,
+          previousSessions: updatedPrev,
           isLoading: false,
           clearError: true,
         );
@@ -157,17 +197,19 @@ class ClimbSessionController extends Notifier<ClimbSessionState> {
 
     if (_isDisposed) return;
 
-    final currentActive = state.activeSession;
+    // Refresh active session from server/cache
+    final activeResult = await repo.getActiveSession();
     ClimbSession? updatedActive;
-    if (currentActive != null) {
-      updatedActive = currentActive.copyWith(
-        analyses: [...currentActive.analyses, analysis],
-      );
+    if (activeResult is Success<ClimbSession?>) {
+      updatedActive = activeResult.data;
     }
 
     state = state.copyWith(
       activeSession: updatedActive,
-      previousAnalyses: [analysis, ...state.previousAnalyses],
+      previousAnalyses: [
+        analysis,
+        ...state.previousAnalyses.where((a) => a.id != analysis.id),
+      ],
     );
   }
 }

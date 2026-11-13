@@ -1,6 +1,6 @@
-// @date 2026-11-06
+// @date 2026-11-13
 // @file climb_session_repository_impl.dart
-// @brief Concrete implementation of ClimbSessionRepository with local fallback.
+// @brief Production implementation of ClimbSessionRepository connected to backend with local caching.
 // @project Ascension
 // @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
@@ -14,54 +14,110 @@ import 'package:mobile/features/climb_session/data/models/climb_session_model.da
 import 'package:mobile/features/climb_session/domain/entities/climb_session.dart';
 import 'package:mobile/features/climb_session/domain/repositories/climb_session_repository.dart';
 
-/// Concrete repository handling climbing sessions.
-///
-/// NOTE: Because the Go backend does not yet provide session endpoints,
-/// this implementation uses [ClimbSessionLocalDataSource] for immediate mobile state
-/// and offline-friendly persistence.
-/// Once backend session routes are live, switch the calls below to use [remoteDataSource].
+/// Concrete repository handling climbing sessions via backend API with local cache.
 class ClimbSessionRepositoryImpl implements ClimbSessionRepository {
   ClimbSessionRepositoryImpl({
     required ClimbSessionLocalDataSource localDataSource,
     required ClimbSessionRemoteDataSource remoteDataSource,
   }) : _local = localDataSource,
-       // ignore: unused_field
        _remote = remoteDataSource;
 
   final ClimbSessionLocalDataSource _local;
   final ClimbSessionRemoteDataSource _remote;
 
-  /// Exposed for testing and future server switching.
   ClimbSessionRemoteDataSource get remoteDataSource => _remote;
   ClimbSessionLocalDataSource get localDataSource => _local;
 
   @override
   Future<Result<ClimbSession?>> getActiveSession() async {
-    try {
-      final model = await _local.getActiveSession();
-      return Success(model?.toEntity());
-    } catch (e) {
-      return Error(CacheFailure(e.toString()));
+    final result = await _remote.getActiveSession();
+    switch (result) {
+      case Success(:final data):
+        if (data != null &&
+            !ClimbSessionLocalDataSourceImpl.isValidUuid(data.id)) {
+          await _local.saveActiveSession(null);
+          return const Success(null);
+        }
+        await _local.saveActiveSession(data);
+        return Success(data?.toEntity());
+      case Error(:final failure):
+        // Network error fallback to local cache
+        try {
+          final cached = await _local.getActiveSession();
+          if (cached != null) {
+            if (!ClimbSessionLocalDataSourceImpl.isValidUuid(cached.id)) {
+              await _local.saveActiveSession(null);
+              return const Success(null);
+            }
+            return Success(cached.toEntity());
+          }
+        } catch (_) {}
+        return Error(failure);
     }
   }
 
   @override
-  Future<Result<List<ClimbSession>>> getPreviousSessions() async {
-    try {
-      final models = await _local.getPreviousSessions();
-      return Success(models.map((m) => m.toEntity()).toList());
-    } catch (e) {
-      return Error(CacheFailure(e.toString()));
+  Future<Result<List<ClimbSession>>> getPreviousSessions({
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    final result = await _remote.getSessions(limit: limit, offset: offset);
+    switch (result) {
+      case Success(:final data):
+        final validData = data
+            .where((s) => ClimbSessionLocalDataSourceImpl.isValidUuid(s.id))
+            .toList();
+        if (offset == 0) {
+          await _local.savePreviousSessions(validData);
+        }
+        return Success(validData.map((m) => m.toEntity()).toList());
+      case Error(:final failure):
+        // Cache fallback on network failure
+        try {
+          final cached = await _local.getPreviousSessions();
+          final validCached = cached
+              .where((s) => ClimbSessionLocalDataSourceImpl.isValidUuid(s.id))
+              .toList();
+          if (validCached.isNotEmpty) {
+            return Success(validCached.map((m) => m.toEntity()).toList());
+          }
+        } catch (_) {}
+        return Error(failure);
     }
   }
 
   @override
-  Future<Result<List<ClimbAnalysisSummary>>> getPreviousAnalyses() async {
-    try {
-      final models = await _local.getPreviousAnalyses();
-      return Success(models.map((m) => m.toEntity()).toList());
-    } catch (e) {
-      return Error(CacheFailure(e.toString()));
+  Future<Result<ClimbSession>> getSessionDetails(String sessionId) async {
+    final result = await _remote.getSessionDetails(sessionId);
+    return result.map((data) => data.toEntity());
+  }
+
+  @override
+  Future<Result<List<ClimbAnalysisSummary>>> getPreviousAnalyses({
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    final result = await _remote.getAnalyses(limit: limit, offset: offset);
+    switch (result) {
+      case Success(:final data):
+        final validData = data
+            .where((a) => ClimbSessionLocalDataSourceImpl.isValidUuid(a.id))
+            .toList();
+        if (offset == 0) {
+          await _local.savePreviousAnalyses(validData);
+        }
+        return Success(validData.map((m) => m.toEntity()).toList());
+      case Error(:final failure):
+        try {
+          final cached = await _local.getPreviousAnalyses();
+          final validCached = cached
+              .where((a) => ClimbSessionLocalDataSourceImpl.isValidUuid(a.id))
+              .toList();
+          if (validCached.isNotEmpty) {
+            return Success(validCached.map((m) => m.toEntity()).toList());
+          }
+        } catch (_) {}
+        return Error(failure);
     }
   }
 
@@ -69,90 +125,189 @@ class ClimbSessionRepositoryImpl implements ClimbSessionRepository {
   Future<Result<ClimbSession>> startSession({
     required String name,
     String? location,
+    String? notes,
+    String? gymId,
     required ClimbSessionVisibility visibility,
+    DateTime? startedAt,
   }) async {
-    try {
-      final newSession = ClimbSessionModel(
-        id: 'session-${DateTime.now().millisecondsSinceEpoch}',
-        name: name,
-        location: location,
-        visibility: visibility,
-        startedAt: DateTime.now(),
-        endedAt: null,
-        analyses: const [],
-        authorName: 'Moi',
-      );
-      await _local.saveActiveSession(newSession);
-      return Success(newSession.toEntity());
-    } catch (e) {
-      return Error(CacheFailure(e.toString()));
+    final result = await _remote.createSession(
+      name: name,
+      location: location,
+      notes: notes,
+      gymId: gymId,
+      visibility: visibility,
+      startedAt: startedAt,
+    );
+
+    switch (result) {
+      case Success(:final data):
+        await _local.saveActiveSession(data);
+        return Success(data.toEntity());
+      case Error(:final failure):
+        return Error(failure);
     }
   }
 
   @override
-  Future<Result<ClimbSession>> endSession(String sessionId) async {
-    try {
-      final current = await _local.getActiveSession();
-      if (current == null) {
-        return const Error(CacheFailure('Aucune session active à terminer.'));
-      }
-
-      final endedSession = ClimbSessionModel(
-        id: current.id,
-        name: current.name,
-        location: current.location,
-        visibility: current.visibility,
-        startedAt: current.startedAt,
-        endedAt: DateTime.now(),
-        analyses: current.analyses,
-        authorName: current.authorName,
-      );
-
-      // Remove from active
+  Future<Result<ClimbSession>> endSession(
+    String sessionId, {
+    DateTime? endedAt,
+  }) async {
+    if (!ClimbSessionLocalDataSourceImpl.isValidUuid(sessionId)) {
       await _local.saveActiveSession(null);
-
-      // Append to previous sessions
-      final previous = await _local.getPreviousSessions();
-      await _local.savePreviousSessions([endedSession, ...previous]);
-
-      return Success(endedSession.toEntity());
-    } catch (e) {
-      return Error(CacheFailure(e.toString()));
+      try {
+        final previous = await _local.getPreviousSessions();
+        await _local.savePreviousSessions(
+          previous
+              .where((s) => ClimbSessionLocalDataSourceImpl.isValidUuid(s.id))
+              .toList(),
+        );
+      } catch (_) {}
+      return Success(
+        ClimbSession(
+          id: sessionId,
+          name: 'Session',
+          startedAt: DateTime.now(),
+          endedAt: endedAt ?? DateTime.now(),
+          visibility: ClimbSessionVisibility.private,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+      );
     }
+
+    final result = await _remote.endSession(sessionId, endedAt: endedAt);
+
+    switch (result) {
+      case Success(:final data):
+        await _local.saveActiveSession(null);
+        // Refresh local cache with the ended session
+        try {
+          final previous = await _local.getPreviousSessions();
+          final updatedList = [data, ...previous.where((s) => s.id != data.id)];
+          await _local.savePreviousSessions(updatedList);
+        } catch (_) {}
+        return Success(data.toEntity());
+      case Error(:final failure):
+        final isNotFound =
+            failure.message.contains('404') ||
+            failure.message.toLowerCase().contains('not found');
+        if (isNotFound) {
+          await _local.saveActiveSession(null);
+          return Success(
+            ClimbSession(
+              id: sessionId,
+              name: 'Session',
+              startedAt: DateTime.now(),
+              endedAt: endedAt ?? DateTime.now(),
+              visibility: ClimbSessionVisibility.private,
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            ),
+          );
+        }
+        return Error(failure);
+    }
+  }
+
+  @override
+  Future<Result<ClimbSession>> updateSession(
+    String sessionId, {
+    String? title,
+    String? notes,
+    DateTime? endedAt,
+  }) async {
+    final result = await _remote.updateSession(
+      sessionId,
+      title: title,
+      notes: notes,
+      endedAt: endedAt,
+    );
+
+    return result.map((data) => data.toEntity());
   }
 
   @override
   Future<Result<void>> addAnalysisToActiveSession(
     ClimbAnalysisSummary analysis,
   ) async {
-    try {
-      final current = await _local.getActiveSession();
-      if (current != null) {
-        final analysisModel = ClimbAnalysisSummaryModel.fromEntity(analysis);
-        final updated = ClimbSessionModel(
-          id: current.id,
-          name: current.name,
-          location: current.location,
-          visibility: current.visibility,
-          startedAt: current.startedAt,
-          endedAt: current.endedAt,
-          analyses: [...current.analyses, analysisModel],
-          authorName: current.authorName,
-        );
-        await _local.saveActiveSession(updated);
-      }
-
-      // Also append to previous general analyses
-      final prevAnalyses = await _local.getPreviousAnalyses();
-      await _local.savePreviousAnalyses([
-        ClimbAnalysisSummaryModel.fromEntity(analysis),
-        ...prevAnalyses,
-      ]);
-
-      return const Success(null);
-    } catch (e) {
-      return Error(CacheFailure(e.toString()));
+    final activeResult = await getActiveSession();
+    if (activeResult is! Success<ClimbSession?> || activeResult.data == null) {
+      return const Error(
+        UnexpectedFailure(
+          'Aucune session active à laquelle rattacher l\'analyse.',
+        ),
+      );
     }
+
+    final active = activeResult.data!;
+    final linkResult = await _remote.addAnalysis(active.id, analysis.id);
+
+    switch (linkResult) {
+      case Success():
+        // Refresh active session cache with updated analyses
+        final detailsResult = await _remote.getSessionDetails(active.id);
+        if (detailsResult is Success<ClimbSessionModel>) {
+          await _local.saveActiveSession(detailsResult.data);
+        }
+        return const Success(null);
+      case Error(:final failure):
+        return Error(failure);
+    }
+  }
+
+  @override
+  Future<Result<void>> linkAnalysisToSession({
+    required String sessionId,
+    required String analysisId,
+  }) async {
+    return _remote.addAnalysis(sessionId, analysisId);
+  }
+
+  @override
+  Future<Result<void>> deleteSession(String sessionId) async {
+    if (!ClimbSessionLocalDataSourceImpl.isValidUuid(sessionId)) {
+      try {
+        final active = await _local.getActiveSession();
+        if (active?.id == sessionId) {
+          await _local.saveActiveSession(null);
+        }
+        final previous = await _local.getPreviousSessions();
+        await _local.savePreviousSessions(
+          previous
+              .where(
+                (s) =>
+                    s.id != sessionId &&
+                    ClimbSessionLocalDataSourceImpl.isValidUuid(s.id),
+              )
+              .toList(),
+        );
+      } catch (_) {}
+      return const Success(null);
+    }
+
+    final result = await _remote.deleteSession(sessionId);
+
+    final isNotFound =
+        result is Error &&
+        (result.failure.message.contains('404') ||
+            result.failure.message.toLowerCase().contains('not found'));
+
+    if (result is Success || isNotFound) {
+      try {
+        final active = await _local.getActiveSession();
+        if (active?.id == sessionId) {
+          await _local.saveActiveSession(null);
+        }
+        final previous = await _local.getPreviousSessions();
+        await _local.savePreviousSessions(
+          previous.where((s) => s.id != sessionId).toList(),
+        );
+      } catch (_) {}
+      return const Success(null);
+    }
+
+    return result;
   }
 }
 

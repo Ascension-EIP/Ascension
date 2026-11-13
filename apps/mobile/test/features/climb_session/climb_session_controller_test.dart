@@ -1,4 +1,4 @@
-// @date 2026-11-06
+// @date 2026-11-13
 // @file climb_session_controller_test.dart
 // @brief Unit tests for ClimbSessionController.
 // @project Ascension
@@ -8,19 +8,27 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile/core/storage/local_storage_service.dart';
+import 'package:mobile/features/climb_session/data/repositories/climb_session_repository_impl.dart';
 import 'package:mobile/features/climb_session/domain/entities/climb_session.dart';
 import 'package:mobile/features/climb_session/presentation/controllers/climb_session_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../helpers/test_helper.dart';
+
 void main() {
   late ProviderContainer container;
+  late TestClimbSessionRepository fakeRepo;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
+    fakeRepo = TestClimbSessionRepository();
 
     container = ProviderContainer(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        climbSessionRepositoryProvider.overrideWithValue(fakeRepo),
+      ],
     );
   });
 
@@ -28,14 +36,36 @@ void main() {
     container.dispose();
   });
 
-  test('loads sessions and initially has no active session', () async {
+  test(
+    'loads sessions and initially has no active session and empty history',
+    () async {
+      final notifier = container.read(climbSessionControllerProvider.notifier);
+      await notifier.loadSessions();
+
+      final state = container.read(climbSessionControllerProvider);
+      expect(state.isLoading, isFalse);
+      expect(state.hasActiveSession, isFalse);
+      expect(state.previousSessions.isEmpty, isTrue);
+    },
+  );
+
+  test('loads pre-existing sessions from repository', () async {
+    final existingSession = ClimbSession(
+      id: 'prev-1',
+      name: 'Past Arkose Climb',
+      startedAt: DateTime.now().subtract(const Duration(hours: 3)),
+      endedAt: DateTime.now().subtract(const Duration(hours: 1)),
+      visibility: ClimbSessionVisibility.public,
+      analyses: const [],
+    );
+    fakeRepo.previousSessions.add(existingSession);
+
     final notifier = container.read(climbSessionControllerProvider.notifier);
     await notifier.loadSessions();
 
     final state = container.read(climbSessionControllerProvider);
-    expect(state.isLoading, isFalse);
-    expect(state.hasActiveSession, isFalse);
-    expect(state.previousSessions.isNotEmpty, isTrue);
+    expect(state.previousSessions.length, 1);
+    expect(state.previousSessions.first.name, 'Past Arkose Climb');
   });
 
   test('startSession activates session and updates state', () async {
@@ -90,5 +120,29 @@ void main() {
     final state = container.read(climbSessionControllerProvider);
     expect(state.activeSession?.analyses.length, 1);
     expect(state.previousAnalyses.first.id, 'test-analysis-1');
+  });
+
+  test('deleteSession removes session from previous sessions', () async {
+    final existingSession = ClimbSession(
+      id: 'to-delete-1',
+      name: 'Session to Delete',
+      startedAt: DateTime.now().subtract(const Duration(hours: 2)),
+      endedAt: DateTime.now().subtract(const Duration(hours: 1)),
+      visibility: ClimbSessionVisibility.private,
+      analyses: const [],
+    );
+    fakeRepo.previousSessions.add(existingSession);
+
+    final notifier = container.read(climbSessionControllerProvider.notifier);
+    await notifier.loadSessions();
+
+    final beforeState = container.read(climbSessionControllerProvider);
+    expect(beforeState.previousSessions.length, 1);
+
+    final deleted = await notifier.deleteSession('to-delete-1');
+    expect(deleted, isTrue);
+
+    final afterState = container.read(climbSessionControllerProvider);
+    expect(afterState.previousSessions.isEmpty, isTrue);
   });
 }

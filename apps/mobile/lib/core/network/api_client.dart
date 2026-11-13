@@ -1,4 +1,4 @@
-// @date 2026-11-07
+// @date 2026-11-13
 // @file api_client.dart
 // @brief File description.
 // @project Ascension
@@ -121,6 +121,14 @@ class ApiClient {
   ) async {
     try {
       final response = await request();
+      if (response.statusCode == 204) {
+        if (null is T) {
+          return Success(null as T);
+        }
+        return const Error(
+          ServerFailure('Received empty response from server.'),
+        );
+      }
       final data = response.data;
       if (data == null && null is! T) {
         return const Error(

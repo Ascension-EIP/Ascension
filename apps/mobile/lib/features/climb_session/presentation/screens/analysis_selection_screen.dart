@@ -1,4 +1,4 @@
-// @date 2026-11-07
+// @date 2026-11-13
 // @file analysis_selection_screen.dart
 // @brief Screen presenting available climbing analysis types.
 // @project Ascension
@@ -12,7 +12,6 @@ import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/l10n/app_localizations.dart';
 import 'package:mobile/features/climb_session/domain/entities/climb_session.dart';
-import 'package:mobile/features/climb_session/presentation/controllers/climb_session_controller.dart';
 import 'package:mobile/routing/routes.dart';
 
 class AnalysisSelectionScreen extends ConsumerWidget {
@@ -28,25 +27,7 @@ class AnalysisSelectionScreen extends ConsumerWidget {
     WidgetRef ref,
     AnalysisType type,
   ) {
-    // Record analysis entry into active session or standalone history
-    final newAnalysis = ClimbAnalysisSummary(
-      id: 'analysis-${DateTime.now().millisecondsSinceEpoch}',
-      title: type.displayName,
-      type: type,
-      status: AnalysisStatus.completed,
-      createdAt: DateTime.now(),
-      progressPercentage: 100,
-    );
-
-    ref.read(climbSessionControllerProvider.notifier).addAnalysis(newAnalysis);
-
-    // If an active session exists, navigate back to active session
-    final hasActive = ref.read(climbSessionControllerProvider).hasActiveSession;
-    if (hasActive) {
-      context.goNamed(AppRoute.activeSession.name);
-    } else {
-      context.goNamed(AppRoute.sessions.name);
-    }
+    context.pushNamed(AppRoute.record.name, extra: {'type': type});
   }
 
   @override
