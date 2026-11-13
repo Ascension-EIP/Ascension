@@ -2,6 +2,839 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2026-11-13
+
+### ⚡ Performance
+
+- *(database)* Drop unused videos status index
+
+### ➕ Additions
+
+- *(server)* Add user email normalization helper
+- *(docs)* Add management meeting memos for 2026
+- *(docs)* Include project documentation and administrative resources
+- *(docs)* Include presentation files index for workshops
+- *(docs)* Update pedagogical resources and images
+- *(docs)* Initialize architecture benchmark documentation
+- *(docs)* Add team image to Ascension planning documentation
+- *(docs)* Include pedagogical follow-up documents
+- *(docs)* Include pitch document and deck
+- *(docs)* Add mentoring session 2 and 3 records
+- *(docs)* Include october 2026 bills and invoices for Ascension project
+- *(docs)* Document hard problem characterization and technology watch strategy
+- *(docs)* Add mentoring and pedagogical follow-up records
+- *(docs)* Add administrative memo for 26-11-09
+
+### ➖ Removals
+
+- *(ai)* Drop cursor and codex mentions from AI docs
+- *(ai)* Remove squad agent system and its workflows
+- *(ai)* Strip remaining squad references from configs and docs
+- *(ai)* Delete roadto-postanalyse.mp4 video file
+- *(database)* Delete legacy migration files
+- *(docs)* Delete case-colliding docs readme files
+- *(docs)* Delete binary resources from the repository
+- *(docs)* Delete placeholder documentation files
+- *(mobile)* Stop tracking generated macos ephemeral files
+
+### 🏗️ Build System
+
+- *(toolchain)* Bump go to 1.27.1 in moon and proto
+- *(deps)* Bump the pip-dependencies group in /apps/ai with 8 updates
+- *(deps)* Bump the pip-dependencies group in /apps/ai with 8 updates
+- *(deps)* Bump the pub-dependencies group
+- *(deps)* Bump the pub-dependencies group in /apps/mobile with 5 updates
+- *(deps)* Bump rabbitmq
+- *(deps)* Bump rabbitmq from 4.3.5-management to 4.3.6-management in the docker-compose-dependencies group
+- *(deps)* Bump the go-dependencies group
+- *(deps)* Bump the go-dependencies group in /apps/server with 5 updates
+- *(deps)* Bump the pip-dependencies group in /apps/ai with 7 updates
+- *(deps)* Bump the pip-dependencies group in /apps/ai with 7 updates
+- *(deps)* Bump rabbitmq
+- *(deps)* Bump rabbitmq from 4.3.6-management to 4.4.0-management in the docker-compose-dependencies group
+- *(deps)* Bump github.com/jackc/pgx/v5
+- *(deps)* Bump github.com/jackc/pgx/v5 from 5.11.0 to 5.12.0 in /apps/server in the go-dependencies group
+- *(deps)* Bump python
+- *(deps)* Bump python from 3.11-slim to 3.15-slim in /apps/ai in the docker-dependencies group across 1 directory
+- *(mobile)* Restore cocoapods integration for ios
+- *(deps)* Bump the pub-dependencies group
+- *(deps)* Bump the pub-dependencies group in /apps/mobile with 12 updates
+- *(server)* Ship the cron binary in the api image
+
+### 🐛 Bug Fixes
+
+- *(log)* Zerolog -> slog
+- *(server)* Code structure to a simplest version
+- *(server)* Auth form
+- *(server)* Config env var name
+- *(server)* Middleware cleaning
+- *(database)* Clean migrations
+- *(database)* Remove trailing comma in sessions migration
+- *(database)* Remove trailing comma in videos migration
+- *(database)* Widen videos object_key column
+- *(database)* Add missing semicolon in analyses migration
+- *(server)* Use pgx placeholder in expired sessions cleanup
+- *(server)* Remove extra placeholder in video insert query
+- *(server)* Use analyses table name in analysis repository
+- *(ai)* Write coaching hints to analyses advice column
+- *(server)* Normalize emails in auth forms
+- *(server)* Normalize emails in user create and update requests
+- *(server)* First run
+- *(server)* Input auth service validation move from handler to services
+- *(server)* Videos migration
+- *(db)* Migration format now concurrency proof + symlink in root poject for migrations
+- *(db)* Add if exist to drop
+- *(db)* Trailling commas
+- *(cron)* Implement new cron
+- *(db)* Migrations
+- *(ui)* Update api key mappings for video upload analysis
+- Enhance SettingsPage UI with improved layout and new SelectRow component
+- *(ci)* Handle potential encoding errors in gemini_commit script
+- *(ai)* Align worker database writes with the new analyses schema
+- *(merge)* Test every endpoitn and fix
+- *(localization)* Reorder authors in file headers
+- *(auth)* Correct typo in LoginForm binding tag
+- *(network)* Update auth endpoint paths and refresh token method
+- *(storage)* Simplify concurrent writes and deletes
+- Install the system libraries MediaPipe and OpenCV load at runtime
+- *(server)* Storage bucket creation
+- *(server)* Analyses request
+- *(server)* Bis
+- *(server)* Analysis pipeline to fit Issue#40
+- *(docker)* Remove obsolete postgres build directive and use official postgres:18 image
+- *(server)* Point videos.climbing_session_id at climbing_sessions
+- *(server)* Align the job statuses and expose the analysis hints
+- *(server)* Publish analysis jobs with the worker contract
+- *(server)* Honor the endpoint scheme and region in the s3 client
+- *(ai)* Read the s3 signing region from the environment
+- *(server)* Answer 200 to get and head on the health route
+- *(server)* Exclude the cron service from the coolify health status
+- *(server)* Analysis.result now use shared result type
+- Address valid ai review feedback on documentation and worker utils
+
+### 👷 Continuous Integration
+
+- *(workflows)* Bump go to 1.27.1 in server job
+- *(github-actions)* Refactor mirror repository process to use dynamic matrix
+- *(hooks)* Remove git pull from pre-push hook
+- *(workflow)* Update glob pattern to ignore markdown files recursively
+- *(server)* Add the jenkins pipeline and sonarqube project
+- *(ai)* Add the jenkins pipeline and sonarqube project
+- *(mobile)* Add the jenkins pipeline and sonarqube project
+- Remove the github actions vps deployment
+- *(server)* Leave the startup code out of the sonarqube coverage
+
+### 💼 Other
+
+- *(server)* Postgres interface
+- *(server)* User implementation
+- *(server)* Auth implementation
+- *(server)* Video implementation 1/2
+- *(server)* Video implementation 2/2
+- *(server)* Analysis implementation
+- Merge branch 'server/finish-rebase' into fix/server
+- Merge pull request #191 from Ascension-EIP/fix/server
+
+merge: "fix/database-migrations" into "server/finish-rebase"
+- Merge branch 'dev' into refactor/mobile-ui
+- Merge pull request #198 from Ascension-EIP/server/finish-rebase
+
+merge: golang server cleaning
+- Merge branch 'dev' of github.com:Ascension-EIP/Ascension into refactor/ai
+- Merge branch 'dev' of github.com:Ascension-EIP/Ascension into refactor/ai
+- Merge branch 'dev' into feat/user_profile
+- Merge branch 'feat/user_profile' into dev
+- *(new_mobile)* Add initial flutter project structure
+- Merge branch 'dev' into refactor/mobile-application
+- Merge branch 'dev' of github.com:Ascension-EIP/Ascension into dev
+- Merge branch 'dev' of github.com:Ascension-EIP/Ascension into refactor/ai
+- Merge branch 'dev' of github.com:Ascension-EIP/Ascension into refactor/ai
+- Merge branch 'dev' of github.com:Ascension-EIP/Ascension into refactor/ai
+- Merge branch 'dev' into fix/analysis-worker-contract
+
+### 📚 Documentation
+
+- *(server)* Update go version to 1.27.1
+- *(ci)* Update go version in github actions guide
+- *(database)* Align schema specification with migrations
+- *(database)* Document lowercase users email constraint
+- *(database)* Document trimmed users email constraint
+- *(ai)* Sync graphify skill with latest installed version
+- *(developer_guide)* Update architecture index and add technical action plan
+- *(ai)* Add gemini environment variables to ai-worker documentation
+- *(architecture)* Add comprehensive inter-app communication audit and recommendations
+- *(ai)* Update graphify and forui documentation structure
+- *(product)* Update feature roadmap maturity levels
+- *(core)* Update documentation status and standards
+- *(management)* Update status to final across project documentation
+- *(ai)* Update pose ai terminology in instructions
+- *(readme)* Update project roadmap features and technology stack
+- *(ai)* Update pose ai terminology to 3d
+- *(ai)* Mark sam3d module as deprecated
+- *(management)* Update roadmap links and add missing memos
+- *(management)* Update choice count for complementary tasks in memo
+- *(engineering)* Standardize documentation header and update server architecture migration details
+- *(core)* Standardize document headers and format
+- *(core)* Update document header format to use status containers
+- *(repo)* Remove metadata headers from documentation files
+- Update "documentation-accessibility-compliance", "rncp", "block-1", "needs-analysis", "current-state-audit" (+161 more)
+- Update "engineering", "developer_guide"
+- Update "Untitled"
+- Update "Develo", "Untitled", "README"
+- Update "documentation-accessibility-compliance"
+- Update "Developer", "User", "Untitled"
+- Update "administrative"
+- Update "Untitled"
+- Update "deck", "follow-up", "audio"
+- Update "images"
+- Update "commandes", "agents", "code-documentation", "commit", "documentation" (+80 more)
+- Update "SKILL", "communication-inter-apps-audit-et-recommandations", "deployment", "development", "production" (+10 more)
+- Update "monorepo-guide", "system-overview", "accessibility-implementation-guide", "api-routes", "architecture" (+26 more)
+- Update "adding-a-route", "mobile", "server", "catalogue-fonctionnalites", "product"
+- Update "block-1", "rncp", "accessibility-compliance", "needs-analysis", "current-state-audit" (+25 more)
+- Update "accessibility-compliance", "audit-draft", "management", "beta-test-plan", "acceptance-test-plan" (+2 more)
+- Update "management", "beta-test-plan", "roadmap-fonctionnelle", "compliance"
+- Update "management"
+- Update "folder-files", "folder-files", "block-5", "folder-files", "block-6" (+40 more)
+- Update "welcome", "user"
+- Update "tools"
+- Update "untilted", "ai", "ai"
+- Update "developer", "apps", "ai"
+- Update "developer", "apps", "ai", "audits", "untilted"
+- Update "developer (2)", "apps", "ai"
+- Update "audio", "folder-files", "deck", "folder-files", "follow-up" (+4 more)
+- Update "images", "images", "folder-files", "planning", "folder-files" (+4 more)
+- Update "Ascension"
+- Update "Ascension"
+- Update "Ascension"
+- *(database)* Rewrite database schema specification
+- Update "database-schema"
+- Update "developer", "architecture", "specifications", "database-schema"
+- Update "welcome", "developer (2)", "architecture", "specifications", "database-schema"
+- Update "user"
+- Update "developer"
+- Update "developer"
+- Update "communication-inter-apps-audit-et-recommandations"
+- Update "communication-inter-apps-audit-et-recommandations", "communication-inter-apps-audit-et-recommandations"
+- Update "untilted"
+- *(database)* Align schema specification with the migrations
+- Update "development", "database-schema"
+- Update "developer", "architecture", "deployment", "development"
+- Update "untilted"
+- Update "untilted", "developer (2)", "architecture", "deployment", "development" (+1 more)
+- Update "deployment", "architecture", "developer (2)", "development", "communication-inter-apps-audit-et-recommandations"
+- Update "drafts", "communication-inter-apps-audit-et-recommandations"
+- Update "Ascension"
+- Update "drafts"
+- Update "untilted", "accessibility-compliance", "needs-analysis", "current-state-audit", "functional-specifications" (+75 more)
+- Update "drafts"
+- Update "new-audit", "pool-draft", "plan-d-action-technique", "issues-to-create"
+- Update "new-audit", "pool-draft", "communication-inter-apps-audit-et-recommandations", "plan-d-action-technique", "drafts" (+1 more)
+- Update "drafts"
+- Update "monorepo-guide"
+- Update "system-overview", "architecture"
+- Update "monorepo-guide", "architecture"
+- Update "database-schema"
+- Update "audit-draft", "architecture"
+- Update "mobile"
+- Update "adding-a-route"
+- Update "server", "api-specification"
+- Update "architecture", "mobile", "git-branch-standards-guide"
+- Update "Ascension", "untilted", "block-1", "rncp", "accessibility-compliance" (+132 more)
+- Update "git"
+- Update "guidelines"
+- Update "developer"
+- Update "developer"
+- Update "tools", "agents"
+- Update "tools", "user"
+- Trash "welcome", "user"
+- Update "globale-architecture"
+- Update "architecture"
+- Update "globale-architecture"
+- Update "architecture"
+- Update "audits"
+- Update "specifications", "audits", "deployment"
+- Update "go-vs-rust-functional-gap"
+- Update "overview"
+- Update "mobile"
+- Update "overview"
+- Update "overview"
+- Update "server"
+- Update "overview"
+- Update "mobile"
+- Update "overview"
+- Update "overview", "server"
+- Update "ai", "overview"
+- Update "ai"
+- Update "26-02-10"
+- Update "memo", "26-02-16"
+- Update "16"
+- Update "memo", "26-03-02"
+- Update "26-03-09"
+- Update "26-03-16"
+- Update "26-04-20"
+- Update "20"
+- Update "26-05-04"
+- Update "26-06-13"
+- Update "26-06-20"
+- Update "26-08-31"
+- Update "26-09-07"
+- Update "26-09-14"
+- Update "26-02-09"
+- Update "block-5"
+- Update "block-1", "block-7", "rncp", "block-5", "block-6"
+- Update "resources", "prototype-pool"
+- Update "workshop"
+- Update "presentation"
+- Update "drafts"
+- Update "audio", "rncp", "drafts"
+- Update "follow-up", "deck", "intranet", "images"
+- Update "markdown-guidelines"
+- Update "folder-files"
+- Update "folder-files"
+- Update "folder-files", "folder-files", "folder-files", "folder-files"
+- Update "folder-files"
+- Update "folder-files", "folder-files"
+- Update "folder-files"
+- Update "folder-files"
+- Update "folder-files"
+- Update "folder-files", "folder-files"
+- Update "folder-files"
+- Update "folder-files"
+- Update "folder-files"
+- *(ascension)* Fix broken file paths in pitch deck links
+- Update "folder-files"
+- Update "folder-files"
+- Update "folder-files", "folder-files"
+- Update "folder-files", "folder-files"
+- Update "folder-files"
+- Update "folder-files"
+- Update "folder-files"
+- Update "folder-files", "folder-files"
+- Update "folder-files"
+- Update "folder-files"
+- Update "folder-files"
+- Update "folder-files"
+- Update "folder-files"
+- Update "folder-files"
+- *(admin)* Add administrative planning documentation
+- Update "folder-files"
+- Update "folder-files", "folder-files"
+- Update "folder-files", "folder-files"
+- Update "swagger"
+- Update "overview", "swagger"
+- Update "database-schema", "administrative"
+- Update "administrative"
+- Update "a"
+- Trash "a"
+- Update "engineering", "developer_guide", "architecture", "specifications", "git"
+- Update "deck"
+- *(administrative)* Translate administrative documentation to french
+- *(ascension)* Overhaul project and subsystem documentation hubs
+- Update "administrative", "Ascension"
+- Update "developer", "user"
+- Update "action-plan", "beta-test-plan", "acceptance-test-plan"
+- Update "developer", "markdown-guidelines"
+- *(docs)* Remove redundant relative path prefixes in markdown links
+- Update "developer"
+- Update "developer"
+- Update "benchmark"
+- Update "benchmark", "untilted"
+- Update "benchmark"
+- *(markdown)* Update documentation guidelines for densho metadata and mermaid usage
+- *(architecture)* Add audit report on minio deprecation
+- *(administrative)* Update version and roadmap details in feature catalogue
+- *(Ascension)* Update functional roadmap to version 1.4
+- *(administrative)* Update action plan for greenlight milestone
+- *(admin)* Update acceptance and beta test plans
+- *(agents)* Update densho metadata header guidelines
+- *(architecture)* Update go version to 1.27.1 and refactor task naming
+- *(pre-prompt-fr)* Correct minor typos and grammatical errors
+- Update server documentation
+- Update "markdown-guidelines"
+- Update "pricing-subscriptions", "functional-roadmap"
+- Update "features-catalog"
+- Update "action-plan", "beta-test-plan", "api-routes", "architecture", "implementing-a-crud" (+2 more)
+- Update "database-schema"
+- Update "overview"
+- Update "architecture"
+- Update "folder-files"
+- Update "developer", "git-branch-standards-guide", "globale-architecture"
+- *(admin)* Add infrastructure needs documentation
+- Update "new-mobile-design"
+- Update "backend"
+- Update "backend"
+- Update "Untitled"
+- Trash "Untitled"
+- Update "Décomposition de la pipeline 2D"
+- Update "oral_25-02_ppt_content", "production", "prototype-pool-sprint", "impacts-risks", "tech-func-specs" (+2 more)
+- Update "overview", "audit-draft", "methodologie", "current-state-audit", "overview" (+36 more)
+- Update "issues-to-create", "markdown-guidelines"
+- Update "administrative", "pitch"
+- Update "pitch"
+- Update "pipeline-details"
+- Update "overview"
+- Update "overview"
+- Update "overview"
+- Update "overview"
+- Update "folder-files"
+- Update "eip-objective"
+- Update "eip-objectives-delivery", "folder-files"
+- Update "Untitled"
+- Update "26", "Untitled", "Untitled", "Untitled"
+- Update "26-09"
+- Update "26-09-28"
+- Update "Untitled", "26-09-28"
+- Update "Untitled", "26-10-05"
+- Update "Untitled"
+- Update "26-10-05", "Untitled"
+- Update "26"
+- Update "Untitled"
+- Update "26-10-19"
+- Update "26-10-26"
+- *(administrative)* Append discussion notes to memo 26-10-26
+- Update "Untitled"
+- Add questionnaire for Lionel Reveret
+- Update "bills", "10"
+- Update "folder-files"
+- Update "folder-files"
+- Update "Questionnaire pour Lionel REVERET - Ascension"
+- Update "Questionnaire pour Lionel REVERET"
+- Update "Questionnaire pour Lionel REVERET"
+- Update "Questionnaire pour Lionel REVERET"
+- Trash "Questionnaire pour Lionel REVERET"
+- Update "new-mobile-design", trash "pool-draft"
+- Trash "plan-d-action-technique"
+- Trash "new-audit", "issues-to-create"
+- Trash "communication-inter-apps-audit-et-recommandations"
+- Update "complementary-C", "complementary-D", "mandatory-1", "mandatory-2"
+- Update "complementary-C"
+- Update "complementary-D", "complementary-C"
+- Update "complementary-D"
+- Update "mandatory-2"
+- Update "mandatory-2", "mandatory-1"
+- Update "complementary-C", "mandatory-1", "complementary-D"
+- Update "mandatory-2"
+- Update "mandatory-1"
+- Update "mandatory-2", "mandatory-1"
+- Update "mandatory-2"
+- Update "complementary-D", trash "folder-files"
+- Update "complementary-C"
+- *(readme)* Update postgresql badge to version 18
+- *(benchmark)* Update postgresql version in backend diagram
+- File metadata dates and authors across the project
+- *(infrastructure)* Use the jenkins and sonarqube subdomains
+- *(jenkins)* Add the jenkins and sonarqube guide for developers
+- *(jenkins)* Add the jenkins and sonarqube administration guide
+- *(jenkins)* Build main, staging, dev and pull requests in every job
+- *(jenkins)* Explain which branches jenkins builds
+- *(jenkins)* Document the sonarqube host settings and the docker image cleanup
+- Update team responsibilities
+- Update "eip-project-objectives"
+- Update "new-mobile-design"
+- Update "new-mobile-design"
+- Update "Untitled"
+- Update "Caractérisation du point dur et dispositif de veille opérationnel"
+- Update "Caractérisation du point dur et dispositif de veille opérationnel"
+- Update "system-overview"
+- *(architecture)* Add technical diagrams and update infrastructure documentation
+- Update "globale-architecture"
+- Update "Caractérisation du point dur et dispositif de veille opérationnel"
+- Update "Schèmas Ascension"
+- *(mentoring)* Add notes, transcript and recap for session 4
+- Trash "folder-files"
+- Trash "folder-files"
+- *(ascension)* Update documentation banner assets
+- Update "development"
+- Update "production"
+- Update "deployment"
+- Update "production"
+- Update "production"
+- Update "object-storage"
+- *(architecture)* Update cloud hosting and object storage documentation to reflect transition to OVHcloud
+- *(architecture)* Update database schema reference link
+- *(Ascension)* Update project scope and roadmap documentation
+- Update "prototype-pool"
+- Update "block-1", "prototype-pool"
+- Update "block-1"
+- *(server)* Document the climbing session endpoints
+- *(infra)* Add the n8n technology watch guide
+- *(administrative)* Replace google scholar with openalex in the technology watch
+- Update "hard-problem-characterization-and-technology-watch"
+- *(server)* Document the analysis job contract
+- *(infra)* Add the s3 object storage guide
+- *(infra)* Add the api deployment guide
+- *(infra)* Add the ai worker deployment guide
+- *(server)* Document the user body constraint endpoints
+- *(server)* Document the friends, user search and feed routes
+- *(infra)* Add the backup and restore guide
+- *(infra)* Describe the real backups and the jenkins cache mounts
+- *(infra)* Rewrite the production runbook for the vps and coolify
+- *(infra)* Document the coolify discord alerts
+- Update "overview"
+- Update "administrative"
+- Update "globale-architecture"
+- *(infra)* Document the server coverage and test report in jenkins
+- Update "jenkins-sonarqube-guide"
+- Update "jenkins-sonarqube-guide"
+- Update "user"
+- Update "user"
+- Update "user"
+- Update "user"
+
+### 🔀 Merges
+
+- "refactor/database-schema-constraints" into "fix/database-migrations"
+- "fix/user-email-case" into "fix/database-migrations"
+- "refactor/mobile-ui" into "dev"
+- "refactor/adapt-documentation" into "dev"
+- "dev" into "docs/database-schema-spec"
+- "docs/database-schema-spec" into "dev"
+- "dev" into "feat/database-schema-migrations"
+- "feat/database-schema-migrations" into "dev"
+- "dev" into "dev"
+- "dev" into "dev"
+- Dev into server/finish-rebase
+- "refactor/ai" into "dev"
+- "dev" into "dev"
+- "dev" into "dev"
+- "dev" into "dev"
+- `dev` into `staging`
+- "dev" into "dev"
+- "refactor/mobile-application" into "dev"
+- `dev` into `staging`
+- "dev" into "dev"
+- "dev" into "dev"
+- "dev" into "dev"
+- "docs/postgresql-18-version" into "dev"
+- "build/mobile-ios-cocoapods" into "dev"
+- "refactor/ai" into "dev"
+- "ci/jenkins-pipelines" into "dev"
+- "docs/jenkins-sonarqube-urls" into "dev"
+- "docs/jenkins-sonarqube-guides" into "dev"
+- "agents/update-densho-skill" into "dev"
+- "docs/jenkins-branch-discovery" into "dev"
+- Dev into feat/user_profile
+- "fix/docker-compose-postgres-build" into "dev"
+- "dev" into "dev"
+- "dev" into "dev"
+- "dev" into "dev"
+- "dev" into "dev"
+- "feat/climbing-sessions-crud" into "dev"
+- "feat/n8n-technology-watch" into "dev"
+- "feat/s3-object-storage" into "dev"
+- "feat/api-coolify-deploy" into "feat/s3-object-storage"
+- "feat/worker-coolify-deploy" into "feat/s3-object-storage"
+- "fix/analysis-worker-contract" into "dev"
+- "feat/user-body-constraints" into "dev"
+- "feat/friendships-and-feed" into "dev"
+- "feat/vps-backups" into "dev"
+- "docs/vps-coolify-runbook" into "dev"
+- "docs/coolify-discord-alerts" into "dev"
+- "dev" into "dev"
+- Dev into feat/server-queue-message-flow
+- "feat/server-queue-message-flow" into "dev"
+- "test/server-unit-tests" into "dev"
+- "ci/server-coverage-exclusions" into "dev"
+- "dev" into "dev"
+- `dev` into `staging`
+- `staging` into `main`
+
+### 🚀 Features
+
+- *(server)* Add devenv and air to server
+- *(server)* Upgrade to 1.27, google/uuid -> stdlib/uuid
+- *(server)* User validation
+- *(server)* Hash session token
+- *(server)* New cmd for cron
+- *(docs)* Audit_storage
+- *(db)* Copy dev migrations
+- *(server)* Implement new user table
+- *(server)* Implement new session table
+- *(server)* Implement new video table
+- *(server)* Implement new analysis table
+- Shadcn-ui-flutter components and guides
+- Remove outdated squad documentation and logs
+- Add interactive performance donut, circular gauge, and concentric rings components
+- Forui documentation for forms, hooks, layout, overlays, setup, styling, theming, and widget previews
+- *(build)* Add database migration task
+- *(analysis)* Implement multi-type analysis and custom migration driver
+- *(docs)* Add mentoring resources and update EIP intranet files
+- *(build)* Upgrade moon to v2.5.4 and add automated update script
+- *(tools)* Add automated stand-up generator script
+- *(database)* Add enum types for the new schema
+- *(database)* Migrate users table to username and full name
+- *(database)* Add user profile, body constraint and tutorial tables
+- *(database)* Store hashed refresh tokens in sessions
+- *(database)* Add gyms and climbing sessions tables
+- *(database)* Migrate videos table to the new schema
+- *(database)* Migrate analyses table to job status and structured hints
+- *(database)* Add analysis scores table
+- *(database)* Add routes, holds, ghosts and comparisons tables
+- *(database)* Add coaching and training tables
+- *(database)* Add friendships and follows tables
+- *(database)* Add subscription and quota tables
+- *(database)* Split cleanup cron jobs for uploads and video retention
+- *(ai)* Scaffold new AI worker with pose landmarking pipeline
+- *(ai)* Add minio storage service and fix broker connection
+- *(migrate)* Add database migration cli tool
+- *(subscription)* Implement updated subscription tiers and quotas
+- *(server)* User profile with auto creation, get, update
+- *(agents)* Add gemini-review command and documentation
+- *(mobile)* Implement core architecture and navigation
+- *(runner)* Update window title and size
+- *(api)* Update auth endpoints to include v1 prefix
+- *(l10n)* Add auth and settings translations
+- *(core)* Add map and flatMap to Result
+- *(auth)* Implement authentication data layer and UI
+- *(profile)* Add settings screen and navigation
+- *(routing)* Add welcome and settings routes
+- *(test)* Add golden and component testing infrastructure
+- *(mobile)* Add build task and update dependencies
+- *(server)* Get video, list videos
+- *(cron)* Add CleanOldQuotaUsage cron
+- *(storage)* Minio -> rustfs on server
+- *(db)* Video_context table (empty)
+- *(docs)* Add infrastructure architecture documentation
+- Update pedogical follow up list and fix bug with the first pdf
+- Build analyses payload with landmarks and joint angles
+- Unit tests for pose advice, movements, PostgreSQL operations, RustFS service, and schemas
+- Lock updated
+- *(db)* Fix migrations
+- *(mobile)* Configure network access and automate dev environment setup
+- *(climb_session)* Add climb session feature implementation
+- *(docs)* Add guide to manage virtual machines
+- *(docs)* Add expert outreach register and update mentoring follow-up records
+- *(ui)* Overhaul application theme and screen layouts
+- *(server)* Add the climbing session model and repository
+- *(server)* Add the climbing session and analysis list services
+- *(server)* Expose the climbing session endpoints
+- *(infra)* Add the n8n coolify service
+- *(infra)* Add the technology watch n8n workflow
+- *(infra)* Add the ovh object storage access policy
+- *(server)* Add the coolify compose of the api
+- *(ai)* Add the coolify compose of the worker
+- *(server)* Add the user body constraint model
+- *(server)* Add the user body constraint repository
+- *(server)* Add the user body constraint service
+- *(server)* Expose the user body constraint endpoints
+- *(server)* Add friendship, user search and feed domain model
+- *(server)* Add postgres friendship and feed queries with their test doubles
+- *(server)* Add friendship and feed services
+- *(server)* Add friends, user search and feed endpoints
+- *(infra)* Add the access policy of the backups bucket
+- Feat(server):
+
+- cron for stale analyses
+- fix weight validation
+- add listAnalysesByFilter, deleteAnalysis
+- base for POST /v1/analyses/:id/retry-advice but wait for #318
+- *(mobile)* Migrate environment configuration to dart-define-from-file
+- *(core)* Update api endpoint paths and add new routes
+- *(climb_session)* Integrate remote api for climbing sessions
+
+### 🚚 Restructuring
+
+- *(docs)* Rename ascension alpha test plan to acceptance test plan
+- *(docs)* Rename pitch deck files to remove parentheses and update documentation references
+- Replace "new_*" version by current version and old version by "old_*" version
+
+### 🚜 Refactoring
+
+- *(database)* Add check constraint on users role
+- *(database)* Store user password hash as text
+- *(database)* Add check constraint on videos status
+- *(database)* Add range check on analyses progress
+- *(database)* Store analyses advice as text
+- *(database)* Enforce lowercase users email
+- *(database)* Reject users email with surrounding whitespace
+- *(config)* Standardize environment variable naming convention
+- *(ai)* Modularize pose analysis service
+- *(database)* Rename analysis fields and include error logging
+- *(database)* Reorganize and update migration files
+- *(docs)* Modernize document headers and update project structure
+- *(docs)* Reorganize documentation structure and directory names
+- *(agents)* Reorganize agent commands, rules, and documentation structure
+- *(server)* Align users and sessions with the new schema
+- *(server)* Align analyses with job status and structured hints
+- *(server)* Align videos with the new schema and retention period
+- *(docs)* Consolidate directory structure and cleanup documentation
+- *(docs)* Remove mandatory table of contents from markdown files
+- Code structure for improved readability and maintainability
+- Clean up configuration and enhance RabbitMQ integration
+- *(ai)* Move broker bindings to macro and extract payload validator
+- Reorganize video processing code and introduce PoseSkeleton class
+- Clean up imports and update file metadata in rabbitmq and pose_skeleton modules
+- Enhance broker and job handling with new routing keys and job status management
+- Restructure job handling and introduce shared models for job status and routing keys
+- Update TODO comments for job processing and payload schema in pose_detect_request
+- Reorder broker connection to ensure proper initialization sequence
+- Update date annotations in scripts and settings page
+- *(scripts)* Improve header parsing and metadata detection
+- *(agents)* Consolidate documentation commands
+- *(docs)* Remove redundant original language from headers
+- *(build)* Unify task configurations and update migration execution
+- *(auth)* Rename signup to register
+- *(auth)* Use diacritic package for string normalization
+- *(ai)* Improve code robustness and maintenance
+- File dates to 2026-10-30 across multiple source and test files in the old AI and old mobile applications. Added a new document for the 2D pipeline decomposition detailing technical bricks and project status.
+- Pose detection pipeline: split into modular components
+- *(mobile)* Migrate to riverpod 3 and flutter_secure_storage 11
+- *(docs)* Remove system-overview and integrate content into architecture guide
+
+### 🤖 AI & Automation Agents
+
+- *(ai)* Update go version in ai instructions
+
+### 🧪 Testing
+
+- *(server)* Add unit tests for user email normalization
+- Add auth, profile, and settings screens tests
+- *(server)* Cover the climbing sessions and the analysis list
+- *(server)* Extend the in-memory repository to users, sessions and videos
+- *(server)* Add a helper to skip the known bug tests
+- *(server)* Cover the models with unit tests
+- *(server)* Cover the http request and response dtos
+- *(server)* Cover the postgresql dtos and query builders
+- *(server)* Cover the services with unit tests
+- *(server)* Cover the cron jobs
+- *(server)* Cover every http route through the router
+- *(server)* Cover the middlewares and http utils
+- *(server)* Cover the configuration and the logger
+- *(server)* Cover the rabbitmq and rustfs adapters
+
+### 🧹 Maintenance
+
+- *(assets)* Update mobile app logo and rename legacy documentation images
+- *(config)* Update postgres host and add devtools configuration
+- *(docker)* Update service configurations and env templates
+- *(docker)* Standardize container configuration and networking
+- *(build)* Skip database migrations in CI environment
+- *(metadata)* Update file headers and maintainer information
+- *(moon)* Add inputs to migrate task and define stand-up task
+- *(build)* Configure output style for moon tasks
+- *(docs)* Reorganize documentation structure
+- *(docs)* Standardize file paths and update documentation frontmatter
+- *(refactor)* Update file paths to remove numerical prefixes from documentation directories
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- *(headers)* Update date and authors of modified files
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- *(docs)* Sanitize filenames and update documentation links
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Normalize file header dates and author attributions
+- *(core)* Update file headers and maintainer metadata
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- *(meta)* Update file headers and maintainer information
+- *(deps)* Update project dependencies and infrastructure
+- *(new_mobile)* Remove unused README.md
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- *(linux)* Remove url_launcher_linux plugin registration
+- Sync pages
+- Sync pages
+- *(docs)* Update ghost mode definition and roadmap
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- *(gitignore)* Ignore macos pods and flutter ephemeral files
+- Update date in __init__.py headers
+- Update date in multiple __init__.py files to 2026-11-02
+- Sync pages
+- Sync pages
+- *(agents)* Update the densho skill to its latest version
+- Add GITHUB_TOKEN to CI workflow
+- *(docs)* Update infrastructure references to RustFS and OVHcloud S3
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- *(ai)* Remove author from pose skeleton metadata
+- Sync pages
+- Sync pages
+- *(env)* Document the s3 region variables
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Update dev-to-staging cron schedule
+- *(docs)* Update file paths for documentation and guidelines
+- *(meta)* Update file headers across projects
+- Update project file metadata
+- Update author in config_test.go and knownbug.go
+
 ## [0.2.0] - 2026-09-03
 
 ### 🏗️ Build System
@@ -38,6 +871,7 @@ All notable changes to this project will be documented in this file.
 - *(ai)* Replace psycopg2 with psycopg2-binary dependency
 - *(moon)* Update task input patterns and configurations
 - *(build)* Update project dependencies and environment
+- *(release)* Update changelog for v0.2.0
 
 ## [0.1.13] - 2026-09-03
 
