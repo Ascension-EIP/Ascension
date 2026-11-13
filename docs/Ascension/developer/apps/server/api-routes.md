@@ -410,6 +410,71 @@ Generates a time-limited presigned GET URL to stream or download the video.
 
 ---
 
+### GET /v1/videos/ — List videos
+
+Returns one page of the caller's videos. The route is declared with a trailing slash: `GET /v1/videos` answers `301 Moved Permanently` to `/v1/videos/`.
+
+**Query parameters:**
+
+| Parameter | Type | Rules |
+| --- | --- | --- |
+| `limit` | int | Optional, 1 to 20, defaults to 10 |
+| `offset` | int | Optional, 0 or more, defaults to 0 |
+
+**Responses:**
+
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `200 OK` | Page returned | `[Video]`, a plain array |
+| `400 Bad Request` | Invalid `limit` or `offset` | `{"error": "<msg>"}` |
+
+:::warning
+The `Video` object has no JSON tags in the server (`response.Video`), so its keys are the Go field names, in PascalCase, unlike the rest of the API. `DurationMS` is a Go duration, in nanoseconds despite its name.
+:::
+
+**`Video` object:**
+
+```json
+{
+  "ID": "018e6e5a-1234-7abc-8def-0123456789ab",
+  "UserID": "018e6e5a-0000-7abc-8def-0123456789ab",
+  "ClimbingSessionID": null,
+  "Title": "Send of Sector 4",
+  "ObjectKey": "018e6e5a-0000-7abc-8def-0123456789ab/018e6e5a-1234-7abc-8def-0123456789ab.mp4",
+  "Status": "completed",
+  "Visibility": "private",
+  "Width": 1080,
+  "Height": 1920,
+  "FPS": 30,
+  "ContentType": "video/mp4",
+  "DurationMS": 10300000000,
+  "SizeBytes": 52428800,
+  "Retained": false,
+  "UploadURLExpiresAt": "2026-11-13T10:15:00Z",
+  "CreatedAt": "2026-11-13T09:15:00Z",
+  "UpdatedAt": "2026-11-13T09:16:00Z"
+}
+
+```
+
+---
+
+### GET /v1/videos/:id — Get a video
+
+Returns one of the caller's videos, as a `Video` object (see above).
+
+**Responses:**
+
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `200 OK` | Video found | `Video` |
+| `400 Bad Request` | Invalid UUID | `{"error": "<msg>"}` |
+| `500 Internal Server Error` | Unknown video, or another user's video | `{"error": "get video by filter from db: not found"}` |
+
+An unknown video answers `500` instead of `404`: the not found error of the videos is not mapped by `utils.Error`, a known bug covered by a skipped test (`RUN_KNOWN_BUGS=1`).
+
+---
+
 ## Analyses
 
 **Rate limit:** 10 req/min.\
@@ -530,6 +595,21 @@ stateDiagram-v2
 ```
 
 The statuses are written by the AI worker (`schemas/job_status.schema.json`). `hints` holds the structured advice written by the worker; `advice` is the legacy free-text field and stays `null`.
+
+---
+
+### POST /v1/analysis/:id/retry-advice — Retry the advice of an analysis
+
+:::warning
+Not implemented yet: the service is a `TODO` and the route answers `204 No Content` without doing anything, whatever the analysis.
+:::
+
+**Responses:**
+
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `204 No Content` | Always, for any valid UUID | empty |
+| `400 Bad Request` | Invalid UUID | `"invalid uuid"`, a JSON string |
 
 ---
 
@@ -747,6 +827,84 @@ Deletes the session. Its videos and their analyses are kept, outside any session
 | `204 No Content` | Session deleted | empty |
 | `400 Bad Request` | Invalid UUID | `{"error": "<msg>"}` |
 | `404 Not Found` | Unknown session, or another user's session | `{"error": "climbing session not found"}` |
+
+---
+
+## Profile
+
+**Rate limit:** 10 req/min (shared with `/v1/profile/constraints`).\
+**Authentication:** Required (`user` or `admin`).
+
+The morphological profile of the caller (F01). It is created empty at registration, so it always exists.
+
+**`UserProfile` object:**
+
+```json
+{
+  "user_id": "018e6e5a-0000-7abc-8def-0123456789ab",
+  "birth_date": "1998-04-12T00:00:00Z",
+  "height_cm": 178,
+  "weight_kg": 70.5,
+  "arm_span_cm": 182,
+  "dominant_hand": "right",
+  "climbing_level": "7a",
+  "grading_system": "french",
+  "years_of_practice": 6,
+  "bio": "Bouldering mostly",
+  "avatar_object_key": null
+}
+
+```
+
+| Field | Enforced by the database | Model rule, not enforced yet |
+| --- | --- | --- |
+| `birth_date` | A date | Between 1900-01-01 and today |
+| `height_cm` | 50 to 250 | 40 to 250 |
+| `weight_kg` | 20 to 250 | 15 to 300 |
+| `arm_span_cm` | 50 to 280 | 40 to 250 |
+| `dominant_hand` | `left`, `right`, `ambidextrous` | Same |
+| `climbing_level`, `grading_system` | Set together or not at all; `grading_system` is `font`, `french`, `v_scale` or `yds` | `climbing_level` up to 64 characters |
+| `years_of_practice` | A number | 0 to 120 |
+| `bio` | Text | Up to 2,000 characters |
+| `avatar_object_key` | Text | Up to 1,024 characters |
+
+### GET /v1/profile — Get my profile
+
+**Responses:**
+
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `200 OK` | Profile returned | `UserProfile` |
+
+---
+
+### PUT /v1/profile — Update my profile
+
+Partially updates the caller's profile: only the fields present in the body change. A field sent as `null` is ignored like a missing one, so a field cannot be cleared yet (a known bug). A body with nothing to change, empty or with `null` values only, answers `500` with `update user profile in repo: not found` and changes nothing.
+
+**Request body (JSON):** any subset of the `UserProfile` fields, `user_id` excepted.
+
+```json
+{
+  "height_cm": 180,
+  "climbing_level": "7a+",
+  "grading_system": "french"
+}
+
+```
+
+**Responses:**
+
+| Status | Meaning | Body |
+| --- | --- | --- |
+| `200 OK` | Profile updated | `UserProfile` |
+| `400 Bad Request` | Malformed JSON or wrong type | `{"error": "<msg>"}` |
+| `422 Unprocessable Entity` | A database check fails: range, or `climbing_level` without `grading_system` | `{"error": "update user profile in repo: invalid input"}` |
+| `500 Internal Server Error` | An unknown `dominant_hand` or `grading_system`, or nothing to change | `{"error": "<msg>"}` |
+
+:::warning
+The server does not validate the body yet (`UpdateUserProfile` never calls the model validation, a known bug): only the database column of the table above applies. A birth date in 1800 is stored, and an unknown enum value answers `500` instead of `422`.
+:::
 
 ---
 
