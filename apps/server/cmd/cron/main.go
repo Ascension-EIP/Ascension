@@ -1,4 +1,4 @@
-// @date 2026-11-13
+// @date 2026-11-14
 // @file main.go
 // @brief File description.
 // @project Ascension
@@ -39,12 +39,12 @@ func main() {
 		slog.Error("failed to create a new postgres repository", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
-	// if err := repo.Migrate(cfg.DB.DSN()); err != nil {
-	// 	slog.Error("failed to migrate the database", slog.String("err", err.Error()))
-	// 	os.Exit(1)
-	// } else {
-	// 	slog.Info("migration completed successfully")
-	// }
+	if err := repo.Migrate(cfg.DB.DSN()); err != nil {
+		slog.Error("failed to migrate the database", slog.String("err", err.Error()))
+		os.Exit(1)
+	} else {
+		slog.Info("migration completed successfully")
+	}
 
 	storage, err := rustfs.New(cfg.Storage)
 	if err != nil {
