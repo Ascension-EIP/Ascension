@@ -27,6 +27,7 @@ jobs:
   ########################## MERGE STAGING → MAIN ############################
   merge_branch:
     runs-on: ubuntu-latest
+    if: github.repository == 'Ascension-EIP/Ascension'
 
     ######################## STEPS ############################################
     steps:
@@ -134,60 +135,6 @@ jobs:
           gh release create ${{ steps.semver.outputs.tag }} \
             --title "${{ steps.semver.outputs.tag }}" \
             --notes-file RELEASE_NOTES.md
-  #############################################################################
-
-  ########################## PREPARE MIRROR MATRIX ############################
-  prepare_mirror_matrix:
-    runs-on: ubuntu-latest
-    needs: create_tag
-    if: github.repository == 'Ascension-EIP/Ascension'
-    outputs:
-      matrix: ${{ steps.set_matrix.outputs.matrix }}
-
-    ######################## STEPS ############################################
-    steps:
-      - name: Parse mirror repository URLs
-        id: set_matrix
-        env:
-          MIRROR_REPOS: ${{ vars.MIRROR_REPOSITORY_URL }}
-        run: |
-          if [ -z "$MIRROR_REPOS" ]; then
-            echo "No mirror repository specified in VARS."
-            echo "matrix=[]" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          JSON=$(echo "$MIRROR_REPOS" | jq -R -c '
-            split(",") 
-            | map(gsub("^\\s+|\\s+$"; "")) 
-            | map(select(length > 0)) 
-            | map(if (startswith("git@") or startswith("ssh://") or startswith("https://") or startswith("http://")) then . else "git@github.com:" + . + ".git" end)
-          ')
-          echo "matrix=$JSON" >> "$GITHUB_OUTPUT"
-  #############################################################################
-
-  ########################## MIRROR REPOSITORY ################################
-  mirror_repository:
-    runs-on: ubuntu-latest
-    needs: prepare_mirror_matrix
-    if: github.repository == 'Ascension-EIP/Ascension' && needs.prepare_mirror_matrix.outputs.matrix != '[]' && needs.prepare_mirror_matrix.outputs.matrix != ''
-    strategy:
-      matrix:
-        target_repo: ${{ fromJson(needs.prepare_mirror_matrix.outputs.matrix) }}
-      fail-fast: false
-
-    ######################## STEPS ############################################
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - name: Mirror to external repository
-        uses: pixta-dev/repository-mirroring-action@v1
-        with:
-          target_repo_url: ${{ matrix.target_repo }}
-          ssh_private_key: ${{ secrets.MIRROR_SSH_KEY }}
   #############################################################################
 
 ###############################################################################
