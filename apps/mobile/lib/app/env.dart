@@ -4,10 +4,7 @@
 // @project Ascension
 // @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
-// @status done
-/// Application environment configuration.
-///
-/// Values can be supplied at compile time via `--dart-define`.
+// @status done / Application environment configuration. / / Values can be supplied at compile time via `--dart-define`.
 class AppEnv {
   AppEnv._();
 

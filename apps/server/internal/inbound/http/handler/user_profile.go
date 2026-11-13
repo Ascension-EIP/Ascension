@@ -2,7 +2,7 @@
 // @file user_profile.go
 // @brief HTTP handlers for the authenticated user's profile (GET/PUT /profile).
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package handler

@@ -1,8 +1,8 @@
-// @date 2026-10-25
+// @date 2026-09-07
 // @file app_theme.dart
 // @brief Configuration du thème Forui et des adaptations d'accessibilité.
 // @project Ascension
-// @author Nicolas TORO <nicolas.toro@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:flutter/material.dart';

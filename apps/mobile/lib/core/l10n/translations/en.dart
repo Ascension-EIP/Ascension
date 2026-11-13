@@ -1,11 +1,10 @@
-// @date 2026-11-07
+// @date 2026-11-13
 // @file en.dart
 // @brief File description.
 // @project Ascension
 // @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
-// @status done
-/// English (en) translations - Base default language.
+// @status done / English (en) translations - Base default language.
 const Map<String, String> enTranslations = {
   // Navigation
   'nav.home': 'Home',

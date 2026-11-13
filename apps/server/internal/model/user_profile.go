@@ -1,4 +1,4 @@
-// @date 2026-09-24
+// @date 2026-11-13
 // @file user_profile.go
 // @brief User profile model with validation.
 // @project Ascension

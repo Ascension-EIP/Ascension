@@ -4,8 +4,7 @@
 // @project Ascension
 // @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
-// @status done
-/// Centralized application route definitions.
+// @status done / Centralized application route definitions.
 enum AppRoute {
   welcome('/welcome', 'welcome'),
   login('/login', 'login'),

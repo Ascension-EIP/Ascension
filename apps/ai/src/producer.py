@@ -2,7 +2,7 @@
 # @file producer.py
 # @brief Stand-in for the Go server: seeds a test analysis and publishes worker jobs.
 # @project Ascension
-# @author Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
+# @author Gianni TUERO <gianni.tuero@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
 """Stand-in for the Go server, until it publishes on the worker queues.

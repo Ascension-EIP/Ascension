@@ -1,8 +1,8 @@
-// @date 2026-10-25
+// @date 2026-09-07
 // @file interactive_circular_gauge.dart
 // @brief Jauge circulaire interactive avec support de survol (hover) et animations.
 // @project Ascension
-// @author Nicolas TORO <nicolas.toro@epitech.eu>
+// @author Gianni TUERO <gianni.tuero@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'dart:math' as math;

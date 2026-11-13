@@ -1,4 +1,4 @@
-// @date 2026-11-07
+// @date 2026-11-13
 // @file new_session_screen.dart
 // @brief Screen for configuring and starting a new climbing session.
 // @project Ascension

@@ -2,7 +2,7 @@
 // @file pagination.go
 // @brief Offset pagination shared by list endpoints.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package model

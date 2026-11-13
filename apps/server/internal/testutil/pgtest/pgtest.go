@@ -4,16 +4,7 @@
 // @project Ascension
 // @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
-// @status done
-// Package pgtest gives integration tests a real PostgreSQL database. Tests are skipped
-// unless TEST_DATABASE_DSN points at a PostgreSQL 18 server, for instance a throwaway
-// container:
-//
-//	docker run --rm -d --name ascension-test-pg -e POSTGRES_USER=test -e POSTGRES_PASSWORD=test -p 127.0.0.1:55432:5432 postgres:18
-//	TEST_DATABASE_DSN='postgres://test:test@127.0.0.1:55432/postgres?sslmode=disable' go test ./...
-//
-// Each Open creates a new database on that server, applies every migration and drops
-// the database when the test ends, so tests and packages never share data.
+// @status done Package pgtest gives integration tests a real PostgreSQL database. Tests are skipped unless TEST_DATABASE_DSN points at a PostgreSQL 18 server, for instance a throwaway container: docker run --rm -d --name ascension-test-pg -e POSTGRES_USER=test -e POSTGRES_PASSWORD=test -p 127.0.0.1:55432:5432 postgres:18 TEST_DATABASE_DSN='postgres://test:test@127.0.0.1:55432/postgres?sslmode=disable' go test ./... Each Open creates a new database on that server, applies every migration and drops the database when the test ends, so tests and packages never share data.
 package pgtest
 
 import (

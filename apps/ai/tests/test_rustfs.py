@@ -2,7 +2,7 @@
 # @file test_rustfs.py
 # @brief Unit tests for the RustFS service (mocked boto3 client).
 # @project Ascension
-# @author Gianni TUERO <gianni.tuero@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>
+# @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
 from pathlib import Path

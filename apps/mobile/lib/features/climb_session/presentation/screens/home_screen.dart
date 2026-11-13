@@ -1,4 +1,4 @@
-// @date 2026-11-07
+// @date 2026-11-13
 // @file home_screen.dart
 // @brief Dashboard home screen with active session status banner.
 // @project Ascension

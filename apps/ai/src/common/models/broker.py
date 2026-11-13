@@ -1,8 +1,8 @@
-# @date 2026-10-25
+# @date 2026-09-18
 # @file broker.py
 # @brief File description.
 # @project Ascension
-# @author Nicolas TORO <nicolas.toro@epitech.eu>
+# @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
 from collections.abc import Callable

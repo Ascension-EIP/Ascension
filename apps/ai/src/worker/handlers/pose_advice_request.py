@@ -2,7 +2,7 @@
 # @file pose_advice_request.py
 # @brief Handler of `pose.detect.completed` and `pose.advice.requested`: LLM advice, end of the job.
 # @project Ascension
-# @author Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
+# @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
 from common.utils.broker import consume

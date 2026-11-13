@@ -1,5 +1,5 @@
-// @date 2026-09-13
-// @file clear_expired_session.go
+// @date 2026-09-24
+// @file clear_old_quota_usage.go
 // @brief File description.
 // @project Ascension
 // @author DimitriLaPoudre <lou.pellegrino@epitech.eu>

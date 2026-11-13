@@ -1,3 +1,10 @@
+// @date 2026-09-24
+// @file quota_usage.go
+// @brief File description.
+// @project Ascension
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @copyright (c) 2026 Ascension
+// @status done
 package service
 
 import (

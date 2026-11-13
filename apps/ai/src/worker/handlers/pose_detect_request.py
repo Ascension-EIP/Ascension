@@ -2,7 +2,7 @@
 # @file pose_detect_request.py
 # @brief Handler of `pose.detect.requested`: download, analyse, store the result.
 # @project Ascension
-# @author Nicolas TORO <nicolas.toro@epitech.eu>, Gianni TUERO <gianni.tuero@epitech.eu>
+# @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
 from contextlib import ExitStack

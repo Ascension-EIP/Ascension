@@ -1,8 +1,8 @@
-// @date 2026-10-25
+// @date 2026-03-09
 // @file failures.dart
 // @brief File description.
 // @project Ascension
-// @author Nicolas TORO <nicolas.toro@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'package:equatable/equatable.dart';

@@ -1,3 +1,10 @@
+// @date 2026-11-01
+// @file models.go
+// @brief File description.
+// @project Ascension
+// @author Gianni TUERO <gianni.tuero@epitech.eu>
+// @copyright (c) 2026 Ascension
+// @status done
 package shared
 
 import "time"

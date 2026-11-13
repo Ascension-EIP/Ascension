@@ -1,4 +1,4 @@
-// @date 2026-11-07
+// @date 2026-11-13
 // @file sessions_screen.dart
 // @brief Main sessions screen with active session banner, history, and analysis entry.
 // @project Ascension

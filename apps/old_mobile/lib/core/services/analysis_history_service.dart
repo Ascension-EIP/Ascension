@@ -1,8 +1,8 @@
-// @date 2026-10-25
+// @date 2026-03-12
 // @file analysis_history_service.dart
 // @brief File description.
 // @project Ascension
-// @author Nicolas TORO <nicolas.toro@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 import 'dart:convert';
