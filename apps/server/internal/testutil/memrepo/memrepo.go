@@ -2,7 +2,7 @@
 // @file memrepo.go
 // @brief In-memory repository for unit tests of the climbing session, video and analysis services.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done Package memrepo is an in-memory stand-in for the PostgreSQL repository, used by unit tests only. It implements model.ClimbingSessionRepository, model.AnalysisRepository, model.VideoRepository, model.UserBodyConstraintRepository, model.FriendshipRepository and model.FeedRepository with the same ownership, visibility and not-found rules as the real queries.
 package memrepo
