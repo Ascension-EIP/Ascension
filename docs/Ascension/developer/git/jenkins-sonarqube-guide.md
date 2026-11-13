@@ -3,7 +3,7 @@ id: 64cd6da4-a0ca-4ce3-aa19-6ddebbd38b44
 ---
 
 :::success
-**Version:** 1.1
+**Version:** 1.2
 :::
 
 ---
@@ -56,11 +56,11 @@ Each application has its own Jenkins job and its own `Jenkinsfile`. A `Jenkinsfi
 
 What each stage runs:
 
-| Application      | Format                                | Lint                          | Build                   | Tests                                     |
-| ---------------- | ------------------------------------- | ----------------------------- | ----------------------- | ----------------------------------------- |
-| Server (Go)      | `gofmt -l .` must list no file        | `go vet ./...`                | `go build ./cmd/server` | `go test` with coverage                   |
-| AI (Python)      | Not checked                           | `uv run ruff check src tests` | `uv build`              | `pytest` with coverage and a JUnit report |
-| Mobile (Flutter) | `dart format --set-exit-if-changed .` | `flutter analyze`             | Not built               | `flutter test --coverage`                 |
+| Application      | Format                                | Lint                          | Build                   | Tests                                                                         |
+| ---------------- | ------------------------------------- | ----------------------------- | ----------------------- | ----------------------------------------------------------------------------- |
+| Server (Go)      | `gofmt -l .` must list no file        | `go vet ./...`                | `go build ./cmd/server` | `go test` with the coverage of every package and a JUnit report (`gotestsum`) |
+| AI (Python)      | Not checked                           | `uv run ruff check src tests` | `uv build`              | `pytest` with coverage and a JUnit report                                     |
+| Mobile (Flutter) | `dart format --set-exit-if-changed .` | `flutter analyze`             | Not built               | `flutter test --coverage`                                                     |
 
 Every step runs in an official Docker image (`golang`, `python`, a Flutter image), with the same tool versions as the GitHub Actions CI.
 
@@ -104,7 +104,7 @@ To build again, open the job, then the branch (for example `ascension-server` â€
 
 - **Analysed branch:** only `dev`. SonarQube Community Build analyses a single branch per project, so feature branches and pull requests are not analysed: they would overwrite the results of `dev`.
 - **Projects:** `ascension-server` and `ascension-ai`. Each one is configured by the `sonar-project.properties` file of its application.
-- **Coverage:** Go coverage comes from `apps/server/coverage.out`, Python coverage from `apps/ai/coverage.xml`.
+- **Coverage:** Go coverage comes from `apps/server/coverage.out`, Python coverage from `apps/ai/coverage.xml`. The startup code of the server (`cmd/` and `internal/app/`) is left out of the coverage: it needs the real PostgreSQL, S3 and RabbitMQ, so unit tests cannot run it.
 - **Quality gate:** after the analysis, Jenkins waits for the quality gate of the project. A failed quality gate fails the build of `dev`.
 - **Mobile:** disabled. SonarQube Community Build has no Dart analyzer; the `ascension-mobile` project stays empty until a Dart plugin is installed.
 
