@@ -1,8 +1,8 @@
-// @date 2026-09-20
+// @date 2026-11-13
 // @file main.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package main
@@ -15,8 +15,9 @@ import (
 	"syscall"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/job"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/minio"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/rabbitmq"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/rustfs"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/logger"
@@ -38,21 +39,29 @@ func main() {
 		slog.Error("failed to create a new postgres repository", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
-	if err := repo.Migrate(cfg.DB.DSN()); err != nil {
-		slog.Error("failed to migrate the database", slog.String("err", err.Error()))
-		os.Exit(1)
-	} else {
-		slog.Info("migration completed successfully")
-	}
+	// if err := repo.Migrate(cfg.DB.DSN()); err != nil {
+	// 	slog.Error("failed to migrate the database", slog.String("err", err.Error()))
+	// 	os.Exit(1)
+	// } else {
+	// 	slog.Info("migration completed successfully")
+	// }
 
-	storage, err := minio.New(cfg.MinIO)
+	storage, err := rustfs.New(cfg.Storage)
 	if err != nil {
 		slog.Error("failed to create a new minio storage", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
 
+	queue, err := rabbitmq.New(cfg.Queue)
+	if err != nil {
+		slog.Error("failed to create a new rabbitmq queue", slog.String("err", err.Error()))
+		os.Exit(1)
+	}
+
 	sessionS := service.NewSessionService(cfg.Auth.Session, &repo)
-	videoS := service.NewVideoService(cfg.Video, cfg.MinIO, &storage, &repo)
+	videoS := service.NewVideoService(cfg.Video, cfg.Storage, &storage, &repo, &repo)
+	analysisS := service.NewAnalysisService(cfg.Storage, &repo, &repo, &queue)
+	quotaUsageS := service.NewQuotaUsageService(&repo)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -68,6 +77,14 @@ func main() {
 	}
 	if err := job.ClearExpiredVideos(c, ctx, &videoS); err != nil {
 		slog.Error("start the job: ClearExpiredVideos", slog.String("err", err.Error()))
+		os.Exit(1)
+	}
+	if err := job.ClearOldQuotaUsage(c, ctx, &quotaUsageS); err != nil {
+		slog.Error("start the job: ClearOldQuotaUsage", slog.String("err", err.Error()))
+		os.Exit(1)
+	}
+	if err := job.AnalysisStaleDetection(c, ctx, &analysisS); err != nil {
+		slog.Error("start the job: AnalysisStaleDetection", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
 	c.Start()

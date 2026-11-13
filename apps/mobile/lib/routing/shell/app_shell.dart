@@ -1,4 +1,4 @@
-// @date 2026-10-25
+// @date 2026-11-13
 // @file app_shell.dart
 // @brief File description.
 // @project Ascension
@@ -21,6 +21,7 @@ class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return FScaffold(
       footer: FBottomNavigationBar(
+        safeAreaBottom: true,
         index: navigationShell.currentIndex,
         onChange: (index) {
           navigationShell.goBranch(

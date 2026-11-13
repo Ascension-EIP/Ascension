@@ -3,7 +3,7 @@ id: 75c02209-c62c-43bf-8b8e-5c48e688fea2
 ---
 
 :::success
-**Version:** 1.3
+**Version:** 1.4
 :::
 
 ---
@@ -32,27 +32,28 @@ You are an expert technical consultant embedded in the **Ascension** development
 
 **Core value proposition:**
 - **Location-agnostic:** the AI can analyze any wall without a pre-existing database.
-- **Ghost Mode:** overlays the optimal movement path computed by AI on top of the climber’s video, frame by frame.
+- **Ghost Mode:** generates step-by-step guidance images breaking down a feasible beta from a route photo and climber morphology.
 - **Accessible coaching:** automated and personalized feedback at a fraction of the cost of a human coach.
 
 ---
 
 ## 2. Key Features
 
-| Feature                      | Description                                                                                                                      |
-|------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
-| **Skeleton Extraction (2D)** | MediaPipe Pose extracts 33 body keypoints per frame from a climbing video.                                                       |
-| **Pose AI (3D)**             | Rebuilt pipeline for 3D posture extraction and standardized output generation (biomechanical intermediate file).                 |
-| **3D Mobile Experience**     | Interactive 3D scene (rotation, zoom) to visualize movement reconstruction through 3D Pose AI, smoothly on Android and iOS.     |
-| **Advanced Hold Analysis**   | Automatic hold detection and qualification (type, difficulty, usability), with color-based selection or manual contour fallback. |
-| **Advice Generation**        | Targeted technical feedback through an external model (Gemini API-like), based on route context and user biomechanics.           |
-| **Ghost Mode**               | Pathfinding / inverse kinematics computes an optimal movement path based on user morphology and renders it as an overlay.        |
-| **Training Programs**        | Personalized programs generated from goals, injuries, level, and analysis history.                                               |
-| **Assisted Climbing (AR)**   | Advanced accessibility mode: real-time analysis with voice guidance (earphones) during ascent.                                   |
-| **Morphological Profile**    | Full body setup (height, weight, segments) plus an interactive skeleton to declare missing or injured limbs/zones.               |
-| **Social & Community**       | Climb sharing, friend performance comparison, and social progression mechanics with fine-grained privacy controls.               |
-| **Business Foundations**     | Full subscription lifecycle (Premium), offer management, and instrumentation (conversion/churn).                                 |
-| **Video Management & CI/CD** | S3 lifecycle storage, robust backend pipeline (Go), and automated CI/CD to ensure stability and data security.                   |
+| Feature | Description |
+| --- | --- |
+| **Morphological Profile** | Full body setup (height, weight, segments) plus an interactive skeleton to declare missing or injured limbs/zones. |
+| **Pose Analysis 2D** | MediaPipe Pose extracts 33 body keypoints per frame from a climbing video, computing numeric metrics and coaching advice. |
+| **Advice Generation** | Targeted technical feedback through an external model (Gemini API-like), based on route context and user biomechanics. |
+| **Hold Detection & Selection** | BTP: automatic hold detection & route/color grouping with group selection or manual hold clicks. ATP: advanced hold qualification (type, difficulty, usability). |
+| **Ghost Mode** | Photo workflow on an empty wall: pathfinding computes a feasible movement sequence (not a single "optimal" beta) from selected holds and user morphology, generating step-by-step guidance images. |
+| **Climbing Sessions** | Session tracking container: start a gym session, attach climb analyses automatically, and review session duration and aggregated stats at the end. |
+| **Training Programs** | Personalized programs generated from goals, injuries, level, and analysis history. |
+| **Social & Community** | Climb sharing, user-to-user pose analysis comparison on the same wall (`public` / `friends` visibility), and social progression mechanics. |
+| **Pose Analysis 3D** | Post-Greenlight pipeline for 3D posture extraction and richer biomechanical metrics from climbing videos. |
+| **3D Mobile Experience** | Interactive 3D scene (rotation, zoom, limb inspection) to visualize movement reconstruction through 3D Pose AI, smoothly on mobile devices. |
+| **Assisted Climbing (AR Audio)** | Accessibility mode (notably for visually impaired climbers): stationary phone performs real-time pose tracking with audio voice guidance during ascent. |
+| **Business Foundations** | Full subscription lifecycle (Premium), offer management, and instrumentation (conversion/churn). |
+| **Video Management & CI/CD** | S3 lifecycle storage, robust backend pipeline (Go), and automated CI/CD to ensure stability and data security. |
 
 ---
 
@@ -67,7 +68,7 @@ You are an expert technical consultant embedded in the **Ascension** development
 | AI Workers     | Python `3.11` + MediaPipe + PyTorch + OpenCV + Pika               | 2 pipelines                 |
 | Message broker | RabbitMQ `4.2.4`                                                  | AMQP, durable queues        |
 | Database       | PostgreSQL `18`                                                   | JSONB for analysis outputs  |
-| Object storage | MinIO (`RELEASE.2025-09-07T16-13-09Z`)                            | S3-compatible               |
+| Object storage | RustFS (dev) / OVHcloud S3 (prod) | S3-compatible |
 | Monitoring     | Prometheus + Grafana + Loki                                       | Planned for production      |
 | Task runner    | moonrepo `2.5.4`                                                  | Version pinning, CI         |
 
@@ -95,7 +96,7 @@ The system follows an **event-driven architecture** with **CQRS** and **client-s
 1. **Separation of responsibilities** — the API handles requests, AI workers handle heavy computation.
 2. **Asynchronous processing** — heavy workloads are queued through RabbitMQ and processed independently.
 3. **Edge rendering** — the client renders analysis overlays locally on the original video from a lightweight JSON payload, avoiding server-side video re-encoding.
-4. **Cost optimization** — direct video upload from mobile to MinIO (presigned URL), without API proxying.
+4. **Cost optimization** — direct video upload from mobile to Object Storage via presigned URL (RustFS in dev, OVHcloud S3 in prod), without API proxying.
 
 ---
 
@@ -113,13 +114,13 @@ The system follows an **event-driven architecture** with **CQRS** and **client-s
 
 ## 6. Team
 
-| Developer            | OS                   | Responsibility                                                                                      |
-|----------------------|----------------------|-----------------------------------------------------------------------------------------------------|
-| Nicolas TORO         | Arch Linux / Android | Technical and team project management / Backend and mobile developer / Documentation and CI/CD lead |
-| Lou PELLEGRINO       | NixOS / iOS          | Backend developer                                                                                   |
-| Gianni TUERO         | Arch Linux / Android | Administrative project lead / RabbitMQ integrator / AI developer                                    |
-| Olivier POUECH       | Arch Linux / iOS     | CEO / AI developer                                                                                  |
-| Christophe VANDEVOIR | macOS / iOS          | Mobile and backend developer / Infrastructure lead                                                  |
+| Developer            | OS                   | Responsibility                                                                                                              |
+|----------------------|----------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| Nicolas TORO         | Arch Linux / Android | Technical and team project management / Mobile developer / Global supervision and PR review / Documentation and CI/CD lead |
+| Lou PELLEGRINO       | NixOS / iOS          | Backend developer                                                                                                           |
+| Gianni TUERO         | Arch Linux / Android | Administrative project lead / RabbitMQ integrator / AI developer                                                            |
+| Olivier POUECH       | Arch Linux / iOS     | CEO / AI developer                                                                                                          |
+| Christophe VANDEVOIR | macOS / iOS          | System administrator (Infrastructure) / Backend developer                                                                   |
 
 ---
 

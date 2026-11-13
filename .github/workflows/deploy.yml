@@ -131,7 +131,7 @@ jobs:
 
       - name: Build Android APK
         working-directory: apps/mobile
-        run: flutter build apk --release
+        run: flutter build apk --release --dart-define-from-file=config/production.json
 
       - name: Upload Android artifact
         uses: actions/upload-artifact@v7

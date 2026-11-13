@@ -1,4 +1,4 @@
-// @date 2026-10-25
+// @date 2026-09-07
 // @file interactive_circular_gauge.dart
 // @brief Jauge circulaire interactive avec support de survol (hover) et animations.
 // @project Ascension

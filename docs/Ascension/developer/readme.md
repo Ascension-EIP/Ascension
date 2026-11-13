@@ -35,11 +35,11 @@ Ascension follows an **event-driven, decoupled architecture** managed as a monor
 | Subsystem | Technology | Responsibility |
 | --- | --- | --- |
 | **Mobile Client** (`apps/mobile`) | Flutter / Dart (`^3.11.0`) | Cross-platform mobile app (iOS & Android) with Forui UI design system and client-side canvas overlay rendering. |
-| **API Gateway** (`apps/server`) | Go (`1.27.1`), Gin, pgx | High-throughput REST API, JWT authentication, WebSocket live updates, and MinIO presigned URL dispatch. |
+| **API Gateway** (`apps/server`) | Go (`1.27.1`), Gin, pgx | High-throughput REST API, JWT authentication, WebSocket live updates, and S3 presigned URL dispatch. |
 | **AI Workers** (`apps/ai`) | Python `3.11`, MediaPipe, PyTorch, OpenCV | Asynchronous computer vision pipelines: 2D/3D skeleton extraction, hold detection, and biomechanical qualification. |
 | **Message Broker** | RabbitMQ `4.2.4` | Reliable AMQP task queues decoupling the API Gateway from compute-heavy AI processing workers. |
 | **Database** | PostgreSQL `18` | Relational data persistence, user accounts, subscription quotas, and JSONB analysis results. |
-| **Object Storage** | MinIO (Dev) / S3-compatible | Storage for raw climb videos, processed media assets, and thumbnail previews. |
+| **Object Storage** | RustFS (Dev) / OVHcloud S3 (Prod) | S3-compatible storage for raw climb videos, processed media assets, and thumbnail previews. |
 
 ---
 
@@ -100,7 +100,7 @@ cd Ascension
 # 2. Configure local environment variables
 cp .env.example .env
 
-# 3. Start local infrastructure services (Postgres, RabbitMQ, MinIO)
+# 3. Start local infrastructure services (Postgres, RabbitMQ, RustFS)
 docker compose up -d
 
 # 4. Run any service via moonrepo

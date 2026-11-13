@@ -8,7 +8,7 @@ order:
   - deployment
   - specifications
   - monorepo-guide
-  - system-overview
+  - infrastructure
 ---
 
 :::subpages cards 3

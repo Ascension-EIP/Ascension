@@ -1,4 +1,4 @@
-// @date 2026-10-25
+// @date 2026-11-13
 // @file profile_screen.dart
 // @brief File description.
 // @project Ascension
@@ -21,7 +21,7 @@ class ProfileScreen extends StatelessWidget {
         title: Text(context.tr('profile.title')),
         suffixes: [
           FHeaderAction(
-            icon: const Icon(FLucideIcons.settings),
+            icon: const Icon(FLucideIcons.settings, size: 20),
             onPress: () => context.goNamed(AppRoute.settings.name),
           ),
         ],

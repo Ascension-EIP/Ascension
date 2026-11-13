@@ -85,11 +85,11 @@ Construire et livrer tout ce qui est attendu par le BTP pour arriver au GreenLig
 - Finaliser la **refonte mobile prioritaire** si elle n'était pas terminée en septembre 2026.
 - Consolider l'**IA de pose 2D** (MediaPipe Pose) pour extraire de manière fiable les 33 landmarks corporels et calculer les angles et indicateurs clés.
 - Produire un fichier de sortie standardisé (biomécanique + posture) et intégrer la génération de **conseils techniques personnalisés** via modèle externe (type Gemini ou équivalent API).
-- Livrer un **score global et le suivi de progression** pour donner une lecture immédiate de la grimpe et de l'historique de sessions.
-- Développer la **dimension communautaire et le partage** (partage d'analyses et de montées, comparaison de performances entre amis, gestion fine de la confidentialité : privé, amis, public).
+- Livrer les **sessions de grimpe** (démarrage/clôture de session en salle, rattachement des analyses, durée et statistiques agrégées) ainsi que le **score global et le suivi de progression**.
+- Développer la **dimension communautaire et le partage** (partage d'analyses avec visibilité, et comparaison d'analyses de pose entre utilisateurs ayant filmé la **même voie**).
 - Mettre en place le **coach personnel et les programmes d'entraînement** (définition d'objectifs de progression, génération de séances types personnalisées et journalisation des entraînements).
-- Livrer un **mode fantôme MVP** fonctionnel de bout en bout, incluant le mode custom où l'utilisateur entoure manuellement les prises à utiliser (sur photo de la voie).
-- Assurer un **parcours utilisateur complet** (auth, profil, upload, analyse, résultats, historique minimal), y compris le paramétrage corporel et la reprise plus tard depuis le profil.
+- Livrer le **mode fantôme MVP** fonctionnel de bout en bout sur photo de voie vide : détection et regroupement automatique des prises avec choix par groupe/couleur ou sélection manuelle, puis calcul d'une **bêta réalisable** en images étape par étape.
+- Assurer un **parcours utilisateur complet** (auth, profil, sessions, upload, analyse, résultats, historique minimal), y compris le paramétrage corporel et la reprise plus tard depuis le profil.
 - Ajouter un **onboarding guidé** au premier lancement et des tutoriels rejouables depuis les paramètres.
 - Appliquer une **accessibilité mobile forte** (contraste, taille, focus, labels, tests manuels guidés, checks automatisables, suivi WCAG 2.2 AA).
 - Continuer le **pilotage technique EIP**: veille mensuelle, benchmark(s), PoC(s), décisions techniques argumentées, et boucle d'optimisation continue.
@@ -168,14 +168,10 @@ Transformer le MVP en version alpha solide et testable à plus grande échelle, 
 
 ### Priorités de travail
 
-- Reconstruire l'**IA de pose autour d'un modèle 3D** afin d'extraire la posture 3D complète et de générer un format biomécanique standardisé enrichi.
+- Reconstruire l'**IA de pose autour d'un modèle 3D** afin d'extraire la posture 3D complète sur vidéo et de générer des métriques biomécaniques enrichies.
 - Développer l'**expérience 3D mobile** interactive (scène 3D manipulable au doigt : rotation, zoom, déplacement) avec des performances fluides sur Android et iOS.
-- Livrer un **mode fantôme complet** avec meilleure fidélité de comparaison et workflow de sélection des prises plus avancé:
-  - Détection automatique des prises avec sélection par clic.
-  - Fallback manuel si une prise n'est pas détectée.
-  - Choix de mode: Custom (manuel) ou Couleur détectée (rouge, bleu, etc.).
-- Développer une **IA avancée de lecture des prises** (type, difficulté, exploitation) pour enrichir les conseils.
-- Enrichir la **dimension communautaire** (statistiques comparatives avancées, interactions sociales élargies, badges) et la **dimension coach** (programmes d'entraînement adaptatifs, suivi longitudinal multi-analyses).
+- Enrichir la **qualification avancée des prises** (type, difficulté, exploitabilité) et les retours techniques associés, en complément de la détection/regroupement par couleur et du choix manuel déjà livrés en BTP pour le Mode Fantôme.
+- Enrichir la **dimension communautaire** (statistiques comparatives avancées entre utilisateurs sur la même voie, interactions sociales élargies, badges) et la **dimension coach** (programmes d'entraînement adaptatifs, suivi longitudinal multi-sessions).
 - Déployer le mode de **grimpe assistée en temps réel** avec conseils vocaux (AR + audio), incluant les contraintes de sécurité, de latence et de gestion des pertes de tracking.
 - Mettre en place des **fondations business** complètes (abonnements Freemium, Premium, Infinity, règles d'éligibilité et quotas, cycle complet de paiement, instrumentation activation/rétention/conversion/churn/usage).
 - Continuer les revues techniques périodiques (performance, architecture, sécurité) avec corrections documentées.

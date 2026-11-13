@@ -1,4 +1,4 @@
-// @date 2026-10-25
+// @date 2026-11-13
 // @file record_screen.dart
 // @brief File description.
 // @project Ascension
@@ -22,7 +22,7 @@ class RecordScreen extends StatelessWidget {
             const Icon(FLucideIcons.video, size: 48),
             const SizedBox(height: 16),
             Text(
-              'Enregistrement & Upload MinIO',
+              'Enregistrement & Upload Vidéo',
               style: context.theme.typography.body.lg.copyWith(
                 fontWeight: FontWeight.bold,
               ),

@@ -11,10 +11,12 @@ if [ -z "$PLATFORM" ]; then
   fi
 fi
 
-echo "Building for platform: $PLATFORM"
+CONFIG_FILE="${CONFIG_FILE:-config/production.json}"
+
+echo "Building for platform: $PLATFORM with config: $CONFIG_FILE"
 
 if [ "$PLATFORM" = "ios" ]; then
-  flutter build ios --no-codesign "--dart-define=BACKEND_URL=${BACKEND_URL:-}"
+  flutter build ios --no-codesign --dart-define-from-file="$CONFIG_FILE"
 else
-  flutter build apk "--dart-define=BACKEND_URL=${BACKEND_URL:-}"
+  flutter build apk --dart-define-from-file="$CONFIG_FILE"
 fi

@@ -1,11 +1,10 @@
-// @date 2026-10-25
+// @date 2026-11-13
 // @file en.dart
 // @brief File description.
 // @project Ascension
 // @author Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
-// @status done
-/// English (en) translations - Base default language.
+// @status done / English (en) translations - Base default language.
 const Map<String, String> enTranslations = {
   // Navigation
   'nav.home': 'Home',
@@ -20,6 +19,8 @@ const Map<String, String> enTranslations = {
   'common.retry': 'Retry',
   'common.cancel': 'Cancel',
   'common.save': 'Save',
+  'common.yes': 'Yes',
+  'common.no': 'No',
   'common.continueLater': 'Continue later',
   'common.notAvailable':
       'Not available yet. This feature will be coming soon to Ascension.',
@@ -62,14 +63,67 @@ const Map<String, String> enTranslations = {
   'sessions.startNew': 'Start a new session',
   'sessions.resume': 'Resume current session',
   'sessions.previous': 'Previous sessions',
+  'sessions.sortBy': 'Sorted by',
   'sessions.empty': 'No sessions recorded yet',
+  'sessions.startAnalysisButton': 'Start an analysis',
+  'sessions.previousAnalysesTitle': 'Previous analyses',
+  'sessions.noPreviousAnalyses': 'No previous analyses recorded',
+  'sessions.newSessionTitle': 'New Session',
+  'sessions.sessionNameLabel': 'Session name',
+  'sessions.sessionNameHint': 'E.g., Morning session, Arkose boulder...',
+  'sessions.sessionLocationLabel': 'Location',
+  'sessions.locationDisabledNote':
+      '(For now, this option is disabled, we will handle it later)',
+  'sessions.locationHint': 'Search climbing gym or crag',
+  'sessions.sessionVisibilityLabel': 'Visibility',
+  'sessions.startSessionButton': 'Start session',
+  'sessions.activeSessionTitle': 'Active Session',
+  'sessions.activeSessionLabel': 'Current session',
+  'sessions.noActiveSession': 'No active session',
+  'sessions.noAnalysesYetInSession':
+      'No analyses in this session yet.\nStart your first analysis below!',
+  'sessions.analysisSingular': 'analysis',
+  'sessions.analysesPlural': 'analyses',
+  'sessions.since': 'Since',
+  'sessions.newAnalysisButton': 'New analysis',
+  'sessions.endSessionButton': 'End session',
+  'sessions.endSessionConfirmTitle': 'End session?',
+  'sessions.endSessionConfirmBody': 'Are you sure you want to end this session? Its analyses will be preserved in your history.',
+  'sessions.noSessionDialogTitle': 'No active session',
+  'sessions.noSessionDialogBody': 'No active session.\nDo you want to create a new session for this analysis?',
+  'sessions.analysisMenuTitle': 'Analysis',
+  'sessions.selectAnalysisPrompt': 'Select the desired analysis type',
+  'sessions.analysisPose2dTitle': '2D Pose Analysis',
+  'sessions.analysisPose2dDesc': '2D extraction of 33 keypoints via MediaPipe',
+  'sessions.analysisPose3dTitle': '3D Pose Analysis',
+  'sessions.analysisPose3dDesc': '3D reconstruction and biomechanical posture',
+  'sessions.analysisGhostTitle': 'Ghost Mode',
+  'sessions.analysisGhostDesc': 'Step-by-step guidance and optimal beta',
+  'sessions.analysisAssistedTitle': 'Assisted Climbing',
+  'sessions.analysisAssistedDesc': 'Real-time analysis with audio guidance',
+
+  // Visibility
+  'sessions.visibility.public': 'Public',
+  'sessions.visibility.friends': 'Friends only',
+  'sessions.visibility.private': 'Private',
+
+  // Filters / Sorting
+  'sessions.sort.all': 'All',
+  'sessions.sort.friends': 'Friends only',
+  'sessions.sort.public': 'Public',
+  'sessions.sort.private': 'Private',
+
+  // Status
+  'sessions.status.inProgress': 'In progress',
+  'sessions.status.completed': 'Completed',
+  'sessions.status.failed': 'Failed',
 
   // Training
   'training.title': 'Training Programs',
   'training.personalized': 'Personalized workouts',
 
   // Profile
-  'profile.title': 'Profile & Morphology',
+  'profile.title': 'Profile',
   'profile.climberProfile': 'Climber Profile & Settings',
   'profile.birthDate': 'Birth date',
   'profile.height': 'Height',

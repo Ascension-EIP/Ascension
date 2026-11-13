@@ -1,8 +1,8 @@
-// @date 2026-09-20
+// @date 2026-11-13
 // @file analysis.go
 // @brief File description.
 // @project Ascension
-// @author Nicolas TORO <nicolas.toro@epitech.eu>, Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package response
@@ -12,21 +12,23 @@ import (
 	"uuid"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/shared"
 )
 
 type AnalysisResponse struct {
-	ID               uuid.UUID          `json:"id"`
-	VideoID          uuid.UUID          `json:"video_id"`
-	Type             model.AnalysisType `json:"type"`
-	Status           model.JobStatus    `json:"status"`
-	Visibility       model.Visibility   `json:"visibility"`
-	Progress         int16              `json:"progress"`
-	Result           *map[string]any    `json:"result"`
-	Advice           *string            `json:"advice"`
-	Error            *string            `json:"error"`
-	ProcessingTimeMS *time.Duration     `json:"processing_time_ms"`
-	StartedAt        *time.Time         `json:"started_at"`
-	CompletedAt      *time.Time         `json:"completed_at"`
+	ID               uuid.UUID              `json:"id"`
+	VideoID          uuid.UUID              `json:"video_id"`
+	Type             model.AnalysisType     `json:"type"`
+	Status           model.JobStatus        `json:"status"`
+	Visibility       model.Visibility       `json:"visibility"`
+	Progress         int16                  `json:"progress"`
+	Result           *shared.AnalysisResult `json:"result"`
+	Advice           *string                `json:"advice"`
+	Error            *string                `json:"error"`
+	ProcessingTimeMS *time.Duration         `json:"processing_time_ms"`
+	StartedAt        *time.Time             `json:"started_at"`
+	CompletedAt      *time.Time             `json:"completed_at"`
+	Hints            *shared.Hints          `json:"hints"`
 }
 
 func AnalysisToResponse(analysis model.Analysis) AnalysisResponse {
@@ -43,5 +45,6 @@ func AnalysisToResponse(analysis model.Analysis) AnalysisResponse {
 		ProcessingTimeMS: analysis.ProcessingTimeMS,
 		StartedAt:        analysis.StartedAt,
 		CompletedAt:      analysis.CompletedAt,
+		Hints:            analysis.Hints,
 	}
 }

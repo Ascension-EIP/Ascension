@@ -3,7 +3,7 @@ id: ab77caf4-081b-4c22-8817-d8570baadf55
 ---
 
 :::success
-**Version:** 2.2
+**Version:** 2.5
 :::
 
 ---
@@ -27,7 +27,7 @@ graph TB
             API[Go API :8080]
             DB[(PostgreSQL :5432)]
             RabbitMQ[(RabbitMQ :5672/:15672)]
-            MinIO[MinIO :9000/:9001]
+            RustFS[RustFS :9000/:9001]
             Worker[Python AI Worker]
         end
 
@@ -35,18 +35,18 @@ graph TB
     end
 
     Flutter -->|HTTP/WS| API
-    Flutter -->|Direct Upload| MinIO
+    Flutter -->|Direct Upload| RustFS
     API --> DB
     API --> RabbitMQ
     Worker --> RabbitMQ
-    Worker --> MinIO
+    Worker --> RustFS
     Worker --> DB
 
     style API fill:#e1f5ff
     style Worker fill:#fff4e1
     style DB fill:#f0f0f0
     style RabbitMQ fill:#ffe1e1
-    style MinIO fill:#e1ffe1
+    style RustFS fill:#e1ffe1
 
 ```
 
@@ -132,12 +132,18 @@ Ascension/                  # Monorepo root
     │   │   └── cron/main.go
     │   ├── migrations/
     │   └── internal/
-    ├── ai/                 # Python AI workers
+    ├── ai/                 # Python AI worker
     │   ├── moon.yml
     │   ├── pyproject.toml
     │   ├── Dockerfile
+    │   ├── scripts/        # download-model.sh
+    │   ├── tests/
     │   └── src/
-    │       └── worker.py
+    │       ├── worker/     # CLI, pipeline steps, handlers
+    │       ├── services/   # rabbitmq, postgresql, rustfs, llm
+    │       ├── common/
+    │       ├── shared/     # generated from schemas/
+    │       └── producer.py
     └── mobile/             # Flutter mobile app
         ├── moon.yml
         ├── pubspec.yaml
@@ -232,7 +238,14 @@ RABBITMQ_USER=ascension
 RABBITMQ_PASS=ascension
 RABBITMQ_TLS=false
 
-# MinIO (S3-compatible storage)
+# RustFS (S3-compatible storage), read by the AI worker
+RUSTFS_ENDPOINT=http://localhost:9000
+RUSTFS_ACCESS_KEY=ascension
+RUSTFS_SECRET_KEY=ascension
+RUSTFS_BUCKET=videos
+
+# Legacy MINIO_* names, still read by the Go server and by docker-compose.
+# Their values must stay equal to the RUSTFS_* ones above.
 MINIO_ENDPOINT=http://localhost:9000
 MINIO_ID=ascension
 MINIO_SECRET=ascension
@@ -254,8 +267,15 @@ AUTH_SESSION_REMEMBER_EXP=720h
 LOG_LEVEL=info
 LOG_PRETTY=false
 
-# AI Workers
+# AI Worker: LLM used for the advice step (any OpenAI-compatible API).
+# Optional: without LLM_BASE_URL or LLM_MODEL the worker still starts and
+# analyses finish without advice.
 PYTHONUNBUFFERED=1
+LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
+LLM_API_KEY=your_llm_api_key_here
+LLM_MODEL=gemini-3.1-flash-lite
+
+# Read by the scripts in .github/scripts (commit and PR review tooling), not by the AI worker
 GEMINI_API_KEY=your_gemini_api_key_here
 GEMINI_MODEL=gemini-3.1-flash-lite
 
@@ -274,7 +294,7 @@ This launches:
 
 - `postgresql` (port 5432)
 - `rabbitmq` (port 5672 for AMQP, 15672 for management UI)
-- `minio` (port 9000 for API, 9001 for UI)
+- `rustfs` (port 9000 for the S3 API, 9001 for the console)
 
 Verify services are running:
 
@@ -289,7 +309,7 @@ Expected output:
 NAME                 SERVICE      STATUS
 ascension-postgres   postgresql   running (healthy)
 ascension-rabbitmq   rabbitmq     running (healthy)
-ascension-minio      minio        running (healthy)
+ascension-rustfs     rustfs       running (healthy)
 
 ```
 
@@ -300,6 +320,8 @@ In Go, database migrations are automatically run on startup by the server using 
 No external CLI installation is required for basic local runs. Simply booting the server container or running `moon run server:dev` will apply pending migrations automatically.
 
 **Note**: Database migrations are located in `apps/server/migrations/`
+
+The AI worker writes `status`, `progress`, `result`, `hints`, `error` and the timestamps of the `analyses` table, so **the migrations must be applied before the worker starts**, in particular `20261030200000_update_job_status_enum` (statuses `pending`, `started`, `running`, `success`, `failed`) and `20261030200100_add_analyses_hints` (`hints JSONB`). To apply them without starting the server, run `moon run server:migrate` (the `migrate` tool is installed by `moon run server:setup`).
 
 ### 6\. Build and Run API Server
 
@@ -335,25 +357,29 @@ curl http://localhost:8080/healthz
 
 ```
 
-### 7\. Set Up AI Workers
+### 7\. Set Up the AI Worker
+
+The worker is documented in detail in the [AI worker README](../../../../../apps/ai/README.md). Short version:
 
 Install Dependencies via moon
 
 ```bash
-moon run ai:setup
-moon run ai:install
+moon run ai:setup     # downloads the MediaPipe model if missing
+moon run ai:install   # uv sync
 
 ```
 
 Common AI moon Tasks
 
 ```bash
-moon run ai:setup
-moon run ai:install
-moon run ai:dev
-moon run ai:build
+moon run ai:dev          # run the worker (loads .env)
+moon run ai:test         # unit and functional tests, no infrastructure
+moon run ai:coverage     # same tests with a coverage report
+moon run ai:e2e          # real RabbitMQ, PostgreSQL and RustFS (see below)
+moon run ai:pose-detect -- --video resources/example-2.mp4 --out /tmp/result.json
+moon run ai:producer -- seed --video resources/example-2.mp4
 moon run ai:lint
-moon run ai:test
+moon run ai:build
 
 ```
 
@@ -366,16 +392,14 @@ uv sync
 
 ```
 
-Download ML Models
+Download the MediaPipe model
 
 ```bash
 bash scripts/download-model.sh
 
 ```
 
-This downloads:
-
-- MediaPipe Pose model (~25MB)
+This downloads the `pose_landmarker_full` model (~9 MB) to `apps/ai/resources/` unless it is already there.
 
 Run Worker
 
@@ -384,18 +408,46 @@ Run Worker
 moon run ai:dev
 
 # Or directly
-cd apps/ai && uv run python src/worker.py
+cd apps/ai && uv run worker
 
 ```
 
-Or using Docker:
+Or using Docker (the service is in the `prod` profile):
 
 ```bash
-docker-compose up worker -d
+docker-compose --profile prod up ai-worker -d
 
 ```
 
-**Note**: For GPU support, see [GPU Setup](#gpu-setup-optional) below.
+The worker needs PostgreSQL (migrated), RabbitMQ and RustFS, and the bucket `videos` must exist. The Go server creates the bucket at startup; `producer.py seed` creates it too. The `LLM_*` variables are optional.
+
+Run a Pipeline Step Without Infrastructure
+
+Every step is a sub-command and needs no RabbitMQ, database or storage:
+
+```bash
+cd apps/ai
+uv run worker pose-detect --video resources/example-2.mp4 --out /tmp/result.json
+uv run worker pose-advice --input /tmp/result.json --out /tmp/prompt.txt --dry-run
+
+```
+
+Trigger a Job By Hand
+
+The Go server does not publish on the worker queues yet. `apps/ai/src/producer.py` stands in for it:
+
+```bash
+cd apps/ai
+uv run python src/producer.py seed --video resources/example-2.mp4   # prints job_id and object_key
+uv run python src/producer.py detect --job-id <job_id> --object-key <object_key>
+
+```
+
+Tests With Infrastructure
+
+`moon run ai:e2e` starts the services through `root:db-up` and `server:migrate`. If port 5432 is used by another project, do not run it as is: start disposable containers on free ports and point the tests to them with `TEST_POSTGRES_URL`, `POSTGRES_PORT`, `RABBITMQ_PORT` and `RUSTFS_ENDPOINT` (see the README).
+
+**Note**: The worker runs on CPU today; the [GPU Setup](#gpu-setup-optional) below is optional.
 
 ### 8\. Configure Flutter App
 
@@ -453,23 +505,22 @@ This file orchestrates all services from the `apps/` directory:
 
 ```yaml
 services:
-  minio:
-    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
-    container_name: ascension-minio
+  rustfs:
+    image: rustfs/rustfs:1.0.4
+    container_name: ascension-rustfs
     restart: unless-stopped
     ports:
       - "${MINIO_PORT:-9000}:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-ascension}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-ascension}
-    command: server /data --console-address ":9001"
+      RUSTFS_ACCESS_KEY: ${MINIO_ID:-ascension}
+      RUSTFS_SECRET_KEY: ${MINIO_SECRET:-ascension}
     volumes:
-      - minio_data:/data
+      - rustfs_data:/data
     networks:
       - ascension-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -495,8 +546,7 @@ services:
       retries: 5
 
   postgresql:
-    build: ./apps/server/postgres
-    image: ${IMAGE_PREFIX:-ghcr.io/ascension-eip}/ascension-postgres:latest
+    image: postgres:18
     container_name: ascension-postgres
     restart: unless-stopped
     ports:
@@ -510,7 +560,11 @@ services:
     networks:
       - ascension-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ascension} -d ${POSTGRES_DB:-ascension}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-ascension} -d ${POSTGRES_DB:-ascension}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -527,7 +581,7 @@ services:
     environment:
       - POSTGRES_HOST=postgresql
       - RABBITMQ_HOST=rabbitmq
-      - MINIO_ENDPOINT=http://minio:${MINIO_PORT:-9000}
+      - MINIO_ENDPOINT=http://rustfs:${MINIO_PORT:-9000}
     networks:
       - ascension-network
     depends_on:
@@ -535,7 +589,7 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      minio:
+      rustfs:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/healthz"]
@@ -554,7 +608,9 @@ services:
       - POSTGRES_HOST=postgresql
       - POSTGRES_DB_URL=postgres://${POSTGRES_USER:-ascension}:${POSTGRES_PASSWORD:-ascension}@postgresql:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-ascension}
       - RABBITMQ_HOST=rabbitmq
-      - MINIO_ENDPOINT=http://minio:${MINIO_PORT:-9000}
+      - RUSTFS_ENDPOINT=http://rustfs:${MINIO_PORT:-9000}
+      - RUSTFS_ACCESS_KEY=${MINIO_ID:-ascension}
+      - RUSTFS_SECRET_KEY=${MINIO_SECRET:-ascension}
     networks:
       - ascension-network
     depends_on:
@@ -562,18 +618,17 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      minio:
+      rustfs:
         condition: service_healthy
 
 volumes:
-  minio_data:
+  rustfs_data:
   postgres_data:
   rabbitmq_data:
 
 networks:
   ascension-network:
     name: ascension-network
-
 ```
 
 ---
@@ -684,55 +739,6 @@ curl -X POST http://localhost:8080/v1/auth/login \
 
 Save the returned `access_token` and `refresh_token` for subsequent requests.
 
-### 4\. Request Upload URL
-
-```bash
-curl -X GET "http://localhost:8080/v1/videos/upload-url?content_type=video/mp4&size=102400" \
-  -H "Authorization: Bearer <your_token>"
-
-```
-
-### 5\. Upload Video (Direct to MinIO)
-
-Use the presigned `upload_url` from the previous step:
-
-```bash
-curl -X PUT "<upload_url>" \
-  --upload-file /path/to/your/video.mp4 \
-  -H "Content-Type: video/mp4"
-
-```
-
-### 6\. Notify Upload Complete
-
-```bash
-curl -X PUT http://localhost:8080/v1/videos/upload-done/<video_id> \
-  -H "Authorization: Bearer <your_token>"
-
-```
-
-### 7\. Start Analysis
-
-```bash
-curl -X POST http://localhost:8080/v1/analysis \
-  -H "Authorization: Bearer <your_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "video_id": "<video_id_from_step_4>",
-    "type": "2d",
-    "visibility": "private"
-  }'
-
-```
-
-### 8\. Poll for Results
-
-```bash
-curl http://localhost:8080/v1/analysis/<analysis_id> \
-  -H "Authorization: Bearer <your_token>"
-
-```
-
 ---
 
 ## Common Development Tasks
@@ -777,7 +783,7 @@ docker-compose exec postgresql psql -U ascension -d ascension
 -- Common queries
 SELECT * FROM users;
 SELECT * FROM videos ORDER BY uploaded_at DESC LIMIT 10;
-SELECT * FROM analyses WHERE status = 'completed';
+SELECT * FROM analyses WHERE status = 'success';
 
 ```
 
@@ -787,23 +793,23 @@ Open browser: [http://localhost:15672](http://localhost:15672)
 
 Login:
 
-- Username: `guest`
-- Password: `guest`
+- Username: `ascension`
+- Password: `ascension` (`RABBITMQ_DEFAULT_USER` and `RABBITMQ_DEFAULT_PASS`)
 
 Key views:
 
-- **Queues**: Monitor `vision.skeleton` queue depth
+- **Queues**: Monitor `poses.detect` and `poses.advice`, and the dead-letter queues `poses.detect.dlq` and `poses.advice.dlq` (failed jobs and invalid payloads end there)
 - **Connections**: Check active connections from API and workers
-- **Exchanges**: View `ascension.analysis` and `ascension.events`
+- **Exchanges**: View `events` (topic) and `events.dlx` (direct)
 
-### Access MinIO UI
+### Access RustFS Console
 
 Open browser: [http://localhost:9001](http://localhost:9001)
 
-Login:
+Login (the values of `MINIO_ID` and `MINIO_SECRET`, passed to RustFS by Docker Compose):
 
-- Username: `minioadmin`
-- Password: `minioadmin`
+- Username: `ascension`
+- Password: `ascension`
 
 ---
 
@@ -843,7 +849,6 @@ worker:
           - driver: nvidia
             count: 1
             capabilities: [gpu]
-
 ```
 
 ### Verify GPU Access
@@ -884,23 +889,33 @@ docker-compose restart db
 
 ```bash
 # Check worker logs
-docker-compose logs worker
+docker-compose logs ai-worker
 
 # Verify RabbitMQ connection
-docker-compose exec worker python -c "import pika; c = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq')); print('Connected'); c.close()"
+docker-compose exec ai-worker uv run python -c "import pika; c = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq')); print('Connected'); c.close()"
 
 ```
 
-### MinIO Not Accessible
+Common causes:
+
+- The worker exits with code 1 at startup when PostgreSQL, RustFS or RabbitMQ cannot be reached, or when the bucket `videos` does not exist.
+- `PRECONDITION_FAILED` on `poses.detect` or `poses.advice`: the queues were created by an older version without the dead-letter arguments. Delete them in the RabbitMQ management UI (without touching the volumes); the worker recreates them.
+- Nothing arrives: check that the API and the worker use the same `events` exchange (`RABBITMQ_EXCHANGE` on the API side), and that the `poses.detect` queue has a consumer. `producer.py` can still publish a job by hand.
+- An analysis stays `pending`: its payload was invalid and went to `<queue>.dlq` without any status.
+- Database errors on `status` or `hints`: the migrations `20261030200000` and `20261030200100` are not applied.
+
+### RustFS Not Accessible
 
 ```bash
-# Check MinIO logs
-docker-compose logs minio
+# Check RustFS logs
+docker-compose logs rustfs
 
-# Verify bucket creation
-docker-compose exec minio mc ls myminio/
+# Check the health endpoint
+curl -f http://localhost:9000/health
 
 ```
+
+The bucket `videos` is created by the Go server at startup (or by `producer.py seed`). The worker never creates it and fails at startup if it is missing.
 
 ### Flutter Can't Connect to API
 
@@ -933,7 +948,7 @@ For faster iteration during development:
    ```bash
    cd apps/ai
    uv run python -m pip install watchdog
-   uv run watchmedo auto-restart --patterns="*.py" --recursive -- python src/worker.py
+   uv run watchmedo auto-restart --patterns="*.py" --recursive -- uv run worker
 
    ```
 
@@ -952,7 +967,3 @@ For faster iteration during development:
 - Read [API Gateway Documentation](../components/api-gateway.md)
 - Review [AI Workers Implementation](../components/ai-workers.md)
 - Understand [Video Analysis Workflow](../workflows/video-analysis-flow.md)
-
----
-
-**Last Updated**: 2026-03-03 **Maintainer**: Ascension Development Team

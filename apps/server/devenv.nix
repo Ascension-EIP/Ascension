@@ -1,8 +1,6 @@
 {
   pkgs,
-  lib,
   config,
-  inputs,
   ...
 }:
 
@@ -13,10 +11,7 @@
   # env.GREET = "devenv";
 
   # https://devenv.sh/packages/
-  packages = [
-    pkgs.air
-    pkgs.quicktype
-  ];
+  packages = [ ];
 
   # https://devenv.sh/languages/
   languages = {
@@ -24,11 +19,71 @@
       enable = true;
       version = "1.27.1";
     };
+    javascript = {
+      enable = true;
+      npm.enable = true;
+    };
   };
 
   # https://devenv.sh/processes/
   processes = {
-    server.exec = "dev";
+    server = {
+      exec = ''
+        secretspec run -- go run ./cmd/server/main.go
+      '';
+      cwd = "${config.git.root}/apps/server";
+      after = [
+        "devenv:processes:postgres"
+        "devenv:processes:rabbitmq"
+        "devenv:processes:rustfs"
+      ];
+      restart = {
+        on = "on_failure";
+        max = 5;
+      };
+      ready = {
+        http.get = {
+          port = 8080;
+          path = "/healthz";
+          # host = "127.0.0.1"; # default
+          # scheme = "http"; # default
+        };
+      };
+      watch = {
+        paths = [
+          ./.
+        ];
+        extensions = [
+          "go"
+          "sum"
+          "mod"
+        ];
+      };
+    };
+    cron = {
+      exec = ''
+        secretspec run -- go run ./cmd/cron/main.go
+      '';
+      cwd = "${config.git.root}/apps/server";
+      after = [
+        "devenv:processes:postgres"
+        "devenv:processes:rustfs"
+      ];
+      restart = {
+        on = "on_failure";
+        max = 5;
+      };
+      watch = {
+        paths = [
+          ./.
+        ];
+        extensions = [
+          "go"
+          "sum"
+          "mod"
+        ];
+      };
+    };
   };
 
   # https://devenv.sh/services/
@@ -38,71 +93,76 @@
       package = pkgs.postgresql_18;
       initialDatabases = [
         {
-          name = "name";
-          user = "user";
-          pass = "pass";
+          name = "ascension";
+          user = "ascension";
+          pass = "ascension";
         }
       ];
       listen_addresses = "localhost";
-      port = 5432;
     };
 
-    minio = {
+    rustfs = {
       enable = true;
-      package = pkgs.minio;
-      accessKey = "accesskey";
-      secretKey = "secretkey";
+      consoleEnable = true;
+      accessKey = "ascension";
+      secretKey = "ascension";
     };
 
     rabbitmq = {
       enable = true;
+      managementPlugin.enable = true;
+      configItems = {
+        default_user = "ascension";
+        default_pass = "ascension";
+      };
     };
   };
 
   # https://devenv.sh/scripts/
-  scripts.install.exec = ''
-    go mod download
+  scripts.schemas-generate.exec = ''
+    out="$DEVENV_ROOT/internal/shared/models.go"
+    npx --yes quicktype --src-lang schema $DEVENV_ROOT/../../schemas/*.schema.json \
+            -o "$out" --lang go --just-types-and-package --package shared
+    sed -i '/^import /d' "$out"
+    goimports -w "$out"
   '';
+
+  scripts.setup.exec = "go install -tags postgres github.com/golang-migrate/migrate/v4/cmd/migrate@v4.19.1";
+
+  scripts.install.exec = "go mod download";
+
+  scripts.format.exec = "go fmt ./...";
+
+  scripts.lint.exec = "go vet ./...";
+
+  scripts.build.exec = "secretspec run -- go build -o bin/server ./cmd/server";
+
+  scripts.test.exec = "secretspec run -- go test ./...";
 
   scripts.update.exec = ''
     go get -u ./...
     go mod tidy
   '';
 
-  scripts.format.exec = ''
-    go fmt ./...
-  '';
-
-  scripts.lint.exec = ''
-    go vet ./...
-  '';
-
-  scripts.build.exec = ''
-    go build -o bin/server ./cmd/server
-  '';
-
-  scripts.test.exec = ''
-    go test ./...
-  '';
-
-  scripts.dev.exec = ''
-    LOG_LEVEL=debug air ./cmd/server
-  '';
-
-  scripts.clean.exec = ''
-    rm -rf bin
-  '';
-
-  scripts.schemas-generate.exec = ''
-    	quicktype --src-lang schema $DEVENV_ROOT/../../schemas/*.schema.json \
-            -o $DEVENV_ROOT/internal/shared/models.go --lang go --just-types-and-package --package shared
+  scripts.migrate-db.exec = ''
+    echo "postgres://${config.secretspec.secrets.POSTGRES_USER}:${config.secretspec.secrets.POSTGRES_PASSWORD}@${
+      config.secretspec.secrets.POSTGRES_HOST or "localhost"
+    }:${
+      config.secretspec.secrets.POSTGRES_PORT or "5432"
+    }/${config.secretspec.secrets.POSTGRES_DB}?sslmode=disable"
+        migrate -path internal/outbound/postgres/migrations \
+          -database "postgres://${config.secretspec.secrets.POSTGRES_USER}:${config.secretspec.secrets.POSTGRES_PASSWORD}@${
+            config.secretspec.secrets.POSTGRES_HOST or "localhost"
+          }:${
+            config.secretspec.secrets.POSTGRES_PORT or "5432"
+          }/${config.secretspec.secrets.POSTGRES_DB}?sslmode=disable" \
+          up
   '';
 
   # https://devenv.sh/basics/
-  # enterShell = ''
-  #   hello         # Run scripts directly
-  #   git --version # Use packages
-  # '';
+  enterShell = ''
+    echo server devenv loaded !
+  '';
 
   # https://devenv.sh/tasks/
   # tasks = {

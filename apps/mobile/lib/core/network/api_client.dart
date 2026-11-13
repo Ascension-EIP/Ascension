@@ -1,4 +1,4 @@
-// @date 2026-10-25
+// @date 2026-11-13
 // @file api_client.dart
 // @brief File description.
 // @project Ascension
@@ -82,7 +82,7 @@ class ApiClient {
     );
   }
 
-  /// Direct binary upload (e.g. to MinIO / S3 via presigned PUT URL).
+  /// Direct binary upload (e.g. to RustFS / OVHcloud S3 via presigned PUT URL).
   Future<Result<void>> uploadToPresignedUrl({
     required String presignedUrl,
     required File file,
@@ -121,6 +121,14 @@ class ApiClient {
   ) async {
     try {
       final response = await request();
+      if (response.statusCode == 204) {
+        if (null is T) {
+          return Success(null as T);
+        }
+        return const Error(
+          ServerFailure('Received empty response from server.'),
+        );
+      }
       final data = response.data;
       if (data == null && null is! T) {
         return const Error(
@@ -174,7 +182,23 @@ class ApiClient {
 }
 
 /// Session expiration event controller to allow reactive navigation to login
-final sessionExpiredProvider = StateProvider<bool>((ref) => false);
+class SessionExpiredNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void notifyExpired() {
+    state = true;
+  }
+
+  void reset() {
+    state = false;
+  }
+}
+
+/// Session expiration event controller to allow reactive navigation to login
+final sessionExpiredProvider = NotifierProvider<SessionExpiredNotifier, bool>(
+  SessionExpiredNotifier.new,
+);
 
 /// Riverpod provider for the configured [Dio] instance.
 final dioProvider = Provider<Dio>((ref) {
@@ -196,7 +220,7 @@ final dioProvider = Provider<Dio>((ref) {
     AuthInterceptor(
       storage: storage,
       onSessionExpired: () {
-        ref.read(sessionExpiredProvider.notifier).state = true;
+        ref.read(sessionExpiredProvider.notifier).notifyExpired();
       },
     ),
   );

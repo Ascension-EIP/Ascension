@@ -1,4 +1,4 @@
-// @date 2026-10-25
+// @date 2026-11-06
 // @file app_router.dart
 // @brief File description.
 // @project Ascension
@@ -12,11 +12,15 @@ import 'package:mobile/features/auth/presentation/controllers/auth_state.dart';
 import 'package:mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:mobile/features/auth/presentation/screens/register_screen.dart';
 import 'package:mobile/features/auth/presentation/screens/welcome_screen.dart';
+import 'package:mobile/features/climb_session/presentation/screens/active_session_screen.dart';
+import 'package:mobile/features/climb_session/presentation/screens/analysis_selection_screen.dart';
 import 'package:mobile/features/climb_session/presentation/screens/home_screen.dart';
+import 'package:mobile/features/climb_session/presentation/screens/new_session_screen.dart';
 import 'package:mobile/features/climb_session/presentation/screens/sessions_screen.dart';
 import 'package:mobile/features/profile/presentation/screens/profile_screen.dart';
 import 'package:mobile/features/profile/presentation/screens/settings_screen.dart';
 import 'package:mobile/features/training/presentation/screens/training_screen.dart';
+import 'package:mobile/features/video_upload/presentation/screens/record_screen.dart';
 import 'package:mobile/routing/routes.dart';
 import 'package:mobile/routing/shell/app_shell.dart';
 
@@ -89,6 +93,30 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoute.settings.path,
         name: AppRoute.settings.name,
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoute.newSession.path,
+        name: AppRoute.newSession.name,
+        builder: (context, state) => const NewSessionScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoute.activeSession.path,
+        name: AppRoute.activeSession.name,
+        builder: (context, state) => const ActiveSessionScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoute.analysisSelection.path,
+        name: AppRoute.analysisSelection.name,
+        builder: (context, state) => const AnalysisSelectionScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoute.record.path,
+        name: AppRoute.record.name,
+        builder: (context, state) => const RecordScreen(),
       ),
 
       // Main application tabs (4 tabs: Home, Sessions, Training, Profile)

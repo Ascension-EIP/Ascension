@@ -1,4 +1,4 @@
-# @date 2026-10-25
+# @date 2026-11-01
 # @file macro.py
 # @brief File description.
 # @project Ascension
@@ -6,7 +6,7 @@
 # @copyright (c) 2026 Ascension
 # @status done
 from common.models.broker import Bind
-from shared.models import *
+from shared.models import RoutingKey
 from worker.handlers.pose_advice_request import pose_advice_request
 from worker.handlers.pose_detect_request import pose_detect_request
 
