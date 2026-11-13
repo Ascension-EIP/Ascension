@@ -1,0 +1,589 @@
+// @date 2026-11-13
+// @file memrepo.go
+// @brief In-memory repository for unit tests of the climbing session, video and analysis services.
+// @project Ascension
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
+// @copyright (c) 2026 Ascension
+// @status done Package memrepo is an in-memory stand-in for the PostgreSQL repository, used by unit tests only. It implements model.ClimbingSessionRepository, model.AnalysisRepository, model.VideoRepository, model.UserBodyConstraintRepository, model.FriendshipRepository and model.FeedRepository with the same ownership, visibility and not-found rules as the real queries.
+package memrepo
+
+import (
+	"cmp"
+	"context"
+	"errors"
+	"fmt"
+	"slices"
+	"sync"
+	"time"
+
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+	"uuid"
+)
+
+// ErrNotImplemented is returned by the methods the tests do not need.
+var ErrNotImplemented = errors.New("memrepo: not implemented")
+
+// Repo stores climbing sessions, videos and analyses in memory. The zero value is not
+// usable: build it with New.
+type Repo struct {
+	mu              sync.Mutex
+	sessions        map[uuid.UUID]model.ClimbingSession
+	videos          map[uuid.UUID]model.Video
+	analyses        map[uuid.UUID]model.Analysis
+	bodyConstraints map[uuid.UUID]model.UserBodyConstraint
+	users           map[uuid.UUID]model.User
+	friendships     map[uuid.UUID]model.Friendship
+	profiles        map[uuid.UUID]model.UserProfile
+	refreshSessions map[uuid.UUID]model.Session
+	quotaCleanups   int
+	now             func() time.Time
+}
+
+// New returns an empty repository.
+func New() *Repo {
+	return &Repo{
+		sessions:        map[uuid.UUID]model.ClimbingSession{},
+		videos:          map[uuid.UUID]model.Video{},
+		analyses:        map[uuid.UUID]model.Analysis{},
+		bodyConstraints: map[uuid.UUID]model.UserBodyConstraint{},
+		users:           map[uuid.UUID]model.User{},
+		friendships:     map[uuid.UUID]model.Friendship{},
+		profiles:        map[uuid.UUID]model.UserProfile{},
+		refreshSessions: map[uuid.UUID]model.Session{},
+		now:             time.Now,
+	}
+}
+
+// WithTransaction runs fn directly: the in-memory store has no rollback.
+func (r *Repo) WithTransaction(ctx context.Context, fn func(context.Context) error) error {
+	return fn(ctx)
+}
+
+// -- Climbing sessions -- //
+
+func (r *Repo) CreateClimbingSession(_ context.Context, session model.ClimbingSession) (model.ClimbingSession, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if session.Visibility == "" {
+		session.Visibility = model.VisibilityPrivate
+	}
+	session.ID = uuid.NewV7()
+	session.CreatedAt = r.now()
+	session.UpdatedAt = session.CreatedAt
+	r.sessions[session.ID] = session
+
+	return session, nil
+}
+
+func (r *Repo) GetClimbingSessionByFilter(_ context.Context, filter model.ClimbingSessionFilter) (model.ClimbingSession, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	for _, session := range r.sessions {
+		if filter.ID != nil && session.ID != *filter.ID {
+			continue
+		}
+		if filter.UserID != nil && session.UserID != *filter.UserID {
+			continue
+		}
+		return session, nil
+	}
+
+	return model.ClimbingSession{}, model.ErrNotFound
+}
+
+func (r *Repo) GetActiveClimbingSessionByUserID(_ context.Context, userID uuid.UUID) (model.ClimbingSession, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	var active *model.ClimbingSession
+	for _, session := range r.sessions {
+		if session.UserID != userID || session.EndedAt != nil {
+			continue
+		}
+		if active == nil || session.StartedAt.After(active.StartedAt) {
+			active = &session
+		}
+	}
+	if active == nil {
+		return model.ClimbingSession{}, model.ErrNotFound
+	}
+
+	return *active, nil
+}
+
+func (r *Repo) ListClimbingSessionsByUserID(_ context.Context, userID uuid.UUID, pagination model.Pagination) ([]model.ClimbingSession, int, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	owned := []model.ClimbingSession{}
+	for _, session := range r.sessions {
+		if session.UserID == userID {
+			owned = append(owned, session)
+		}
+	}
+	slices.SortFunc(owned, func(a, b model.ClimbingSession) int {
+		if c := b.StartedAt.Compare(a.StartedAt); c != 0 {
+			return c
+		}
+		return cmp.Compare(b.ID.String(), a.ID.String())
+	})
+
+	total := len(owned)
+	start := min(pagination.Offset, total)
+	end := min(start+pagination.Limit, total)
+
+	return owned[start:end], total, nil
+}
+
+func (r *Repo) UpdateClimbingSession(_ context.Context, partial model.ClimbingSessionPartial) (model.ClimbingSession, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if partial.IsEmpty() {
+		return model.ClimbingSession{}, fmt.Errorf("%w: nothing to update", model.ErrInvalidInput)
+	}
+
+	session, ok := r.sessions[partial.ID]
+	if !ok || session.UserID != partial.UserID {
+		return model.ClimbingSession{}, model.ErrNotFound
+	}
+
+	if partial.Title != nil {
+		session.Title = *partial.Title
+	}
+	if partial.Notes != nil {
+		session.Notes = *partial.Notes
+	}
+	if partial.EndedAt != nil {
+		session.EndedAt = *partial.EndedAt
+	}
+	session.UpdatedAt = r.now()
+	r.sessions[session.ID] = session
+
+	return session, nil
+}
+
+// DeleteClimbingSession deletes the session and unlinks its videos, like the
+// ON DELETE SET NULL foreign key.
+func (r *Repo) DeleteClimbingSession(_ context.Context, id uuid.UUID, userID uuid.UUID) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	session, ok := r.sessions[id]
+	if !ok || session.UserID != userID {
+		return model.ErrNotFound
+	}
+	delete(r.sessions, id)
+
+	for videoID, video := range r.videos {
+		if video.ClimbingSessionID != nil && *video.ClimbingSessionID == id {
+			video.ClimbingSessionID = nil
+			r.videos[videoID] = video
+		}
+	}
+	return nil
+}
+
+// -- Analyses -- //
+
+func (r *Repo) CreateAnalysis(_ context.Context, analysis model.Analysis) (model.Analysis, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, ok := r.videos[analysis.VideoID]; !ok {
+		return model.Analysis{}, model.ErrInvalidInput
+	}
+	analysis.ID = uuid.NewV7()
+	analysis.Status = model.JobStatusPending
+	analysis.CreatedAt = r.now()
+	analysis.UpdatedAt = analysis.CreatedAt
+	r.analyses[analysis.ID] = analysis
+
+	return analysis, nil
+}
+
+func (r *Repo) GetAnalysisByFilter(_ context.Context, filter model.AnalysisFilter) (model.Analysis, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	for _, analysis := range r.analyses {
+		if filter.ID != nil && analysis.ID != *filter.ID {
+			continue
+		}
+		if filter.VideoID != nil && analysis.VideoID != *filter.VideoID {
+			continue
+		}
+		if filter.Type != nil && analysis.Type != *filter.Type {
+			continue
+		}
+		if filter.Status != nil && analysis.Status != *filter.Status {
+			continue
+		}
+		if filter.Error != nil && analysis.Error != *filter.Error {
+			continue
+		}
+		return analysis, nil
+	}
+
+	return model.Analysis{}, model.ErrNotFound
+}
+
+func (r *Repo) ListAnalysisSummariesByClimbingSessionID(_ context.Context, climbingSessionID uuid.UUID) ([]model.AnalysisSummary, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	return r.summaries(func(_ model.Analysis, video model.Video) bool {
+		return video.ClimbingSessionID != nil && *video.ClimbingSessionID == climbingSessionID
+	}), nil
+}
+
+func (r *Repo) ListAnalysisSummariesByUserID(_ context.Context, userID uuid.UUID, pagination model.Pagination) ([]model.AnalysisSummary, int, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	summaries := r.summaries(func(_ model.Analysis, video model.Video) bool {
+		return video.UserID == userID
+	})
+
+	total := len(summaries)
+	start := min(pagination.Offset, total)
+	end := min(start+pagination.Limit, total)
+
+	return summaries[start:end], total, nil
+}
+
+func (r *Repo) ListAnalysisByFilter(_ context.Context, filter model.AnalysisFilter, pagination model.Pagination) ([]model.Analysis, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	matches := []model.Analysis{}
+	for _, analysis := range r.analyses {
+		if filter.ID != nil && analysis.ID != *filter.ID {
+			continue
+		}
+		if filter.VideoID != nil && analysis.VideoID != *filter.VideoID {
+			continue
+		}
+		if filter.Type != nil && analysis.Type != *filter.Type {
+			continue
+		}
+		if filter.Status != nil && analysis.Status != *filter.Status {
+			continue
+		}
+		if filter.Error != nil && analysis.Error != *filter.Error {
+			continue
+		}
+		matches = append(matches, analysis)
+	}
+	slices.SortFunc(matches, func(a, b model.Analysis) int {
+		if c := b.CreatedAt.Compare(a.CreatedAt); c != 0 {
+			return c
+		}
+		return cmp.Compare(b.ID.String(), a.ID.String())
+	})
+
+	return unboundedPage(matches, pagination), nil
+}
+
+func (r *Repo) UpdateAnalysis(_ context.Context, partial model.AnalysisPartial) (model.Analysis, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	analysis, ok := r.analyses[partial.ID]
+	if !ok {
+		return model.Analysis{}, model.ErrNotFound
+	}
+
+	if partial.Status != nil {
+		analysis.Status = *partial.Status
+	}
+	if partial.Visibility != nil {
+		analysis.Visibility = *partial.Visibility
+	}
+	if partial.Progress != nil {
+		analysis.Progress = *partial.Progress
+	}
+	if partial.Result != nil {
+		analysis.Result = *partial.Result
+	}
+	if partial.Advice != nil {
+		analysis.Advice = *partial.Advice
+	}
+	if partial.Error != nil {
+		analysis.Error = *partial.Error
+	}
+	if partial.ProcessingTimeMS != nil {
+		analysis.ProcessingTimeMS = *partial.ProcessingTimeMS
+	}
+	if partial.StartedAt != nil {
+		analysis.StartedAt = *partial.StartedAt
+	}
+	if partial.CompletedAt != nil {
+		analysis.CompletedAt = *partial.CompletedAt
+	}
+	if partial.CreatedAt != nil {
+		analysis.CreatedAt = *partial.CreatedAt
+	}
+	if partial.UpdatedAt != nil {
+		analysis.UpdatedAt = *partial.UpdatedAt
+	} else {
+		analysis.UpdatedAt = r.now()
+	}
+	if partial.Hints != nil {
+		analysis.Hints = *partial.Hints
+	}
+	r.analyses[analysis.ID] = analysis
+
+	return analysis, nil
+}
+
+func (r *Repo) DeleteAnalysis(_ context.Context, id uuid.UUID) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, ok := r.analyses[id]; !ok {
+		return model.ErrNotFound
+	}
+	delete(r.analyses, id)
+	return nil
+}
+
+// summaries lists the analyses kept by keep, newest first, with the session of their video.
+// The caller holds r.mu.
+func (r *Repo) summaries(keep func(model.Analysis, model.Video) bool) []model.AnalysisSummary {
+	summaries := []model.AnalysisSummary{}
+	for _, analysis := range r.analyses {
+		video := r.videos[analysis.VideoID]
+		if !keep(analysis, video) {
+			continue
+		}
+		summaries = append(summaries, model.AnalysisSummary{
+			ID:                analysis.ID,
+			VideoID:           analysis.VideoID,
+			ClimbingSessionID: video.ClimbingSessionID,
+			Type:              analysis.Type,
+			Status:            analysis.Status,
+			Visibility:        analysis.Visibility,
+			Progress:          analysis.Progress,
+			StartedAt:         analysis.StartedAt,
+			CompletedAt:       analysis.CompletedAt,
+			CreatedAt:         analysis.CreatedAt,
+		})
+	}
+	slices.SortFunc(summaries, func(a, b model.AnalysisSummary) int {
+		if c := b.CreatedAt.Compare(a.CreatedAt); c != 0 {
+			return c
+		}
+		return cmp.Compare(b.ID.String(), a.ID.String())
+	})
+
+	return summaries
+}
+
+// -- Videos -- //
+
+func (r *Repo) CreateVideo(_ context.Context, video model.Video) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if video.ClimbingSessionID != nil {
+		if _, ok := r.sessions[*video.ClimbingSessionID]; !ok {
+			return model.ErrInvalidInput
+		}
+	}
+	video.CreatedAt = r.now()
+	video.UpdatedAt = video.CreatedAt
+	r.videos[video.ID] = video
+
+	return nil
+}
+
+func (r *Repo) GetVideoByFilter(_ context.Context, filter model.VideoFilter) (model.Video, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	for _, video := range r.videos {
+		if filter.ID != nil && video.ID != *filter.ID {
+			continue
+		}
+		if filter.UserID != nil && video.UserID != *filter.UserID {
+			continue
+		}
+		return video, nil
+	}
+
+	return model.Video{}, model.ErrNotFound
+}
+
+// ListVideosByFilter returns the matching videos, oldest first. Like the PostgreSQL query,
+// a zero limit means no limit.
+func (r *Repo) ListVideosByFilter(_ context.Context, filter model.VideoFilter, pagination model.Pagination) ([]model.Video, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	matches := []model.Video{}
+	for _, video := range r.videos {
+		switch {
+		case filter.ID != nil && video.ID != *filter.ID,
+			filter.UserID != nil && video.UserID != *filter.UserID,
+			filter.ObjectKey != nil && video.ObjectKey != *filter.ObjectKey,
+			filter.Status != nil && video.Status != *filter.Status,
+			filter.Visibility != nil && video.Visibility != *filter.Visibility,
+			filter.ContentType != nil && video.ContentType != *filter.ContentType,
+			filter.Retained != nil && video.Retained != *filter.Retained:
+			continue
+		}
+		matches = append(matches, video)
+	}
+	slices.SortFunc(matches, func(a, b model.Video) int {
+		if c := a.CreatedAt.Compare(b.CreatedAt); c != 0 {
+			return c
+		}
+		return cmp.Compare(a.ID.String(), b.ID.String())
+	})
+
+	return unboundedPage(matches, pagination), nil
+}
+
+// UpdateVideo changes the given fields of the video. Like the PostgreSQL query, it finds
+// the video by ID only and an empty partial returns model.ErrNotFound. A climbing session
+// that does not exist returns model.ErrInvalidInput (foreign key).
+func (r *Repo) UpdateVideo(_ context.Context, partial model.VideoPartial) (model.Video, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	video, ok := r.videos[partial.ID]
+	if !ok {
+		return model.Video{}, model.ErrNotFound
+	}
+
+	changed := false
+	if partial.ClimbingSessionID != nil {
+		if sessionID := *partial.ClimbingSessionID; sessionID != nil {
+			if _, ok := r.sessions[*sessionID]; !ok {
+				return model.Video{}, model.ErrInvalidInput
+			}
+		}
+		video.ClimbingSessionID, changed = *partial.ClimbingSessionID, true
+	}
+	if partial.Title != nil {
+		video.Title, changed = *partial.Title, true
+	}
+	if partial.ObjectKey != nil {
+		video.ObjectKey, changed = *partial.ObjectKey, true
+	}
+	if partial.Status != nil {
+		video.Status, changed = *partial.Status, true
+	}
+	if partial.Visibility != nil {
+		video.Visibility, changed = *partial.Visibility, true
+	}
+	if partial.ContentType != nil {
+		video.ContentType, changed = *partial.ContentType, true
+	}
+	if partial.Retained != nil {
+		video.Retained, changed = *partial.Retained, true
+	}
+	if partial.UploadURLExpiresAt != nil {
+		video.UploadURLExpiresAt, changed = *partial.UploadURLExpiresAt, true
+	}
+	if partial.Width != nil {
+		video.Width, changed = *partial.Width, true
+	}
+	if partial.Height != nil {
+		video.Height, changed = *partial.Height, true
+	}
+	if partial.FPS != nil {
+		video.FPS, changed = *partial.FPS, true
+	}
+	if partial.DurationMs != nil {
+		video.DurationMS, changed = *partial.DurationMs, true
+	}
+	if partial.SizeBytes != nil {
+		video.SizeBytes, changed = *partial.SizeBytes, true
+	}
+	if !changed {
+		return model.Video{}, model.ErrNotFound
+	}
+	video.UpdatedAt = r.now()
+	r.videos[video.ID] = video
+
+	return video, nil
+}
+
+// DeleteVideosUploadExpired deletes the videos whose upload URL expired before they were
+// completed.
+func (r *Repo) DeleteVideosUploadExpired(context.Context) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	now := r.now()
+	for id, video := range r.videos {
+		if video.UploadURLExpiresAt != nil && video.UploadURLExpiresAt.Before(now) && video.Status != model.VideoStatusCompleted {
+			delete(r.videos, id)
+		}
+	}
+
+	return nil
+}
+
+// DeleteVideosExpired deletes the completed videos that are not retained and were created
+// more than retainPeriod ago.
+func (r *Repo) DeleteVideosExpired(_ context.Context, retainPeriod time.Duration) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	now := r.now()
+	for id, video := range r.videos {
+		if video.Status == model.VideoStatusCompleted && !video.Retained && video.CreatedAt.Add(retainPeriod).Before(now) {
+			delete(r.videos, id)
+		}
+	}
+
+	return nil
+}
+
+// unboundedPage returns the page of items, a zero limit meaning no limit like the
+// PostgreSQL queries that only add LIMIT when it is set.
+func unboundedPage[T any](items []T, pagination model.Pagination) []T {
+	start := min(pagination.Offset, len(items))
+	if pagination.Limit == 0 {
+		return items[start:]
+	}
+
+	return items[start:min(start+pagination.Limit, len(items))]
+}
+
+// -- Test helpers -- //
+
+// Videos returns a copy of the stored videos.
+func (r *Repo) Videos() []model.Video {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	videos := make([]model.Video, 0, len(r.videos))
+	for _, video := range r.videos {
+		videos = append(videos, video)
+	}
+
+	return videos
+}
+
+// Video returns a stored video.
+func (r *Repo) Video(id uuid.UUID) (model.Video, bool) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	video, ok := r.videos[id]
+	return video, ok
+}
+
+// PutVideo stores a video as is, bypassing the checks of CreateVideo.
+func (r *Repo) PutVideo(video model.Video) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	r.videos[video.ID] = video
+}

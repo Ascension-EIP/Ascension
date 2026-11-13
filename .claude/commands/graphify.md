@@ -1,1 +1,1 @@
-../../docs/20-engineering/ai/commandes/graphify.md
+../../.agents/commands/graphify.md

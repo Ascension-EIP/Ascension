@@ -5,14 +5,18 @@ project:
   description: "Go/Gin backend server for Ascension"
 
 tasks:
+  setup:
+    command: "go"
+    args: ["install", "-tags", "postgres", "github.com/golang-migrate/migrate/v4/cmd/migrate@v4.19.1"]
+    options:
+      cache: false
+
   install:
     command: "go"
     args: ["mod", "download"]
     inputs:
       - "go.mod"
       - "go.sum"
-    deps:
-      - "root:setup"
 
   update:
     script: |
@@ -20,6 +24,14 @@ tasks:
       go mod tidy
     options:
       cache: false
+
+  migrate:
+    script: |
+      export PATH="$(go env GOPATH)/bin:$PATH"
+      migrate -path internal/outbound/postgres/migrations -database "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST:-localhost}:${POSTGRES_PORT:-5432}/${POSTGRES_DB}?sslmode=disable" up
+    options:
+      cache: false
+      envFile: true
   
   format:
     command: "go"
@@ -61,7 +73,7 @@ tasks:
       - "**/*.go"
       - "go.mod"
       - "go.sum"
-      - "migrations/**/*"
+      - "internal/outbound/postgres/migrations/**/*"
     deps:
       - "install"
 
@@ -76,6 +88,7 @@ tasks:
       envFile: true
     deps:
       - "install"
+      - "root:schemas-generate"
 
   clean:
     command: "rm"

@@ -4,7 +4,7 @@ language: 'dart'
 
 project:
   name: 'mobile'
-  description: 'Flutter mobile app for Ascension'
+  description: 'Clean Flutter mobile app for Ascension (Feature-First architecture)'
 
 tasks:
   install:
@@ -13,8 +13,6 @@ tasks:
     inputs:
       - 'pubspec.yaml'
       - 'pubspec.lock'
-    deps:
-      - 'root:setup'
 
   update:
     command: 'flutter'
@@ -49,12 +47,22 @@ tasks:
     deps:
       - 'install'
 
+  build-runner:
+    command: 'dart'
+    args: ['run', 'build_runner', 'build', '--delete-conflicting-outputs']
+    inputs:
+      - 'lib/**/*'
+      - 'pubspec.yaml'
+    deps:
+      - 'install'
+
   build-android:
     command: 'flutter'
-    args: ['build', 'apk', '--dart-define=BACKEND_URL=${BACKEND_URL}']
+    args: ['build', 'apk', '--dart-define-from-file=config/production.json']
     inputs:
       - 'lib/**/*'
       - 'assets/**/*'
+      - 'config/**/*'
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'android/**/*'
@@ -67,10 +75,11 @@ tasks:
 
   build-ios:
     command: 'flutter'
-    args: ['build', 'ios', '--no-codesign', '--dart-define=BACKEND_URL=${BACKEND_URL}']
+    args: ['build', 'ios', '--no-codesign', '--dart-define-from-file=config/production.json']
     inputs:
       - 'lib/**/*'
       - 'assets/**/*'
+      - 'config/**/*'
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'ios/**/*'
@@ -80,13 +89,14 @@ tasks:
       envFile: true
     deps:
       - 'lint'
-
+  
   build:
     command: 'bash'
     args: ['scripts/build.sh']
     inputs:
       - 'lib/**/*'
       - 'assets/**/*'
+      - 'config/**/*'
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'android/**/*'
@@ -101,7 +111,7 @@ tasks:
 
   test:
     command: 'flutter'
-    args: ['test']
+    args: ['test', '--reporter', 'expanded']
     inputs:
       - 'lib/**/*'
       - 'test/**/*'
@@ -112,9 +122,74 @@ tasks:
     deps:
       - 'install'
 
-  dev:
+  test-goldens:
     command: 'flutter'
-    args: ['run', '--dart-define=BACKEND_URL=${BACKEND_URL}']
+    args: ['test', 'test/goldens', '--reporter', 'expanded']
+    inputs:
+      - 'lib/**/*'
+      - 'test/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+    deps:
+      - 'install'
+
+  update-goldens:
+    command: 'flutter'
+    args: ['test', '--update-goldens', 'test/goldens', '--reporter', 'expanded']
+    inputs:
+      - 'lib/**/*'
+      - 'test/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+    deps:
+      - 'install'
+
+  coverage:
+    command: 'bash'
+    args: ['scripts/coverage.sh']
+    inputs:
+      - 'lib/**/*'
+      - 'test/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'scripts/coverage.sh'
+    outputs:
+      - 'coverage'
+    deps:
+      - 'install'
+
+  coverage-open:
+    command: 'bash'
+    args: ['scripts/coverage.sh', '--open']
+    inputs:
+      - 'lib/**/*'
+      - 'test/**/*'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - 'scripts/coverage.sh'
+    outputs:
+      - 'coverage'
+    deps:
+      - 'install'
+
+  widgetbook:
+    command: 'flutter'
+    args: ['run', '-t', 'widgetbook/main.dart']
+    options:
+      persistent: true
+      cache: false
+    deps:
+      - 'install'
+
+  reverse:
+    command: 'bash'
+    args: ['-c', 'adb reverse tcp:8080 tcp:8080 && adb reverse tcp:9000 tcp:9000 && echo "Ports 8080 and 9000 reversed for ADB"']
+    options:
+      cache: false
+
+  dev:
+    command: 'bash'
+    args: ['scripts/run.sh']
     options:
       persistent: true
       cache: false

@@ -1,0 +1,70 @@
+Suvi Mentorat 4
+Mon, Nov 9, 2026
+
+Summary:
+
+La réunion a cadré les travaux de détection visuelle, de planification des parcours et d’évaluation technique.
+• Le solver doit intégrer équilibre, effort et morphologie.
+• Le modèle YOLO détecte les prises, sans distinguer couleurs ni voies.
+• Le calcul du pathfinding est limité à 30 secondes.
+• Les indicateurs envisagés couvrent traitement vidéo, détection et charge API.
+
+
+Action Items:
+
+* Olivier Pöuech: Affiner le modèle YOLO pour distinguer les couleurs des prises et les voies.
+* Olivier Pöuech: Migrer les essais du modèle vers le VPS.
+* Équipe: Effectuer une veille sur les méthodes de reconstruction 3D et d’estimation de la profondeur
+* Nicolas TORO: Coordonne avec Lionel l’organisation d’un rapport dès réception de sa réponse.
+* Nicolas TORO: Relance Ilyes si Lionel n’a pas répondu sous trois jours.
+* Ilyes TALBI: Sollicite la deuxième option si aucune réponse n’est reçue sous dix jours.
+* Équipe: Recherchez des experts supplémentaires en consultant des articles de recherche et en contactant leurs auteurs.
+* Ilyes TALBI: Réfléchis à d’autres indicateurs de performance pertinents.
+* Ilyes TALBI: Envoie le site à l’équipe.
+
+
+Key Discussion Points:
+
+Accès et coordination
+Les participants évoquent les difficultés récurrentes d’accès à la réunion et attendent l’arrivée d’autres personnes. Ilyes mentionne un courriel envoyé pour organiser un échange avec un chercheur, ainsi qu’un contact alternatif possible.
+
+Documentation et outil Densho
+Ilyes commente la documentation reçue et découvre Densho, un outil développé par Christophe et destiné à être hébergé sur le VPS de l’équipe. Nicolas explique que la priorité actuelle est la documentation développeur, les contenus destinés aux utilisateurs étant prévus plus tard.
+
+Contraintes physiques des parcours
+Ilyes propose d’établir des critères géométriques pour garantir la cohérence des positions des membres et le maintien d’appuis suffisants. La discussion aborde leur intégration dans le processus de génération du parcours, notamment par une sélection séquentielle des positions possibles.
+
+Modèle YOLO et entraînement
+Olivier décrit un modèle YOLO entraîné à partir de trois jeux de données, qui détecte les prises sans encore différencier les couleurs ni les voies. Ilyes présente une méthode d’annotation itérative assistée par modèle et un exemple d’entraînement sur GPU via une machine virtuelle louée avec Vast AI.
+
+Caméra et détection des prises
+Olivier décrit une approche consistant à sélectionner une image nette et dégagée pour détecter les prises. De légers mouvements de caméra sont envisageables, mais le suivi ne doit pas inclure un changement de voie.
+
+Solver et morphologie du grimpeur
+Les participants évoquent la planification séquentielle des mouvements, en tenant compte de l’équilibre et de la progression vers le sommet. Ils discutent aussi de l’effet de la taille et de la morphologie sur l’accessibilité des prises, le centre de gravité et l’effort.
+
+Perspective et profondeur du mur
+Ilyes soulève le problème des distances déformées par l’angle de prise de vue et l’absence de références communes aux murs. Jundo évoque des méthodes de reconstruction de profondeur, tandis que la segmentation du mur et la validation par l’utilisateur sont envisagées pour améliorer les résultats.
+
+Temps de calcul et optimisation
+Nicolas précise que la limite de 30 secondes concerne le pathfinding et non la reconnaissance initiale des prises. Les participants discutent du compromis entre précision et rapidité, ainsi que d’algorithmes d’optimisation possibles et des critères à intégrer au solver.
+
+Priorités de détection et progression
+Olivier demande jusqu’où pousser la reconnaissance des prises avant de se consacrer au solver. Les participants recommandent de démarrer avec une détection générale et une version simple du système, puis d’améliorer la différenciation des prises.
+
+Suivi pédagogique et architecture technique
+Ilyes examine les objectifs, la documentation, le README et les schémas d’architecture; Nicolas précise que le démarrage local fonctionne et que le projet est passé de Rust à Go. La discussion se termine sur l’analyse de pose à partir de vidéos enregistrées.
+
+Recherche d’experts techniques
+Le groupe clarifie la distinction entre l’analyse de pose sur vidéo et le mode fantôme, qui repose sur une photo. Nicolas doit coordonner avec Lionel l’organisation d’un rapport, tandis que l’équipe est invitée à trouver un second expert en explorant les publications de recherche et en contactant leurs auteurs.
+
+Indicateurs de performance technique
+Les participants examinent les métriques possibles pour mesurer et optimiser les performances, dont le temps de traitement vidéo, la détection des prises et les tests de charge de l’API. Olivier confirme que le modèle inclut déjà une mesure de confiance, et Ilyes propose de réfléchir à d’autres indicateurs liés à l’architecture.
+
+Organisation du prochain point
+Le prochain échange est envisagé pour la semaine du 30 novembre, un lundi à la même heure. Ilyes prévoit d’envoyer le site et reste disponible pour les questions entre-temps.
+
+
+Notepad:
+
+* No notes

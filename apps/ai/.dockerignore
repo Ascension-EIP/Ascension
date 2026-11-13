@@ -1,13 +1,3 @@
-
-# Video and image examples
-sam-3d-body/
-example/
-images/
-*.mp4
-*.avi
-*.mov
-
-
 # Python caches and bytecode
 __pycache__/
 *.py[cod]
@@ -21,26 +11,22 @@ __pycache__/
 build/
 dist/
 *.whl
-pip-wheel-metadata/
 
 # Tooling caches
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 .tox/
-.nox/
-.coverage
-.coverage.*
-htmlcov/
 
-# Virtualenvs (safety)
+# Virtual environments
 .venv/
 venv/
-env/
-ai-env/
+ENV/
 
-# Misc local/editor artifacts
-.DS_Store
+# IDE
 .idea/
 .vscode/
-*.log
+
+# Git
+.git/
+.gitignore

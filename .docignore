@@ -5,9 +5,5 @@
 .github/prompts/
 .github/agents/
 
-# Squad AI team state files
-.squad/
-.agents/
-
 # Auto-generated HTML exports
 docs/*.html

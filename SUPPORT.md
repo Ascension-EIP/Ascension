@@ -1,11 +1,3 @@
-> **Last updated:** 3rd March 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas TORO  
-> **Status:** Done  
-> {.is-success}
-
----
-
 # Support
 
 ---
@@ -23,14 +15,14 @@
 
 Before opening an issue, check the existing documentation:
 
-| Need                            | Document                                                                                     |
-| :------------------------------ | :------------------------------------------------------------------------------------------- |
-| Local dev setup                 | [Development Environment Setup](docs/developer_guide/architecture/deployment/development.md) |
-| Production deployment           | [Production Setup Guide](docs/developer_guide/architecture/deployment/production.md)         |
-| Architecture & design decisions | [Architecture README](docs/developer_guide/architecture/README.md)                           |
-| API reference                   | [API Specification](docs/developer_guide/architecture/specifications/api-specification.md)   |
-| Database schema                 | [Database Schema](docs/developer_guide/architecture/specifications/database-schema.md)       |
-| Monorepo & moonrepo             | [Monorepo Guide](docs/developer_guide/architecture/monorepo-guide.md)                        |
+| Need                            | Document                                                                                                 |
+| :------------------------------ | :------------------------------------------------------------------------------------------------------- |
+| Local dev setup                 | [Development Environment Setup](docs/engineering/developer_guide/architecture/deployment/development.md) |
+| Production deployment           | [Production Setup Guide](docs/engineering/developer_guide/architecture/deployment/production.md)         |
+| Architecture & design decisions | [Architecture README](docs/engineering/developer_guide/architecture/readme.md)                           |
+| API reference                   | [API Specification](docs/engineering/developer_guide/architecture/specifications/api-specification.md)   |
+| Database schema                 | [Database Schema](docs/engineering/developer_guide/architecture/specifications/database-schema.md)       |
+| Monorepo & moonrepo             | [Monorepo Guide](docs/engineering/developer_guide/architecture/monorepo-guide.md)                        |
 
 ---
 

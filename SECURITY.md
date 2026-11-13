@@ -1,11 +1,3 @@
-> **Last updated:** 3rd March 2026  
-> **Version:** 1.0  
-> **Authors:** Nicolas TORO  
-> **Status:** Done  
-> {.is-success}
-
----
-
 # Security Policy
 
 ---
@@ -49,4 +41,4 @@ We aim to acknowledge reports within **48 hours** and provide a resolution timel
 
 ## Security Architecture
 
-For an overview of the security controls in place (TLS, JWT, RBAC, OWASP mitigations, GDPR compliance), see the [Context, Audit & Compliance document](docs/rncp/workshop/context-audit-compliance.md).
+For an overview of the security controls in place (TLS, JWT, RBAC, OWASP mitigations, GDPR compliance), see the [Context, Audit & Compliance document](docs/product/prototype-pool/workshop/context-audit-compliance.md).

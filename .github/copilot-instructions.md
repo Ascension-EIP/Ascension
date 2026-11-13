@@ -1,1 +1,1 @@
-../docs/20-engineering/ai/instructions.md
+../.agents/instructions.md

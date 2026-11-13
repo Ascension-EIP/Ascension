@@ -1,15 +1,17 @@
-// @date 2026-03-18
+// @date 2026-11-13
 // @file app.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package app
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
+	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
@@ -18,88 +20,96 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/handler"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/middleware"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/router"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/minio"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/rabbitmq"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/rustfs"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
 	"github.com/gin-gonic/gin"
-
-	// "github.com/robfig/cron"
-	"github.com/rs/zerolog"
 )
 
-func Run(cfg *config.Config, l *zerolog.Logger) {
-	repo, err := postgres.New(l, cfg.DB.DSN(), cfg.DB.Migration)
+func Run(cfg config.Config) {
+	repo, err := postgres.New(cfg.DB.DSN())
 	if err != nil {
-		l.Fatal().Msg(err.Error())
+		slog.Error("failed to create a new postgres repository", slog.String("err", err.Error()))
+		os.Exit(1)
 	}
-	storage, err := minio.New(&cfg.MinIO)
+	// if err := repo.Migrate(cfg.DB.DSN()); err != nil {
+	// 	slog.Error("failed to migrate the database", slog.String("err", err.Error()))
+	// 	os.Exit(1)
+	// } else {
+	// 	slog.Info("migration completed successfully")
+	// }
+
+	storage, err := rustfs.New(cfg.Storage)
 	if err != nil {
-		l.Fatal().Msg(err.Error())
+		slog.Error("failed to create a new minio storage", slog.String("err", err.Error()))
+		os.Exit(1)
 	}
-	queue, err := rabbitmq.New(&cfg.RabbitMQ)
+	queue, err := rabbitmq.New(cfg.Queue)
 	if err != nil {
-		l.Fatal().Msg(err.Error())
+		slog.Error("failed to create a new rabbitmq queue", slog.String("err", err.Error()))
+		os.Exit(1)
 	}
 
 	jwtS := service.NewJWTService(cfg.Auth.JWT)
 	sessionS := service.NewSessionService(cfg.Auth.Session, &repo)
 	userS := service.NewUserService(&repo)
-	authS := service.NewAuthService(&jwtS, &sessionS, &repo)
-	videoS := service.NewVideoService(&storage, &repo)
-	analyseS := service.NewAnalysisService(&repo, &queue)
+	userProfileS := service.NewUserProfileService(&repo)
+	authS := service.NewAuthService(&jwtS, &sessionS, &userS, &userProfileS, &repo)
+	videoS := service.NewVideoService(cfg.Video, cfg.Storage, &storage, &repo, &repo)
+	analysisS := service.NewAnalysisService(cfg.Storage, &repo, &repo, &queue)
+	climbingSessionS := service.NewClimbingSessionService(&repo, &repo, &repo)
+	bodyConstraintS := service.NewUserBodyConstraintService(&repo)
+	friendshipS := service.NewFriendshipService(&repo)
+	feedS := service.NewFeedService(&repo)
 
-	authMW := middleware.Auth(&jwtS)
-	guestMW := middleware.Guest(&jwtS)
-	adminMW := middleware.Admin()
-	userMW := middleware.User()
+	authMW := middleware.AuthMiddleware(&jwtS)
 
-	userH := handler.NewUserHandler(l, &userS)
-	authH := handler.NewAuthHandler(l, &authS)
-	videoH := handler.NewVideoHandler(l, &videoS)
-	analyseH := handler.NewAnalyseHandler(l, &analyseS)
+	userH := handler.NewUserHandler(&userS)
+	authH := handler.NewAuthHandler(&authS)
+	videoH := handler.NewVideoHandler(&videoS)
+	analysisH := handler.NewAnalysisHandler(&analysisS)
+	userProfileH := handler.NewUserProfileHandler(&userProfileS)
+	climbingSessionH := handler.NewClimbingSessionHandler(&climbingSessionS)
+	bodyConstraintH := handler.NewUserBodyConstraintHandler(&bodyConstraintS)
+	friendshipH := handler.NewFriendshipHandler(&friendshipS)
+	feedH := handler.NewFeedHandler(&feedS)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	// c := cron.New()
-	// if _, err := jobs.ExpiredSession(c, ctx, l, authS); err != nil {
-	// 	l.Fatal().Err(err).Msg("failed to connect to database")
-	// }
-	// c.Start()
-
 	app := gin.New()
-	router.New(app, cfg, l,
+	router.New(app, cfg,
 		authMW,
-		guestMW,
-		adminMW,
-		userMW,
 
 		&userH,
 		&authH,
 		&videoH,
-		&analyseH,
+		&analysisH,
+		&userProfileH,
+		&climbingSessionH,
+		&bodyConstraintH,
+		&friendshipH,
+		&feedH,
 	)
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(cfg.HTTP.Port),
 		Handler: app,
 	}
 	go func() {
-		l.Info().Msg("server starting on " + httpServ.Addr)
+		slog.Info("server starting on " + httpServ.Addr)
 		if err := httpServ.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			l.Error().Err(err).Msg("failed to start server")
+			slog.Error("failed to start server", slog.String("err", err.Error()))
 		}
 	}()
 
 	<-ctx.Done()
-	stop()
-	l.Info().Msg("CTRL-C successfully handle")
+	slog.Info("CTRL-C successfully handle")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	if err := httpServ.Shutdown(ctx); err != nil {
-		l.Error().Err(err).Msg("server forced to shutdown")
+		slog.Error("server forced to shutdown", slog.String("err", err.Error()))
 	}
-	// c.Stop().Done()
 }

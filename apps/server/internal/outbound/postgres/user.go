@@ -1,8 +1,8 @@
-// @date 2026-03-16
+// @date 2026-09-20
 // @file user.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package postgres
@@ -12,144 +12,172 @@ import (
 	"fmt"
 	"strings"
 
+	"uuid"
+
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres/dto"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
-func (r *PostgresRepository) CreateUser(ctx context.Context, newUser *model.NewUser) (*model.User, error) {
-	if newUser == nil {
-		return nil, model.ErrUnknown
-	}
+func (r *PostgresRepository) CreateUser(ctx context.Context, user model.User) (model.User, error) {
 	tx := r.getTx(ctx)
 
-	rows, err := tx.Query(ctx,
-		"INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING *",
-		newUser.Name, newUser.Email, newUser.Password, newUser.Role)
+	passwordHash, err := user.Password.Hash()
 	if err != nil {
-		return nil, err
+		return model.User{}, dto.Error(err)
 	}
-
-	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
-	if err != nil {
-		return nil, err
-	}
-
-	return user.ToUser(), nil
-}
-
-func (r *PostgresRepository) GetUserByID(ctx context.Context, userID uuid.UUID) (*model.User, error) {
-	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx,
-		"SELECT * FROM users WHERE id = $1 LIMIT 1",
-		userID)
+		"INSERT INTO users (username, first_name, last_name, email, password_hash, role, status, email_verified_at, last_login_at, deactivated_at, stripe_customer_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *",
+		user.Username,
+		user.FirstName,
+		user.LastName,
+		user.Email,
+		passwordHash,
+		user.Role,
+		user.Status,
+		user.EmailVerifiedAt,
+		user.LastLoginAt,
+		user.DeactivatedAt,
+		user.StripeCustomerID,
+	)
 	if err != nil {
-		return nil, err
+		return model.User{}, dto.Error(err)
 	}
 
-	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
+	dbUser, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[dto.User])
 	if err != nil {
-		return nil, err
+		return model.User{}, dto.Error(err)
 	}
 
-	return user.ToUser(), nil
+	return dbUser.ToUser(), nil
 }
 
-func (r *PostgresRepository) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
-	tx := r.getTx(ctx)
-
-	rows, err := tx.Query(ctx,
-		"SELECT * FROM users WHERE email = $1 LIMIT 1",
-		email)
-	if err != nil {
-		return nil, err
-	}
-
-	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
-	if err != nil {
-		return nil, err
-	}
-
-	return user.ToUser(), nil
-}
-
-func (r *PostgresRepository) ListAllUsers(ctx context.Context) ([]*model.User, error) {
-	tx := r.getTx(ctx)
-
-	rows, err := tx.Query(ctx,
-		"SELECT * FROM users")
-	if err != nil {
-		return nil, err
-	}
-
-	users, err := pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[dto.User])
-	if err != nil {
-		return nil, err
-	}
-	return dto.UsersToUsers(users), nil
-}
-
-func (r *PostgresRepository) UpdateUser(ctx context.Context, partialUser *model.PartialUser) (*model.User, error) {
-	if partialUser == nil {
-		return nil, model.ErrUnknown
-	}
-
+func userFilterQuery(filter model.UserFilter) (string, []any) {
 	setParts := []string{}
 	args := []any{}
-	argID := 1
 
-	if partialUser.Name != nil {
-		setParts = append(setParts, fmt.Sprintf("name=$%d", argID))
-		args = append(args, *partialUser.Name)
-		argID++
+	setArg(&setParts, &args, "id", filter.ID)
+	setArg(&setParts, &args, "username", filter.Username)
+	setArg(&setParts, &args, "first_name", filter.FirstName)
+	setArg(&setParts, &args, "last_name", filter.LastName)
+	setArg(&setParts, &args, "email", filter.Email)
+	setArg(&setParts, &args, "password_hash", filter.Password)
+	setArg(&setParts, &args, "role", filter.Role)
+	setArg(&setParts, &args, "status", filter.Status)
+
+	query := "SELECT * FROM users"
+	if len(setParts) > 0 {
+		query += " WHERE " + strings.Join(setParts, " AND ")
 	}
-	if partialUser.Email != nil {
-		setParts = append(setParts, fmt.Sprintf("email=$%d", argID))
-		args = append(args, *partialUser.Email)
-		argID++
-	}
-	if partialUser.Password != nil {
-		setParts = append(setParts, fmt.Sprintf("password=$%d", argID))
-		args = append(args, *partialUser.Password)
-		argID++
-	}
-	if partialUser.Role != nil {
-		setParts = append(setParts, fmt.Sprintf("role=$%d", argID))
-		args = append(args, *partialUser.Role)
-		argID++
-	}
-	args = append(args, partialUser.ID)
-	query := fmt.Sprintf("UPDATE users SET %s WHERE id=$%d RETURNING *", strings.Join(setParts, ", "), argID)
+
+	return query, args
+}
+
+func (r *PostgresRepository) GetUserByFilter(ctx context.Context, filter model.UserFilter) (model.User, error) {
+	query, args := userFilterQuery(filter)
+	query += " LIMIT 1"
 
 	tx := r.getTx(ctx)
 
-	rows, err := tx.Query(context.Background(), query, args...)
+	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return model.User{}, dto.Error(err)
 	}
 
-	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
+	dbUser, err := pgx.CollectExactlyOneRow(
+		rows,
+		pgx.RowToStructByName[dto.User],
+	)
 	if err != nil {
-		return nil, err
+		return model.User{}, dto.Error(err)
 	}
 
-	return user.ToUser(), nil
+	return dbUser.ToUser(), nil
+}
+
+func (r *PostgresRepository) ListUsersByFilter(ctx context.Context, filter model.UserFilter) ([]model.User, error) {
+	query, args := userFilterQuery(filter)
+
+	tx := r.getTx(ctx)
+
+	rows, err := tx.Query(ctx, query, args...)
+	if err != nil {
+		return nil, dto.Error(err)
+	}
+
+	dbUsers, err := pgx.CollectRows(
+		rows,
+		pgx.RowToStructByName[dto.User],
+	)
+	if err != nil {
+		return nil, dto.Error(err)
+	}
+
+	return dto.UsersToUsers(dbUsers), nil
+}
+
+func (r *PostgresRepository) UpdateUser(ctx context.Context, partial model.UserPartial) (model.User, error) {
+	setParts := []string{}
+	args := []any{}
+
+	setArg(&setParts, &args, "username", partial.Username)
+	setArg(&setParts, &args, "first_name", partial.FirstName)
+	setArg(&setParts, &args, "last_name", partial.LastName)
+	setArg(&setParts, &args, "email", partial.Email)
+	setArg(&setParts, &args, "role", partial.Role)
+	setArg(&setParts, &args, "status", partial.Status)
+
+	// password_hash needs hashing first (UserPassword is []byte, no Valuer),
+	// so it keeps one guard; every other field is nil-safe through setArg.
+	if partial.Password != nil {
+		passwordHash, err := partial.Password.Hash()
+		if err != nil {
+			return model.User{}, dto.Error(err)
+		}
+		v := any(passwordHash)
+		setArg(&setParts, &args, "password_hash", &v)
+	}
+
+	if len(setParts) == 0 {
+		return model.User{}, model.ErrUserNotFound
+	}
+
+	args = append(args, partial.ID)
+
+	tx := r.getTx(ctx)
+
+	query := fmt.Sprintf(
+		"UPDATE users SET %s WHERE id = $%d RETURNING *",
+		strings.Join(setParts, ", "),
+		len(args),
+	)
+
+	rows, err := tx.Query(ctx, query, args...)
+	if err != nil {
+		return model.User{}, dto.Error(err)
+	}
+
+	dbUser, err := pgx.CollectExactlyOneRow(
+		rows,
+		pgx.RowToStructByName[dto.User],
+	)
+	if err != nil {
+		return model.User{}, dto.Error(err)
+	}
+
+	return dbUser.ToUser(), nil
 }
 
 func (r *PostgresRepository) DeleteUser(ctx context.Context, userID uuid.UUID) error {
-	err := pgx.BeginFunc(ctx, r.Pool, func(tx pgx.Tx) error {
-		_, err := tx.Exec(ctx,
-			"DELETE FROM users WHERE id = $1",
-			userID)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
+	tx := r.getTx(ctx)
+
+	_, err := tx.Exec(ctx,
+		"DELETE FROM users WHERE id = $1",
+		userID)
 	if err != nil {
-		return err
+		return dto.Error(err)
 	}
+
 	return nil
 }

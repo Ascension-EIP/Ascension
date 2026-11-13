@@ -1,37 +1,50 @@
-// @date 2026-03-18
+// @date 2026-11-13
 // @file analysis.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package response
 
 import (
+	"time"
+	"uuid"
+
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/google/uuid"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/shared"
 )
 
 type AnalysisResponse struct {
-	ID     uuid.UUID            `json:"id"`
-	Status model.AnalysisStatus `json:"status"`
+	ID               uuid.UUID              `json:"id"`
+	VideoID          uuid.UUID              `json:"video_id"`
+	Type             model.AnalysisType     `json:"type"`
+	Status           model.JobStatus        `json:"status"`
+	Visibility       model.Visibility       `json:"visibility"`
+	Progress         int16                  `json:"progress"`
+	Result           *shared.AnalysisResult `json:"result"`
+	Advice           *string                `json:"advice"`
+	Error            *string                `json:"error"`
+	ProcessingTimeMS *time.Duration         `json:"processing_time_ms"`
+	StartedAt        *time.Time             `json:"started_at"`
+	CompletedAt      *time.Time             `json:"completed_at"`
+	Hints            *shared.Hints          `json:"hints"`
 }
 
-func AnalysisToResponse(analysis *model.Analysis) *AnalysisResponse {
-	return &AnalysisResponse{
-		ID:     analysis.ID,
-		Status: analysis.Status,
-	}
-}
-
-type AnalysisInfoResponse struct {
-	ID     uuid.UUID            `json:"id"`
-	Status model.AnalysisStatus `json:"status"`
-}
-
-func AnalysisInfoToResponse(analysis *model.Analysis) *AnalysisInfoResponse {
-	return &AnalysisInfoResponse{
-		ID:     analysis.ID,
-		Status: analysis.Status,
+func AnalysisToResponse(analysis model.Analysis) AnalysisResponse {
+	return AnalysisResponse{
+		ID:               analysis.ID,
+		VideoID:          analysis.VideoID,
+		Type:             analysis.Type,
+		Status:           analysis.Status,
+		Visibility:       analysis.Visibility,
+		Progress:         analysis.Progress,
+		Result:           analysis.Result,
+		Advice:           analysis.Advice,
+		Error:            analysis.Error,
+		ProcessingTimeMS: analysis.ProcessingTimeMS,
+		StartedAt:        analysis.StartedAt,
+		CompletedAt:      analysis.CompletedAt,
+		Hints:            analysis.Hints,
 	}
 }

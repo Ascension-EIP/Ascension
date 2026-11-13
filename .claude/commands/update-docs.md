@@ -1,1 +1,1 @@
-../../docs/20-engineering/ai/commandes/update-docs.md
+../../.agents/commands/update-docs.md

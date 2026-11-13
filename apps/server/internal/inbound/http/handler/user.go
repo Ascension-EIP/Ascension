@@ -1,4 +1,4 @@
-// @date 2026-03-16
+// @date 2026-09-12
 // @file user.go
 // @brief File description.
 // @project Ascension
@@ -9,22 +9,21 @@ package handler
 
 import (
 	"net/http"
+	"uuid"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/request"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
 )
 
 type UserHandler struct {
 	s *service.UserService
-	l *zerolog.Logger
 }
 
-func NewUserHandler(l *zerolog.Logger, s *service.UserService) UserHandler {
-	return UserHandler{s: s, l: l}
+func NewUserHandler(s *service.UserService) UserHandler {
+	return UserHandler{s: s}
 }
 
 func (h *UserHandler) Create(c *gin.Context) {
@@ -33,15 +32,15 @@ func (h *UserHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
-	user, err := req.IntoNewUser()
+	user, err := req.IntoUser()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
 
-	createdUser, err := h.s.CreateUser(c.Request.Context(), &user)
+	createdUser, err := h.s.CreateUser(c.Request.Context(), user)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -51,7 +50,7 @@ func (h *UserHandler) Create(c *gin.Context) {
 
 func (h *UserHandler) GetByID(c *gin.Context) {
 	id := c.Param("id")
-	userID, err := request.IntoUUID(id)
+	userID, err := uuid.Parse(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
@@ -59,7 +58,7 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 
 	user, err := h.s.GetUserByID(c.Request.Context(), userID)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -70,7 +69,7 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 func (h *UserHandler) List(c *gin.Context) {
 	users, err := h.s.ListAllUsers(c.Request.Context())
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -85,15 +84,15 @@ func (h *UserHandler) Update(c *gin.Context) {
 		return
 	}
 	id := c.Param("id")
-	user, err := req.IntoPartialUser(id)
+	user, err := req.IntoUserPartial(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
 
-	updatedUser, err := h.s.UpdateUser(c.Request.Context(), &user)
+	updatedUser, err := h.s.UpdateUser(c.Request.Context(), user)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -103,14 +102,14 @@ func (h *UserHandler) Update(c *gin.Context) {
 
 func (h *UserHandler) Delete(c *gin.Context) {
 	id := c.Param("id")
-	userID, err := request.IntoUUID(id)
+	userID, err := uuid.Parse(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
 
 	if err := h.s.DeleteUser(c.Request.Context(), userID); err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 

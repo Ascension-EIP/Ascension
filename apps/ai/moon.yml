@@ -7,22 +7,20 @@ project:
   description: 'AI service for Ascension'
 
 tasks:
+  setup:
+    command: 'bash'
+    args: ['scripts/download-model.sh']
+    inputs:
+      - 'scripts/download-model.sh'
+    outputs:
+      - 'resources/pose_landmarker_full.task'
+
   install:
     command: 'uv'
     args: ['sync']
     inputs:
       - 'pyproject.toml'
       - 'uv.lock'
-    deps:
-      - 'root:setup'
-
-  download-model:
-    command: 'bash'
-    args: ['scripts/download-model.sh']
-    inputs:
-      - 'scripts/download-model.sh'
-    outputs:
-      - 'pose_landmarker.task'
 
   update:
     command: 'uv'
@@ -32,7 +30,7 @@ tasks:
 
   format:
     command: 'uv'
-    args: ['run', 'ruff', 'check', '--fix', 'src']
+    args: ['run', 'ruff', 'check', '--fix', 'src', 'tests']
     inputs:
       - '**/*.py'
       - 'pyproject.toml'
@@ -43,13 +41,14 @@ tasks:
 
   lint:
     command: 'uv'
-    args: ['run', 'ruff', 'check', 'src']
+    args: ['run', 'ruff', 'check', 'src', 'tests']
     inputs:
       - '**/*.py'
       - 'pyproject.toml'
       - 'uv.lock'
     deps:
       - 'format'
+      - 'root:schemas-generate'
 
   build:
     command: 'uv'
@@ -62,22 +61,59 @@ tasks:
       - 'dist'
     deps:
       - 'lint'
+      - 'root:schemas-generate'
 
+  # Unit and functional tests: no infrastructure, no network.
   test:
     command: 'uv'
-    args: ['run', 'pytest', '-p', 'no:cacheprovider']
+    args: ['run', 'pytest', '-p', 'no:cacheprovider', '-m', 'not e2e and not integration']
     inputs:
       - '**/*.py'
       - 'pyproject.toml'
       - 'uv.lock'
-    options:
-      allowFailure: true
     deps:
       - 'install'
+      - 'setup'
+      - 'root:schemas-generate'
+
+  # Coverage of src/ (generated shared/models.py excluded). No infrastructure.
+  coverage:
+    command: 'uv'
+    args:
+      - 'run'
+      - 'pytest'
+      - '-p'
+      - 'no:cacheprovider'
+      - '-m'
+      - 'not e2e and not integration'
+      - '--cov=src'
+      - '--cov-report=term-missing'
+    options:
+      cache: false
+    deps:
+      - 'install'
+      - 'setup'
+      - 'root:schemas-generate'
+
+  # Real RabbitMQ, PostgreSQL and RustFS (LLM faked). Also runs the PostgreSQL integration tests.
+  # Reads the usual POSTGRES_*, RABBITMQ_* and RUSTFS_* variables; TEST_POSTGRES_URL overrides the database URL.
+  # Skipped (not failed) when a service is unreachable: read the skip reasons.
+  e2e:
+    command: 'uv'
+    args: ['run', 'pytest', '-p', 'no:cacheprovider', '-rs', '-m', 'e2e or integration']
+    options:
+      cache: false
+      envFile: true
+    deps:
+      - 'install'
+      - 'setup'
+      - 'root:schemas-generate'
+      - 'root:db-up'
+      - 'server:migrate'
 
   dev:
     command: 'uv'
-    args: ['run', 'python', '-u', 'src/worker.py']
+    args: ['run', 'worker']
     env:
       LOG_LEVEL: 'debug'
       PYTHONUNBUFFERED: '1'
@@ -87,6 +123,28 @@ tasks:
       envFile: true
     deps:
       - 'install'
+      - 'root:schemas-generate'
+
+  producer:
+    command: 'uv'
+    args: ['run', 'python', 'src/producer.py']
+    env:
+      PYTHONUNBUFFERED: '1'
+    options:
+      cache: false
+      envFile: true
+    deps:
+      - 'install'
+
+  # Usage: moon run ai:pose-detect -- --video resources/example-2.mp4 --out /tmp/result.json
+  pose-detect:
+    command: 'uv'
+    args: ['run', 'worker', 'pose-detect']
+    options:
+      cache: false
+    deps:
+      - 'install'
+      - 'root:schemas-generate'
 
   clean:
     script: |

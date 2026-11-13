@@ -1,1 +1,1 @@
-../../docs/20-engineering/ai/commandes/commit.md
+../../.agents/commands/commit.md

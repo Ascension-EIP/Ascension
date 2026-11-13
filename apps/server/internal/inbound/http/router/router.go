@@ -1,8 +1,8 @@
-// @date 2026-03-20
+// @date 2026-11-13
 // @file router.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>, Nicolas TORO <nicolas.toro@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package router
@@ -13,66 +13,107 @@ import (
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/handler"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/middleware"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
 )
 
 func New(
 	app *gin.Engine,
-	cfg *config.Config,
-	l *zerolog.Logger,
+	cfg config.Config,
 
-	authMW gin.HandlerFunc,
-	guestMW gin.HandlerFunc,
-	adminMW gin.HandlerFunc,
-	userMW gin.HandlerFunc,
+	authMW middleware.AuthHandler,
 
 	userH *handler.UserHandler,
 	authH *handler.AuthHandler,
 	videoH *handler.VideoHandler,
-	analyseH *handler.AnalyseHandler,
+	analysisH *handler.AnalysisHandler,
+	profileH *handler.ProfileHandler,
+	climbingSessionH *handler.ClimbingSessionHandler,
+	bodyConstraintH *handler.UserBodyConstraintHandler,
+	friendshipH *handler.FriendshipHandler,
+	feedH *handler.FeedHandler,
 ) {
 	app.Use(middleware.RequestID())
-	app.Use(middleware.Logger(l))
-	app.Use(middleware.Recovery(l))
-	gin.Recovery()
+	app.Use(middleware.Logger())
+	app.Use(middleware.Recovery())
 
-	app.GET("/healthz", func(c *gin.Context) { c.Status(http.StatusNoContent) })
+	app.GET("/healthz", Healthz)
+	app.HEAD("/healthz", Healthz)
 
 	v1 := app.Group("/v1")
+
 	{
+		usersGroup := v1.Group("/users", authMW(model.UserRoleAdmin))
+		{
+			usersGroup.POST("/", userH.Create)
+			usersGroup.GET("/", userH.List)
+			usersGroup.GET("/:id", userH.GetByID)
+			usersGroup.PUT("/:id", userH.Update)
+			usersGroup.DELETE("/:id", userH.Delete)
+		}
+		// Outside the admin group: every user can search the others.
+		v1.GET("/users/search", middleware.RateLimiter(time.Minute, 30), authMW(), friendshipH.SearchUsers)
+
 		authGroup := v1.Group("/auth")
 		{
-			authGroup.POST("/signup", middleware.RateLimiter(time.Minute, 5), guestMW, authH.SignupLogin)
-			authGroup.POST("/login", middleware.RateLimiter(time.Minute, 10), guestMW, authH.Login)
-			authGroup.DELETE("/logout", middleware.RateLimiter(time.Minute, 10), authH.Logout)
+			authGroup.POST("/register", middleware.RateLimiter(time.Minute, 5), authH.Register)
+			authGroup.POST("/login", middleware.RateLimiter(time.Minute, 10), authH.Login)
+			authGroup.DELETE("/logout", middleware.RateLimiter(time.Minute, 10), authMW(), authH.Logout)
 			authGroup.PUT("/refresh", middleware.RateLimiter(time.Minute, 10), authH.RefreshToken)
 		}
 
-		usersGroup := v1.Group("/users")
+		videosGroup := v1.Group("/videos", middleware.RateLimiter(time.Minute, 10), authMW())
 		{
-			usersGroup.Use(authMW, adminMW)
-			usersGroup.POST("/", middleware.RateLimiter(time.Minute, 25), userH.Create)
-			usersGroup.GET("/", middleware.RateLimiter(time.Minute, 100), userH.List)
-			usersGroup.GET("/:id", middleware.RateLimiter(time.Minute, 100), userH.GetByID)
-			usersGroup.PUT("/:id", middleware.RateLimiter(time.Minute, 25), userH.Update)
-			usersGroup.DELETE("/:id", middleware.RateLimiter(time.Minute, 25), userH.Delete)
+			videosGroup.POST("/upload-url", videoH.GetUploadURL)
+			videosGroup.PUT("/upload-done/:id", videoH.UploadComplete)
+			videosGroup.GET("/download-url/:id", videoH.GetDownloadURL)
+			videosGroup.GET("/", videoH.ListVideos)
+			videosGroup.GET("/:id", videoH.GetVideo)
 		}
 
-		videosGroup := v1.Group("/videos")
+		analysesGroup := v1.Group("/analysis", middleware.RateLimiter(time.Minute, 10), authMW())
 		{
-			videosGroup.Use(authMW, userMW)
-			videosGroup.GET("/upload-url", middleware.RateLimiter(time.Minute, 10), videoH.GetUploadURL)
-			videosGroup.PUT("/upload-done/:id", middleware.RateLimiter(time.Minute, 15), videoH.UploadComplete)
-			videosGroup.GET("/download-url/:id", middleware.RateLimiter(time.Minute, 10), videoH.GetDownloadURL)
+			analysesGroup.POST("/", analysisH.Create)
+			analysesGroup.GET("", analysisH.List)
+			analysesGroup.GET("/:id", analysisH.GetByID)
+			analysesGroup.POST("/:id/retry-advice", analysisH.RetryAdvice)
 		}
 
-		analysesGroup := v1.Group("/analysis")
+		profileGroup := v1.Group("/profile", middleware.RateLimiter(time.Minute, 10), authMW())
 		{
-			analysesGroup.Use(authMW, userMW)
-			analysesGroup.POST("/", middleware.RateLimiter(time.Minute, 10), analyseH.Create)
-			analysesGroup.GET("/:id", middleware.RateLimiter(time.Minute, 10), analyseH.GetByID)
+			profileGroup.GET("", profileH.GetMyProfile)
+			profileGroup.PUT("", profileH.UpdateMyProfile)
+			profileGroup.GET("/constraints", bodyConstraintH.List)
+			profileGroup.POST("/constraints", bodyConstraintH.Declare)
+			profileGroup.DELETE("/constraints/:id", bodyConstraintH.Remove)
 		}
+
+		climbingSessionsGroup := v1.Group("/sessions", middleware.RateLimiter(time.Minute, 10), authMW())
+		{
+			climbingSessionsGroup.POST("", climbingSessionH.Create)
+			climbingSessionsGroup.GET("", climbingSessionH.List)
+			climbingSessionsGroup.GET("/active", climbingSessionH.GetActive)
+			climbingSessionsGroup.GET("/:id", climbingSessionH.GetByID)
+			climbingSessionsGroup.PUT("/:id", climbingSessionH.Update)
+			climbingSessionsGroup.DELETE("/:id", climbingSessionH.Delete)
+			climbingSessionsGroup.POST("/:id/analyses", climbingSessionH.AddAnalysis)
+		}
+
+		friendsGroup := v1.Group("/friends", middleware.RateLimiter(time.Minute, 10), authMW())
+		{
+			friendsGroup.GET("", friendshipH.ListFriends)
+			friendsGroup.GET("/requests", friendshipH.ListRequests)
+			friendsGroup.POST("/requests/:userId", friendshipH.SendRequest)
+			friendsGroup.PUT("/requests/:id", friendshipH.AnswerRequest)
+		}
+
+		v1.GET("/feed", middleware.RateLimiter(time.Minute, 30), authMW(), feedH.Get)
 	}
+}
+
+// Healthz is the liveness probe of the API. It answers 200 OK to GET and
+// HEAD, so `curl -I` and the container healthchecks can use it.
+func Healthz(c *gin.Context) {
+	c.Status(http.StatusOK)
 }

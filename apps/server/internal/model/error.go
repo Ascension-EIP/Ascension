@@ -1,8 +1,8 @@
-// @date 2026-03-11
+// @date 2026-11-13
 // @file error.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package model
@@ -22,8 +22,33 @@ import "errors"
 // )
 
 var (
-	ErrEmailDuplicate = errors.New("email already exists")
-	ErrUserNotFound   = errors.New("user not found")
-	ErrBadPassword    = errors.New("incorrect password")
-	ErrUnknown        = errors.New("unknown error")
+	ErrEmailDuplicated = errors.New("email already exists")
+	ErrUserNotFound    = errors.New("user not found")
+	ErrBadPassword     = errors.New("incorrect password")
+
+	ErrInvalidToken = errors.New("invalid token")
+
+	ErrInvalidInput = errors.New("invalid input")
+	ErrConflict     = errors.New("conflict")
+	ErrNotFound     = errors.New("not found")
+	ErrInternalDB   = errors.New("internal database error")
+
+	// -- Video -- //
+	ErrVideoUploading = errors.New("video is uploading")
+	ErrVideoNotFound  = errors.New("video not found")
+
+	// -- Climbing session -- //
+	ErrClimbingSessionNotFound = errors.New("climbing session not found")
+
+	// -- Analysis -- //
+	ErrAnalysisNotFound = errors.New("analysis not found")
+
+	// -- User body constraint -- //
+	ErrUserBodyConstraintNotFound = errors.New("body constraint not found")
+
+	// -- Friendship -- //
+	ErrFriendRequestNotFound = errors.New("friend request not found")
+	ErrFriendshipExists      = errors.New("friendship already exists")
+
+	ErrUnknown = errors.New("unknown error")
 )

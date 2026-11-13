@@ -6,16 +6,6 @@
 # ⚠️  Teams must exist under the @Ascension-EIP org for this to work.
 #     If a team doesn't exist yet, GitHub silently ignores the rule.
 #     Create teams at: https://github.com/orgs/Ascension-EIP/teams
-#
-# Squad routing reference:
-#   Quentin   → AI / Python      → @Ascension-EIP/ai
-#   Renaud    → Go / API         → @Ascension-EIP/backend
-#   Romaric   → Flutter / Mobile → @Ascension-EIP/mobile
-#   Arthur    → DevOps / CI      → @Ascension-EIP/devops
-#   Alexandra → DB / Infra       → @Ascension-EIP/infra
-#   Darius    → Documentation    → @Ascension-EIP/docs
-#   Eric      → Architecture     → @Ascension-EIP/leads
-#   Ridjan    → Testing          → @Ascension-EIP/testers
 # ──────────────────────────────────────────────────────────────
 
 # Default: repo owner reviews anything not matched below

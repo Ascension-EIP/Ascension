@@ -1,11 +1,3 @@
-> **Last updated:** 3rd March 2026  
-> **Version:** 2.0  
-> **Authors:** Gianni TUERO, Nicolas TORO  
-> **Status:** Done  
-> {.is-success}  
-
----
-
 # Ascension
 
 **AI-powered climbing coach — objective technique analysis, personalized feedback.**
@@ -13,7 +5,7 @@
 [![Flutter](https://img.shields.io/badge/Mobile-Flutter%20%2F%20Dart-02569B?logo=flutter)](https://flutter.dev)
 [![Go](https://img.shields.io/badge/API-Go%20%2F%20Gin-00ADD8?logo=go)](https://go.dev)
 [![Python](https://img.shields.io/badge/AI-Python%20%2F%20MediaPipe-3776AB?logo=python)](https://python.org)
-[![PostgreSQL](https://img.shields.io/badge/DB-PostgreSQL%2016-336791?logo=postgresql)](https://postgresql.org)
+[![PostgreSQL](https://img.shields.io/badge/DB-PostgreSQL%2018-336791?logo=postgresql)](https://postgresql.org)
 
 ---
 
@@ -25,8 +17,9 @@
   - [Core Features](#core-features)
   - [Repository Structure](#repository-structure)
   - [Tech Stack](#tech-stack)
+  - [Business Model](#business-model)
   - [Getting Started](#getting-started)
-  - [Usefull Documentation](#usefull-documentation)
+  - [Documentation](#documentation)
   - [Contributing](#contributing)
 
 ---
@@ -35,7 +28,7 @@
 
 Ascension is a mobile application that analyzes climbing videos using computer vision and AI to deliver concrete, objective feedback on technique — the kind of feedback that usually requires a professional coach standing next to you.
 
-Film yourself on the wall. Upload the video. Get a biomechanical breakdown of your movement, joint-by-joint coaching advice, and an optional ghost overlay comparing your path to the optimal line for your morphology.
+Film yourself on the wall during a climbing session, upload the video, and get a biomechanical breakdown plus joint-by-joint coaching advice, or photograph an empty wall to get a step-by-step Ghost Mode guide to climb the wall tailored to your morphology.
 
 **The problem we solve:** Professional climbing coaching is expensive (50 €/hour), subjective, and hard to access. Most climbers train without real feedback and only correct bad habits when they plateau or get injured. Ascension makes expert-level analysis available to any climber — from beginner to competition level — at a fraction of the cost.
 
@@ -43,13 +36,18 @@ Film yourself on the wall. Upload the video. Get a biomechanical breakdown of yo
 
 ## Core Features
 
-| Feature                 | Description                                                             |   Tier   |
-| :---------------------- | :---------------------------------------------------------------------- | :------: |
-| **Skeleton Extraction** | 33-point pose estimation per frame (joint angles, center of gravity)    |   All    |
-| **Coaching Advice**     | Move-by-move targeted feedback combining skeleton data + hold positions |   All    |
-| **Hold Detection**      | AI classifies holds from a route photo; manual correction supported     |   All    |
-| **Training Programs**   | Personalized routines from level, goals, and analysis history           |   All    |
-| **Ghost Climber**       | Optimal path overlay rendered frame-by-frame on the user's video        | Premium+ |
+| Feature | Description | Phase |
+| :--- | :--- | :---: |
+| **Morphological Profile** | Tailored body setup (height, weight, limbs) and interactive injury/amputation map | BTP |
+| **Climbing Sessions** | Climbing session tracking: group climb analyses, compute duration, and view end-of-session aggregated stats | BTP |
+| **2D Pose Analysis & Feedback** | Video climb analysis via 33-point MediaPipe 2D skeleton, numeric metrics, and LLM coaching advice | MVP -> BTP |
+| **Ghost Mode** | Photograph a route, select a detected hold group/color or click holds manually, and generate step-by-step images for a feasible beta | BTP |
+| **Training Programs & Routines** | Personalized routines adapted to level, goals, injuries, and history | BTP |
+| **Community & Sharing** | Climb sharing, friend performance comparison, and fine-grained privacy controls | BTP |
+| **3D Pose AI & Interactive Scene** | 3D posture extraction from climbing video with richer metrics and an interactive 3D mobile viewer (orbit, zoom) | ATP |
+| **Hold Qualification** | Advanced automatic hold qualification (type, difficulty, usability) extending BTP detection & grouping | ATP |
+| **Assisted Climbing (AR Audio)** | Accessibility mode (stationary phone + audio) providing real-time pose tracking and audio guidance | ATP |
+| **Subscriptions & Quotas** | Flexible tiers (Freemium, Premium, Infinity) with transparent quotas | BTP -> ATP |
 
 ---
 
@@ -68,7 +66,7 @@ Ascension/
 └── docs/                   # All project documentation
 ```
 
-Each app under `apps/` is independently buildable and deployable. See the [Monorepo Guide](docs/20-engineering/developer_guide/architecture/monorepo-guide.md) for the full structure, moonrepo task conventions, and CI/CD workflow.
+Each app under `apps/` is independently buildable and deployable. See the [Monorepo Guide](docs/Ascension/developer/architecture/monorepo-guide.md) for the full structure, moonrepo task conventions, and CI/CD workflow.
 
 ---
 
@@ -78,20 +76,30 @@ Each app under `apps/` is independently buildable and deployable. See the [Monor
 | :------------- | :----------------------------------------------------------- |
 | Mobile         | Flutter (Dart) — `CustomPainter` for local overlay rendering |
 | API            | Go, Gin, pgx — JWT auth, REST + WebSocket         |
-| AI Workers     | Python 3.10+, MediaPipe, PyTorch, OpenCV                     |
-| Message Queue  | RabbitMQ 3.x — async job dispatch between API and workers    |
-| Database       | PostgreSQL 16 — JSONB for analysis results                   |
-| Object Storage | MinIO (dev) / Hetzner Storage Box (prod) — S3-compatible     |
-| Infrastructure | Hetzner Cloud (EU), Docker Compose → Kubernetes              |
+| AI Workers     | Python 3.11, MediaPipe, PyTorch, OpenCV                     |
+| Message Queue  | RabbitMQ 4.2.4 — async job dispatch between API and workers    |
+| Database       | PostgreSQL 18 — JSONB for analysis results                   |
+| Object Storage | RustFS (dev) / OVHcloud Object Storage (prod) — S3-compatible |
+| Infrastructure | OVHcloud VPS-4 (Milan) + Gravelines Storage (S3), Docker Compose |
 | Monorepo       | moonrepo                                                     |
 
-For the full rationale behind every technology choice, see the [Architecture Decision Record](docs/developer_guide/architecture/README.md).
+For the full rationale behind every technology choice, see the [Architecture Decision Record](docs/Ascension/developer/architecture/readme.md).
+
+---
+
+## Business Model
+
+| Tier | Price | Analyses / month | Ghost Mode / month | Max Routines | Ads | Server Priority |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| Freemium | Free | 10 | ✗ | 5 | ✓ | ✗ |
+| Premium | €20 / month | 30 | 30 | Unlimited | ✗ | ✗ |
+| Infinity | €30 / month | 100 | 100 | Unlimited | ✗ | ✓ |
 
 ---
 
 ## Getting Started
 
-> Full step-by-step instructions, prerequisites, and environment variables are in the **[Development Environment Setup](docs/developer_guide/architecture/deployment/development.md)** guide.
+> Full step-by-step instructions, prerequisites, and environment variables are in the **[Development Environment Setup](docs/Ascension/developer/architecture/deployment/development.md)** guide.
 
 **Quick start (local dev):**
 
@@ -106,7 +114,7 @@ curl -fsSL https://moonrepo.dev/install/moon.sh | bash
 # 3. Copy environment template and fill in values
 cp .env.example .env
 
-# 4. Start infrastructure (PostgreSQL, RabbitMQ, MinIO)
+# 4. Start infrastructure (PostgreSQL, RabbitMQ, RustFS)
 docker compose up -d
 
 # 5. Run a service
@@ -114,7 +122,7 @@ moon run server:dev     # Go API
 moon run ai:dev         # Python AI worker
 ```
 
-For production deployment, see the [Production Setup Guide](docs/developer_guide/architecture/deployment/production.md).
+For production deployment, see the [Production Setup Guide](docs/Ascension/developer/architecture/deployment/production.md).
 
 ---
 
@@ -122,16 +130,17 @@ For production deployment, see the [Production Setup Guide](docs/developer_guide
 
 | Topic                     | Document                                                                                                 |
 | :------------------------ | :------------------------------------------------------------------------------------------------------- |
-| Architecture overview     | [Architecture README](docs/20-engineering/developer_guide/architecture/README.md)                         |
-| System design & patterns  | [System Overview](docs/20-engineering/developer_guide/architecture/system-overview.md)                  |
-| Monorepo & moonrepo guide | [Monorepo Guide](docs/20-engineering/developer_guide/architecture/monorepo-guide.md)                    |
-| Database schema & ERD     | [Database Schema](docs/20-engineering/developer_guide/architecture/specifications/database-schema.md)   |
-| API specification         | [API Specification](docs/20-engineering/developer_guide/architecture/specifications/api-specification.md)|
-| Development environment   | [Dev Setup](docs/20-engineering/developer_guide/architecture/deployment/development.md)                 |
-| Production deployment     | [Production Setup](docs/20-engineering/developer_guide/architecture/deployment/production.md)           |
-| Git branch conventions    | [Branch Standards](docs/20-engineering/git/git-branch-standards-guide.md)                               |
-| Git commit conventions    | [Commit Standards](docs/20-engineering/git/git-commit-standards-guide.md)                               |
-| Markdown style guide      | [Markdown Guidelines](docs/00-start-here/guidelines/markdown-guidelines.md)                            |
+| Architecture overview     | [Architecture README](docs/Ascension/developer/architecture/readme.md)                         |
+| System design & patterns  | [Global Architecture](docs/Ascension/developer/architecture/globale-architecture.md)                  |
+| Product & scope audit     | [Product & Scope Pivot Audit](docs/Ascension/developer/architecture/audits/product-scope-pivot-audit.md) |
+| Monorepo & moonrepo guide | [Monorepo Guide](docs/Ascension/developer/architecture/monorepo-guide.md)                    |
+| Database schema & ERD     | [Database Schema](docs/Ascension/developer/architecture/specifications/database-schema.md)   |
+| API specification         | [API Specification](docs/Ascension/developer/architecture/specifications/api-specification.md)|
+| Development environment   | [Dev Setup](docs/Ascension/developer/architecture/deployment/development.md)                 |
+| Production deployment     | [Production Setup](docs/Ascension/developer/architecture/deployment/production.md)           |
+| Git branch conventions    | [Branch Standards](docs/Ascension/developer/git/git-branch-standards-guide.md)                               |
+| Git commit conventions    | [Commit Standards](docs/Ascension/developer/git/git-commit-standards-guide.md)                               |
+| Markdown style guide      | [Markdown Guidelines](docs/Ascension/developer/guidelines/markdown-guidelines.md)                            |
 
 ---
 
