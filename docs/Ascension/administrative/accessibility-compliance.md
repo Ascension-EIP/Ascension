@@ -43,7 +43,7 @@ Le processus de documentation s'aligne sur les références suivantes :
 
 - les principes **WCAG 2.1 Niveau AA** (Perceptible, Utilisable, Compréhensible, Robuste),
 - les contraintes syntaxiques **CommonMark / GFM** pour un parsing cohérent,
-- les conventions Markdown du projet définies dans `docs/developer/guidelines/markdown-guidelines.md`.
+- les conventions Markdown du projet définies dans `docs/Ascension/developer/guidelines/markdown-guidelines.md`.
 
 Il s'agit d'une déclaration de conformité de la qualité du contenu Markdown ; elle ne remplace pas un audit d'accessibilité juridique externe complet de chaque page rendue en aval.
 
@@ -82,7 +82,7 @@ En pratique, cela prouve que l'accessibilité est intégrée dès le cycle de r�
 
 Artefacts de preuve principaux :
 
-- `docs/developer/guidelines/markdown-guidelines.md` (règles de rédaction normatives),
+- `docs/Ascension/developer/guidelines/markdown-guidelines.md` (règles de rédaction normatives),
 - `docs/readme.md` (processus de publication et synchronisation du wiki),
 - cette déclaration de conformité en tant que justification explicite de la démarche d'accessibilité.
 

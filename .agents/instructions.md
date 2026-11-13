@@ -69,7 +69,7 @@ Examples of what to avoid by default:
 - Before implementing, identify if a repository guideline is relevant to the task.
 - Read only the guideline(s) needed for the current task, not all guidelines.
 - Example, if the task is Markdown-related, read:
-  - `docs/developer/guidelines/markdown-guidelines.md`
+  - `docs/Ascension/developer/guidelines/markdown-guidelines.md`
 - Apply the same behavior for any other language/tool guideline: detect relevance, read, then apply.
 
 ---

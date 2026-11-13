@@ -72,7 +72,7 @@ Commands are structured task prompts that can be triggered on demand using slash
 - **Source:** `.agents/commands/commit.md`
 - **Purpose:** Generates atomic conventional commit messages following the project's commit guidelines.
 - **Trigger:** Type `/commit` after staging files with `git add`.
-- **Reference Document:** `docs/developer/git/git-commit-standards-guide.md`
+- **Reference Document:** `docs/Ascension/developer/git/git-commit-standards-guide.md`
 - **Behavior:**
   - Evaluates staged changes using `git diff --staged`.
   - Determines the appropriate type (`feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, etc.) and scope (`mobile`, `server`, `ai`, `docs`, etc.).
@@ -84,7 +84,7 @@ Commands are structured task prompts that can be triggered on demand using slash
 - **Source:** `.agents/commands/documentation-files.md`
 - **Purpose:** Full checklist and auditing protocol for creating or updating Markdown documentation files.
 - **Trigger:** Type `/documentation-files` when editing docs, creating new guides, or reviewing Markdown structure.
-- **Reference Document:** `docs/developer/guidelines/markdown-guidelines.md`
+- **Reference Document:** `docs/Ascension/developer/guidelines/markdown-guidelines.md`
 - **Key Verifications:**
   - Mandatory Densho status header block (`:::success`, `:::warning`, `:::danger`).
   - Strict heading hierarchy without skipping levels.
