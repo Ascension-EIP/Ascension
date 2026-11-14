@@ -12,7 +12,7 @@ id: 8f669aa8-75b7-45de-a63c-8981d50169f4
 
 ## 1\. Le problème à résoudre : le Mode Fantôme
 
-- **Ce qu'on veut faire :** L'utilisateur prend une photo d'une voie d'escalade et sélectionne ses prises ou laisse l'IA les détecter. En fonction de la morphologie du grimpeur, l'application doit lui donner la séquence de mouvements étape par étape pour réussir la voie (ex. *Étape 1 : pied gauche sur la prise 2, main droite sur la prise 4...*).
+- **Ce qu'on veut faire :** L'utilisateur prend une photo d'une voie d'escalade et sélectionne ses prises ou laisse l'IA les détecter. En fonction de la morphologie du grimpeur, l'application doit lui donner la séquence de mouvements étape par étape pour réussir la voie (ex. _Étape 1 : pied gauche sur la prise 2, main droite sur la prise 4..._).
 - **Ce qu'on ne sait pas faire aujourd'hui :** Trouver automatiquement une suite de mouvements logique, humaine et réalisable sans que le grimpeur se retrouve coincé ou dans une posture impossible.
 
 ---
@@ -76,22 +76,20 @@ id: 8f669aa8-75b7-45de-a63c-8981d50169f4
 
 ## 6\. Journal de recherche (Research Log)
 
+L'ensemble des fiches de veille et d'analyse technique est répertorié dans le dossier dédié [research-logs](./research-logs/readme.md).
+
 ### 6.1 Format d'une fiche
 
-Pour chaque entrée dans le journal, nous notons :
+Pour chaque entrée dans le journal, nous renseignons les éléments suivants selon notre gabarit standardisé :
 
-- **Date :** Quand la ressource a été consultée.
-- **Auteur :** Qui l'a analysée.
-- **Source & lien :** Référence de l'article, vidéo ou repo.
-- **Sujet :** Ce que ça explique en 2-3 lignes.
-- **Apport pour Ascension :** Ce que ça peut changer pour notre projet.
-- **Décision :** Ce qu'on fait (Adopté / En test / Écarté, et pourquoi).
+- **Métadonnées :** Identifiant unique (`[RL-XX]`), date d'analyse, auteur (avec son pôle), thématique, source formelle (titre, auteurs, conférence / dépôt) et lien ou DOI pérenne.
+- **Synthèse technique :** Résumé du problème adressé, méthodologie et principes algorithmiques (5 à 10 lignes).
+- **Apport pour Ascension :** Identification précise du verrou technique levé et impact sur nos critères de succès chiffrés (faisabilité 100 %, équilibre $\ge 85\%$, différenciation morphologique $\ge 20\%$, temps de calcul $< 30$s).
+- **Décision & Plan d'action :** Statut explicite (**Adopté**, **En test** ou **Écarté**), justification technique des compromis et actions concrètes dans le code ou l'architecture.
 
-### 6.2 Exemple de première entrée
+### 6.2 Exemples de fiches
 
-- **Date :** 15 octobre 2026
-- **Auteur :** Gianni TUERO
-- **Source :** Travaux de Lionel Reveret sur le mouvement en escalade.
-- **Sujet :** Analyse du placement des appuis et de l'équilibre du grimpeur.
-- **Apport pour Ascension :** Confirme que la règle des 3 appuis permet d'éviter les positions de déséquilibre sans calcul trop lourd.
-- **Décision :** Adopté. Intégration de cette règle comme contrainte dans notre algorithme pour éliminer immédiatement les positions de chute.
+Les fiches détaillées (incluant des cas **Adopté** et **Écarté**) sont consultables dans le document [Exemples de fiches de recherche](./research-logs/example.md).
+
+- **Exemple 1 (Adopté) — [RL-01] Analyse biomécanique de l'équilibre statique et règle des 3 appuis :** Modélisation du polygone de sustentation (L. Reveret et al.) pour valider notre critère de $\ge 85\%$ d'équilibre sans explosion combinatoire, intégré comme filtre d'élagage dans le solveur de pathfinding (`apps/ai/workers/pathfinding/solver.py`).
+- **Exemple 2 (Écarté) — [RL-02] Génération de trajectoire par Deep Reinforcement Learning (PPO) :** Écarté en raison de l'instabilité sur des parois arbitraires réelles et d'un temps d'inférence (> 4 min) incompatible avec notre critère de temps de calcul (< 30s).
