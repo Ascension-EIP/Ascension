@@ -184,7 +184,7 @@ The thresholds are named constants in `src/worker/_1_mediapipe/` and can be over
 
 ## Triggering a job by hand
 
-Until the Go server publishes on these queues (see the backend handoff note, which is not versioned in the repository), `src/producer.py` plays the server. It needs PostgreSQL (migrated), RabbitMQ and RustFS.
+The Go server publishes `pose.detect.requested` itself. Without the server, `src/producer.py` plays its role. It needs PostgreSQL (migrated), RabbitMQ and RustFS.
 
 | Command                                                                 | Effect                                                                                                                                  |
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
@@ -264,8 +264,8 @@ The contract between the worker and the server lives in `schemas/` at the reposi
 - **Hands are unreliable on `example-2.mp4`.** With `MIN_VISIBILITY` at 0.5, the wrist is measured on only 142 (left) and 136 (right) frames out of 309. On that video no frame has both arms measurable at once. The movements of the hands are therefore unusable and no pause is detected (14 movements, 0 pause). The feet are consistent. Lowering `MIN_VISIBILITY` to 0.1 to 0.3 makes the hands continuous, but it is not validated: those landmarks are ones the model judges unreliable. The advice step flags such limbs as unreliable and forbids conclusions on them.
 - **Thresholds are calibrated on one video** (`resources/example-2.mp4`, climber seen from behind): `MIN_VISIBILITY` 0.5, `MAX_GAP_FRAMES` 5, `SMOOTH_WINDOW` 5, `BENT_ARM_THRESHOLD` 0.8, speeds 0.8 and 0.4 torso lengths per second, merge gap 150 ms, minimum movement 100 ms, minimum pause 500 ms. Revisit them with real climbs and other camera angles.
 - **LLM providers are not tested for real.** No call to Gemini or DeepSeek has been made. Model names and JSON mode support are unverified.
-- **The Go server is not wired to the worker.** It still publishes on `vision.skeleton`, which nobody consumes, and still uses the old status values. Only `producer.py` triggers jobs. The wiring to do on the Go side is described in the backend handoff note (not versioned in the repository).
-- **An invalid payload goes to the dead-letter queue without any status.** The analysis stays `pending` in the database. The server has to detect it (for example by watching `<queue>.dlq` or a timeout).
+- **The Go server does not consume the worker's events.** It publishes `pose.detect.requested` but ignores `pose.detect.status`, `pose.detect.completed` and `pose.advice.status`: the app polls the API, which reads the `analyses` row. `POST /v1/analysis/:id/retry-advice` is still a TODO on the Go side.
+- **An invalid payload goes to the dead-letter queue without any status.** The analysis stays `pending` in the database. The server's cron job marks an analysis still `pending` after 15 minutes as `failed`.
 - **Progress 75 is never written.** Skeleton, filtering, metrics and movements run in one call, so the progress goes from 70 to 80.
 - **No reconnection.** If the RabbitMQ connection drops, the process exits with a non-zero code and Docker restarts it. The worker finishes the running job first.
 - **The end-to-end test is not in the CI.** It needs `docker compose`. Processing time of `example-2.mp4` (10 s, 1.6 MB) was measured at about 6 s on a CPU, with a simulated LLM. This is a baseline from a single video.

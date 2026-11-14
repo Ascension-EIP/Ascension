@@ -75,4 +75,4 @@ Résumé concis (5 à 10 lignes) du contenu technique : problème adressé par l
 
 ## 4\. Entrées du journal
 
-:::subpages
+:::subpages cards 3

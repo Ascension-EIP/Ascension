@@ -96,10 +96,6 @@ The contract is versioned in the `schemas/` folder of the repository.
 
 `job_id` is the `id` of the `analyses` row, which the API creates before publishing. A job that fails for good goes to `poses.detect.dlq` or `poses.advice.dlq`.
 
-:::danger
-**Known issue (12 November 2026):** the API does not follow this contract yet. `POST /v1/analysis` fails with `struct doesn't have corresponding row field hints`, and the API publishes `{analysis_id, video_url}` to the `vision.skeleton` queue, which no worker reads. Until the API is fixed, an analysis requested from the mobile app never reaches the worker.
-:::
-
 ---
 
 ## 4\. Checking the worker

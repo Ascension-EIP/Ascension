@@ -121,17 +121,15 @@ graph TD
     AdviceGenerator -->|"8a. Publish Status / Completed"| MessageQueue
     GhostGenerator -->|"8b. Publish Status / Completed"| MessageQueue
 
-    MessageQueue -->|"9. Notify Ready"| APIServer
-    APIServer -->|"10. Notification (WebSocket / Polling)"| MobileApp
-    MobileApp -->|"11. Fetch Analysis JSON"| APIServer
-    APIServer -->|"12. Retrieve JSON"| Database
+    MobileApp -->|"9. Poll Analysis JSON"| APIServer
+    APIServer -->|"10. Retrieve JSON"| Database
 ```
 
 ---
 
 ## Data Flow: Complete Pose Analysis
 
-The diagram shows the contract implemented by the AI worker. The Go API still publishes on the old queue `vision.skeleton` and uses the old status values until the backend handoff is applied, so an analysis started from the app does not reach the worker yet.
+The diagram shows the flow as implemented in the code (`apps/server` and `apps/ai`). The Go API creates the `analyses` row, publishes `pose.detect.requested` on the `events` exchange and the AI worker takes over from there. The API does not consume the worker's `*.status` events yet: it only reads the `analyses` row, so the app polls. A cron job marks as `failed` any analysis still `pending` after 15 minutes.
 
 ```mermaid
 sequenceDiagram
@@ -140,7 +138,7 @@ sequenceDiagram
     participant App as 📱 Flutter App
     participant API as 🛡️ Go API
     participant S3 as 📦 S3/RustFS
-    participant RMQ as 📨 RabbitMQ
+    participant RMQ as 📨 RabbitMQ (exchange events)
     participant Worker as 🤖 AI Worker
     participant DB as 🗄️ PostgreSQL
 
@@ -148,40 +146,46 @@ sequenceDiagram
     App->>App: Caches video locally
 
     Note over App,API: UPLOAD PHASE
-    App->>API: GET /v1/videos/upload-url?content_type=...&size=...
-    API->>S3: Generate presigned URL (15min expiry)
+    App->>API: POST /v1/videos/upload-url {content_type, size, visibility, ...}
+    API->>DB: INSERT INTO videos (status='pending')
+    API->>S3: Generate presigned PUT URL
     S3-->>API: Returns presigned URL
-    API-->>App: Returns URL + video_id
+    API-->>App: Returns URL + video_id + expires_at
 
     App->>S3: PUT video (direct upload)
     S3-->>App: Upload success
     App->>API: PUT /v1/videos/upload-done/{video_id}
+    API->>S3: Check the object exists
+    API->>DB: UPDATE videos SET status='completed'
     API-->>App: 204 No Content
 
     Note over App,RMQ: JOB SUBMISSION
-    App->>API: POST /v1/analysis {video_id}
+    App->>API: POST /v1/analysis {video_id, type, visibility}
     API->>DB: INSERT INTO analyses (status='pending')
     API->>RMQ: Publish 'pose.detect.requested' {job_id, object_key}
-    API-->>App: Returns analysis_id (202 Accepted)
+    API-->>App: Returns the analysis (202 Accepted)
 
-    Note over RMQ,Worker: PROCESSING PHASE
+    Note over RMQ,Worker: STEP 1: POSE DETECTION (queue poses.detect)
     RMQ->>Worker: Job consumed from queue 'poses.detect'
-    Worker->>DB: UPDATE analyses SET status='started', then 'running'
+    Worker->>DB: UPDATE analyses SET status='started', then progress 5 (running)
+    Worker->>RMQ: Publish 'pose.detect.status' (started, running)
     Worker->>S3: Download video (temporary file)
     S3-->>Worker: Video stream
+    Worker->>Worker: MediaPipe skeleton, filtering, angles and metrics, movements
+    Worker->>DB: UPDATE analyses SET progress (up to 80), result=data
+    Worker->>RMQ: Publish 'pose.detect.status' (success) and 'pose.detect.completed' {job_id}
 
-    Worker->>Worker: Step 1: pose detection — MediaPipe, filtering, metrics, movements
-    Worker->>DB: UPDATE analyses SET result=data (progress 85)
-    Worker->>RMQ: Publish 'pose.detect.status' and 'pose.detect.completed'
+    Note over RMQ,Worker: STEP 2: ADVICE (queue poses.advice)
+    RMQ->>Worker: 'pose.detect.completed' consumed from queue 'poses.advice'
+    Worker->>RMQ: Publish 'pose.advice.status' (started, running)
+    Worker->>DB: UPDATE analyses SET progress=90
+    Worker->>Worker: LLM advice from the computed values only
+    Worker->>DB: UPDATE analyses SET hints=data, status='success', progress=100
+    Worker->>RMQ: Publish 'pose.advice.status' (success, or failed if the LLM fails)
 
-    RMQ->>Worker: Job consumed from queue 'poses.advice'
-    Worker->>Worker: Step 2: advice generation — LLM
-    Worker->>DB: UPDATE analyses SET hints=data, status='success'
-    Worker->>RMQ: Publish 'pose.advice.status'
-
-    Note over API,App: NOTIFICATION & FETCH
+    Note over API,App: FETCH (polling)
     App->>API: Polls GET /v1/analysis/{analysis_id}
-    API->>DB: SELECT result, hints FROM analyses
+    API->>DB: SELECT status, progress, result, hints FROM analyses
     DB-->>API: Returns JSON data
     API-->>App: Returns analysis (50KB)
 
@@ -189,7 +193,7 @@ sequenceDiagram
     App->>User: Shows analysis (skeleton overlay, advice)
 ```
 
-*Summary: The Flutter app requests a presigned URL from the Go API, uploads the video directly to S3/RustFS, and triggers an analysis job. The Go API queues `pose.detect.requested` in RabbitMQ; the AI worker runs pose detection followed by LLM advice generation, persisting results to PostgreSQL. The app polls the API to fetch the lightweight JSON payload and renders the overlay locally.*
+*Summary: the Flutter app requests a presigned URL from the Go API, uploads the video directly to S3/RustFS, confirms the upload and creates an analysis. The Go API inserts a `pending` analysis and publishes `pose.detect.requested`. The AI worker consumes it from `poses.detect`, writes `result` and publishes `pose.detect.completed`, which is consumed from `poses.advice` to generate the LLM `hints`. The worker publishes its statuses on `pose.detect.status` and `pose.advice.status`. If the LLM fails or is not configured, the analysis still ends in `success` with empty `hints`. A message the worker rejects for good goes to `<queue>.dlq`. The app polls the API to fetch the lightweight JSON payload and renders the overlay locally.*
 
 ---
 
