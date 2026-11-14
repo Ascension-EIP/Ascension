@@ -3,223 +3,205 @@ id: 25176ca6-b02b-4486-9923-387e6794af1a
 ---
 
 :::warning
-**Version:** 0.3
+**Version:** 0.1
 :::
 
 ---
 
-# Pipeline decomposition
+# Décomposition de la pipeline 2D
 
-This document breaks Ascension's 2D AI pipeline down into technical building blocks. It supports the monthly follow-up with the computer vision mentor (Ilyes TALBI). It draws on the Sep 14 memo, the Sep 29 follow-up meeting, the database schema and the state of the code (`apps/ai`). Updated on Oct 30, 2026: blocks A1 to A4 and D3 are done in `apps/ai` (see the [worker README](../../../../../apps/ai/README.md)), with their limits.
+Ce document décompose la pipeline IA 2D d'Ascension en briques techniques. Il sert de support au suivi mensuel avec le mentor en vision par ordinateur (Ilyes TALBI). Il reprend le mémo du 14/09, la réunion de suivi du 29/09, le schéma de base de données et l'état du code (`apps/new_ai`).
 
-Each block lists its input, output, planned technology, status and risks. The points to settle with the mentor are grouped in section 7.
-
----
-
-## 1\. Common vocabulary
-
-| Term             | Definition used in this document                                                                        |
-| ---------------- | ------------------------------------------------------------------------------------------------------- |
-| **Hold**         | Object fixed to the wall and usable by a climber (hand or foot).                                        |
-| **Route**        | Set of holds of the same color, set by the route setter, to be linked from start to finish.             |
-| **Beta**         | Sequence of movements that solves the route: at each step, which hold for which hand or foot.           |
-| **Pathfinding**  | Computation of the beta from the route's holds and the climber's morphology.                            |
-| **Skeleton**     | 33 body points per frame, extracted by MediaPipe Pose.                                                  |
-| **Ghost Mode**   | Step-by-step breakdown of a feasible (not "optimal") beta, as a sequence of images generated only from a photo of the route, the chosen holds (group/color or manual) and the climber's morphology. |
-| **Clustering**   | Automatic grouping of similar holds (color, position) to recover the routes.                            |
+Chaque brique indique son entrée, sa sortie, la technologie envisagée, son statut et ses risques. Les points à trancher avec le mentor sont regroupés en section 7.
 
 ---
 
-## 2\. Overview
+## 1\. Vocabulaire commun
 
-The 2D AI pipeline separates two independent flows: the **video (2D pose analysis)** flow, which produces the skeleton, the metrics, the advice and the comparison between climbers on the same route (blocks A, D, E1), and the **photo (Ghost Mode)** flow, which detects/groups holds on a photo of an empty route and generates a feasible beta as step-by-step images (blocks B, C, E2). No video-to-ghost comparison or alignment is performed.
+| Terme | Définition utilisée dans ce document |
+| --- | --- |
+| **Prise (hold)** | Objet fixé au mur et utilisable par un grimpeur (main ou pied). |
+| **Voie (route)** | Ensemble des prises d'une même couleur, posé par l'ouvreur, à enchaîner du départ à la fin. |
+| **Bêta** | Séquence de mouvements qui résout la voie : à chaque étape, quelle prise pour quelle main ou quel pied. |
+| **Pathfinding** | Calcul de la bêta à partir des prises de la voie et de la morphologie du grimpeur. |
+| **Squelette** | 33 points du corps par image, extraits par MediaPipe Pose. |
+| **Mode fantôme** | Affichage de la bêta optimale en superposition sur la photo de la voie ou sur la vidéo du grimpeur. |
+| **Clustering** | Regroupement automatique de prises similaires (couleur, position) pour retrouver les voies. |
+
+---
+
+## 2\. Vue d'ensemble
+
+La pipeline compte cinq blocs. Le bloc A (vidéo) et le bloc B (photo) sont indépendants et tournent en parallèle, comme proposé par le mentor le 14/09. Le bloc C a besoin des prises validées du bloc B. Le bloc D croise le squelette du bloc A avec la bêta du bloc C pour produire les conseils. Le bloc E est le rendu côté client.
 
 ```mermaid
 flowchart TD
-    subgraph A ["A. Video analysis"]
-        A1["A1 Climber video"] --> A2["A2 MediaPipe skeleton\n33 points per frame"]
-        A2 --> A3["A3 Angles and metrics"]
-        A3 --> A4["A4 Movement segmentation"]
+    subgraph A ["A. Analyse vidéo"]
+        A1["A1 Vidéo du grimpeur"] --> A2["A2 Squelette MediaPipe\n33 points par image"]
+        A2 --> A3["A3 Angles et métriques"]
+        A3 --> A4["A4 Découpage en mouvements"]
     end
 
-    subgraph D ["D. Advice & video comparison"]
-        D2["D2 Video-to-video comparison\n(same route, public/friends)"]
-        D3["D3 Advice\nexternal model"]
-    end
-
-    subgraph B ["B. Route reading"]
-        B1["B1 Route photo"] --> B2["B2 Hold detection\nYOLOv8"]
-        B2 --> B3["B3 Dominant color\nOpenCV"]
-        B3 --> B4["B4 Clustering\nby route / color"]
-        B4 --> B5["B5 Group or manual selection"]
+    subgraph B ["B. Lecture de voie"]
+        B1["B1 Photo de la voie"] --> B2["B2 Détection des prises\nYOLOv8"]
+        B2 --> B3["B3 Couleur dominante\nOpenCV"]
+        B3 --> B4["B4 Clustering\npar voie"]
+        B4 --> B5["B5 Validation utilisateur"]
     end
 
     subgraph C ["C. Pathfinding"]
-        C1["C1 Selected holds\n+ morphology"] --> C2["C2 Feasible beta\nstep by step (images)"]
+        C1["C1 Prises de la voie\n+ morphologie"] --> C2["C2 Calcul de la bêta\npar étapes"]
     end
 
-    subgraph E ["E. Flutter mobile rendering"]
-        E1["E1 Skeleton overlay\n& advice on video"]
-        E2["E2 Step-by-step viewer\nGhost Mode on photo"]
+    subgraph D ["D. Comparaison et conseils"]
+        D1["D1 Alignement vidéo et photo"] --> D2["D2 Écarts vidéo et bêta"]
+        D2 --> D3["D3 Conseils\nmodèle externe"]
     end
 
-    A4 --> D3
-    A4 --> D2
-    A2 --> E1
-    D3 --> E1
+    subgraph E ["E. Rendu mobile Flutter"]
+        E1["E1 Overlay squelette"]
+        E2["E2 Overlay fantôme"]
+    end
+
     B5 --> C1
     C2 --> E2
+    C2 --> D2
+    A4 --> D2
+    A2 --> D1
+    B1 --> D1
+    A2 --> E1
+    D3 --> E1
 ```
 
-_Diagram summary: the video pipeline (A) feeds the advice (D3), the comparison between users on the same route (D2) and the mobile overlay (E1). Independently, the photo pipeline (B) isolates the holds of an empty route, feeds the morphological pathfinding (C) to compute a feasible beta, and generates the step-by-step images displayed on the photo in the mobile app (E2)._
+*Résumé du diagramme : la vidéo (A) et la photo (B) sont traitées en parallèle. Les prises validées alimentent le pathfinding (C). La comparaison (D) croise le squelette et la bêta pour générer les conseils. Le client Flutter affiche le squelette, le fantôme et les conseils (E).*
+
+> **Écart avec la documentation existante** : [system-overview.md](../../architecture/system-overview.md) décrit quatre étapes séquentielles (prises, squelette, conseils, fantôme). La version parallèle ci-dessus est plus proche de ce que le mentor a proposé et évite d'attendre la photo pour analyser la vidéo.
 
 ---
 
-## 3\. Block A: video analysis (pose)
+## 3\. Bloc A : analyse vidéo (pose)
 
-| Block                      | Input                                                         | Output                                                                                                      | Technology                                                   | Status                                                                                                                                 |
-| -------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| A1 Ingestion               | MP4 video (10 to 60 s) uploaded to RustFS via presigned URL   | Temporary local file in the worker, deleted after use                                                       | Go (presigned URL), RabbitMQ, RustFS (boto3)                 | **Done** on the worker side. The Go server is not wired yet (it publishes on the old queue)                                            |
-| A2 Skeleton                | Video frames                                                  | 33 landmarks per frame (`x`, `y`, `z`, `visibility`)                                                        | MediaPipe PoseLandmarker (`full` model)                      | **Done**: one landmarker per video, constant memory (398 MiB measured for 309 and 1236 frames), unreadable video = permanent error    |
-| A3 Angles and metrics      | Landmarks                                                     | 10 joint angles per frame, wrist and ankle speed, arm extension, global metrics                             | Python (geometry, numpy)                                     | **Done**: filtering (visibility ≥ 0.5, gaps of at most 5 frames filled, smoothing over 5 frames), angles computed in pixels, `z` discarded |
-| A4 Movement segmentation   | Time series of speeds                                         | List of movements (which limb moves, start, end) and pauses                                                 | Hysteresis rules on wrist and ankle speed                    | **Done**, but **hands unreliable** on `example-2.mp4` (see below)                                                                      |
+| Brique | Entrée | Sortie | Technologie | Statut |
+| --- | --- | --- | --- | --- |
+| A1 Ingestion | Vidéo MP4 (10 à 60 s) téléversée sur MinIO par URL présignée | Fichier local temporaire dans le worker | Go (URL présignée), RabbitMQ, MinIO | Partiel : le handler existe, le téléchargement S3 est un TODO |
+| A2 Squelette | Frames de la vidéo | 33 landmarks par image (`x`, `y`, `z`, `visibility`) | MediaPipe PoseLandmarker (modèle `full`) | Fait |
+| A3 Angles et métriques | Landmarks | 10 angles articulaires par image, vitesse, extension des bras | Python (géométrie) | Partiel : angles faits, métriques à ajouter |
+| A4 Découpage en mouvements | Série temporelle des landmarks | Liste de mouvements (quel membre bouge, début, fin) et de pauses | Règles sur la vitesse des poignets et chevilles | À explorer |
 
-Points of attention:
+Points d'attention :
 
-- The output of A2 and A3 is already validated by the `AnalysisResult` schema and stored in `analyses.result` (JSONB).
-- The MediaPipe confidence threshold stays very low (0.1) so that no pose is lost. Low-visibility landmarks are therefore filtered and then smoothed before computing the angles (`pose-filter` step). A missing landmark is omitted, never written as 0, and an angle with a missing point is omitted.
-- A4 enriches the metrics passed to the advice model (block D3) and to the video-to-video comparison between climbers (block D2).
-- Each step is a subcommand of `uv run worker` (`pose-skeleton`, `pose-filter`, `pose-metrics`, `pose-movements`, `pose-detect`), without RabbitMQ, database or storage.
-
-**Chosen thresholds** (named constants, overridable on the command line):
-
-| Threshold                                       | Value                                   | Step                                           |
-| ----------------------------------------------- | --------------------------------------- | ---------------------------------------------- |
-| `MIN_VISIBILITY`                                | 0.5                                     | Filtering                                      |
-| `MAX_GAP_FRAMES`                                | 5                                       | Filtering (gap filling)                        |
-| `SMOOTH_WINDOW`                                 | 5 frames                                | Filtering                                      |
-| `BENT_ARM_THRESHOLD`                            | 0.8                                     | Metrics (arm bent below 80% of extension)      |
-| `MOVE_SPEED_THRESHOLD` / `STOP_SPEED_THRESHOLD` | 0.8 / 0.4 torso lengths per second      | Movements (hysteresis)                         |
-| `MERGE_GAP_MS` / `MIN_MOVE_MS` / `MIN_PAUSE_MS` | 150 / 100 / 500 ms                      | Movements                                      |
-
-**Known limits**:
-
-- **Thresholds calibrated on a single video** (`resources/example-2.mp4`, climber seen from behind, 309 frames). They need to be revisited with real climbs and other camera angles.
-- **Hands are not reliable on this video with `MIN_VISIBILITY` at 0.5.** The average wrist visibility is 0.48 to 0.50: speed is only known on 142 frames (left) and 136 (right) out of 309, and no frame has both arms measurable at the same time. Result: 14 movements (feet consistent, hands unusable) and no pause. A pause requires all four limbs to be measured and still; a more permissive version produced a phantom pause.
-- Lowering `MIN_VISIBILITY` (0.1 to 0.3) makes the hands continuous but is not validated: these are points the model considers unreliable. To be decided after visual validation on a climber filmed from the front or side.
-- Angles are computed in 2D (pixels), `z` is discarded: on this video, 3D angles differ from 2D angles by 5 to 50° on average depending on the joint, without reducing frame-to-frame noise.
-- Measured processing time: about 6 s for `example-2.mp4` (10 s of video), on CPU, with a mocked LLM. Reference value on a single video.
+- La sortie de A2 et A3 est déjà validée par le schéma `AnalysisResult` et stockée dans `analyses.result` (JSONB).
+- Le seuil de confiance MediaPipe est très bas (0,1) pour ne pas perdre de pose. Il faut donc filtrer ou lisser les landmarks peu visibles avant de calculer des angles.
+- A4 est nécessaire pour comparer la vidéo à une bêta découpée en étapes (bloc D).
 
 ---
 
-## 4\. Block B: route reading (photo)
+## 4\. Bloc B : lecture de voie (photo)
 
 ```mermaid
 flowchart LR
-    Photo["Wall photo"] --> YOLO["YOLOv8\nboxes or masks"]
-    YOLO --> Crop["Crop each hold"]
-    Crop --> Color["Dominant color\nOpenCV, HSV space"]
-    Color --> Cluster["Clustering\ncolor + position"]
-    Cluster --> Routes["Candidate routes"]
-    Routes --> User["Validation or correction\nby the user"]
-    User --> DB[("holds table")]
+    Photo["Photo du mur"] --> YOLO["YOLOv8\nboîtes ou masques"]
+    YOLO --> Crop["Découpe de chaque prise"]
+    Crop --> Color["Couleur dominante\nOpenCV, espace HSV"]
+    Color --> Cluster["Clustering\ncouleur + position"]
+    Cluster --> Routes["Voies candidates"]
+    Routes --> User["Validation ou correction\npar l'utilisateur"]
+    User --> DB[("Table holds")]
 ```
 
-_Diagram summary: YOLO detects the holds, OpenCV extracts the color of each one, clustering groups them into candidate routes, then the user validates before saving._
+*Résumé du diagramme : YOLO détecte les prises, OpenCV extrait la couleur de chacune, le clustering les regroupe en voies candidates, puis l'utilisateur valide avant l'enregistrement.*
 
-| Block                   | Input                               | Output                                                       | Technology                                                                       | Status                                      |
-| ----------------------- | ----------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------- | ------------------------------------------- |
-| B1 Photo                | Photo taken in the app              | Image + dimensions (`routes.image_width`, `image_height`)    | Flutter, RustFS                                                                  | Planned                                     |
-| B2 Hold detection       | Image                               | One box or mask per hold, with a confidence score            | YOLOv8 (Ultralytics), trained on our data                                        | To explore: dataset under construction      |
-| B3 Dominant color       | Pixels of each hold                 | One color per hold (HSV or Lab)                              | OpenCV, k-means on the mask pixels                                               | To explore                                  |
-| B4 Clustering           | Color and position of each hold     | Groups of holds = candidate routes                           | k-means (mentor's advice), DBSCAN or HDBSCAN if the number of routes is unknown  | To explore                                  |
-| B5 Validation           | Candidate routes                    | Holds confirmed, corrected or added by hand                  | Flutter, `holds` table                                                           | Planned: DB schema already defined          |
+| Brique | Entrée | Sortie | Technologie | Statut |
+| --- | --- | --- | --- | --- |
+| B1 Photo | Photo prise dans l'app | Image + dimensions (`routes.image_width`, `image_height`) | Flutter, MinIO | Prévu |
+| B2 Détection des prises | Image | Une boîte ou un masque par prise, avec un score de confiance | YOLOv8 (Ultralytics), entraîné sur nos données | À explorer : jeu de données en construction |
+| B3 Couleur dominante | Pixels de chaque prise | Une couleur par prise (HSV ou Lab) | OpenCV, k-means sur les pixels du masque | À explorer |
+| B4 Clustering | Couleur et position de chaque prise | Groupes de prises = voies candidates | k-means (conseil du mentor), DBSCAN ou HDBSCAN si le nombre de voies est inconnu | À explorer |
+| B5 Validation | Voies candidates | Prises confirmées, corrigées ou ajoutées à la main | Flutter, table `holds` | Prévu : schéma DB déjà défini |
 
-Points of attention:
+Points d'attention :
 
-- The `holds` schema stores a polygon outline. A segmentation model (YOLOv8-seg) provides it directly. A bounding-box model only gives a rectangle.
-- Large volumes (big triangles) are detected less well than green holds in the tests of the Sep 29 meeting.
-- User corrections are kept next to the predictions (`predicted_*`) to feed a learning loop.
-- Hold qualification (type, difficulty) comes after detection. It is not needed for the first prototype.
-
----
-
-## 5\. Block C: pathfinding
-
-| Item       | Content                                                                                                                                                                                |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Input**  | Validated holds of the route (position, type, usability), climber morphology (height, arm span, injured zones), start hold and finish hold                                             |
-| **Output** | Beta by steps: at each step, the hold assigned to the left hand, right hand, left foot, right foot, and the center of mass. This is the format planned in `ghosts.path`               |
-| **Status** | To explore                                                                                                                                                                             |
-
-Three approaches are to be compared:
-
-| Approach                       | Principle                                                                                                                                              | Advantages                                                        | Limits                                                                |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------- | --------------------------------------------------------------------- |
-| **Deterministic**              | Search in a state graph (position of the four limbs), with a cost based on reach, hold difficulty and body constraints                                 | Explainable, no training data needed                              | Cost rules must be written by hand                                    |
-| **Sequential model (LSTM)**    | The model predicts the next limb positions from the current position and the final position                                                            | Learns from real movements, interesting for the technical track   | Needs data (annotated climbing videos or synthetic betas)             |
-| **LLM as reference**           | Claude receives the route image and proposes a sequence                                                                                                | Test done on Sep 29: broadly consistent result                    | Ambiguities on holds and volumes, call cost, not reproducible         |
-
-Proposed line of work: use the LLM output as distillation data to train an open-source model (Ilyes's idea), then measure each approach on the same routes.
-
-The point of separating detection (block B) from pathfinding (block C) is to give the movement model an already reduced set of holds. It can then focus on the order of movements, not on vision.
+- Le schéma `holds` stocke un contour polygonal. Un modèle de segmentation (YOLOv8-seg) le fournit directement. Un modèle à boîtes englobantes ne donne qu'un rectangle.
+- Les gros volumes (grands triangles) sont moins bien détectés que les prises vertes dans les tests de la réunion du 29/09.
+- Les corrections de l'utilisateur sont conservées à côté des prédictions (`predicted_*`) pour alimenter une boucle d'apprentissage.
+- La qualification des prises (type, difficulté) vient après la détection. Elle n'est pas nécessaire au premier prototype.
 
 ---
 
-## 6\. Blocks D and E: comparison, advice and rendering
+## 5\. Bloc C : pathfinding
 
-### 6.1 Block D: comparison and advice
+| Élément | Contenu |
+| --- | --- |
+| **Entrée** | Prises validées de la voie (position, type, utilisabilité), morphologie du grimpeur (taille, envergure, zones blessées), prise de départ et prise finale |
+| **Sortie** | Bêta par étapes : à chaque étape, la prise assignée à la main gauche, à la main droite, au pied gauche, au pied droit, et le centre de masse. C'est le format prévu dans `ghosts.path` |
+| **Statut** | À explorer |
 
-| Block                            | Input                                                                                  | Output                                                                               | Technology                                                                                                                        | Status                                                                                                                                                         |
-| -------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ~~D1 Video and photo alignment~~ | ~~One video frame and the route photo~~                                                | *Dropped after the pivot*                                                            | ~~OpenCV: ORB/SIFT + homography~~                                                                                                 | **Dropped**: Ghost Mode works strictly on a photo of an empty route; no video-vs-ghost comparison                                                              |
-| D2 Video-to-video comparison     | Two pose analyses (`base_analysis_id`, `compared_analysis_id`) on the **same route** (`public` / `friends`) | Kinematic differences between climbers (`comparisons.metrics`)                 | Python, geometry                                                                                                                  | To implement (replaces the old video-vs-beta comparison)                                                                                                       |
-| D3 Advice                        | Angles, metrics, movements, morphology and route context                               | Structured advice (`analyses.hints`: category, priority, body zones, frames)         | Interchangeable model via an OpenAI-compatible client (`LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`), validated by the `Hints` schema | **Done** for pose-only advice. Providers (Gemini, DeepSeek) **not tested for real**; morphology still to be integrated into the prompt                         |
+Trois approches sont à comparer :
 
-Points of attention:
+| Approche | Principe | Avantages | Limites |
+| --- | --- | --- | --- |
+| **Déterministe** | Recherche dans un graphe d'états (position des quatre membres), avec un coût fondé sur la portée, la difficulté des prises et les contraintes du corps | Explicable, sans données d'entraînement | Il faut écrire les règles de coût à la main |
+| **Modèle séquentiel (LSTM)** | Le modèle prédit la prochaine position des membres à partir de la position actuelle et de la position finale | Apprend des mouvements réels, intéressant pour la track technique | Besoin de données (vidéos de grimpe annotées ou bêtas synthétiques) |
+| **LLM en référence** | Claude reçoit l'image de la voie et propose une séquence | Test fait le 29/09 : résultat globalement cohérent | Ambiguïtés sur les prises et volumes, coût d'appel, non reproductible |
 
-- The hold detector (Block B) and Ghost Mode (Block C) work **only on a photo of a route**. They are never overlaid on or compared with a climbing video.
-- The comparison (D2 / `F05`) compares exclusively **two pose videos on the same route** (for example, your own climb against a friend's with `friends` or `public` visibility).
-- The external model must only receive already computed data (angles, metrics, morphology), not the raw video, to limit cost and hallucinations.
-- Implemented this way: the prompt only contains computed, summarized and bounded values (never the video, nor any identifier), and the advice is written in French. For each limb, a measurement coverage is computed; a limb measured on less than 70% of the frames is flagged as unreliable and the model is forbidden from drawing conclusions about it. If the LLM fails, the analysis stays in `success` with `hints = NULL`.
+Piste de travail proposée : utiliser la sortie du LLM comme données de distillation pour entraîner un modèle open source (idée d'Ilyes), puis mesurer chaque approche sur les mêmes voies.
 
-### 6.2 Block E: mobile rendering
-
-- **Pose analysis (F02):** the Flutter client draws the 2D skeleton and the advice on top of the original video from a lightweight JSON (client-side rendering, no video re-encoding). In **ATP**, an interactive 3D scene will make it possible to inspect the pose in 3D.
-- **Ghost Mode (F07):** the mobile app displays, step by step, the sequence of images generated from the initial photo, without video overlay or video export.
+L'intérêt de séparer détection (bloc B) et pathfinding (bloc C) est de donner au modèle de mouvement un ensemble de prises déjà réduit. Il se concentre alors sur l'ordre des mouvements, pas sur la vision.
 
 ---
 
-## 7\. Open questions for the mentor
+## 6\. Blocs D et E : comparaison, conseils et rendu
 
-1. **YOLO: boxes or masks?** The Roboflow datasets found (47 and 123 images) are not of the same type. The data schema expects a polygon outline. Is segmentation worth its annotation cost?
-2. **How many images to start with?** About 300 varied images are planned. Is that enough for holds of very different shapes and colors (holds, volumes, triangles)?
-3. **Clustering:** k-means requires knowing the number of routes. Should we use DBSCAN or HDBSCAN instead, or ask the user for the number of routes?
-4. **Pathfinding:** deterministic or LSTM first? How to get training data (distillation from Claude, scraped videos, synthetic betas)?
-5. ~~**Video and photo alignment (D1):**~~ *Closed after the pivot: video/photo alignment and video-vs-ghost comparison were dropped.*
-6. **Pathfinding and 2D analysis:** *Resolved: the 2D pose analysis (skeleton, angles, metrics, LLM advice) is delivered independently of the photo pathfinding (Ghost Mode).*
-7. **Evaluation:** which metrics to use for the technical track? For example mAP50 and per-color recall for YOLO, cluster purity, rate of betas judged feasible by a climber.
+### 6.1 Bloc D : comparaison et conseils
+
+| Brique | Entrée | Sortie | Technologie | Statut |
+| --- | --- | --- | --- | --- |
+| D1 Alignement vidéo et photo | Une frame de la vidéo et la photo de la voie | Transformation qui place les pixels de la vidéo dans le repère de la photo | OpenCV : correspondance de points (ORB ou SIFT) puis homographie (RANSAC) | À explorer : risque principal |
+| D2 Écarts | Squelette (A), mouvements (A4), bêta (C) | Écarts par étape : membre, distance, instant (`comparisons.metrics`) | Python, géométrie | À explorer |
+| D3 Conseils | Angles, écarts, contexte de voie, morphologie | Conseils structurés (`analyses.hints` : catégorie, priorité, zones du corps, frames) | Modèle externe type Gemini, validé par le schéma `Hints` | Partiel : schéma fait, `PoseAdvice` vide |
+
+Points d'attention :
+
+- Le détecteur de prises tourne sur la photo uniquement. Pour comparer la vidéo à la bêta, il faut donc relier les deux repères (D1). Sans cela, on ne sait pas quelle prise le grimpeur touche.
+- D1 est fragile si la caméra bouge ou si l'angle diffère de la photo. Deux alternatives : demander une photo cadrée comme la vidéo, ou comparer des séquences de mouvements sans repère commun en pixels.
+- Le modèle externe ne doit recevoir que des données déjà calculées (angles, écarts), pas la vidéo brute, pour limiter le coût et les hallucinations.
+
+### 6.2 Bloc E : rendu mobile
+
+- Le client Flutter dessine le squelette, le fantôme et les conseils par-dessus la vidéo d'origine, à partir d'un JSON léger (rendu côté client, pas de ré-encodage vidéo).
+- Le mode fantôme sans grimpe (F07) affiche la bêta sur la photo. Le mode fantôme en comparaison (F05) l'affiche sur la vidéo, avec un décalage temporel (`alignment.offset_ms`).
 
 ---
 
-## 8\. Progress and next steps
+## 7\. Questions ouvertes pour le mentor
 
-| Block                                                                | Status                                                                                             |
-| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| A1 S3 ingestion, A2 skeleton, A3 angles and metrics, A4 movements    | **Done** (limits: hands unreliable on the example video, thresholds calibrated on a single video) |
-| D3 advice                                                            | **Done** for pose only; LLM providers not tested for real                                          |
-| B2 to B5 Route reading (photo + group/manual selection)              | To explore, data being collected                                                                   |
-| C Pathfinding (feasible beta on photo)                               | To explore                                                                                         |
-| D2 Video-to-video comparison (same route, `F05`)                     | To implement (*D1 video/photo alignment dropped*)                                                  |
-| E Rendering                                                          | Planned on the mobile side (pose video overlay + Ghost Mode photo viewer)                          |
-| Wiring the Go server to the worker                                   | To do (see the backend handoff, outside the repository)                                            |
+1. **YOLO : boîtes ou masques ?** Les jeux Roboflow trouvés (47 et 123 images) ne sont pas du même type. Le schéma de données attend un contour polygonal. La segmentation vaut-elle son coût d'annotation ?
+2. **Combien d'images pour démarrer ?** Environ 300 images variées sont prévues. Est-ce suffisant pour des prises de formes et de couleurs très différentes (prises, volumes, triangles) ?
+3. **Clustering :** le k-means impose de connaître le nombre de voies. Faut-il plutôt DBSCAN ou HDBSCAN, ou demander le nombre de voies à l'utilisateur ?
+4. **Pathfinding :** déterministe ou LSTM en premier ? Comment obtenir des données d'entraînement (distillation depuis Claude, vidéos scrapées, bêtas synthétiques) ?
+5. **Alignement vidéo et photo (D1) :** l'homographie est-elle réaliste en salle (caméra à la main, angle différent) ? Existe-t-il une approche plus robuste ?
+6. **Pathfinding et analyse 2D :** nous le considérons nécessaire aux conseils (comparaison à la bêta). Peut-on livrer d'abord une analyse sans bêta (squelette, angles, règles) et ajouter la comparaison ensuite ?
+7. **Évaluation :** quelles métriques retenir pour la track technique ? Par exemple mAP50 et rappel par couleur pour YOLO, pureté des clusters, taux de bêtas jugées valides par un grimpeur.
 
-Next steps decided at the Sep 29 meeting:
+---
 
-- Put the images on Google Drive and start the YOLO training with Google Colab (Jundo).
-- Evaluate the 47- and 123-image Roboflow datasets for hold detection (Jundo).
-- Build a sample of about 300 varied images to annotate (team).
-- Study automatic annotation by Claude or by a script (Ilyes).
-- Update the YouTube and Instagram video collection script (Olivier).
+## 8\. État d'avancement et prochaines étapes
+
+| Brique | Statut |
+| --- | --- |
+| A2 Squelette, A3 angles | Fait |
+| A1 Ingestion S3, A4 mouvements, D3 conseils | En cours ou à faire |
+| B2 à B5 Lecture de voie | À explorer, données en cours de collecte |
+| C Pathfinding | À explorer |
+| D1, D2 Alignement et écarts | À explorer |
+| E Rendu | Prévu côté mobile |
+
+Prochaines étapes décidées à la réunion du 29/09 :
+
+- Mettre les images sur Google Drive et lancer l'entraînement YOLO avec Google Colab (Jundo).
+- Évaluer les jeux Roboflow de 47 et 123 images pour la détection de prises (Jundo).
+- Constituer un échantillon d'environ 300 images variées à annoter (équipe).
+- Étudier l'annotation automatique par Claude ou par un script (Ilyes).
+- Mettre à jour le script de collecte de vidéos YouTube et Instagram (Olivier).
 
 ---
