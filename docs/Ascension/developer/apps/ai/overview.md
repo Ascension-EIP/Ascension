@@ -3,97 +3,117 @@ id: a521a93c-f811-4150-a388-1a7238a7242c
 ---
 
 :::warning
-**Version:** 0.2
+**Version:** 0.3
 :::
 
 ---
 
-# Worker IA
+# AI worker
 
-Le worker IA (`apps/ai`, Python 3.11, géré par `uv`) fait le travail lourd hors de l'API : il récupère la vidéo d'un grimpeur, calcule l'analyse 2D et produit des conseils. Il ne parle jamais directement au mobile. Il consomme des jobs RabbitMQ, lit la vidéo dans RustFS (S3), écrit sa progression et ses résultats dans PostgreSQL, et publie ses statuts sur RabbitMQ.
+The AI worker (`apps/ai`, Python 3.11, managed with `uv`) does the heavy lifting outside the API: it fetches a climber's video, computes the 2D analysis and produces advice. It never talks directly to the mobile app. It consumes RabbitMQ jobs, reads the video from RustFS (S3), writes its progress and results to PostgreSQL, and publishes its statuses on RabbitMQ.
 
-Aujourd'hui, seul le pipeline vidéo 2D existe : lecture de voie (photo), pathfinding, mode fantôme et 3D ne sont pas implémentés. Le détail des briques, des seuils et de leurs limites est dans [pipeline-2d-decomposition.md](./pipeline-2d-decomposition.md). L'installation, les variables d'environnement, les commandes et les tests sont dans le [README du worker](../../../../../apps/ai/README.md).
+Today, only the 2D video pipeline exists: route reading (photo), pathfinding, Ghost Mode and 3D are not implemented. The details of each building block, its thresholds and its limits are in [pipeline-2d-decomposition.md](pipeline-2d-decomposition.md). Installation, environment variables, commands and tests are in the [worker README](../../../../../apps/ai/README.md).
 
 ---
 
-## Ce que fait le worker
+## What the worker does
 
-| Étape | Queue | Entrée | Sortie |
+| Step | Queue | Input | Output |
 | --- | --- | --- | --- |
-| Détection de pose | `poses.detect` | `pose.detect.requested` : `{job_id, object_key}` | `analyses.result` (squelette filtré, angles, vitesses, métriques, mouvements, pauses) |
-| Conseils | `poses.advice` | `pose.detect.completed` ou `pose.advice.requested` : `{job_id}` | `analyses.hints` (conseils structurés, en français) |
+| Pose detection | `poses.detect` | `pose.detect.requested`: `{job_id, object_key}` | `analyses.result` (filtered skeleton, angles, speeds, metrics, movements, pauses) |
+| Advice | `poses.advice` | `pose.detect.completed` or `pose.advice.requested`: `{job_id}` | `analyses.hints` (structured advice, in French) |
 
-- L'exchange est `events` (topic). Les jobs en échec définitif partent dans `<queue>.dlq`.
-- `job_id` est l'identifiant de la ligne `analyses`. Le bucket est une valeur de configuration, pas une donnée du message.
-- Statuts : `pending` (créé par le serveur), `started` (pris par le worker), `running`, `success`, `failed`. `success` n'est posé qu'après l'étape conseils.
-- Si le LLM échoue ou n'est pas configuré, l'analyse finit en `success` avec `hints` vide, et `pose.advice.status` vaut `failed`. Le squelette reste utilisable.
-- Un job à la fois par process. Pour monter en charge, on ajoute des réplicas.
-- Le modèle de langage est interchangeable : un seul client compatible OpenAI, réglé par `LLM_BASE_URL`, `LLM_API_KEY` et `LLM_MODEL`. Il ne reçoit que des valeurs calculées, jamais la vidéo ni d'identifiant.
+- The exchange is `events` (topic). Jobs that fail permanently go to `<queue>.dlq`.
+- `job_id` is the identifier of the `analyses` row. The bucket is a configuration value, not part of the message.
+- Statuses: `pending` (created by the server), `started` (picked up by the worker), `running`, `success`, `failed`. `success` is only set after the advice step.
+- If the LLM fails or is not configured, the analysis ends in `success` with empty `hints`, and `pose.advice.status` is `failed`. The skeleton remains usable.
+- One job at a time per process. To scale, add replicas.
+- The language model is interchangeable: a single OpenAI-compatible client, configured by `LLM_BASE_URL`, `LLM_API_KEY` and `LLM_MODEL`. It only receives computed values, never the video or any identifier.
 
-Chaque étape du pipeline est aussi une sous-commande (`uv run worker pose-detect`, `pose-advice`, etc.) qui fonctionne sans broker, base ni stockage.
+Each pipeline step is also a subcommand (`uv run worker pose-detect`, `pose-advice`, etc.) that works without a broker, database or storage.
 
-Le serveur Go n'est pas encore branché sur ces queues : il publie encore sur l'ancienne queue `vision.skeleton`. En attendant, `apps/ai/src/producer.py` déclenche les jobs à la main.
+The Go server is not yet wired to these queues: it still publishes on the old `vision.skeleton` queue. In the meantime, `apps/ai/src/producer.py` triggers jobs by hand.
 
 ---
 
-## Schéma du flow IA
+## AI flow diagram
 
-*Résumé : l'application envoie la vidéo directement à RustFS, puis l'API publie le job. Le worker analyse la vidéo, écrit le résultat et les conseils dans PostgreSQL et publie ses statuts. Le pipeline 2 (mode fantôme) est prévu, pas implémenté.*
+*Summary: the app uploads the video directly to RustFS, then the API publishes the job. The worker analyzes the video, writes the result and the advice to PostgreSQL and publishes its statuses. The photo pipeline (Ghost Mode) is planned, not implemented. Both pipelines use the same blocks as the* [2D pipeline decomposition](pipeline-2d-decomposition.md) *and are connected in two places: the route context (dotted lines), which lets the video analysis and the advice refer to the same route as the holds detected on the photo, and the shared delivery path to the mobile app (API, WebSocket, then rendering E1 or E2).*
 
 ```mermaid
 flowchart TD
-    subgraph Client ["Couche Client"]
-        App["App Mobile (Flutter)"]
+    subgraph Client ["Client layer"]
+        App["Mobile app (Flutter)"]
+        E1["E1 Skeleton overlay<br/>& advice on video"]
+        E2["E2 Step-by-step viewer<br/>Ghost Mode on photo"]
     end
 
     subgraph Gateway ["API Gateway"]
-        API["Serveur API (Go/Gin)"]
+        API["API server (Go/Gin)"]
     end
 
     subgraph Broker ["Message Broker"]
         RMQ["RabbitMQ"]
     end
 
-    subgraph IA ["Couche Traitement IA"]
-        subgraph P1 ["Pipeline 1"]
-            ExtSkel["Extraction du squelette"]
-            GenCons["Générateur de conseils"]
-            ExtSkel -->|"Squelette extrait"| GenCons
+    subgraph IA ["AI processing layer"]
+        subgraph A ["A. Video analysis (pose)"]
+            A1["A1 Ingestion<br/>climber video"] --> A2["A2 MediaPipe skeleton<br/>33 points per frame"]
+            A2 --> A3["A3 Angles and metrics"]
+            A3 --> A4["A4 Movement segmentation"]
         end
 
-        subgraph P2 ["Pipeline 2 – Mode Fantôme"]
-            ExtPrises["Détection des prises & sélection groupe/manuel"]
-            RechChemin["Pathfinding selon morphologie"]
-            GenFantome["Générateur d'images par étape"]
-            ExtPrises -->|"Prises choisies"| RechChemin
-            RechChemin -->|"Bêta réalisable"| GenFantome
+        subgraph D ["D. Advice & video comparison"]
+            D3["D3 Advice<br/>external model"]
+            D2["D2 Video-to-video comparison<br/>(same route, public/friends)"]
         end
+
+        subgraph B ["B. Route reading (photo of empty wall)"]
+            B1["B1 Wall photo"] --> B2["B2 Hold detection<br/>YOLOv8"]
+            B2 --> B3["B3 Dominant color<br/>OpenCV"]
+            B3 --> B4["B4 Clustering<br/>by route / color"]
+            B4 --> B5["B5 Group or manual selection"]
+        end
+
+        subgraph C ["C. Pathfinding"]
+            C1["C1 Selected holds<br/>+ morphology"] --> C2["C2 Feasible beta<br/>step by step (images)"]
+        end
+
+        A4 --> D3
+        A4 --> D2
+        B5 --> C1
+        B5 -.->|"route context"| D3
+        B5 -.->|"same route"| D2
     end
 
-    subgraph Data ["Couche Données et Stockage"]
-        S3["Object Storage S3 (Rust<br/>FS)"]
+    subgraph Data ["Data and Storage layer"]
+        S3["Object Storage S3 (RustFS)"]
         PG["PostgreSQL"]
     end
 
-    %% Flux de communication (1 à 12)
-    App -->|"1. Demande Presigned<br/>URL"| API
-    API -->|"2. Génère Presigned URL"| S3
-    App -->|"3. Upload direct (Vidéo ou<br/>Photo)"| S3
-    App -->|"4. Notifie upload terminé"| API
-    API -->|"5. Publie le job"| RMQ
+    %% Communication flow (1 to 12)
+    App -->|"1. Request presigned URL"| API
+    API -->|"2. Generate presigned URL"| S3
+    App -->|"3. Direct upload (video or photo)"| S3
+    App -->|"4. Notify upload done"| API
+    API -->|"5. Publish the job"| RMQ
 
-    RMQ -->|"6a. Job d'analyse de pose<br/>(vidéo de grimpe)"| ExtSkel
-    ExtSkel -->|"Récupère la vidéo"| S3
-    GenCons -->|"7a. Stocke résultat et conseils (JSON)"| PG
-    GenCons -->|"8a. Publie les statuts"| RMQ
+    RMQ -->|"6a. Pose analysis job<br/>(climbing video)"| A1
+    A1 -->|"Fetch the video"| S3
+    A3 -->|"7a. Store result (JSON)"| PG
+    D3 -->|"7a. Store advice (JSON)"| PG
+    D3 -->|"8a. Publish statuses"| RMQ
 
-    RMQ -->|"6b. Job de mode fantôme<br/>(photo de mur)"| ExtPrises
-    ExtPrises -->|"Récupère la photo"| S3
-    GenFantome -->|"7b. Stocke étapes & images"| PG
-    GenFantome -->|"8b. Publie événement<br/>terminé"| RMQ
+    RMQ -->|"6b. Ghost Mode job<br/>(wall photo)"| B1
+    B1 -->|"Fetch the photo"| S3
+    C2 -->|"7b. Store steps & images"| PG
+    C2 -->|"8b. Publish completed event"| RMQ
 
-    RMQ -->|"9. Notifie résultat prêt"| API
-    API -->|"10. Notification WebSocket"| App
-    App -->|"11. Récupère l'analyse<br/>(JSON)"| API
-    API -->|"12. Lit les données"| PG
+    RMQ -->|"9. Notify result ready"| API
+    API -->|"10. WebSocket notification"| App
+    App -->|"11. Fetch the analysis (JSON)"| API
+    API -->|"12. Read the data"| PG
+
+    App --> E1
+    App --> E2
 ```
