@@ -207,7 +207,7 @@ Ce document distingue aussi ce qui est :
 
 **But de la fonctionnalité**
 
-- Comparer visuellement et techniquement deux analyses de pose sur la **même voie** (entre ses propres essais ou avec les montées  d'autres utilisateurs) pour identifier les différences d'exécution.
+- Comparer visuellement et techniquement deux analyses de pose sur la **même voie** (entre ses propres essais ou avec les montées d'autres utilisateurs) pour identifier les différences d'exécution.
 
 **Ce que l'utilisateur voit**
 
@@ -443,7 +443,7 @@ Ce document distingue aussi ce qui est :
 
 **Ce que l'utilisateur voit**
 
-- Un mode d'assistance active lancé avec le smartphone  face au mur.
+- Un mode d'assistance active lancé avec le smartphone face au mur.
 - Des indications vocales en direct pendant l'effort (via écouteurs).
 
 **Parcours utilisateur simple**
@@ -465,7 +465,7 @@ Ce document distingue aussi ce qui est :
 
 **Niveau de maturité dans la roadmap**
 
-- MVP fonctionnel en ATP.
+- MVP fonctionnel en ATP. → vraiment pas sur de le faire
 
 ---
 
@@ -611,7 +611,7 @@ Ce document distingue aussi ce qui est :
 
 - Sessions de grimpe en salle (démarrage, rattachement des analyses, durée et stats de fin de session).
 - Analyse de Pose 2D fonctionnelle (33 points clés, métriques chiffrées et conseils personnalisés).
-- Mode Fantôme sur photo de voie  (détection et regroupement des prises avec choix par groupe/couleur ou clic manuel, bêta réalisable étape par étape).
+- Mode Fantôme sur photo de voie (détection et regroupement des prises avec choix par groupe/couleur ou clic manuel, bêta réalisable étape par étape).
 - Communauté, partage et comparaison vidéo entre grimpeurs sur la même voie.
 - Création de routines et suivi de progression.
 - Parcours utilisateur complet et accessibilité forte.
