@@ -100,6 +100,11 @@ type PoseDetectRequest struct {
 	ObjectKey string `json:"object_key"`
 }
 
+type PoseAdviceRequest struct {
+	JobID     string `json:"job_id"`
+	ObjectKey string `json:"object_key"`
+}
+
 type Limb string
 
 const (

@@ -28,6 +28,7 @@ func New(
 	authH *handler.AuthHandler,
 	videoH *handler.VideoHandler,
 	analysisH *handler.AnalysisHandler,
+	adviceH *handler.AdviceHandler,
 	profileH *handler.ProfileHandler,
 	climbingSessionH *handler.ClimbingSessionHandler,
 	bodyConstraintH *handler.UserBodyConstraintHandler,
@@ -77,7 +78,13 @@ func New(
 			analysesGroup.POST("/", analysisH.Create)
 			analysesGroup.GET("", analysisH.List)
 			analysesGroup.GET("/:id", analysisH.GetByID)
-			analysesGroup.POST("/:id/retry-advice", analysisH.RetryAdvice)
+		}
+
+		advicesGroup := v1.Group("/advices", middleware.RateLimiter(time.Minute, 10), authMW())
+		{
+			advicesGroup.POST("/:id", adviceH.Trigger)
+			advicesGroup.GET("/:id", adviceH.GetByID)
+			advicesGroup.POST("/:id/retry", adviceH.Retry)
 		}
 
 		profileGroup := v1.Group("/profile", middleware.RateLimiter(time.Minute, 10), authMW())

@@ -41,6 +41,7 @@ type testRepo interface {
 	model.SessionRepository
 	model.ClimbingSessionRepository
 	model.AnalysisRepository
+	model.AdviceRepository
 	model.VideoRepository
 	model.UserBodyConstraintRepository
 	model.FriendshipRepository
@@ -80,6 +81,8 @@ func newTestAPI(t *testing.T, repo testRepo) *testAPI {
 	sessionH := handler.NewClimbingSessionHandler(&sessionS)
 	analysisS := service.NewAnalysisService(config.StorageConfig{}, repo, repo, queue)
 	analysisH := handler.NewAnalysisHandler(&analysisS)
+	adviceS := service.NewAdviceService(config.StorageConfig{}, repo, repo, queue)
+	adviceH := handler.NewAdviceHandler(&adviceS)
 	bodyConstraintS := service.NewUserBodyConstraintService(repo)
 	bodyConstraintH := handler.NewUserBodyConstraintHandler(&bodyConstraintS)
 	friendshipS := service.NewFriendshipService(repo)
@@ -88,7 +91,7 @@ func newTestAPI(t *testing.T, repo testRepo) *testAPI {
 	feedH := handler.NewFeedHandler(&feedS)
 
 	engine := gin.New()
-	New(engine, config.Config{}, middleware.AuthMiddleware(&jwtS), &userH, &authH, &videoH, &analysisH, &profileH, &sessionH, &bodyConstraintH, &friendshipH, &feedH)
+	New(engine, config.Config{}, middleware.AuthMiddleware(&jwtS), &userH, &authH, &videoH, &analysisH, &adviceH, &profileH, &sessionH, &bodyConstraintH, &friendshipH, &feedH)
 
 	return &testAPI{t: t, engine: engine, jwt: jwtS, storage: storage, queue: queue}
 }
@@ -166,6 +169,17 @@ type fakeQueue struct {
 }
 
 func (q *fakeQueue) PublishPoseDetectRequested(_ context.Context, body []byte) error {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
+	if q.err != nil {
+		return q.err
+	}
+	q.messages = append(q.messages, body)
+	return nil
+}
+
+func (q *fakeQueue) PublishPoseAdviceRequested(_ context.Context, body []byte) error {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 

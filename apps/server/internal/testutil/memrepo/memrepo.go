@@ -30,6 +30,7 @@ type Repo struct {
 	sessions        map[uuid.UUID]model.ClimbingSession
 	videos          map[uuid.UUID]model.Video
 	analyses        map[uuid.UUID]model.Analysis
+	advices         map[uuid.UUID]model.Advice
 	bodyConstraints map[uuid.UUID]model.UserBodyConstraint
 	users           map[uuid.UUID]model.User
 	friendships     map[uuid.UUID]model.Friendship
@@ -45,6 +46,7 @@ func New() *Repo {
 		sessions:        map[uuid.UUID]model.ClimbingSession{},
 		videos:          map[uuid.UUID]model.Video{},
 		analyses:        map[uuid.UUID]model.Analysis{},
+		advices:         map[uuid.UUID]model.Advice{},
 		bodyConstraints: map[uuid.UUID]model.UserBodyConstraint{},
 		users:           map[uuid.UUID]model.User{},
 		friendships:     map[uuid.UUID]model.Friendship{},
@@ -374,6 +376,114 @@ func (r *Repo) summaries(keep func(model.Analysis, model.Video) bool) []model.An
 	})
 
 	return summaries
+}
+
+// -- Advices -- //
+
+func (r *Repo) CreateAdvice(_ context.Context, videoID uuid.UUID) (model.Advice, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, ok := r.videos[videoID]; !ok {
+		return model.Advice{}, model.ErrInvalidInput
+	}
+	advice := model.Advice{
+		ID:        videoID,
+		Status:    model.JobStatusPending,
+		CreatedAt: r.now(),
+	}
+	advice.UpdatedAt = advice.CreatedAt
+	r.advices[advice.ID] = advice
+
+	return advice, nil
+}
+
+func (r *Repo) GetAdviceByFilter(_ context.Context, filter model.AdviceFilter) (model.Advice, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	for _, advice := range r.advices {
+		if filter.ID != nil && advice.ID != *filter.ID {
+			continue
+		}
+		if filter.Status != nil && advice.Status != *filter.Status {
+			continue
+		}
+		return advice, nil
+	}
+
+	return model.Advice{}, model.ErrNotFound
+}
+
+func (r *Repo) ListAdviceByFilter(_ context.Context, filter model.AdviceFilter, pagination model.Pagination) ([]model.Advice, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	matches := []model.Advice{}
+	for _, advice := range r.advices {
+		if filter.ID != nil && advice.ID != *filter.ID {
+			continue
+		}
+		if filter.Status != nil && advice.Status != *filter.Status {
+			continue
+		}
+		matches = append(matches, advice)
+	}
+
+	if pagination.Limit != 0 {
+		end := min(pagination.Offset+pagination.Limit, len(matches))
+		start := min(pagination.Offset, len(matches))
+		matches = matches[start:end]
+	}
+
+	return matches, nil
+}
+
+func (r *Repo) UpdateAdvice(_ context.Context, partial model.AdvicePartial) (model.Advice, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	advice, ok := r.advices[partial.ID]
+	if !ok {
+		return model.Advice{}, model.ErrNotFound
+	}
+
+	if partial.Status != nil {
+		advice.Status = *partial.Status
+	}
+	if partial.Progress != nil {
+		advice.Progress = *partial.Progress
+	}
+	if partial.Result != nil {
+		advice.Result = *partial.Result
+	}
+	if partial.Error != nil {
+		advice.Error = *partial.Error
+	}
+	if partial.ProcessingTimeMS != nil {
+		advice.ProcessingTimeMS = *partial.ProcessingTimeMS
+	}
+	if partial.StartedAt != nil {
+		advice.StartedAt = *partial.StartedAt
+	}
+	if partial.CompletedAt != nil {
+		advice.CompletedAt = *partial.CompletedAt
+	}
+	advice.UpdatedAt = r.now()
+	r.advices[advice.ID] = advice
+
+	return advice, nil
+}
+
+func (r *Repo) DeleteAdvice(_ context.Context, id uuid.UUID) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, ok := r.advices[id]; !ok {
+		return model.ErrNotFound
+	}
+	delete(r.advices, id)
+	return nil
 }
 
 // -- Videos -- //

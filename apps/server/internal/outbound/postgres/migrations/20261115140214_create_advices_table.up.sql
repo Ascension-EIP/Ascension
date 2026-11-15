@@ -1,6 +1,5 @@
 CREATE TABLE advices (
-	id UUID PRIMARY KEY DEFAULT uuidv7(),
-	video_id UUID NOT NULL UNIQUE REFERENCES videos(id) ON DELETE CASCADE,
+	id UUID PRIMARY KEY REFERENCES videos(id) ON DELETE CASCADE,
 	status job_status NOT NULL DEFAULT 'pending',
 	progress SMALLINT NOT NULL DEFAULT 0,
 	result JSONB,

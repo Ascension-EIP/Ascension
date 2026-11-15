@@ -281,12 +281,3 @@ func TestAnalysisStaleDetection(t *testing.T) {
 		}
 	})
 }
-
-func TestRetryAdviceIsNotImplemented(t *testing.T) {
-	s := NewAnalysisService(config.StorageConfig{}, memrepo.New(), memrepo.New(), &recordingQueue{})
-
-	analysis, err := s.RetryAdvice(context.Background(), uuid.NewV7())
-	if err != nil || analysis.ID != (uuid.UUID{}) {
-		t.Errorf("RetryAdvice() = (%+v, %v), want the empty stub result", analysis, err)
-	}
-}

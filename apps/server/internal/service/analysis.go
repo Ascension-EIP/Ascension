@@ -119,10 +119,3 @@ func (s *AnalysisService) AnalysisStaleDetection(ctx context.Context) error {
 
 	return nil
 }
-
-func (s *AnalysisService) RetryAdvice(ctx context.Context, id uuid.UUID) (model.Analysis, error) {
-	// s.analysisR.GetAnalysisByFilter(ctx, model.AnalysisFilter{ID: new(id), Status: new(model.JobStatusFailed)})
-	// TODO
-
-	return model.Analysis{}, nil
-}

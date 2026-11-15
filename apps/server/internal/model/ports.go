@@ -119,6 +119,15 @@ type VideoRepository interface {
 	DeleteVideosExpired(ctx context.Context, retainPeriod time.Duration) error
 }
 
+type AdviceRepository interface {
+	TransactionRepository
+	CreateAdvice(ctx context.Context, videoID uuid.UUID) (Advice, error)
+	GetAdviceByFilter(ctx context.Context, filter AdviceFilter) (Advice, error)
+	ListAdviceByFilter(ctx context.Context, filter AdviceFilter, pagination Pagination) ([]Advice, error)
+	UpdateAdvice(ctx context.Context, partial AdvicePartial) (Advice, error)
+	DeleteAdvice(ctx context.Context, id uuid.UUID) error
+}
+
 type QuotaUsageRepository interface {
 	DeleteOldQuotaUsage(ctx context.Context) error
 }
@@ -147,6 +156,10 @@ type VideoStorage interface {
 
 type AnalysisQueue interface {
 	PublishPoseDetectRequested(ctx context.Context, body []byte) error
+}
+
+type AdviceQueue interface {
+	PublishPoseAdviceRequested(ctx context.Context, body []byte) error
 }
 
 // -- //
