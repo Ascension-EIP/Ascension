@@ -18,6 +18,7 @@ import (
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/shared"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/testutil/memrepo"
 )
 
@@ -468,4 +469,6 @@ func (fakeStorage) Delete(context.Context, string) error { return nil }
 
 type fakeQueue struct{}
 
-func (fakeQueue) PublishPoseDetectRequested(context.Context, []byte) error { return nil }
+func (fakeQueue) PublishPoseDetectRequested(context.Context, shared.PoseDetectRequest) error {
+	return nil
+}

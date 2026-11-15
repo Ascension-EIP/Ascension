@@ -9,13 +9,20 @@ package rabbitmq
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/shared"
 	"github.com/rabbitmq/amqp091-go"
 )
 
-func (q *RabbitMQ) PublishPoseDetectRequested(ctx context.Context, body []byte) error {
-	if err := q.ch.PublishWithContext(ctx,
+func (q *RabbitMQ) PublishPoseDetectRequested(ctx context.Context, req shared.PoseDetectRequest) error {
+	body, err := json.Marshal(req)
+	if err != nil {
+		return err
+	}
+
+	return q.ch.PublishWithContext(ctx,
 		q.cfg.ExchangeEvent,
 		routingKeyPoseDetectRequested,
 		false, false,
@@ -25,9 +32,5 @@ func (q *RabbitMQ) PublishPoseDetectRequested(ctx context.Context, body []byte) 
 			ContentType:  "application/json",
 			DeliveryMode: amqp091.Persistent,
 		},
-	); err != nil {
-		return err
-	}
-
-	return nil
+	)
 }

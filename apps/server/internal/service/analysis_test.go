@@ -18,6 +18,7 @@ import (
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/shared"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/testutil/memrepo"
 )
 
@@ -27,9 +28,13 @@ type recordingQueue struct {
 	err    error
 }
 
-func (q *recordingQueue) PublishPoseDetectRequested(_ context.Context, body []byte) error {
+func (q *recordingQueue) PublishPoseDetectRequested(_ context.Context, req shared.PoseDetectRequest) error {
+	if q.err != nil {
+		return q.err
+	}
+	body, _ := json.Marshal(req)
 	q.bodies = append(q.bodies, body)
-	return q.err
+	return nil
 }
 
 func TestTriggerAnalysisPublishesThePoseDetectRequest(t *testing.T) {
@@ -48,14 +53,13 @@ func TestTriggerAnalysisPublishesThePoseDetectRequest(t *testing.T) {
 	if len(queue.bodies) != 1 {
 		t.Fatalf("published %d jobs, want 1", len(queue.bodies))
 	}
-	// Exactly the fields of schemas/pose_detect_request.schema.json.
-	var body map[string]any
-	if err := json.Unmarshal(queue.bodies[0], &body); err != nil {
+	var got shared.PoseDetectRequest
+	if err := json.Unmarshal(queue.bodies[0], &got); err != nil {
 		t.Fatalf("job body is not JSON: %v", err)
 	}
-	want := map[string]any{"job_id": analysis.ID.String(), "object_key": "user/video.mp4"}
-	if len(body) != len(want) || body["job_id"] != want["job_id"] || body["object_key"] != want["object_key"] {
-		t.Errorf("job body = %v, want %v", body, want)
+	want := shared.PoseDetectRequest{JobID: analysis.ID.String(), ObjectKey: "user/video.mp4"}
+	if got != want {
+		t.Errorf("job body = %+v, want %+v", got, want)
 	}
 }
 

@@ -9,7 +9,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -53,16 +52,10 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, userID uuid.UUID,
 			return err
 		}
 
-		data, err := json.Marshal(
-			shared.PoseDetectRequest{
-				JobID:     analysis.ID.String(),
-				ObjectKey: video.ObjectKey,
-			})
-		if err != nil {
-			return err
-		}
-
-		if err := s.queue.PublishPoseDetectRequested(ctx, data); err != nil {
+		if err := s.queue.PublishPoseDetectRequested(ctx, shared.PoseDetectRequest{
+			JobID:     analysis.ID.String(),
+			ObjectKey: video.ObjectKey,
+		}); err != nil {
 			return err
 		}
 

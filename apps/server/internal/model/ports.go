@@ -11,7 +11,10 @@ import (
 	"context"
 	"net/url"
 	"time"
+
 	"uuid"
+
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/shared"
 )
 
 // -- Repository -- //
@@ -155,11 +158,11 @@ type VideoStorage interface {
 // -- Queue -- //
 
 type AnalysisQueue interface {
-	PublishPoseDetectRequested(ctx context.Context, body []byte) error
+	PublishPoseDetectRequested(ctx context.Context, req shared.PoseDetectRequest) error
 }
 
 type AdviceQueue interface {
-	PublishPoseAdviceRequested(ctx context.Context, body []byte) error
+	PublishPoseAdviceRequested(ctx context.Context, req shared.Job) error
 }
 
 // -- //

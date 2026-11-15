@@ -27,6 +27,7 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/shared"
 	"github.com/gin-gonic/gin"
 )
 
@@ -168,24 +169,26 @@ type fakeQueue struct {
 	messages [][]byte
 }
 
-func (q *fakeQueue) PublishPoseDetectRequested(_ context.Context, body []byte) error {
+func (q *fakeQueue) PublishPoseDetectRequested(_ context.Context, req shared.PoseDetectRequest) error {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
 	if q.err != nil {
 		return q.err
 	}
+	body, _ := json.Marshal(req)
 	q.messages = append(q.messages, body)
 	return nil
 }
 
-func (q *fakeQueue) PublishPoseAdviceRequested(_ context.Context, body []byte) error {
+func (q *fakeQueue) PublishPoseAdviceRequested(_ context.Context, req shared.Job) error {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
 	if q.err != nil {
 		return q.err
 	}
+	body, _ := json.Marshal(req)
 	q.messages = append(q.messages, body)
 	return nil
 }

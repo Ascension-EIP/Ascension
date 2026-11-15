@@ -9,18 +9,22 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
+
 	"uuid"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/shared"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/testutil/memrepo"
 )
 
-func (q *recordingQueue) PublishPoseAdviceRequested(_ context.Context, body []byte) error {
+func (q *recordingQueue) PublishPoseAdviceRequested(_ context.Context, req shared.Job) error {
 	if q.err != nil {
 		return q.err
 	}
+	body, _ := json.Marshal(req)
 	q.bodies = append(q.bodies, body)
 	return nil
 }

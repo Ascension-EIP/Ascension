@@ -61,6 +61,7 @@ func main() {
 	sessionS := service.NewSessionService(cfg.Auth.Session, &repo)
 	videoS := service.NewVideoService(cfg.Video, cfg.Storage, &storage, &repo, &repo)
 	analysisS := service.NewAnalysisService(cfg.Storage, &repo, &repo, &queue)
+	adviceS := service.NewAdviceService(cfg.Storage, &repo, &repo, &queue)
 	quotaUsageS := service.NewQuotaUsageService(&repo)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
@@ -85,6 +86,10 @@ func main() {
 	}
 	if err := job.AnalysisStaleDetection(c, ctx, &analysisS); err != nil {
 		slog.Error("start the job: AnalysisStaleDetection", slog.String("err", err.Error()))
+		os.Exit(1)
+	}
+	if err := job.AdviceStaleDetection(c, ctx, &adviceS); err != nil {
+		slog.Error("start the job: AdviceStaleDetection", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
 	c.Start()

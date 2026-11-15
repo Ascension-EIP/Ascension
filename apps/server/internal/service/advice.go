@@ -9,7 +9,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -49,16 +48,9 @@ func (s *AdviceService) TriggerAdvice(ctx context.Context, userID uuid.UUID, vid
 			return err
 		}
 
-		data, err := json.Marshal(
-			shared.PoseAdviceRequest{
-				JobID:     advice.ID.String(),
-				ObjectKey: video.ObjectKey,
-			})
-		if err != nil {
-			return err
-		}
-
-		if err := s.queue.PublishPoseAdviceRequested(ctx, data); err != nil {
+		if err := s.queue.PublishPoseAdviceRequested(ctx, shared.Job{
+			JobID: advice.ID.String(),
+		}); err != nil {
 			return err
 		}
 
@@ -80,11 +72,6 @@ func (s *AdviceService) RetryAdvice(ctx context.Context, videoID uuid.UUID) (mod
 		return model.Advice{}, err
 	}
 
-	video, err := s.videoR.GetVideoByFilter(ctx, model.VideoFilter{ID: &videoID})
-	if err != nil {
-		return model.Advice{}, err
-	}
-
 	if err := s.adviceR.WithTransaction(ctx, func(ctx context.Context) error {
 		if _, err := s.adviceR.UpdateAdvice(ctx, model.AdvicePartial{
 			ID:       advice.ID,
@@ -96,16 +83,9 @@ func (s *AdviceService) RetryAdvice(ctx context.Context, videoID uuid.UUID) (mod
 			return err
 		}
 
-		data, err := json.Marshal(
-			shared.PoseAdviceRequest{
-				JobID:     advice.ID.String(),
-				ObjectKey: video.ObjectKey,
-			})
-		if err != nil {
-			return err
-		}
-
-		return s.queue.PublishPoseAdviceRequested(ctx, data)
+		return s.queue.PublishPoseAdviceRequested(ctx, shared.Job{
+			JobID: advice.ID.String(),
+		})
 	}); err != nil {
 		return model.Advice{}, err
 	}
