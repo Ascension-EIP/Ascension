@@ -308,9 +308,6 @@ func (r *Repo) UpdateAnalysis(_ context.Context, partial model.AnalysisPartial) 
 	if partial.Result != nil {
 		analysis.Result = *partial.Result
 	}
-	if partial.Advice != nil {
-		analysis.Advice = *partial.Advice
-	}
 	if partial.Error != nil {
 		analysis.Error = *partial.Error
 	}
@@ -330,9 +327,6 @@ func (r *Repo) UpdateAnalysis(_ context.Context, partial model.AnalysisPartial) 
 		analysis.UpdatedAt = *partial.UpdatedAt
 	} else {
 		analysis.UpdatedAt = r.now()
-	}
-	if partial.Hints != nil {
-		analysis.Hints = *partial.Hints
 	}
 	r.analyses[analysis.ID] = analysis
 

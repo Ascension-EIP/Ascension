@@ -159,14 +159,12 @@ func (r *PostgresRepository) UpdateAnalysis(ctx context.Context, partial model.A
 	setArg(&setParts, &args, "visibility", partial.Visibility)
 	setArg(&setParts, &args, "progress", partial.Progress)
 	setArg(&setParts, &args, "result", partial.Result)
-	setArg(&setParts, &args, "advice", partial.Advice)
 	setArg(&setParts, &args, "error", partial.Error)
 	setArg(&setParts, &args, "processing_time_ms", partial.ProcessingTimeMS)
 	setArg(&setParts, &args, "started_at", partial.StartedAt)
 	setArg(&setParts, &args, "completed_at", partial.CompletedAt)
 	setArg(&setParts, &args, "created_at", partial.CreatedAt)
 	setArg(&setParts, &args, "updated_at", partial.UpdatedAt)
-	setArg(&setParts, &args, "hints", partial.Hints)
 
 	if len(setParts) == 0 {
 		return model.Analysis{}, model.ErrNotFound
