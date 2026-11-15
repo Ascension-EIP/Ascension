@@ -34,13 +34,13 @@ func Run(cfg config.Config) {
 		slog.Error("failed to create a new postgres repository", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
-	if err := repo.Migrate(cfg.DB.DSN()); err != nil {
-		slog.Error("failed to migrate the database", slog.String("err", err.Error()))
-		os.Exit(1)
-	} else {
-		slog.Info("migration completed successfully")
-	}
-
+	// if err := repo.Migrate(cfg.DB.DSN()); err != nil {
+	// 	slog.Error("failed to migrate the database", slog.String("err", err.Error()))
+	// 	os.Exit(1)
+	// } else {
+	// 	slog.Info("migration completed successfully")
+	// }
+	//
 	storage, err := rustfs.New(cfg.Storage)
 	if err != nil {
 		slog.Error("failed to create a new minio storage", slog.String("err", err.Error()))
