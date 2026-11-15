@@ -1,0 +1,2 @@
+ALTER TABLE analyses ADD COLUMN advice TEXT;
+ALTER TABLE analyses ADD COLUMN hints JSONB;
