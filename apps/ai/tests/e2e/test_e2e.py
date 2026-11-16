@@ -85,7 +85,7 @@ def test_invalid_payload_goes_to_the_dead_letter_queue(observer: Observer):
 
 def test_missing_object_fails_the_job_and_is_dead_lettered(db, seeded, observer: Observer):
     job = seeded()
-    detect(producer.Seeded(job.job_id, f"seed/absent-{uuid4().hex}.mp4", job.user_id))
+    detect(job._replace(object_key=f"seed/absent-{uuid4().hex}.mp4"))
     final = wait_for_end(db, job.job_id)
     assert final["status"] == "failed" and final["result"] is None
     assert final["error"] and "Traceback" not in final["error"]
