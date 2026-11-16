@@ -36,10 +36,11 @@ class Seeded(NamedTuple):
     job_id: str
     object_key: str
     user_id: str
+    video_id: str  # `advices.id`: the job id of the advice
 
 
 def seed(video: str, db: PostgreSQL | None = None, storage: RustFS | None = None) -> Seeded:
-    """Create a user, a video row and a `pending` analysis, and upload ``video``.
+    """Create a user, a video row, a `pending` analysis and a `pending` advice, and upload ``video``.
 
     The bucket is created if missing (the worker never does it), so this runs
     without the Go server. Everything is named after a unique suffix.
@@ -66,7 +67,8 @@ def seed(video: str, db: PostgreSQL | None = None, storage: RustFS | None = None
         (user, object_key),
     ).fetchone()[0]
     job_id = db.connection.execute("INSERT INTO analyses (video_id) VALUES (%s) RETURNING id", (video_id,)).fetchone()[0]
-    return Seeded(str(job_id), object_key, str(user))
+    db.connection.execute("INSERT INTO advices (id) VALUES (%s)", (video_id,))  # the server does it on `POST /advices/:id`
+    return Seeded(str(job_id), object_key, str(user), str(video_id))
 
 
 def publish(routing_key: RoutingKey, payload: Job | PoseDetectRequest) -> None:
@@ -85,7 +87,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("detect", help="Publish pose.detect.requested.")
     p.add_argument("--job-id", required=True)
     p.add_argument("--object-key", required=True)
-    p = sub.add_parser("advice", help="Publish pose.advice.requested.")
+    p = sub.add_parser("advice", help="Publish pose.advice.requested (--job-id is the video id).")
     p.add_argument("--job-id", required=True)
     return parser
 
@@ -96,7 +98,7 @@ def main(argv: list[str] | None = None) -> None:
     try:
         if args.command == "seed":
             seeded = seed(args.video)
-            print(f"job_id={seeded.job_id}\nobject_key={seeded.object_key}")
+            print(f"job_id={seeded.job_id}\nobject_key={seeded.object_key}\nvideo_id={seeded.video_id}")
         elif args.command == "detect":
             publish(RoutingKey.POSE_DETECT_REQUESTED, PoseDetectRequest(job_id=args.job_id, object_key=args.object_key))
         else:

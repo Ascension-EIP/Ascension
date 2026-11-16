@@ -63,8 +63,18 @@ func TestAnalysisToResponse(t *testing.T) {
 
 	got := AnalysisToResponse(analysis)
 	checkFields(t, analysis, got, nil)
-	checkKeys(t, got, "id", "video_id", "type", "status", "visibility", "progress", "result", "advice", "error",
-		"processing_time_ms", "started_at", "completed_at", "hints")
+	checkKeys(t, got, "id", "video_id", "type", "status", "visibility", "progress", "result", "error",
+		"processing_time_ms", "started_at", "completed_at", "created_at", "updated_at")
+}
+
+func TestAdviceToResponse(t *testing.T) {
+	var advice model.Advice
+	fillDistinct(&advice)
+
+	got := AdviceToResponse(advice)
+	checkFields(t, advice, got, nil)
+	checkKeys(t, got, "id", "status", "progress", "result", "error",
+		"processing_time_ms", "started_at", "completed_at", "created_at", "updated_at")
 }
 
 func TestAuthResponses(t *testing.T) {

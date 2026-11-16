@@ -9,7 +9,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -53,16 +52,10 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, userID uuid.UUID,
 			return err
 		}
 
-		data, err := json.Marshal(
-			shared.PoseDetectRequest{
-				JobID:     analysis.ID.String(),
-				ObjectKey: video.ObjectKey,
-			})
-		if err != nil {
-			return err
-		}
-
-		if err := s.queue.PublishPoseDetectRequested(ctx, data); err != nil {
+		if err := s.queue.PublishPoseDetectRequested(ctx, shared.PoseDetectRequest{
+			JobID:     analysis.ID.String(),
+			ObjectKey: video.ObjectKey,
+		}); err != nil {
 			return err
 		}
 
@@ -118,11 +111,4 @@ func (s *AnalysisService) AnalysisStaleDetection(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func (s *AnalysisService) RetryAdvice(ctx context.Context, id uuid.UUID) (model.Analysis, error) {
-	// s.analysisR.GetAnalysisByFilter(ctx, model.AnalysisFilter{ID: new(id), Status: new(model.JobStatusFailed)})
-	// TODO
-
-	return model.Analysis{}, nil
 }

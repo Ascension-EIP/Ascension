@@ -59,26 +59,26 @@ func TestListAnalysesRejectsAMalformedQuery(t *testing.T) {
 	}
 }
 
-// TestRetryAdviceOfAFailedAnalysisSucceeds holds whatever RetryAdvice becomes: retrying the advice of
-// one's own failed analysis is the case the route exists for, so it must succeed. Today the service is a
-// TODO and answers 204 without retrying anything (see TestRetryAdviceOfUnknownAnalysis).
-func TestRetryAdviceOfAFailedAnalysisSucceeds(t *testing.T) {
+// TestRetryAdviceOfAFailedAdviceSucceeds tests retrying the advice of
+// a failed advice, which must succeed.
+func TestRetryAdviceOfAFailedAdviceSucceeds(t *testing.T) {
 	repo := memrepo.New()
 	api := newTestAPI(t, repo)
 	userID := uuid.NewV7()
 	token := api.token(userID)
 	video := putCompletedVideo(repo, userID)
 
-	var created analysisBody
-	expect(t, api.do(http.MethodPost, "/v1/analysis/", token, analysisRequest(video.ID)), http.StatusAccepted, &created)
-	if _, err := repo.UpdateAnalysis(context.Background(), model.AnalysisPartial{
-		ID: created.ID, Status: new(model.JobStatusFailed), Error: new(new("worker crashed")),
+	expect(t, api.do(http.MethodPost, "/v1/advices/"+video.ID.String(), token, nil), http.StatusAccepted, nil)
+	failedErr := "worker crashed"
+	pFailedErr := &failedErr
+	if _, err := repo.UpdateAdvice(context.Background(), model.AdvicePartial{
+		ID: video.ID, Status: new(model.JobStatusFailed), Error: &pFailedErr,
 	}); err != nil {
-		t.Fatalf("mark the analysis failed: %v", err)
+		t.Fatalf("mark the advice failed: %v", err)
 	}
 
-	rec := api.do(http.MethodPost, "/v1/analysis/"+created.ID.String()+"/retry-advice", token, nil)
+	rec := api.do(http.MethodPost, "/v1/advices/"+video.ID.String()+"/retry", token, nil)
 	if rec.Code < 200 || rec.Code > 299 {
-		t.Errorf("retry-advice of a failed analysis: status %d, want 2xx (body %s)", rec.Code, rec.Body.String())
+		t.Errorf("retry of a failed advice: status %d, want 2xx (body %s)", rec.Code, rec.Body.String())
 	}
 }

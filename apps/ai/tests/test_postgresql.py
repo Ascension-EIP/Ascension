@@ -99,7 +99,7 @@ def job_id(db):
 
 def row(db, job_id):
     return db.connection.execute(
-        "SELECT status, progress, result IS NOT NULL, hints IS NOT NULL, error, started_at, completed_at,"
+        "SELECT status, progress, result IS NOT NULL, FALSE, error, started_at, completed_at,"
         " processing_time_ms FROM analyses WHERE id = %s",
         (job_id,),
     ).fetchone()
@@ -118,8 +118,6 @@ class TestAgainstDatabase:
         status, progress, has_result, *_ = row(db, job_id)
         assert (status, progress, has_result) == ("running", 85, True)
         assert db.get_result(job_id) == RESULT
-        db.save_hints(job_id, HINTS)
-        assert row(db, job_id)[3] is True
         db.complete(job_id)
         status, progress, _, _, error, started_at, completed_at, elapsed = row(
             db, job_id
@@ -142,12 +140,31 @@ class TestAgainstDatabase:
         with pytest.raises(PermanentError):
             db.get_result(job_id)
 
-    def test_hints_can_be_rewritten_on_a_successful_analysis(self, db, job_id):
+    def test_advice_cycle_is_stored_in_advices(self, db, job_id):
         db.mark_started(job_id)
         db.save_result(job_id, RESULT)
         db.complete(job_id)
-        db.save_hints(job_id, HINTS)
-        assert row(db, job_id)[:2] == ("success", 100)
+        video = db.connection.execute("SELECT video_id FROM analyses WHERE id = %s", (job_id,)).fetchone()[0]
+        db.connection.execute("INSERT INTO advices (id) VALUES (%s)", (video,))
+        video = str(video)
+        assert db.get_advice_status(video) == Status.PENDING
+        assert db.get_video_result(video) == RESULT
+        db.mark_advice_started(video)
+        db.update_advice_progress(video, 90)
+        db.complete_advice(video, HINTS)
+        status, progress, has_result, completed_at = db.connection.execute(
+            "SELECT status, progress, result IS NOT NULL, completed_at FROM advices WHERE id = %s", (video,)
+        ).fetchone()
+        assert (status, progress, has_result) == ("success", 100, True) and completed_at
+
+    def test_fail_advice_sets_error(self, db, job_id):
+        video = db.connection.execute("SELECT video_id FROM analyses WHERE id = %s", (job_id,)).fetchone()[0]
+        db.connection.execute("INSERT INTO advices (id) VALUES (%s)", (video,))
+        db.fail_advice(str(video), "LLM unavailable")
+        assert db.connection.execute("SELECT status, error FROM advices WHERE id = %s", (video,)).fetchone() == (
+            "failed",
+            "LLM unavailable",
+        )
 
     def test_mark_started_resets_a_failed_job(self, db, job_id):
         db.fail(job_id, "boom")

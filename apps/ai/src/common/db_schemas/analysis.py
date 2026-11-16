@@ -1,19 +1,20 @@
 # @date 2026-11-01
 # @file analysis.py
-# @brief Pydantic models for the `analyses` table, its `result` and `hints` JSONB payloads.
+# @brief Pydantic models for the `analyses` and `advices` tables and their `result` JSONB payloads.
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
-"""Pydantic model mirroring the `analyses` table.
+"""Pydantic models mirroring the `analyses` and `advices` tables.
 
 The JSONB payloads (`AnalysisResult`, `Hints`) and the job statuses come from
-`shared.models`, generated from `schemas/`. Only the table row and the DB-only
+`shared.models`, generated from `schemas/`. Only the table rows and the DB-only
 enums live here, plus the constraints quicktype cannot express (`priority`
 between 1 and 5, no unknown key in `result`).
 
     result = AnalysisResult.model_validate(data)
     analysis = Analysis(video_id=..., result=result, status=Status.SUCCESS)
+    advice = Advice(id=analysis.video_id, result=hints, status=Status.SUCCESS, completed_at=...)
 """
 
 from datetime import datetime
@@ -57,7 +58,6 @@ class Analysis(BaseModel):
     status: Status = Status.PENDING
     progress: int = Field(default=0, ge=0, le=100)
     result: AnalysisResult | None = None
-    hints: Hints | None = None
     error: str | None = None
     processing_time_ms: int | None = None
     started_at: datetime | None = None
@@ -74,14 +74,6 @@ class Analysis(BaseModel):
             return AnalysisResult.model_validate(value, extra="forbid")
         return value
 
-    @field_validator("hints")
-    @classmethod
-    def check_hint_priorities(cls, value: Hints | None) -> Hints | None:
-        """Enforce the 1-5 `priority` range of the schema (quicktype drops it)."""
-        if value is not None and any(not 1 <= h.priority <= 5 for h in value.items):
-            raise ValueError("hint `priority` must be between 1 and 5")
-        return value
-
     @model_validator(mode="after")
     def check_status_consistency(self) -> Self:
         """Enforce `chk_analyses_completed` and `chk_analyses_failed`."""
@@ -93,4 +85,46 @@ class Analysis(BaseModel):
             )
         if self.status == Status.FAILED and self.error is None:
             raise ValueError("a failed analysis requires `error`")
+        return self
+
+
+class Advice(BaseModel):
+    """Row of the `advices` table: one advice per video (`id` is `videos.id`).
+
+    Mirrors the `chk_advices_progress`, `chk_advices_completed` and
+    `chk_advices_failed` CHECK constraints.
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    status: Status = Status.PENDING
+    progress: int = Field(default=0, ge=0, le=100)
+    result: Hints | None = None
+    error: str | None = None
+    processing_time_ms: int | None = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+    @field_validator("result")
+    @classmethod
+    def check_hint_priorities(cls, value: Hints | None) -> Hints | None:
+        """Enforce the 1-5 `priority` range of the schema (quicktype drops it)."""
+        if value is not None and any(not 1 <= h.priority <= 5 for h in value.items):
+            raise ValueError("hint `priority` must be between 1 and 5")
+        return value
+
+    @model_validator(mode="after")
+    def check_status_consistency(self) -> Self:
+        """Enforce `chk_advices_completed` and `chk_advices_failed`."""
+        if self.status == Status.SUCCESS and (
+            self.result is None or self.completed_at is None
+        ):
+            raise ValueError(
+                "a successful advice requires both `result` and `completed_at`"
+            )
+        if self.status == Status.FAILED and self.error is None:
+            raise ValueError("a failed advice requires `error`")
         return self

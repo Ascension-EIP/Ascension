@@ -16,7 +16,7 @@ from botocore.exceptions import ClientError, EndpointConnectionError
 from pydantic import BaseModel, ValidationError
 
 import producer
-from common.db_schemas.analysis import Analysis
+from common.db_schemas.analysis import Advice, Analysis
 from common.utils.errors import PermanentError, throw_if_none, with_retry
 from services import rabbitmq
 from services.llm import LLM
@@ -51,7 +51,7 @@ def test_failed_needs_an_error():
 
 def test_hint_priority_is_bounded():
     with pytest.raises(ValidationError, match="between 1 and 5"):
-        Analysis(video_id=uuid4(), hints=HINTS)
+        Advice(id=uuid4(), result=HINTS)
 
 
 # --- small helpers ------------------------------------------------------------------------------
@@ -173,7 +173,7 @@ def test_pika_calls_from_the_job_thread_are_handed_to_the_io_thread(monkeypatch)
 
 def test_pika_calls_before_consuming_run_directly():
     broker = make_broker()
-    broker.publish(RoutingKey.POSE_DETECT_COMPLETED, Job(job_id="j"))
+    broker.publish(RoutingKey.POSE_ADVICE_STATUS, Job(job_id="j"))
     broker.connection.add_callback_threadsafe.assert_not_called()
     assert b'"job_id":"j"' in broker.channel.basic_publish.call_args.kwargs["body"]
 

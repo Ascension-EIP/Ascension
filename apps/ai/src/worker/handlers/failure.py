@@ -17,7 +17,7 @@ _MESSAGES = {
     ("pose", True): "Database unavailable",  # only the progress writes can be transient here
     ("pose", False): "Unreadable video",
     ("db", True): "Database unavailable",
-    ("db", False): "Analysis not found",
+    ("db", False): "Job not found",
     ("result", False): "Result not found",
 }
 
@@ -29,21 +29,21 @@ def short_message(stage: str, exc: Exception) -> str:
     return "Analysis failed"
 
 
-def fail_job(job_id: str, status_key: RoutingKey, stage: str, exc: Exception, mark_db: bool = True) -> PermanentError:
+def fail_job(job_id: str, status_key: RoutingKey, stage: str, exc: Exception, advice: bool = False) -> PermanentError:
     """Report a definitive failure once and return the error to raise.
 
-    Writes ``failed`` in the database (unless ``mark_db`` is false), publishes the
+    Writes ``failed`` in the database (``advices`` if ``advice``, else ``analyses``), publishes the
     ``failed`` status with a short message, and logs the traceback. Raising the
     returned `PermanentError` makes the ``consume`` wrapper dead-letter the message
     without retrying.
     """
     message = short_message(stage, exc)
     log.error("Job %s failed (%s): %s", job_id, stage, message, exc_info=exc)
-    if mark_db:
-        try:
-            get_db().fail(job_id, message)
-        except Exception:  # noqa: BLE001
-            log.exception("Job %s: could not write the failure in the database", job_id)
+    try:
+        db = get_db()
+        (db.fail_advice if advice else db.fail)(job_id, message)
+    except Exception:  # noqa: BLE001
+        log.exception("Job %s: could not write the failure in the database", job_id)
     try:
         get_broker().publish(status_key, JobStatus(job_id=job_id, status=Status.FAILED, message=message))
     except Exception:  # noqa: BLE001

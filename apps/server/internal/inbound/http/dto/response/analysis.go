@@ -23,12 +23,12 @@ type AnalysisResponse struct {
 	Visibility       model.Visibility       `json:"visibility"`
 	Progress         int16                  `json:"progress"`
 	Result           *shared.AnalysisResult `json:"result"`
-	Advice           *string                `json:"advice"`
 	Error            *string                `json:"error"`
 	ProcessingTimeMS *time.Duration         `json:"processing_time_ms"`
 	StartedAt        *time.Time             `json:"started_at"`
 	CompletedAt      *time.Time             `json:"completed_at"`
-	Hints            *shared.Hints          `json:"hints"`
+	CreatedAt        time.Time              `json:"created_at"`
+	UpdatedAt        time.Time              `json:"updated_at"`
 }
 
 func AnalysisToResponse(analysis model.Analysis) AnalysisResponse {
@@ -40,11 +40,11 @@ func AnalysisToResponse(analysis model.Analysis) AnalysisResponse {
 		Visibility:       analysis.Visibility,
 		Progress:         analysis.Progress,
 		Result:           analysis.Result,
-		Advice:           analysis.Advice,
 		Error:            analysis.Error,
 		ProcessingTimeMS: analysis.ProcessingTimeMS,
 		StartedAt:        analysis.StartedAt,
 		CompletedAt:      analysis.CompletedAt,
-		Hints:            analysis.Hints,
+		CreatedAt:        analysis.CreatedAt,
+		UpdatedAt:        analysis.UpdatedAt,
 	}
 }
