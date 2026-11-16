@@ -18,11 +18,6 @@ BROKER_BINDINGS: list[Bind] = [
     ),
     Bind(
         queue="poses.advice",
-        routing_key=RoutingKey.POSE_DETECT_COMPLETED,
-        callback=pose_advice_request,
-    ),
-    Bind(
-        queue="poses.advice",
         routing_key=RoutingKey.POSE_ADVICE_REQUESTED,
         callback=pose_advice_request,
     ),

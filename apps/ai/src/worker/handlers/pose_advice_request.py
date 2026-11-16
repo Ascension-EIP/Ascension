@@ -1,6 +1,6 @@
 # @date 2026-11-01
 # @file pose_advice_request.py
-# @brief Handler of `pose.detect.completed` and `pose.advice.requested`: LLM advice, end of the job.
+# @brief Handler of `pose.advice.requested`: LLM advice stored in the `advices` table.
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
@@ -27,30 +27,31 @@ def _llm_message(exc: Exception) -> str:
 
 @consume(Job)
 def pose_advice_request(payload: Job):
-    """Generate the hints from the stored ``result`` and end the analysis.
+    """Generate the hints of a video and store them in ``advices.result``.
 
-    Also runs as a relaunch on an analysis that is already ``success``: it then
-    keeps the status, and keeps the previous hints if the LLM fails again.
+    ``job_id`` is the video id (``advices.id``). The input is the ``result`` of the
+    latest successful analysis of that video; ``analyses`` is never written here.
 
-    An LLM failure (or a missing LLM configuration) is not a job failure: the
-    analysis ends in ``success`` with no hints, ``pose.advice.status`` says
-    ``failed`` and the message is acked. Any other failure is reported once and
-    dead-lettered (see ``pose_detect_request``).
+    An LLM failure (or a missing LLM configuration) ends the advice in ``failed`` with
+    a short message and the message is acked: the server relaunches it with
+    ``pose.advice.requested``. Any other failure is reported once and dead-lettered
+    (see ``pose_detect_request``).
     """
     log.info(f" [x] POSE_ADVICE_REQUEST: {payload}")
     job_id = payload.job_id
     broker, db = get_broker(), get_db()
-    already_done = False
     stage = "db"
     try:
+        if with_retry(lambda: db.get_advice_status(job_id)) == Status.SUCCESS:
+            log.info("Job %s already done, redelivery ignored", job_id)
+            return
+        with_retry(lambda: db.mark_advice_started(job_id))
         broker.publish(RoutingKey.POSE_ADVICE_STATUS, JobStatus(job_id=job_id, status=Status.STARTED))
         stage = "result"
-        result = with_retry(lambda: db.get_result(job_id))
+        result = with_retry(lambda: db.get_video_result(job_id))
         stage = "db"
-        already_done = with_retry(lambda: db.get_status(job_id)) == Status.SUCCESS
-        if not already_done:
-            with_retry(lambda: db.update_progress(job_id, PROGRESS_ADVICE))
-            broker.publish(RoutingKey.POSE_ADVICE_STATUS, JobStatus(job_id=job_id, status=Status.RUNNING))
+        with_retry(lambda: db.update_advice_progress(job_id, PROGRESS_ADVICE))
+        broker.publish(RoutingKey.POSE_ADVICE_STATUS, JobStatus(job_id=job_id, status=Status.RUNNING))
 
         try:
             llm = get_llm()
@@ -59,18 +60,14 @@ def pose_advice_request(payload: Job):
             )
         except Exception as exc:  # noqa: BLE001
             log.error("Job %s: no advice generated", job_id, exc_info=exc)
-            if not already_done:
-                with_retry(lambda: db.complete(job_id))
+            message = _llm_message(exc)
+            with_retry(lambda: db.fail_advice(job_id, message))
             broker.publish(
-                RoutingKey.POSE_ADVICE_STATUS,
-                JobStatus(job_id=job_id, status=Status.FAILED, message=_llm_message(exc)),
+                RoutingKey.POSE_ADVICE_STATUS, JobStatus(job_id=job_id, status=Status.FAILED, message=message)
             )
             return
 
-        with_retry(lambda: db.save_hints(job_id, hints))
-        if not already_done:
-            with_retry(lambda: db.complete(job_id))
+        with_retry(lambda: db.complete_advice(job_id, hints))
         broker.publish(RoutingKey.POSE_ADVICE_STATUS, JobStatus(job_id=job_id, status=Status.SUCCESS))
     except Exception as exc:
-        # An analysis already in `success` keeps its status, result and hints.
-        raise fail_job(job_id, RoutingKey.POSE_ADVICE_STATUS, stage, exc, mark_db=not already_done) from exc
+        raise fail_job(job_id, RoutingKey.POSE_ADVICE_STATUS, stage, exc, advice=True) from exc

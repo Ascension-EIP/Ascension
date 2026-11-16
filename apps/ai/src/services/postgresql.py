@@ -25,10 +25,12 @@ PROGRESS_MAX_RUNNING = 99
 
 
 class PostgreSQL:
-    """Connection to PostgreSQL and the job operations on the `analyses` table.
+    """Connection to PostgreSQL and the job operations on `analyses` and `advices`.
 
     The connection is in autocommit mode: each call is one atomic statement and
-    no transaction stays open while a job runs. `job_id` is `analyses.id`.
+    no transaction stays open while a job runs. For the analysis methods `job_id`
+    is `analyses.id`; for the `*_advice` methods it is `advices.id`, which is the
+    id of the video (one advice per video).
     """
 
     def __init__(self):
@@ -84,12 +86,14 @@ class PostgreSQL:
             except (psycopg.DataError, psycopg.IntegrityError) as error:
                 raise PermanentError(f"job {job_id}: {error}") from error
         if row is None:
-            raise PermanentError(f"job {job_id}: no such analysis")
+            raise PermanentError(f"job {job_id}: no such row")
         return row
 
-    def _update(self, job_id: str, assignments: str, *params: Any) -> None:
+    def _update(
+        self, job_id: str, assignments: str, *params: Any, table: str = "analyses"
+    ) -> None:
         self._execute(
-            f"UPDATE analyses SET {assignments} WHERE id = %s RETURNING id",
+            f"UPDATE {table} SET {assignments} WHERE id = %s RETURNING id",
             (*params, job_id),
             job_id,
         )
@@ -135,14 +139,6 @@ class PostgreSQL:
         except ValidationError as error:
             raise PermanentError(f"job {job_id}: stored result is invalid") from error
 
-    def save_hints(self, job_id: str, hints: Hints) -> None:
-        """Stores `hints`. The status is not checked, so advice can be relaunched."""
-        self._update(
-            job_id,
-            "hints = %s",
-            Jsonb(hints.model_dump(mode="json", exclude_none=True)),
-        )
-
     def complete(self, job_id: str) -> None:
         """Ends the job with `success`; `chk_analyses_completed` requires a stored `result`."""
         self._update(
@@ -160,5 +156,70 @@ class PostgreSQL:
         """Returns the current status (the handler skips a job already in `success`)."""
         (value,) = self._execute(
             "SELECT status FROM analyses WHERE id = %s", (job_id,), job_id
+        )
+        return Status(value)
+
+    def get_video_result(self, video_id: str) -> AnalysisResult:
+        """Reads and validates the `result` of the latest successful analysis of a video.
+
+        Raises:
+            PermanentError: No finished analysis for this video, or `result` does not match the schema.
+        """
+        (value,) = self._execute(
+            "SELECT result FROM analyses WHERE video_id = %s AND status = %s"
+            " AND result IS NOT NULL ORDER BY created_at DESC LIMIT 1",
+            (video_id, Status.SUCCESS.value),
+            video_id,
+        )
+        try:
+            return AnalysisResult.model_validate(value)
+        except ValidationError as error:
+            raise PermanentError(f"video {video_id}: stored result is invalid") from error
+
+    def mark_advice_started(self, video_id: str) -> None:
+        """Takes the advice job: resets the state a previous delivery may have left."""
+        self._update(
+            video_id,
+            "status = %s, progress = 0, started_at = NOW(), error = NULL, result = NULL,"
+            " completed_at = NULL, processing_time_ms = NULL",
+            Status.STARTED.value,
+            table="advices",
+        )
+
+    def update_advice_progress(self, video_id: str, progress: int) -> None:
+        """Sets `running` and the advice progress, capped at 99 (100 is `complete_advice`)."""
+        self._update(
+            video_id,
+            "status = %s, progress = %s",
+            Status.RUNNING.value,
+            max(0, min(progress, PROGRESS_MAX_RUNNING)),
+            table="advices",
+        )
+
+    def complete_advice(self, video_id: str, hints: Hints) -> None:
+        """Stores `hints` as the `result` and ends the advice with `success`."""
+        self._update(
+            video_id,
+            "result = %s, status = %s, progress = 100, completed_at = NOW(),"
+            " processing_time_ms = NOW() - started_at",
+            Jsonb(hints.model_dump(mode="json", exclude_none=True)),
+            Status.SUCCESS.value,
+            table="advices",
+        )
+
+    def fail_advice(self, video_id: str, message: str) -> None:
+        """Ends the advice with `failed`; `message` must be short, without traceback."""
+        self._update(
+            video_id,
+            "status = %s, error = %s",
+            Status.FAILED.value,
+            message,
+            table="advices",
+        )
+
+    def get_advice_status(self, video_id: str) -> Status:
+        """Returns the current advice status (the handler skips an advice already in `success`)."""
+        (value,) = self._execute(
+            "SELECT status FROM advices WHERE id = %s", (video_id,), video_id
         )
         return Status(value)

@@ -20,19 +20,22 @@ from tests.e2e.conftest import FakeLLM, Observer, wait_until
 
 pytestmark = [pytest.mark.e2e, pytest.mark.usefixtures("worker")]
 
-ROW = (
-    "SELECT status, progress, result, hints, error, completed_at, processing_time_ms FROM analyses WHERE id = %s"
-)
+ROW = "SELECT status, progress, result, error, completed_at, processing_time_ms FROM analyses WHERE id = %s"
+ADVICE_ROW = "SELECT status, progress, result, error, completed_at, processing_time_ms FROM advices WHERE id = %s"
+KEYS = ("status", "progress", "result", "error", "completed_at", "processing_time_ms")
 
 
-def row(db: PostgreSQL, job_id: str) -> dict:
-    keys = ("status", "progress", "result", "hints", "error", "completed_at", "processing_time_ms")
-    return dict(zip(keys, db.connection.execute(ROW, (job_id,)).fetchone(), strict=True))
+def row(db: PostgreSQL, job_id: str, sql: str = ROW) -> dict:
+    return dict(zip(KEYS, db.connection.execute(sql, (job_id,)).fetchone(), strict=True))
 
 
-def wait_for_end(db: PostgreSQL, job_id: str) -> dict:
-    ended = wait_until(lambda: row(db, job_id) if row(db, job_id)["status"] in ("success", "failed") else None)
-    assert ended, f"job {job_id} did not end: {row(db, job_id)}"
+def advice_row(db: PostgreSQL, video_id: str) -> dict:
+    return row(db, video_id, ADVICE_ROW)
+
+
+def wait_for_end(db: PostgreSQL, job_id: str, sql: str = ROW) -> dict:
+    ended = wait_until(lambda: row(db, job_id, sql) if row(db, job_id, sql)["status"] in ("success", "failed") else None)
+    assert ended, f"job {job_id} did not end: {row(db, job_id, sql)}"
     return ended
 
 
@@ -55,12 +58,18 @@ def test_nominal_flow(db, seeded, observer: Observer):
     assert final["status"] == "success" and final["error"] is None, final
     result = AnalysisResult.model_validate(final["result"])
     assert result.frames and result.metrics is not None and result.movements is not None
-    hints = Hints.model_validate(final["hints"])
-    assert hints.items and hints.model == "fake-llm"
     assert final["progress"] == 100
     assert final["completed_at"] is not None and final["processing_time_ms"] is not None
 
-    assert observer.wait_status(job.job_id, RoutingKey.POSE_ADVICE_STATUS, "success")
+    # Advice is a separate job, requested by the server (`POST /advices/:id`).
+    assert advice_row(db, job.video_id)["status"] == "pending"
+    producer.publish(RoutingKey.POSE_ADVICE_REQUESTED, Job(job_id=job.video_id))
+    advice = wait_for_end(db, job.video_id, ADVICE_ROW)
+    assert advice["status"] == "success" and advice["error"] is None and advice["progress"] == 100
+    hints = Hints.model_validate(advice["result"])
+    assert hints.items and hints.model == "fake-llm"
+    assert advice["completed_at"] is not None and advice["processing_time_ms"] is not None
+    assert observer.wait_status(job.video_id, RoutingKey.POSE_ADVICE_STATUS, "success")
     detect_statuses = observer.seen(job.job_id, RoutingKey.POSE_DETECT_STATUS)
     assert {"started", "running", "success"} <= set(detect_statuses)
     assert detect_statuses.index("started") < detect_statuses.index("running") < detect_statuses.index("success")
@@ -78,7 +87,7 @@ def test_missing_object_fails_the_job_and_is_dead_lettered(db, seeded, observer:
     job = seeded()
     detect(producer.Seeded(job.job_id, f"seed/absent-{uuid4().hex}.mp4", job.user_id))
     final = wait_for_end(db, job.job_id)
-    assert final["status"] == "failed" and final["result"] is None and final["hints"] is None
+    assert final["status"] == "failed" and final["result"] is None
     assert final["error"] and "Traceback" not in final["error"]
     assert observer.wait_status(job.job_id, RoutingKey.POSE_DETECT_STATUS, "failed")
     assert observer.take_dead_letter("poses.detect.dlq", job.job_id)
@@ -86,31 +95,34 @@ def test_missing_object_fails_the_job_and_is_dead_lettered(db, seeded, observer:
 
 @pytest.fixture(scope="module")
 def llm_down_job(db, seeded, observer: Observer):
-    """A job whose detect succeeded while the LLM was down."""
+    """A video whose analysis succeeded while the LLM was down for its advice."""
     FakeLLM.mode = "down"
     try:
         job = seeded()
         detect(job)
-        final = wait_for_end(db, job.job_id)
-        assert observer.wait_status(job.job_id, RoutingKey.POSE_ADVICE_STATUS, "failed", timeout=60)
+        wait_for_end(db, job.job_id)
+        producer.publish(RoutingKey.POSE_ADVICE_REQUESTED, Job(job_id=job.video_id))
+        final = wait_for_end(db, job.video_id, ADVICE_ROW)
+        assert observer.wait_status(job.video_id, RoutingKey.POSE_ADVICE_STATUS, "failed", timeout=60)
     finally:
         FakeLLM.mode = "ok"
     return job, final
 
 
-def test_llm_failure_keeps_the_analysis_successful_without_hints(llm_down_job, observer: Observer):
+def test_llm_failure_fails_only_the_advice(db, llm_down_job, observer: Observer):
     job, final = llm_down_job
-    assert final["status"] == "success" and final["progress"] == 100 and final["error"] is None
-    assert final["result"] is not None and final["hints"] is None
-    assert "success" not in observer.seen(job.job_id, RoutingKey.POSE_ADVICE_STATUS)
+    assert final["status"] == "failed" and final["error"] and final["result"] is None
+    analysis = row(db, job.job_id)
+    assert analysis["status"] == "success" and analysis["result"] is not None  # the analysis is untouched
+    assert "success" not in observer.seen(job.video_id, RoutingKey.POSE_ADVICE_STATUS)
 
 
-def test_advice_relaunch_fills_the_hints(db, llm_down_job, observer: Observer):
+def test_advice_retry_fills_the_result(db, llm_down_job, observer: Observer):
     job, _ = llm_down_job
     FakeLLM.mode = "ok"
-    producer.publish(RoutingKey.POSE_ADVICE_REQUESTED, Job(job_id=job.job_id))
-    assert wait_until(lambda: row(db, job.job_id)["hints"], timeout=60), "hints were not written"
-    final = row(db, job.job_id)
-    assert Hints.model_validate(final["hints"]).items
-    assert final["status"] == "success" and final["progress"] == 100
-    assert observer.wait_status(job.job_id, RoutingKey.POSE_ADVICE_STATUS, "success")
+    producer.publish(RoutingKey.POSE_ADVICE_REQUESTED, Job(job_id=job.video_id))
+    assert wait_until(lambda: advice_row(db, job.video_id)["result"], timeout=60), "hints were not written"
+    final = advice_row(db, job.video_id)
+    assert Hints.model_validate(final["result"]).items
+    assert final["status"] == "success" and final["progress"] == 100 and final["error"] is None
+    assert observer.wait_status(job.video_id, RoutingKey.POSE_ADVICE_STATUS, "success")
