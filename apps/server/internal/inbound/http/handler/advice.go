@@ -35,7 +35,7 @@ func (h *AdviceHandler) Trigger(c *gin.Context) {
 		return
 	}
 
-	videoIDStr := c.Param("video_id")
+	videoIDStr := c.Param("id")
 	videoID, err := uuid.Parse(videoIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
@@ -52,7 +52,7 @@ func (h *AdviceHandler) Trigger(c *gin.Context) {
 }
 
 func (h *AdviceHandler) GetByID(c *gin.Context) {
-	videoIDStr := c.Param("video_id")
+	videoIDStr := c.Param("id")
 	videoID, err := uuid.Parse(videoIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
@@ -69,7 +69,7 @@ func (h *AdviceHandler) GetByID(c *gin.Context) {
 }
 
 func (h *AdviceHandler) Retry(c *gin.Context) {
-	videoIDStr := c.Param("video_id")
+	videoIDStr := c.Param("id")
 	videoID, err := uuid.Parse(videoIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())

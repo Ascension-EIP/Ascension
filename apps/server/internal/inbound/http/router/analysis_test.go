@@ -1,6 +1,6 @@
 // @date 2026-11-13
 // @file analysis_test.go
-// @brief Endpoint tests of POST /v1/analysis, GET /v1/analysis/:id and retry-advice through the real router.
+// @brief Endpoint tests of POST /v1/analysis and GET /v1/analysis/:id through the real router.
 // @project Ascension
 // @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
@@ -38,7 +38,6 @@ func TestAnalysisEndpointsRequireAuthentication(t *testing.T) {
 	routes := []struct{ method, path string }{
 		{http.MethodPost, "/v1/analysis/"},
 		{http.MethodGet, "/v1/analysis/" + id},
-		{http.MethodPost, "/v1/analysis/" + id + "/retry-advice"},
 	}
 
 	for _, route := range routes {
@@ -162,7 +161,6 @@ func TestGetAnalysisInvalidID(t *testing.T) {
 	token := api.token(uuid.NewV7())
 
 	expect(t, api.do(http.MethodGet, "/v1/analysis/not-a-uuid", token, nil), http.StatusBadRequest, nil)
-	expect(t, api.do(http.MethodPost, "/v1/analysis/not-a-uuid/retry-advice", token, nil), http.StatusBadRequest, nil)
 }
 
 func TestGetUnknownAnalysis(t *testing.T) {
@@ -183,11 +181,4 @@ func TestAnalysisOfAnotherUserIsHidden(t *testing.T) {
 	var created analysisBody
 	expect(t, api.do(http.MethodPost, "/v1/analysis/", api.token(ownerID), analysisRequest(video.ID)), http.StatusAccepted, &created)
 	expect(t, api.do(http.MethodGet, "/v1/analysis/"+created.ID.String(), api.token(uuid.NewV7()), nil), http.StatusNotFound, nil)
-}
-
-func TestRetryAdviceOfUnknownAnalysis(t *testing.T) {
-	knownBug(t, "AnalysisService.RetryAdvice is a TODO: it answers 204 for any ID and retries nothing")
-
-	api := newTestAPI(t, memrepo.New())
-	expect(t, api.do(http.MethodPost, "/v1/analysis/"+uuid.NewV7().String()+"/retry-advice", api.token(uuid.NewV7()), nil), http.StatusNotFound, nil)
 }
