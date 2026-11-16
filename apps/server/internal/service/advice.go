@@ -41,21 +41,15 @@ func (s *AdviceService) TriggerAdvice(ctx context.Context, userID uuid.UUID, vid
 		return model.Advice{}, model.ErrVideoUploading
 	}
 
-	var advice model.Advice
-	if err := s.adviceR.WithTransaction(ctx, func(ctx context.Context) error {
-		advice, err = s.adviceR.CreateAdvice(ctx, videoID)
-		if err != nil {
-			return err
-		}
+	advice, err := s.adviceR.CreateAdvice(ctx, videoID)
+	if err != nil {
+		return model.Advice{}, err
+	}
 
-		if err := s.queue.PublishPoseAdviceRequested(ctx, shared.Job{
-			JobID: advice.ID.String(),
-		}); err != nil {
-			return err
-		}
-
-		return nil
+	if err := s.queue.PublishPoseAdviceRequested(ctx, shared.Job{
+		JobID: advice.ID.String(),
 	}); err != nil {
+		_, _ = s.adviceR.UpdateAdvice(ctx, model.AdvicePartial{ID: advice.ID, Status: new(model.JobStatusFailed), Error: new(new("failed to publish job: " + err.Error()))})
 		return model.Advice{}, err
 	}
 
@@ -72,25 +66,25 @@ func (s *AdviceService) RetryAdvice(ctx context.Context, videoID uuid.UUID) (mod
 		return model.Advice{}, err
 	}
 
-	if err := s.adviceR.WithTransaction(ctx, func(ctx context.Context) error {
-		if _, err := s.adviceR.UpdateAdvice(ctx, model.AdvicePartial{
-			ID:       advice.ID,
-			Status:   new(model.JobStatusPending),
-			Progress: new(int16(0)),
-			Error:    new(*string),
-			Result:   new(*shared.Hints),
-		}); err != nil {
-			return err
-		}
-
-		return s.queue.PublishPoseAdviceRequested(ctx, shared.Job{
-			JobID: advice.ID.String(),
-		})
-	}); err != nil {
+	advice, err = s.adviceR.UpdateAdvice(ctx, model.AdvicePartial{
+		ID:       advice.ID,
+		Status:   new(model.JobStatusPending),
+		Progress: new(int16(0)),
+		Error:    new(*string),
+		Result:   new(*shared.Hints),
+	})
+	if err != nil {
 		return model.Advice{}, err
 	}
 
-	return s.adviceR.GetAdviceByFilter(ctx, model.AdviceFilter{ID: &videoID})
+	if err := s.queue.PublishPoseAdviceRequested(ctx, shared.Job{
+		JobID: advice.ID.String(),
+	}); err != nil {
+		_, _ = s.adviceR.UpdateAdvice(ctx, model.AdvicePartial{ID: advice.ID, Status: new(model.JobStatusFailed), Error: new(new("failed to publish job: " + err.Error()))})
+		return model.Advice{}, err
+	}
+
+	return advice, nil
 }
 
 func (s *AdviceService) AdviceStaleDetection(ctx context.Context) error {
