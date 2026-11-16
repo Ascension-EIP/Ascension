@@ -14,7 +14,7 @@ from uuid import uuid4
 import pytest
 from pydantic import ValidationError
 
-from common.db_schemas.analysis import Analysis
+from common.db_schemas.analysis import Advice, Analysis
 from shared.models import AnalysisResult, Hints, JobStatus, PoseDetectRequest, Status
 
 DOC = Path(__file__).parents[3] / "docs/Ascension/developer/architecture/specifications/database-schema.md"
@@ -67,10 +67,10 @@ def test_analysis_rejects_unknown_result_key():
 
 
 @pytest.mark.parametrize("priority", [0, 6])
-def test_analysis_rejects_out_of_range_priority(priority):
+def test_advice_rejects_out_of_range_priority(priority):
     hints = {**HINTS, "items": [{**HINT, "priority": priority}]}
     with pytest.raises(ValidationError):
-        Analysis(video_id=uuid4(), hints=hints)
+        Advice(id=uuid4(), result=hints)
 
 
 def test_analysis_success_needs_result_and_completed_at():
