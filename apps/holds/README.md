@@ -41,6 +41,25 @@ The merge:
 ```bash
 uv run python -m holds train --model yolo26s-seg.pt --imgsz 1024 --epochs 100
 uv run python -m holds predict path/to/wall.jpg
+uv run python -m holds colors path/to/wall.jpg   # detection + colour of every hold
+uv run python -m holds colors-eval               # colour naming accuracy on ground truth
 ```
 
-Training outputs go to `runs/holds/`, predictions to `runs/predict/`.
+Training outputs go to `runs/holds/`, predictions to `runs/predict/`, colours to `runs/colors/` (one `.json` and one overlay `.jpg` per image).
+
+Detection uses a confidence threshold of 0.10 by default: small footholds are found far more often (recall on holds under 25 px goes from 0.47 at 0.25 to 0.66), and the user validates holds anyway.
+
+---
+
+## Hold colours (B3)
+
+Each hold colour is computed in CIELAB space from its mask (`src/holds/colors.py`):
+
+- the mask border is eroded to ignore wall pixels;
+- the colour is the median of the 10 % most saturated pixels, so chalk is ignored;
+- the photo colour cast is removed using the wall around the holds;
+- the result is named after the closest reference in `configs/colors.yaml` (11 colours).
+
+The JSON output gives, for each hold, its class, confidence, polygon and colour (`name`, `distance` to the reference, display `rgb`, `lab` descriptor).
+
+Known limits: the displayed `rgb` is reliable, the `name` less so. Naming reaches about 83 % within a calibrated gym and about 60 % in an unseen one, mostly red/orange, green/yellow and chalked black/cream confusions.
