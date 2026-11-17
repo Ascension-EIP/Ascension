@@ -37,23 +37,23 @@ flowchart LR
     Detect --> S3["RustFS"]
     Detect --> Steps["_1_mediapipe"]
     Steps --> DB[("analyses")]
-    Steps -->|"pose.detect.completed"| Advice["queue poses.advice"]
-    Manual["Manual rerun"] -->|"pose.advice.requested"| Advice
+    Server["Go server (POST /advices/:id)"] -->|"pose.advice.requested"| Advice["queue poses.advice"]
+    Advice --> DB
     Advice --> LLM["_2_advice + LLM"]
-    LLM --> DB
+    LLM --> ADV[("advices")]
     Detect -.->|"pose.detect.status"| Events["Status consumers"]
     Advice -.->|"pose.advice.status"| Events
 ```
 
-_Summary: the detect job downloads the video, computes the result and stores it in PostgreSQL, then triggers the advice job. The advice job reads the result back, stores the hints and finishes the analysis. Both publish their statuses._
+_Summary: the detect job downloads the video, computes the result, stores it in `analyses` and ends the analysis. The advice job is independent: the server requests it for a video, the worker reads the `result` of the latest successful analysis of that video, and stores the hints in `advices.result`. Both publish their statuses._
 
 | Item           | Value                                                                                                                              |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | Exchange       | `events` (topic, durable)                                                                                                          |
 | Queues         | `poses.detect`, `poses.advice`, plus a dead-letter queue `<queue>.dlq` bound to the exchange `events.dlx`                          |
-| Consumed keys  | `pose.detect.requested` (payload `{job_id, object_key}`), `pose.detect.completed` and `pose.advice.requested` (payload `{job_id}`) |
-| Published keys | `pose.detect.completed`, `pose.detect.status`, `pose.advice.status`                                                                |
-| Statuses       | `pending`, `started`, `running`, `success`, `failed` (messages and the `analyses.status` column)                                   |
+| Consumed keys  | `pose.detect.requested` (payload `{job_id, object_key}`), `pose.advice.requested` (payload `{job_id}`, the video id)        |
+| Published keys | `pose.detect.status`, `pose.advice.status`                                                                                         |
+| Statuses       | `pending`, `started`, `running`, `success`, `failed` (messages and the `status` column of `analyses` and `advices`)                                   |
 | Concurrency    | One job at a time per process. Scale by adding replicas                                                                            |
 
 Job lifecycle in `analyses`:
@@ -64,10 +64,17 @@ Job lifecycle in `analyses`:
 | Skeleton extraction | `running` | 5 to 70    |
 | Movements computed  | `running` | 80         |
 | `result` stored     | `running` | 85         |
-| Advice generation   | `running` | 90         |
 | Done                | `success` | 100        |
 
-`success` is written only after the advice step. If the LLM fails or is not configured, the analysis still ends in `success` with `hints = NULL`, and `pose.advice.status` is `failed`. The advice step can be rerun with `pose.advice.requested`.
+Job lifecycle in `advices` (`advices.id` is the video id, the row is created by the server):
+
+| Step                 | `status`  | `progress` |
+| -------------------- | --------- | ---------- |
+| Job taken            | `started` | 0          |
+| Advice generation    | `running` | 90         |
+| `result` (hints) set | `success` | 100        |
+
+If the LLM fails or is not configured, only the advice ends in `failed` with a short `error` (the analysis is untouched), and `pose.advice.status` is `failed`. The server relaunches it with `pose.advice.requested` (`POST /advices/:id/retry`).
 
 Temporary errors (storage, database, LLM) are retried three times with an in-memory backoff (2 s, then 4 s). After that, or on a permanent error (invalid payload, unreadable video), the job is published as `failed` and the message goes to `<queue>.dlq`. Error messages stored in the database and in statuses are short; the traceback stays in the logs.
 
@@ -112,7 +119,7 @@ The worker reads the `.env` file at the repository root (copy `.env.example`). D
 | `POSE_MODEL_PATH`                                                                     | `resources/pose_landmarker_full.task`                      | MediaPipe model, relative to `apps/ai`                                                           |
 | `TEST_POSTGRES_URL`                                                                   | none                                                       | Database used by the integration and end-to-end tests. See [Tests](#tests)                       |
 
-Without `LLM_BASE_URL` or `LLM_MODEL` the worker still starts: analyses end in `success` without hints.
+Without `LLM_BASE_URL` or `LLM_MODEL` the worker still starts: advices end in `failed` (the analyses are not affected).
 
 To change the model, change only the three `LLM_*` variables. There is one client for every provider.
 
@@ -135,7 +142,7 @@ Start the infrastructure, apply the migrations, then run the worker.
 
 ```bash
 moon run root:db-up        # PostgreSQL, RabbitMQ and RustFS
-moon run server:migrate    # includes the job_status and hints migrations
+moon run server:migrate    # includes the job_status and advices migrations
 moon run ai:dev            # uv run worker, loads .env
 ```
 
@@ -188,9 +195,9 @@ The Go server publishes `pose.detect.requested` itself. Without the server, `src
 
 | Command                                                                 | Effect                                                                                                                                  |
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `uv run python src/producer.py seed --video resources/example-2.mp4`    | Creates a test user, video and `pending` analysis, creates the bucket if missing, uploads the video, prints `job_id=` and `object_key=` |
+| `uv run python src/producer.py seed --video resources/example-2.mp4`    | Creates a test user, video, `pending` analysis and `pending` advice, creates the bucket if missing, uploads the video, prints `job_id=`, `object_key=` and `video_id=` |
 | `uv run python src/producer.py detect --job-id <id> --object-key <key>` | Publishes `pose.detect.requested`                                                                                                       |
-| `uv run python src/producer.py advice --job-id <id>`                    | Publishes `pose.advice.requested` (rerun of the advice step)                                                                            |
+| `uv run python src/producer.py advice --job-id <id>`                    | Publishes `pose.advice.requested` (`--job-id` is the `video_id`)                                                                          |
 
 Through moon: `moon run ai:producer -- seed --video resources/example-2.mp4`.
 
@@ -241,7 +248,7 @@ Without `--upstream none`, moon first runs the upstream tasks, including `root:s
 | `src/worker/handlers/`             | One handler per RabbitMQ flow, plus `failure.py`                                                                                       |
 | `src/services/`                    | Third-party services: `rabbitmq.py`, `postgresql.py`, `rustfs.py`, `llm.py`                                                            |
 | `src/common/models/`               | Configuration models of the services                                                                                                   |
-| `src/common/db_schemas/`           | Row model of the `analyses` table                                                                                                      |
+| `src/common/db_schemas/`           | Row models of the `analyses` and `advices` tables                                                                                                      |
 | `src/common/utils/`                | Retry and error classes, the `@consume` wrapper, bindings, logger                                                                      |
 | `src/shared/models.py`             | Generated from `schemas/`. Never edit it                                                                                               |
 | `src/producer.py`                  | Stand-in for the Go server                                                                                                             |
@@ -264,7 +271,7 @@ The contract between the worker and the server lives in `schemas/` at the reposi
 - **Hands are unreliable on `example-2.mp4`.** With `MIN_VISIBILITY` at 0.5, the wrist is measured on only 142 (left) and 136 (right) frames out of 309. On that video no frame has both arms measurable at once. The movements of the hands are therefore unusable and no pause is detected (14 movements, 0 pause). The feet are consistent. Lowering `MIN_VISIBILITY` to 0.1 to 0.3 makes the hands continuous, but it is not validated: those landmarks are ones the model judges unreliable. The advice step flags such limbs as unreliable and forbids conclusions on them.
 - **Thresholds are calibrated on one video** (`resources/example-2.mp4`, climber seen from behind): `MIN_VISIBILITY` 0.5, `MAX_GAP_FRAMES` 5, `SMOOTH_WINDOW` 5, `BENT_ARM_THRESHOLD` 0.8, speeds 0.8 and 0.4 torso lengths per second, merge gap 150 ms, minimum movement 100 ms, minimum pause 500 ms. Revisit them with real climbs and other camera angles.
 - **LLM providers are not tested for real.** No call to Gemini or DeepSeek has been made. Model names and JSON mode support are unverified.
-- **The Go server does not consume the worker's events.** It publishes `pose.detect.requested` but ignores `pose.detect.status`, `pose.detect.completed` and `pose.advice.status`: the app polls the API, which reads the `analyses` row. `POST /v1/analysis/:id/retry-advice` is still a TODO on the Go side.
+- **The Go server does not consume the worker's events.** It publishes `pose.detect.requested` and `pose.advice.requested` but ignores `pose.detect.status` and `pose.advice.status`: the app polls the API, which reads the `analyses` and `advices` rows.
 - **An invalid payload goes to the dead-letter queue without any status.** The analysis stays `pending` in the database. The server's cron job marks an analysis still `pending` after 15 minutes as `failed`.
 - **Progress 75 is never written.** Skeleton, filtering, metrics and movements run in one call, so the progress goes from 70 to 80.
 - **No reconnection.** If the RabbitMQ connection drops, the process exits with a non-zero code and Docker restarts it. The worker finishes the running job first.

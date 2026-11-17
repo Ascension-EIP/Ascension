@@ -11,7 +11,10 @@ import (
 	"context"
 	"net/url"
 	"time"
+
 	"uuid"
+
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/shared"
 )
 
 // -- Repository -- //
@@ -119,6 +122,15 @@ type VideoRepository interface {
 	DeleteVideosExpired(ctx context.Context, retainPeriod time.Duration) error
 }
 
+type AdviceRepository interface {
+	TransactionRepository
+	CreateAdvice(ctx context.Context, videoID uuid.UUID) (Advice, error)
+	GetAdviceByFilter(ctx context.Context, filter AdviceFilter) (Advice, error)
+	ListAdviceByFilter(ctx context.Context, filter AdviceFilter, pagination Pagination) ([]Advice, error)
+	UpdateAdvice(ctx context.Context, partial AdvicePartial) (Advice, error)
+	DeleteAdvice(ctx context.Context, id uuid.UUID) error
+}
+
 type QuotaUsageRepository interface {
 	DeleteOldQuotaUsage(ctx context.Context) error
 }
@@ -146,7 +158,11 @@ type VideoStorage interface {
 // -- Queue -- //
 
 type AnalysisQueue interface {
-	PublishPoseDetectRequested(ctx context.Context, body []byte) error
+	PublishPoseDetectRequested(ctx context.Context, req shared.PoseDetectRequest) error
+}
+
+type AdviceQueue interface {
+	PublishPoseAdviceRequested(ctx context.Context, req shared.Job) error
 }
 
 // -- //

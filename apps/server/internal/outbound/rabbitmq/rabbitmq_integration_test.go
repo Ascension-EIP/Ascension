@@ -9,6 +9,7 @@ package rabbitmq
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -18,6 +19,7 @@ import (
 	"time"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/shared"
 	"github.com/rabbitmq/amqp091-go"
 )
 
@@ -134,8 +136,8 @@ func TestPublishPoseDetectRequestedReachesTheWorkerQueue(t *testing.T) {
 	ch := channel(t, queue)
 	purge(t, ch, queuePoseDetect)
 
-	body := []byte(`{"job_id":"018e6e5a-abcd-7ef0-1234-567890abcdef","object_key":"users/42/video.mp4"}`)
-	if err := queue.PublishPoseDetectRequested(context.Background(), body); err != nil {
+	req := shared.PoseDetectRequest{JobID: "018e6e5a-abcd-7ef0-1234-567890abcdef", ObjectKey: "users/42/video.mp4"}
+	if err := queue.PublishPoseDetectRequested(context.Background(), req); err != nil {
 		t.Fatalf("PublishPoseDetectRequested() error = %v", err)
 	}
 
@@ -143,8 +145,12 @@ func TestPublishPoseDetectRequestedReachesTheWorkerQueue(t *testing.T) {
 	if err := msg.Ack(false); err != nil {
 		t.Fatalf("ack: %v", err)
 	}
-	if string(msg.Body) != string(body) {
-		t.Errorf("body = %s, want %s", msg.Body, body)
+	var got shared.PoseDetectRequest
+	if err := json.Unmarshal(msg.Body, &got); err != nil {
+		t.Fatalf("unmarshal body: %v", err)
+	}
+	if got != req {
+		t.Errorf("body = %+v, want %+v", got, req)
 	}
 	if msg.Exchange != queue.cfg.ExchangeEvent || msg.RoutingKey != routingKeyPoseDetectRequested {
 		t.Errorf("published to %q with %q, want %q with %q", msg.Exchange, msg.RoutingKey, queue.cfg.ExchangeEvent, routingKeyPoseDetectRequested)
@@ -188,8 +194,8 @@ func TestRejectedJobGoesToTheDeadLetterQueue(t *testing.T) {
 	declareWorkerDeadLetters(t, ch)
 	purge(t, ch, queuePoseDetect, deadLetterQueue)
 
-	body := []byte(`{"job_id":"018e6e5a-dead-7ef0-1234-567890abcdef","object_key":"users/42/broken.mp4"}`)
-	if err := queue.PublishPoseDetectRequested(context.Background(), body); err != nil {
+	req := shared.PoseDetectRequest{JobID: "018e6e5a-dead-7ef0-1234-567890abcdef", ObjectKey: "users/42/broken.mp4"}
+	if err := queue.PublishPoseDetectRequested(context.Background(), req); err != nil {
 		t.Fatalf("PublishPoseDetectRequested() error = %v", err)
 	}
 	if err := get(t, ch, queuePoseDetect).Nack(false, false); err != nil {
@@ -200,7 +206,11 @@ func TestRejectedJobGoesToTheDeadLetterQueue(t *testing.T) {
 	if err := dead.Ack(false); err != nil {
 		t.Fatalf("ack: %v", err)
 	}
-	if string(dead.Body) != string(body) {
-		t.Errorf("dead-lettered body = %s, want %s", dead.Body, body)
+	var got shared.PoseDetectRequest
+	if err := json.Unmarshal(dead.Body, &got); err != nil {
+		t.Fatalf("unmarshal dead-letter body: %v", err)
+	}
+	if got != req {
+		t.Errorf("dead-lettered body = %+v, want %+v", got, req)
 	}
 }

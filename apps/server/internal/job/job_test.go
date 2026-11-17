@@ -21,6 +21,7 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/shared"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/testutil/memrepo"
 	"github.com/robfig/cron/v3"
 )
@@ -47,7 +48,11 @@ func (failingRepo) ListAnalysisByFilter(context.Context, model.AnalysisFilter, m
 // noQueue drops the analysis jobs.
 type noQueue struct{}
 
-func (noQueue) PublishPoseDetectRequested(context.Context, []byte) error { return nil }
+func (noQueue) PublishPoseDetectRequested(context.Context, shared.PoseDetectRequest) error {
+	return nil
+}
+
+func (noQueue) PublishPoseAdviceRequested(context.Context, shared.Job) error { return nil }
 
 // captureLogs sends the default slog output to a buffer for the test.
 func captureLogs(t *testing.T) *bytes.Buffer {

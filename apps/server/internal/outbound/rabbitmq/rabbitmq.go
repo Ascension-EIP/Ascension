@@ -20,6 +20,7 @@ import (
 // waits in its queue instead of being dropped.
 const (
 	routingKeyPoseDetectRequested = "pose.detect.requested"
+	routingKeyPoseAdviceRequested = "pose.advice.requested"
 	queuePoseDetect               = "poses.detect"
 	deadLetterExchange            = "events.dlx"
 )
