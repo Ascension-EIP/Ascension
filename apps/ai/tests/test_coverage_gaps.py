@@ -6,23 +6,38 @@
 # @copyright (c) 2026 Ascension
 # @status done
 import json
+from datetime import UTC, datetime
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 from uuid import uuid4
 
 import numpy as np
+import psycopg
 import pytest
 from botocore.exceptions import ClientError, EndpointConnectionError
 from pydantic import BaseModel, ValidationError
 
 import producer
 from common.db_schemas.analysis import Advice, Analysis
-from common.utils.errors import PermanentError, throw_if_none, with_retry
+from common.utils.errors import (
+    PermanentError,
+    TransientError,
+    throw_if_none,
+    with_retry,
+)
 from services import rabbitmq
 from services.llm import LLM
+from services.postgresql import PostgreSQL
 from services.rabbitmq import DLX, Broker
 from services.rustfs import RustFS
-from shared.models import Job, PoseDetectRequest, RoutingKey, Status
+from shared.models import (
+    AnalysisResult,
+    Hints,
+    Job,
+    PoseDetectRequest,
+    RoutingKey,
+    Status,
+)
 from worker import cli
 from worker._1_mediapipe.pose_geometry import angle
 from worker.handlers import failure
@@ -52,6 +67,37 @@ def test_failed_needs_an_error():
 def test_hint_priority_is_bounded():
     with pytest.raises(ValidationError, match="between 1 and 5"):
         Advice(id=uuid4(), result=HINTS)
+
+
+VALID_HINTS = {
+    "summary": "s",
+    "items": [{"category": "technique", "priority": 3, "title": "t", "description": "d"}],
+    "model": "m",
+    "generated_at": "2026-09-18T10:12:00Z",
+}
+
+
+def test_advice_success_needs_result_and_completion_time():
+    with pytest.raises(ValidationError, match="requires both"):
+        Advice(id=uuid4(), status=Status.SUCCESS, result=VALID_HINTS)
+    now = datetime.now(UTC)
+    advice = Advice(id=uuid4(), status=Status.SUCCESS, result=VALID_HINTS, completed_at=now)
+    assert advice.status == Status.SUCCESS
+
+
+def test_advice_failed_needs_an_error():
+    with pytest.raises(ValidationError, match="requires `error`"):
+        Advice(id=uuid4(), status=Status.FAILED)
+    advice = Advice(id=uuid4(), status=Status.FAILED, error="some error")
+    assert advice.error == "some error"
+
+
+def test_analysis_result_validation_edge_cases():
+    a = Analysis(video_id=uuid4(), result=None)
+    assert a.result is None
+    parsed = AnalysisResult.model_validate(RESULT)
+    a2 = Analysis(video_id=uuid4(), result=parsed)
+    assert a2.result == parsed
 
 
 # --- small helpers ------------------------------------------------------------------------------
@@ -308,3 +354,136 @@ def test_runtime_getters_share_one_instance_and_llm_needs_config(monkeypatch):
     with pytest.raises(ValueError, match="LLM_BASE_URL"):
         runtime.get_llm()  # a failure is not cached: the next call retries
     runtime.get_llm.cache_clear()
+
+
+# --- postgresql service -------------------------------------------------------------------------
+
+
+def test_postgresql_setup_config_and_connect(monkeypatch):
+    monkeypatch.setenv("POSTGRES_DB_URL", "postgresql://u:p@h:5432/d")
+    mock_connect = MagicMock()
+    monkeypatch.setattr("services.postgresql.psycopg.connect", mock_connect)
+    db = PostgreSQL().setup_config().connect()
+    assert db.config.url == "postgresql://u:p@h:5432/d"
+    mock_connect.assert_called_once_with("postgresql://u:p@h:5432/d", autocommit=True)
+
+
+def test_postgresql_connect_default_url(monkeypatch):
+    monkeypatch.delenv("POSTGRES_DB_URL", raising=False)
+    monkeypatch.setenv("POSTGRES_HOST", "dbhost")
+    monkeypatch.setenv("POSTGRES_PORT", "5433")
+    monkeypatch.setenv("POSTGRES_USER", "dbuser")
+    monkeypatch.setenv("POSTGRES_PASSWORD", "dbpass")
+    monkeypatch.setenv("POSTGRES_DB", "dbname")
+    mock_connect = MagicMock()
+    monkeypatch.setattr("services.postgresql.psycopg.connect", mock_connect)
+    PostgreSQL().connect()
+    mock_connect.assert_called_once_with("postgresql://dbuser:dbpass@dbhost:5433/dbname", autocommit=True)
+
+
+def test_postgresql_execute_and_update():
+    conn = MagicMock()
+    conn.closed = False
+    conn.execute.return_value.fetchone.return_value = ("018e-analysis-id",)
+    db = PostgreSQL()
+    db.connection = conn
+
+    db.mark_started("job1")
+    db.update_progress("job1", 50)
+    db.update_progress("job1", -10)
+    db.update_progress("job1", 150)
+    db.complete("job1")
+    db.fail("job1", "failed message")
+
+    db.mark_advice_started("vid1")
+    db.update_advice_progress("vid1", 30)
+    db.complete_advice("vid1", Hints.model_validate(VALID_HINTS))
+    db.fail_advice("vid1", "advice error")
+
+    conn.execute.return_value.fetchone.return_value = ("success",)
+    assert db.get_status("job1") == Status.SUCCESS
+    assert db.get_advice_status("vid1") == Status.SUCCESS
+
+    result = AnalysisResult.model_validate(RESULT)
+    db.save_result("job1", result)
+
+    conn.execute.return_value.fetchone.return_value = (RESULT,)
+    assert db.get_result("job1") == result
+    assert db.get_video_result("vid1") == result
+
+
+def test_postgresql_get_result_invalid():
+    conn = MagicMock()
+    conn.closed = False
+    db = PostgreSQL()
+    db.connection = conn
+
+    conn.execute.return_value.fetchone.return_value = (None,)
+    with pytest.raises(PermanentError, match="no result stored"):
+        db.get_result("job1")
+
+    conn.execute.return_value.fetchone.return_value = ({"invalid": "data"},)
+    with pytest.raises(PermanentError, match="stored result is invalid"):
+        db.get_result("job1")
+
+    with pytest.raises(PermanentError, match="stored result is invalid"):
+        db.get_video_result("vid1")
+
+
+def test_postgresql_execute_errors(monkeypatch):
+    conn = MagicMock()
+    conn.closed = False
+    db = PostgreSQL()
+    db.connection = conn
+
+    # No row returned
+    conn.execute.return_value.fetchone.return_value = None
+    with pytest.raises(PermanentError, match="no such row"):
+        db._execute("SELECT 1", (), "j1")
+
+    # DataError / IntegrityError
+    conn.execute.side_effect = psycopg.IntegrityError("constraint failed")
+    with pytest.raises(PermanentError, match="constraint failed"):
+        db._execute("SELECT 1", (), "j1")
+
+    # OperationalError retry and fail
+    conn.execute.side_effect = psycopg.OperationalError("connection closed")
+    monkeypatch.setattr(db, "connect", MagicMock())
+    with pytest.raises(TransientError, match="database unavailable"):
+        db._execute("SELECT 1", (), "j1")
+
+
+# --- producer -----------------------------------------------------------------------------------
+
+
+def test_producer_seed(monkeypatch):
+    db = MagicMock()
+    db.connection.execute.return_value.fetchone.side_effect = [
+        ("user-id",),
+        ("video-id",),
+        ("job-id",),
+    ]
+    storage = MagicMock()
+    storage.client = None
+
+    def fake_connect():
+        storage.client = MagicMock()
+        raise PermanentError("bucket missing")
+
+    storage.connect = fake_connect
+    storage.config = SimpleNamespace(bucket="test-bucket")
+
+    seeded = producer.seed("test.mp4", db=db, storage=storage)
+    assert seeded.job_id == "job-id"
+    assert seeded.video_id == "video-id"
+    assert seeded.user_id == "user-id"
+    storage.client.create_bucket.assert_called_once_with(Bucket="test-bucket")
+
+
+def test_producer_main_seed(monkeypatch, capsys):
+    fake_seeded = producer.Seeded(job_id="j", object_key="k", user_id="u", video_id="v")
+    monkeypatch.setattr(producer, "seed", lambda vid: fake_seeded)
+    producer.main(["seed", "--video", "test.mp4"])
+    captured = capsys.readouterr().out
+    assert "job_id=j" in captured and "video_id=v" in captured
+
