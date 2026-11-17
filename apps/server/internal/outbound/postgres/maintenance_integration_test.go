@@ -286,3 +286,61 @@ func TestDeleteOldQuotaUsage(t *testing.T) {
 		}
 	}
 }
+
+func createAdvice(t *testing.T, db pgtest.DB, videoID uuid.UUID) model.Advice {
+	t.Helper()
+
+	advice, err := db.Repo.CreateAdvice(context.Background(), videoID)
+	if err != nil {
+		t.Fatalf("CreateAdvice() error = %v", err)
+	}
+
+	return advice
+}
+
+func TestAdviceRepositoryListUpdateDelete(t *testing.T) {
+	ctx := context.Background()
+	db := pgtest.Open(t)
+	repo := db.Repo
+	userID := db.CreateUser(t)
+
+	video1 := db.CreateVideo(t, userID, nil)
+	video2 := db.CreateVideo(t, userID, nil)
+	video3 := db.CreateVideo(t, userID, nil)
+
+	pending := []model.Advice{
+		createAdvice(t, db, video1),
+		createAdvice(t, db, video2),
+	}
+	running := createAdvice(t, db, video3)
+	if _, err := repo.UpdateAdvice(ctx, model.AdvicePartial{ID: running.ID, Status: new(model.JobStatusRunning)}); err != nil {
+		t.Fatalf("UpdateAdvice(running) error = %v", err)
+	}
+
+	got, err := repo.GetAdviceByFilter(ctx, model.AdviceFilter{ID: &running.ID})
+	if err != nil {
+		t.Fatalf("GetAdviceByFilter(running) error = %v", err)
+	}
+	if got.Status != model.JobStatusRunning {
+		t.Errorf("got.Status = %v, want running", got.Status)
+	}
+
+	listed, err := repo.ListAdviceByFilter(ctx, model.AdviceFilter{Status: new(model.JobStatusPending)}, model.Pagination{Limit: 10, Offset: 0})
+	if err != nil {
+		t.Fatalf("ListAdviceByFilter(pending) error = %v", err)
+	}
+	if len(listed) != len(pending) {
+		t.Fatalf("ListAdviceByFilter(pending) = %d advices, want %d", len(listed), len(pending))
+	}
+
+	if _, err := repo.UpdateAdvice(ctx, model.AdvicePartial{ID: running.ID}); !errors.Is(err, model.ErrNotFound) {
+		t.Errorf("UpdateAdvice(empty) error = %v, want ErrNotFound", err)
+	}
+
+	if err := repo.DeleteAdvice(ctx, running.ID); err != nil {
+		t.Fatalf("DeleteAdvice() error = %v", err)
+	}
+	if _, err := repo.GetAdviceByFilter(ctx, model.AdviceFilter{ID: &running.ID}); !errors.Is(err, model.ErrNotFound) {
+		t.Errorf("GetAdviceByFilter(deleted) error = %v, want ErrNotFound", err)
+	}
+}

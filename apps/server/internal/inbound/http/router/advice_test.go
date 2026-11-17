@@ -112,3 +112,14 @@ func TestRetryAdvice(t *testing.T) {
 		t.Errorf("retried = %+v, want pending status and video ID", retried)
 	}
 }
+
+func TestAdviceEndpointsNotFound(t *testing.T) {
+	repo := memrepo.New()
+	api := newTestAPI(t, repo)
+	token := api.token(uuid.NewV7())
+	id := uuid.NewV7().String()
+
+	expect(t, api.do(http.MethodGet, "/v1/advices/"+id, token, nil), http.StatusInternalServerError, nil)
+	expect(t, api.do(http.MethodPost, "/v1/advices/"+id, token, nil), http.StatusInternalServerError, nil)
+	expect(t, api.do(http.MethodPost, "/v1/advices/"+id+"/retry", token, nil), http.StatusInternalServerError, nil)
+}

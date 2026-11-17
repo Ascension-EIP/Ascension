@@ -22,6 +22,7 @@ func TestHandlersWithoutAuthenticatedUser(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	videoH := NewVideoHandler(nil)
 	analysisH := NewAnalysisHandler(nil)
+	adviceH := NewAdviceHandler(nil)
 
 	handlers := map[string]gin.HandlerFunc{
 		"VideoHandler.GetDownloadURL": videoH.GetDownloadURL,
@@ -31,6 +32,7 @@ func TestHandlersWithoutAuthenticatedUser(t *testing.T) {
 		"VideoHandler.ListVideos":     videoH.ListVideos,
 		"AnalysisHandler.Create":      analysisH.Create,
 		"AnalysisHandler.List":        analysisH.List,
+		"AdviceHandler.Trigger":       adviceH.Trigger,
 	}
 
 	for name, handle := range handlers {

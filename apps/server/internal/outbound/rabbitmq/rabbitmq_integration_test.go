@@ -214,3 +214,12 @@ func TestRejectedJobGoesToTheDeadLetterQueue(t *testing.T) {
 		t.Errorf("dead-lettered body = %+v, want %+v", got, req)
 	}
 }
+
+func TestPublishPoseAdviceRequested(t *testing.T) {
+	queue := connect(t, brokerConfig(t))
+
+	req := shared.Job{JobID: "018e6e5a-abcd-7ef0-1234-567890abcdef"}
+	if err := queue.PublishPoseAdviceRequested(context.Background(), req); err != nil {
+		t.Fatalf("PublishPoseAdviceRequested() error = %v", err)
+	}
+}

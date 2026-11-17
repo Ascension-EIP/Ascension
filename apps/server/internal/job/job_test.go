@@ -45,6 +45,10 @@ func (failingRepo) ListAnalysisByFilter(context.Context, model.AnalysisFilter, m
 	return nil, errRepo
 }
 
+func (failingRepo) ListAdviceByFilter(context.Context, model.AdviceFilter, model.Pagination) ([]model.Advice, error) {
+	return nil, errRepo
+}
+
 // noQueue drops the analysis jobs.
 type noQueue struct{}
 
@@ -105,6 +109,7 @@ type fullRepo interface {
 	model.VideoRepository
 	model.ClimbingSessionRepository
 	model.AnalysisRepository
+	model.AdviceRepository
 	model.QuotaUsageRepository
 }
 
@@ -152,6 +157,15 @@ var jobCases = []jobCase{
 		register: func(c *cron.Cron, repo fullRepo) error {
 			s := service.NewAnalysisService(config.StorageConfig{}, repo, repo, noQueue{})
 			return AnalysisStaleDetection(c, context.Background(), &s)
+		},
+	},
+	{
+		name:   "AdviceStaleDetection",
+		spec:   "* * * * *",
+		logged: "failed to detect stale advice",
+		register: func(c *cron.Cron, repo fullRepo) error {
+			s := service.NewAdviceService(config.StorageConfig{}, repo, repo, noQueue{})
+			return AdviceStaleDetection(c, context.Background(), &s)
 		},
 	},
 }
