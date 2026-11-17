@@ -52,6 +52,14 @@ tasks:
     deps:
       - 'install'
 
+  merge:
+    command: 'uv'
+    args: ['run', 'python', '-m', 'holds', 'merge']
+    options:
+      cache: false
+    deps:
+      - 'install'
+
   train:
     command: 'uv'
     args: ['run', 'python', '-m', 'holds', 'train']
