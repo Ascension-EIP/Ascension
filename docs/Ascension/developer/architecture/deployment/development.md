@@ -283,11 +283,11 @@ LOG_PRETTY=false
 PYTHONUNBUFFERED=1
 LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
 LLM_API_KEY=your_llm_api_key_here
-LLM_MODEL=gemini-3.1-flash-lite
+LLM_MODEL=gemini-3.5-flash-lite
 
 # Read by the scripts in .github/scripts (commit and PR review tooling), not by the AI worker
 GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_MODEL=gemini-3.1-flash-lite
+GEMINI_MODEL=gemini-3.5-flash-lite
 
 ```
 

@@ -27,7 +27,7 @@ class Config:
         self.pr_number: Optional[int] = None
         self.local_mode: bool = False
         self.compare_ref: Optional[str] = None
-        self.model: str = "gemini-3.1-flash-lite"
+        self.model: str = "gemini-3.5-flash-lite"
         self.max_comments: int = 30
         
         # Rate Limiting configuration
@@ -47,7 +47,7 @@ class Config:
         parser.add_argument("-r", "--repo", type=str, help="Dépôt GitHub (format: owner/repo)")
         parser.add_argument("-t", "--token", type=str, help="Token GitHub (ou GITHUB_TOKEN env)")
         parser.add_argument("-k", "--key", type=str, help="Clé API Gemini (ou GEMINI_API_KEY env)")
-        parser.add_argument("-m", "--model", type=str, default="gemini-3.1-flash-lite", help="Modèle Gemini à utiliser")
+        parser.add_argument("-m", "--model", type=str, default="gemini-3.5-flash-lite", help="Modèle Gemini à utiliser")
         parser.add_argument("--rpm", type=int, help="Nombre maximal de requêtes par minute (RPM) pour Gemini")
         parser.add_argument("--tpm", type=int, help="Nombre maximal de tokens par minute (TPM) pour Gemini")
         parser.add_argument("--rpd", type=int, help="Nombre maximal de requêtes par jour (RPD) pour Gemini")

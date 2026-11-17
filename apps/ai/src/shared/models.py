@@ -1,10 +1,3 @@
-# @date 2026-11-01
-# @file models.py
-# @brief File description.
-# @project Ascension
-# @author Gianni TUERO <gianni.tuero@epitech.eu>
-# @copyright (c) 2026 Ascension
-# @status done
 from pydantic import BaseModel
 from typing import Optional
 from enum import StrEnum

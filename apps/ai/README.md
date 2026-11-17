@@ -118,7 +118,7 @@ To change the model, change only the three `LLM_*` variables. There is one clien
 
 | Provider | `LLM_BASE_URL`                                             | `LLM_MODEL`             |
 | -------- | ---------------------------------------------------------- | ----------------------- |
-| Gemini   | `https://generativelanguage.googleapis.com/v1beta/openai/` | `gemini-3.1-flash-lite` |
+| Gemini   | `https://generativelanguage.googleapis.com/v1beta/openai/` | `gemini-3.5-flash-lite` |
 | DeepSeek | `https://api.deepseek.com`                                 | `deepseek-flash`        |
 
 > **Not tested with a real provider.** Every test uses a simulated client. The values above come from the providers' documentation and the model names must be checked against their catalogue. Gemini's page for the OpenAI-compatible API does not mention `response_format={"type": "json_object"}`: confirm it with a real key. Choosing a provider also has GDPR consequences: biomechanical data (no identifier, no video) leaves for a third party.

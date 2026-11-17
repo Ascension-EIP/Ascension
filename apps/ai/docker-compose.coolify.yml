@@ -30,5 +30,5 @@ services:
       - "RUSTFS_SECRET_KEY=${RUSTFS_SECRET_KEY:?}"
       # Without a key the analysis still succeeds, without the LLM advice.
       - "LLM_BASE_URL=${LLM_BASE_URL:-https://generativelanguage.googleapis.com/v1beta/openai/}"
-      - "LLM_MODEL=${LLM_MODEL:-gemini-3.1-flash-lite}"
+      - "LLM_MODEL=${LLM_MODEL:-gemini-3.5-flash-lite}"
       - "LLM_API_KEY=${LLM_API_KEY:-}"

@@ -148,7 +148,7 @@ def get_gemini_config() -> Tuple[Optional[str], str]:
         if not api_key:
             api_key = None
 
-    model = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
+    model = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
     return api_key, model
 
 def get_git_user() -> Tuple[str, str]:

@@ -76,7 +76,7 @@ def sample_settings() -> Settings:
         ai=AISettings(
             active_pose_pipeline="pose_analysis_2d",
             gemini_api_key="secret_gemini_key",
-            gemini_model="gemini-3.1-flash-lite",
+            gemini_model="gemini-3.5-flash-lite",
             mediapipe_model_path="pose_landmarker.task",
             sam3d_checkpoint_path="model.ckpt",
             sam3d_mhr_path="mhr.pt",

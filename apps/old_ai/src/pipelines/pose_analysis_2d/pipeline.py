@@ -33,7 +33,7 @@ class PoseAnalysis2DPipeline(BasePipeline, AdviceCapability):
         self,
         model_path: str | None = None,
         gemini_api_key: str | None = None,
-        gemini_model: str = "gemini-3.1-flash-lite",
+        gemini_model: str = "gemini-3.5-flash-lite",
     ):
         base_dir = os.path.dirname(
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
