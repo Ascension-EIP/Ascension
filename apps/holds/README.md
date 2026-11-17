@@ -39,7 +39,7 @@ The merge:
 ## Usage
 
 ```bash
-uv run python -m holds train --model yolo26s-seg.pt --imgsz 1280 --epochs 100
+uv run python -m holds train --model yolo26s-seg.pt --imgsz 1024 --epochs 100
 uv run python -m holds predict path/to/wall.jpg
 ```
 

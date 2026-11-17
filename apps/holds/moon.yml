@@ -63,6 +63,8 @@ tasks:
   train:
     command: 'uv'
     args: ['run', 'python', '-m', 'holds', 'train']
+    env:
+      PYTORCH_CUDA_ALLOC_CONF: 'expandable_segments:True'
     options:
       cache: false
       persistent: true
