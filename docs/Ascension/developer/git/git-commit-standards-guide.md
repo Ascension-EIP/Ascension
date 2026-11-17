@@ -27,6 +27,7 @@ Commit messages follow this structure:
 [optional body]
 
 [optional footer]
+
 ```
 
 ### 1.1 Basic rules
@@ -50,6 +51,7 @@ Examples:\
 
 ```
 fix(network): fix packet loss issue
+
 ```
 
 Description rules
@@ -73,6 +75,7 @@ The body provides **additional context**, such as:
 ```
 Improved the packet processing flow by separating concerns.
 This prevents desynchronization issues on unstable connections.
+
 ```
 
 Footer
@@ -83,6 +86,7 @@ The footer is used for:
 
 ```
 Closes #42
+
 ```
 
 **Breaking changes**\
@@ -90,12 +94,14 @@ Must start with:
 
 ```
 BREAKING CHANGE:
+
 ```
 
 **Example footer:**
 
 ```
 BREAKING CHANGE: changed the serialization format for packets
+
 ```
 
 ---

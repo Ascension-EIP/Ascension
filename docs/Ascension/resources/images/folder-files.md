@@ -4,13 +4,13 @@ id: 37842e63-92ec-4261-959a-97cf476d3648
 
 # Files in this folder
 
-## Banner
+## Banner modern
 
-![banner.png](./banner.png)
+![banner_modern.png](./banner_modern.png)
 
-## Banner V2
+## Banner old
 
-![banner-v2.png](./banner-v2.png)
+![banner_old.png](./banner_old.png)
 
 ## Logo 1024 modern
 

@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Hints",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "summary",
+    "items",
+    "model",
+    "generated_at"
+  ],
+  "properties": {
+    "summary": {
+      "type": "string"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Hint"
+      }
+    },
+    "model": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "definitions": {
+    "FocusArea": {
+      "type": "string",
+      "enum": [
+        "technique",
+        "strength",
+        "endurance",
+        "flexibility",
+        "mental"
+      ]
+    },
+    "BodyZone": {
+      "type": "string",
+      "enum": [
+        "head",
+        "neck",
+        "torso",
+        "lower_back",
+        "left_shoulder",
+        "right_shoulder",
+        "left_upper_arm",
+        "right_upper_arm",
+        "left_elbow",
+        "right_elbow",
+        "left_forearm",
+        "right_forearm",
+        "left_wrist",
+        "right_wrist",
+        "left_hand",
+        "right_hand",
+        "left_fingers",
+        "right_fingers",
+        "left_hip",
+        "right_hip",
+        "left_thigh",
+        "right_thigh",
+        "left_knee",
+        "right_knee",
+        "left_shin",
+        "right_shin",
+        "left_ankle",
+        "right_ankle",
+        "left_foot",
+        "right_foot"
+      ]
+    },
+    "Hint": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "category",
+        "priority",
+        "title",
+        "description"
+      ],
+      "properties": {
+        "category": {
+          "$ref": "#/definitions/FocusArea"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "frame_start": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "frame_end": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "body_zones": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BodyZone"
+          }
+        }
+      }
+    }
+  }
+}

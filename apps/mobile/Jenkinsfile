@@ -1,0 +1,17 @@
+@Library('jenkins-shared-library@main') _
+
+// Flutter app pipeline: format, analyze, tests, then SonarQube on dev.
+// The stages live in runMobileCI (Ascension-EIP/jenkins-shared-library);
+// this file only sets the variables.
+runMobileCI(
+    // Same version as the GitHub Actions CI.
+    flutterVersion: '3.47.2',
+
+    // Build only when the mobile app changed.
+    watchPaths: ['apps/mobile/'],
+
+    // SonarQube project ascension-mobile (apps/mobile/sonar-project.properties).
+    // Community analyses one branch per project: dev only.
+    enableSonarqube: false,
+    sonarBranch: 'dev',
+)

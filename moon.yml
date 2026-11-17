@@ -14,7 +14,7 @@ tasks:
 
   db-up:
     command: "docker"
-    args: ["compose", "up", "-d", "postgresql", "minio", "rabbitmq"]
+    args: ["compose", "up", "-d", "postgresql", "rustfs", "rabbitmq"]
     options:
       cache: false
 
@@ -73,7 +73,7 @@ tasks:
 
   sonar-setup:
     command: "python3"
-    args: ["scripts/setup-sonarqube.py"]
+    args: ["scripts/setup_sonarqube.py"]
     options:
       cache: false
 
@@ -84,6 +84,9 @@ tasks:
       - "sonar-scanner"
       - "-Dsonar.host.url=$SONAR_HOST_URL"
       - "-Dsonar.login=$SONAR_TOKEN"
+    deps:
+      - "server:coverage"
+      - "ai:coverage"
     options:
       cache: false
       envFile: true
@@ -106,14 +109,19 @@ tasks:
 
   schemas-generate:
     script: |
-      mkdir -p apps/server/internal/shared apps/new_ai/src/shared
+      mkdir -p apps/server/internal/shared apps/ai/src/shared
       npx -y quicktype --src-lang schema schemas/*.schema.json \
         -o apps/server/internal/shared/models.go --lang go --just-types-and-package --package shared
       npx -y quicktype --src-lang schema schemas/*.schema.json \
-        -o apps/new_ai/src/shared/models.py --lang python --just-types --python-version 3.9 --pydantic-base-model
-      sed -i -e 's/^from enum import Enum$/from enum import StrEnum/' -e 's/^class \(\w\+\)(Enum):/class \1(StrEnum):/' apps/new_ai/src/shared/models.py
+        -o apps/ai/src/shared/models.py --lang python --just-types --python-version 3.9 --pydantic-base-model
+      sed -i -e 's/^from enum import Enum$/from enum import StrEnum/' -e 's/^class \(\w\+\)(Enum):/class \1(StrEnum):/' apps/ai/src/shared/models.py
+      # quicktype emits `import "time"` after the first types, which Go rejects: move it under the package line.
+      sed -i '/^import "time"$/d' apps/server/internal/shared/models.go
+      if grep -q 'time\.Time' apps/server/internal/shared/models.go; then
+        sed -i 's/^package shared$/package shared\n\nimport "time"/' apps/server/internal/shared/models.go
+      fi
     inputs:
       - "schemas/*.schema.json"
     outputs:
       - "apps/server/internal/shared/models.go"
-      - "apps/new_ai/src/shared/models.py"
+      - "apps/ai/src/shared/models.py"

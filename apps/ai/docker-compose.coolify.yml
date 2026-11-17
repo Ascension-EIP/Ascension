@@ -1,0 +1,34 @@
+# Production deployment of the AI worker, as a Coolify "Docker Compose" application.
+# Coolify builds this file from the main branch and redeploys it on every push.
+# Values come from the Coolify environment variables: ${VAR:?} marks a required one.
+# Guide: docs/Ascension/developer/architecture/deployment/worker-deployment-guide.md
+services:
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    # The worker shares the VPS with the API, Jenkins and SonarQube (8 vCPU, 22 GB).
+    cpus: 3
+    mem_limit: 4g
+    memswap_limit: 4g
+    environment:
+      - PYTHONUNBUFFERED=1
+      - "POSTGRES_HOST=${POSTGRES_HOST:?}"
+      - "POSTGRES_PORT=${POSTGRES_PORT:-5432}"
+      - "POSTGRES_DB=${POSTGRES_DB:?}"
+      - "POSTGRES_USER=${POSTGRES_USER:?}"
+      - "POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?}"
+      - "RABBITMQ_HOST=${RABBITMQ_HOST:?}"
+      - "RABBITMQ_PORT=${RABBITMQ_PORT:-5672}"
+      - "RABBITMQ_USER=${RABBITMQ_USER:?}"
+      - "RABBITMQ_PASS=${RABBITMQ_PASS:?}"
+      - "RUSTFS_ENDPOINT=${RUSTFS_ENDPOINT:?}"
+      - "RUSTFS_REGION=${RUSTFS_REGION:?}"
+      - "RUSTFS_BUCKET=${RUSTFS_BUCKET:?}"
+      - "RUSTFS_ACCESS_KEY=${RUSTFS_ACCESS_KEY:?}"
+      - "RUSTFS_SECRET_KEY=${RUSTFS_SECRET_KEY:?}"
+      # Without a key the analysis still succeeds, without the LLM advice.
+      - "LLM_BASE_URL=${LLM_BASE_URL:-https://generativelanguage.googleapis.com/v1beta/openai/}"
+      - "LLM_MODEL=${LLM_MODEL:-gemini-3.1-flash-lite}"
+      - "LLM_API_KEY=${LLM_API_KEY:-}"

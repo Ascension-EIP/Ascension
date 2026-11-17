@@ -15,3 +15,9 @@ id: e29c7028-4874-45d0-9696-2da15c043d9f
 ## Technical Track - Student Guide
 
 [PDF](./Technical_Track_-_Student_Guide_–_Tech_4.pdf)
+
+→ pdf officiel des objectifs eip
+
+## Guide to manage virtual machines
+
+[PDF](./guide_manage_virtual_machines.pdf)

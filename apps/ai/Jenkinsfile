@@ -1,0 +1,19 @@
+@Library('jenkins-shared-library@main') _
+
+// AI worker pipeline: lint, package build, tests, then SonarQube on dev.
+// The stages live in runAiCI (Ascension-EIP/jenkins-shared-library);
+// this file only sets the variables.
+runAiCI(
+    // Same version as .moon/toolchain.yml.
+    pythonVersion: '3.11',
+    // Must build the uv_build backend pinned in apps/ai/pyproject.toml.
+    uvVersion: '0.13.6',
+
+    // Build only when the AI worker or the shared schemas changed.
+    watchPaths: ['apps/ai/', 'schemas/'],
+
+    // SonarQube project ascension-ai (apps/ai/sonar-project.properties).
+    // Community analyses one branch per project: dev only.
+    enableSonarqube: true,
+    sonarBranch: 'dev',
+)

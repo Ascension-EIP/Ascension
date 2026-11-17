@@ -10,7 +10,7 @@ alwaysApply: false
 Before writing, editing, or improving **any** Markdown documentation, you MUST read the full project style guide:
 
 ```
-docs/developer/guidelines/markdown-guidelines.md
+docs/Ascension/developer/guidelines/markdown-guidelines.md
 ```
 
 Do not skip this step, even if you think you already know the rules. The guidelines are the source of truth — if there is a conflict between your defaults and the guide, the guide wins.

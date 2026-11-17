@@ -1,0 +1,524 @@
+Architecture IA pour l’escalade
+Tue, Sep 29, 2026
+
+1:02 - Unidentified Speaker
+Ah, c'est bon.
+
+2:16 - Nicolas TORO
+Et sur Discord !
+
+2:53 - Unidentified Speaker
+Merci à tous.
+
+3:00 - Nicolas TORO
+de ce fait.
+
+3:35 - Ilyes TALBI
+Hello.
+
+3:36 - Unidentified Speaker
+Allo.
+
+3:36 - Nicolas TORO
+Ouais, ça va ? Ça va et toi ?
+
+3:42 - Ilyes TALBI
+Ça va nickel.
+
+3:44 - Nicolas TORO
+Alors, il y a mes collègues qui n'arrivent pas tous à rejoindre.
+
+3:52 - Unidentified Speaker
+Ouais, c'est bon, je les ai acceptés normalement. Ok.
+
+3:57 - Ilyes TALBI
+Hello Christophe.
+
+4:01 - Christophe Vandevoir
+Salut. Read, c'est toi, c'est ça ?
+
+4:04 - Ilyes TALBI
+Comment ?
+
+4:05 - Christophe Vandevoir
+Ben oui, Read, c'est moi.
+
+4:08 - Nicolas TORO
+Je ne sais pas si ça te dérange. Non, non, non, pas de souci.
+
+4:14 - Ilyes TALBI
+Moi aussi, j'ai mon assistant, donc ça va très bien.
+
+4:19 - Jundo
+Salut, salut. Tu as la forme ?
+
+4:22 - Ilyes TALBI
+Ouais, nickel.
+
+4:23 - Unidentified Speaker
+Tout va bien.
+
+4:24 - Ilyes TALBI
+On attend encore… Olivier et...
+
+4:29 - Nicolas TORO
+Olivier et Lou, c'est ça ?
+
+4:33 - Ilyes TALBI
+Non, Lou, il était encore... Ah oui, Voiture, Voiture, OK. OK, parfait.
+
+4:43 - Unidentified Speaker
+Tout va bien ?
+
+4:46 - Ilyes TALBI
+Vous passez une bonne rentrée ?
+
+4:50 - Nicolas TORO
+Oui, tout va bien dans l'ensemble. Personnellement, De mon côté, tout va bien. On travaille sur Ascension et sur nos cours de Tech 4 en même temps.
+
+5:10 - Ilyes TALBI
+Donc voilà, ça va.
+
+5:12 - Olivier Pöuech
+OK, nice. Salut Olivier. Salut, salut.
+
+5:17 - Ilyes TALBI
+Alors, je reprends juste le document avec le calendrier pour savoir si c'est un objectif formel sur chacune des sessions. Mais sur l'aspect technique, déjà, est-ce que vous avez pu avancer sur les sujets qu'on avait abordés ensemble ? De mémoire, il y avait un des sujets importants, c'était cette idée de bien décomposer la solution en briques techniques, fonctionnelles, bien identifiables. Ça je pense que c'est important que vous fassiez le plus rapidement possible parce que ça va vous aider à bien définir votre roadmap.
+
+ Je ne sais pas si vous avez pu avancer sur ça.
+
+6:07 - Jundo
+On a pu avancer un petit peu dessus. En tout cas côté IA, on a fait la première partie, la première feature, on va dire qu'elle est décomposée. Donc l'analyse avec les conseils de l'IA, etc. Ça s'est décomposé, mais le reste pas encore.
+
+6:24 - Unidentified Speaker
+OK.
+
+6:24 - Ilyes TALBI
+Mais du coup, les conseils, ils sont basés sur quoi ? Ils sont basés pour le moment sur...
+
+6:30 - Jundo
+On ne l'a pas encore appliqué. Enfin, les conseils sont là, mais ils ne sont pas encore de la manière dont on les a décomposés. En gros, on a décomposé un peu plus du style. On va essayer de fine-tuner en LLM classique quoi. Enfin fine-tuné, pas forcément fine-tuné mais font peut-être ingénier le truc quoi. Et pour pouvoir avoir des conseils plus spécifiques et au moins ils sont vraiment basés avec les frames des vidéos etc.
+
+
+
+7:01 - Unidentified Speaker
+Donc on a l'architecture de ça quoi.
+
+7:04 - Ilyes TALBI
+Ok. Je sais pas ça si c'est... Je sais pas si c'est un... Si cette approche elle va fonctionner En gros, ce que vous avez en tête, c'est que vous avez donné l'image de la personne avec sa pose, c'est ça ? Avec son squelette, par exemple ? Oui, en gros, c'est la vidéo décomposée.
+
+7:31 - Jundo
+Du coup, c'est son squelette, on va dire, frame par frame, qui est décomposée. Après, on peut peut-être l'agréger en mouvement pour que frame par frame on ait en plus une séquence de frames avec un début et une fin et puis voir à partir d'où on était de donner 40 000 Go de Json à un LLM Je ne sais pas si ça peut fonctionner de cette manière-là Peut-être plus une approche classique des règles statiques ?
+
+
+
+8:11 - Ilyes TALBI
+Oui, soit des règles statiques, soit une approche un peu plus orientée vision par ordinateur qui sort des éléments clés. Par exemple, à mon avis, il faut quand même avoir un modèle qui va aller chercher quelle est la route optimale à emprunter. Je ne pense pas que le LLM, ils puissent le savoir.
+
+8:36 - Jundo
+Non, c'est vrai, mais je ne sais pas si tu parles plus de la seconde feature, ou alors si vraiment tu parles de la feature dont on est en train de parler. Parce que nous, on voyait plus pour du coup l'espèce de mode fantôme, puisque c'est le mode où il n'y a personne qui grimpe, et il faut de la faire du Pathfinding, et de là générer soit un squelette en 2D, parce qu'on avait dit 3D pour le moment, on va dire on skip tant qu'on n'a pas un truc en 2D fonctionnel, ou si c'était pour l'analyse 2D directement.
+
+ Ok.
+
+9:05 - Ilyes TALBI
+Ouais, je parlais plus de l'analyse 2D pour le coup. Parce que le mode fantôme, c'est où tu donnes la route optimale, c'est ça ? C'est où le modèle devrait donner la route optimale avec des positions, on va dire, à travers le temps.
+
+9:25 - Jundo
+Ok.
+
+9:26 - Ilyes TALBI
+Je ne sais pas si vous avez essayé des trucs simples par exemple, je vous donne une capture d'écran d'un mur d'escalade à Claude et je lui dis donne moi la route optimale.
+
+9:42 - Jundo
+C'est vrai qu'on ne ce va genre pas de tester truc.
+
+9:45 - Ilyes TALBI
+Je vais partager mon écran, on va faire le test. Mais en gros, sur une image comme ça, est-ce que ça aurait du sens de parler de route optimale ? Parce qu'en fait, les routes, elles sont déjà définies, non ? C'est les couleurs.
+
+10:04 - Jundo
+En fait, route optimale, c'est la manière facile de dire la meilleure manière de la monter. Même si la voie est définie comme ça, pour la verte par exemple, les prises se suivent, mais le but c'est de te dire mets ta main gauche sur la deuxième prise plutôt que ta main droite.
+
+10:24 - Ilyes TALBI
+D'accord, donc là par exemple je vais lui demander c'est quoi la meilleure manière de monter sur la voie verte celle-ci ?
+
+10:32 - Jundo
+Ouais, pour voir, ça c'est qui va dire des conneries ou pas, on verra bien.
+
+10:44 - Unidentified Speaker
+Et de manière...
+
+10:48 - Ilyes TALBI
+Je vais lui dire, explique-le visuellement. Mais comment est-ce qu'on peut le faire Par exemple, je lui dis de me donner une image pour chaque étape, c'est ça ? Oui, on pourrait faire comme ça pour tester les codes. Une image pour chaque étape. Avec les prises entourées, donc je vais dire après en sachant que ça c'est cloud en fait si ça marche avec cloud il y a moyen de faire de la distillation vous créez votre dataset de fine tuning en utilisant cloud et vous fine tunez par exemple Gemma, un truc qui peut tourner en local, qui coûte pas cher.
+
+ Peut-être pas en local, parce que ce sera sur votre téléphone, mais peut-être un truc, un modèle open source que vous finit une et que vous déployez dans un cloud, par exemple. De toute façon, dans l'idée, le modèle est sur notre serveur. En fait, c'est vrai que... Ah non, vous êtes sur la track technique, je pensais que vous étiez TRAC Solutions. Peut-être que TRAC Techniques, le jury s'attend à ce que vous fassiez quand même un travail de recherche sur les algos, sur les entraînements des modèles.
+
+ En fait, TRAC Solutions, c'est basé sur le résultat. Est-ce que la solution est fonctionnelle et est-ce qu'elle est utilisable par les utilisateurs ? Est-ce que des gens sont prêts à payer parce que ça résout un réel problème ? Pour la track solution, ce n'est pas grave d'utiliser des solutions sur étagère ou des trucs fake et un peu l'aspect technique. Pour vous, peut-être que ça va être demandé dans tous les cas de faire un peu un travail au moins de recherche sur les algos.
+
+
+
+13:28 - Jundo
+Oui, bien sûr, c'est le plus gros du travail, de ce qu'on a pu voir.
+
+13:35 - Unidentified Speaker
+Qu'est-ce qu'il me dit ?
+
+13:37 - Jundo
+Ce n'est pas déconnant, ce qu'il a fait.
+
+13:41 - Ilyes TALBI
+Non, ce que je lui ai dit, c'est la voie verte. Là, je ne vois pas trop. Oui, il a le droit. Ah, il n'a pas bien encadré, mais en fait, il y a bien un truc vert ici.
+
+13:58 - Jundo
+Non, c'est le bleu, mais en gros, le gros bloc noir que tu vois, c'est ce qu'on appelle un volume. Et en volume, en gros, tu as le droit de t'en serrer pour n'importe quel bruit que tu es en train de faire.
+
+14:10 - Unidentified Speaker
+D'accord, ok.
+
+14:11 - Ilyes TALBI
+Donc, en soi, c'est cohérent ce qu'il a dit. Ah ouais, d'accord.
+
+14:14 - Unidentified Speaker
+Et ensuite, le pied gauche, il transite d'ici à ici.
+
+14:17 - Ilyes TALBI
+Et le pied droit, il monte de là à là. Tu passes la main gauche là. Et la main droite, je la transfère ici. Après, cette prise, elle est un peu bizarre, parce que du coup, tu as pied gauche, pied droit ici, et main droite... Ouais, t'es un peu en boîte, quoi. T'es un peu... À part si t'es un enfant.
+
+14:37 - Jundo
+Mais ouais, déjà, en vrai, si on arrive à avoir un aperçu comme ça, pas en utilisant Cloud, bien sûr, puisque qu'on est sur la track technique. Et dans l'idée, si on peut avoir ça, déjà, on va dire une progression step-by-step, sans forcément de body, En vrai, un hack qui peut être utilisé, c'est qu'en fait, ici, Claude, tu peux regarder un peu l'approche qu'il a mis en oeuvre.
+
+15:03 - Ilyes TALBI
+Derrière, il te donne les codes qui ont été utilisés, les algos. Donc là, par exemple, il utilise PIL. Alors, comment est-ce qu'il détecte ? Il te dit comment il détecte peut-être les green.
+
+15:20 - Jundo
+Kill hold, c'est les trucs noirs, c'est ça ?
+
+15:29 - Unidentified Speaker
+Ouais, c'est les prises, mais kill...
+
+15:36 - Ilyes TALBI
+Ouais, c'est une couleur. C'est du bleu. C'est la première fois que j'entends ça. Donc, c'est les couleurs des triangles. Je crois qu'il fait ça basé purement sur les couleurs pour le coup. Ensuite, « locate », comment est-ce qu'il l'a fait ça ?
+
+16:07 - Ilyes TALBI
+il doit juste regarder la photo je crois là je crois qu'il lit juste les images ouais c'est dans ce code en dessous, c'est dans la request il fait du piton inline ah oui voilà ok il fait du pile ok il fait des trucs, des approches classique d'image processing. Mais ça, déjà, ça peut être amélioré en entraînant un modèle YOLO, par exemple. Par exemple, un truc que vous pouvez commencer à faire tout de suite, parce que c'est sûr que vous en aurez besoin, c'est un modèle qui détecte les tuiles, les prises, quelle que soit leur forme, il les détecte toutes.
+
+ Et ensuite, qui est capable de, en fonction de la couleur qui est choisie, qui est capable de les isoler. On avait parlé, la dernière séance, je vous avais parlé de clustering des... Des cabines, c'est tout. Je ne sais pas, je n'ai pas les termes techniques, mais en gros, clustering des routes, quoi. Clustering des routes sur un mur d'escalade, être capable de dire, clairement, je vois les routes, et déjà ça, Il l'a bien fait, je trouve.
+
+ On a bien main gauche ici, main droite là. Pied gauche, pied droit. Ça c'est cohérent, ça, comme...
+
+17:42 - Jundo
+Comme un tronche, ouais. En premier jeu, ouais, c'est assez cohérent.
+
+17:48 - Ilyes TALBI
+Ouais, en fait, ça a l'air cohérent, à part celui-ci, là, qui est un peu...
+
+17:55 - Jundo
+Non, ouais, même ça, c'est cohérent. On dirait pas comme ça, mais en vrai c'est... Ah ouais ? Ouais, justement t'as des moves compliqués. C'est pas une échelle forcément dans tous les cas.
+
+18:07 - Ilyes TALBI
+Ok, voilà. Je sais pas comment je peux vous partager tout ça. Je vais peut-être copier, mais en fait copier c'est juste la sortie qui est copiée.
+
+18:16 - Jundo
+Ouais, je sais pas si tu peux faire la con peut-être. C'est en mode viewer sur la con.
+
+18:24 - Ilyes TALBI
+Je ne sais pas, on peut faire ça sur cloud ? Je ne sais pas, je n'ai jamais vu. Share session, ok. Maintenant, il va nous monter le link.
+
+18:37 - Unidentified Speaker
+En tout cas c'est bien parce que ça permet d'identifier ce qui pourrait être un output pertinent.
+
+18:54 - Ilyes TALBI
+Alors je ne sais pas, c'est vrai que Claude est assez impressionnant techniquement, donc je ne sais pas s'il y a des trucs qu'il ne sait pas faire.
+
+19:14 - Unidentified Speaker
+On va être gourmand.
+
+19:16 - Ilyes TALBI
+Je vais lui demander de me faire un visuel comme s'il y avait un personnage. Un body dessus, oui.
+
+19:26 - Voiture Toiture
+Je n'y crois pas trop, mais bon, on ne sait jamais.
+
+19:31 - Ilyes TALBI
+Avec... Au revoir.
+
+19:43 - Unidentified Speaker
+ça a place. On va bien voir, mais oui. Du coup, ça, pour ça, on peut...
+
+19:56 - Jundo
+Je pense que, du coup, le pathfinding, on va dire, c'est un peu un prérequis qu'effectivement, là, on peut, entre guillemets, à la fois avoir une bonne analyse extérieure, des bons conseils de lien, parce que du coup on aura fait un pré-post-rending, plus pour le mode fantôme, le côté 10 mois et meilleure voie à monter, ça fait aussi, c'est transversalisé.
+
+20:31 - Ilyes TALBI
+Ouais, exactement.
+
+20:41 - Ilyes TALBI
+Jusqu'à 15 jours.
+
+20:44 - Jundo
+Non.
+
+20:44 - Unidentified Speaker
+!
+
+21:19 - Ilyes TALBI
+Vous avez des photos, vous avez un dataset de murs d'escalade ?
+
+21:25 - Unidentified Speaker
+Pas vraiment.
+
+21:26 - Jundo
+Ça, c'est plutôt ma partie.
+
+21:29 - Olivier Pöuech
+En gros, au début, pendant le premier prototype qu'on a fait, j'avais commencé à bosser là-dessus. En gros, j'avais du scrap YouTube et Insta pour récupérer des vidéos de personnes qui grimpaient pour commencer Maintenant, le script que j'ai fait pour récupérer tout ça, je suis en train de le remettre à jour. Le souci c'est juste qu'on n'a pas encore le VPS, donc on n'a pas encore vraiment d'endroits pour les stocker de manière pénible.
+
+ Donc ça, c'est un peu en pause, en attendant qu'on ait le VPS.
+
+22:08 - Ilyes TALBI
+Le VPS c'est Epithec qui doit Il y a combien de gigas d'images ?
+
+22:27 - Unidentified Speaker
+On avait 200 gigas.
+
+22:34 - Olivier Pöuech
+On n'a pas encore fait la demande, mais dans l'idée, on pensait avoir à peu près l'équivalent de 300Go d'images.
+
+22:58 - Ilyes TALBI
+Ok, je ne sais pas s'il n'y a pas moyen de faire ça autrement peut-être... Les abonnements Google, vous n'avez pas Gemini Pro par hasard avec votre compte Epitech ? Là, personnellement, mais pas avec Epitech. Parce que je crois que Gemini Pro, tu as un truc Déjà, là, il y a des...
+
+23:26 - Jundo
+Là, on l'a.
+
+23:27 - Nicolas TORO
+Moi, j'ai cinq terras, mais après, au bout de décembre, ça se termine. C'était celui de l'année dernière. Cinq terras, c'est déjà beaucoup.
+
+23:39 - Ilyes TALBI
+Oui, parce qu'en fait, c'est vrai que d'expérience avec les autres groupes que j'avais eus sur les dernières années, la mise à disposition de serveurs côté Epitech, alors je ne sais pas s'ils ont changé, mais en tout cas c'est hyper lent, vous pouvez attendre plusieurs mois, je ne suis pas sûr que vous l'aurez.
+
+24:02 - Christophe Vandevoir
+Pourquoi ils n'ont pas l'air d'en changer ?
+
+24:05 - Ilyes TALBI
+Je ne sais pas, je ne sais pas trop, je ne sais pas qui gère ça en interne, faudrait que je le redemande à Faisal et Visa, mais de mémoire c'était hyper lent, donc moi honnêtement, je ne sais pas, n'attendez pas. Si vous avez du stockage sur votre Google Drive, partez sur ça. En sachant que là, il y avait ça, je l'avais vu récemment. Pour les étudiants, il y a 12 mois, j'ai mis AI+, avec 400Go de stockage.
+
+ Ça, je vous l'envoie.
+
+24:46 - Jundo
+Faites ça.
+
+24:47 - Ilyes TALBI
+Faites ça et je pense que vous entraînez le YOLO sur Google Collab. Sur Google Collab, vous pouvez faire un mount entre votre drive et Collab. Comme ça, vous récupérez les images directement au bon endroit. Par contre, sur l'annotation, je ne sais pas si vous avez fait la partie annotation ou pas encore.
+
+25:10 - Unidentified Speaker
+Je pense que c'est overkill d'annoter 300 gigas d'images.
+
+25:15 - Ilyes TALBI
+les tailles des images par deux. Vous allez diviser peut-être l'espace de stockage par deux aussi. Et après, vous faites de l'annotation par batch. Si des 200 gigas, vous les partagez en cinq. Mais en fait, ça ne sert à rien d'annoter des milliers d'images. Honnêtement, si c'est YOLO V8 sur lequel vous partez, pour le pas intuiner sur des prises d'escalade, à mon avis, si vous avez 300 images, 300 images assez variées.
+
+ Ce que YOLO, on est d'accord, c'est pour la détection de prises qu'on s'en servirait.
+
+26:01 - Jundo
+Ouais, c'est ça. En plus du clustering, quoi. Derrière que nous, on fait...
+
+26:08 - Ilyes TALBI
+En fait, pour moi, YOLO, la première étape, tu détectes les prises et la deuxième étape, tu piques le clustering sur les couleurs. Oui, et puis on balaye ce qu'il avait détecté comme des prises. Voilà, il va t'encadrer ta prise. Et ensuite, tu vas pouvoir trouver avec OpenCV, tu vas pouvoir trouver c'est quoi la couleur majoritaire. Et ensuite, du coup, sur ton image, tu as la position de toutes les prises.
+
+ Qu'une des prises a sa couleur, et tu as à peu près la distance entre deux prises. Donc si deux prises sont proches et qu'elles ont la même couleur, on peut supposer qu'elles font partie du même chemin.
+
+26:51 - Jundo
+Oui, et puis de toute façon, on t'avait dit aussi que dans le pire des cas, on laisse l'utilisateur valider les bonnes prises qui ont été détectées ou pas.
+
+27:02 - Ilyes TALBI
+Oui, exactement. Oui, au pire des cas, Ça peut se faire comme ça. Bon, il a tenté un truc, Claude. Pas exceptionnel, mais en vrai, ça va. Donc, si je regarde la planche, ça donne ça. Mais en tout cas, ce qui est impressionnant, c'est qu'il positionne. Après, celle-là, vraiment, je ne sais pas ce qu'il a fait. Oui, mais oui, dans l'idée, il y a un petit prompt En tout cas, ils positionnent les membres au bon endroit à chaque fois.
+
+
+
+27:43 - Unidentified Speaker
+C'est intéressant.
+
+27:44 - Ilyes TALBI
+À mon avis, il y a peut-être des contraintes à ajouter pour le forcer à ce que la forme du corps soit cohérente. Exactement. Peuvent être corrigés. Les images à noter, vous n'en avez pas pour l'instant ?
+
+28:19 - Jundo
+À noter, non.
+
+28:22 - Unidentified Speaker
+J'en réviserai demain.
+
+28:26 - Ilyes TALBI
+Ça, c'est pareil. Je pense que...
+
+28:56 - Ilyes TALBI
+Je vais voir s'il peut faire ça aussi. Parce qu'en sachant qu'il sait le faire, après, il y a moyen d'utiliser Cloud Code, peut-être.
+
+29:12 - Jundo
+Il y a moyen de lui demander de les annoter lui-même.
+
+29:19 - Ilyes TALBI
+Non, non, non, pas dans le palais. Vraiment pour annoter un dataset et après entraîner un modèle.
+
+29:27 - Jundo
+Oui, oui, je voulais dire dans ce pré-planning-là, le data engineering, ce que je voulais dire. Mais oui, pourquoi pas, on va voir. Ça va coûter cher en cas d'API, mais en soi, on peut trouver d'autres modèles qui le feront tout aussi bien, je pense.
+
+29:42 - Ilyes TALBI
+c'est Oui, ça. Après, en soi, si ça marche, tu le fais pour 200 images. À mon avis, ça ne va pas coûter si cher que ça. Si, par exemple, tu dis à Cloud Code d'écrire un script, peut-être.
+
+30:01 - Unidentified Speaker
+Ouais, peut-être.
+
+30:02 - Ilyes TALBI
+Je ne sais pas. J'avoue, je ne sais pas. L'autre option, c'est vraiment que vous le fassiez à la mano.
+
+30:12 - Jundo
+C'est chiant, mais on va bien voir. Il va bien y avoir un moment où on va pouvoir le faire, je pense. Ouais, exactement. Après voir, à ce moment-là, il y a des datasets d'escalade qui ont déjà été annotés.
+
+30:27 - Ilyes TALBI
+Ça, ça serait le crime. Ah, mais ça, je pense que c'est sûr qu'il y en a, non ? Attends. J'ai l'impression que vous pouvez trouver des datasets sur Roboflow. Vous n'avez pas regardé un petit peu ce qu'il y avait ? Je ne sais pas c'est quoi Roboflow, je t'avoue. Roboflow c'est une plateforme dans laquelle tu as des données images en fait. Ah bah si, voilà. Hole detector. Après, c'est pas exactement ce que vous voulez faire.
+
+ Là, ils ont fait vraiment de la segmentation. Je ne sais pas si vous voyez la différence entre segmentation et détection d'objets. Segmentation, c'est vraiment tu fais tu dessines le contour de l'objet il n'y a pas besoin de nom sur cet objet il est juste segmenté vous n'avez pas besoin de nom parce que c'est que les holds à chaque fois la segmentation il ne l'identifie pas il split ouais c'est ça il split mais en soi il y a moyen de prendre ça cette data là et si vous voulez faire de la vraie détection d'objet l'objection d'objet en gros c'est encadrer l'objet vous trouvez le rectangle qui permet le rectangle le plus petit c'est un problème mathématique facile à résoudre en python le rectangle le plus petit qui encadre la forme qui a été annotée donc là il y a 47 images que vous pouvez utiliser, ça peut être bien de les souscrire à tête.
+
+ Pour faire ça, annoter une image comme ça avec tous ces trucs-là, tous ces holds.
+
+32:40 - Jundo
+Ils les ont annotés à la main du coup ?
+
+32:44 - Ilyes TALBI
+Je pense qu'ils l'ont fait à la main. Je pense que juste pour cette image-là, tu en as pour une ou deux heures. Peut-être trois heures, c'est possible. Et je crois qu'il y en a un autre en sachant qu'ici vous pouvez tester une référence sur le modèle par exemple si je sélectionne J'ai cherché l'image que j'avais utilisée sur cloud.
+
+33:41 - Unidentified Speaker
+Je ne sais pas si ça va marcher.
+
+33:48 - Ilyes TALBI
+Ah oui, ok, quand même. Ça a l'air d'être détecté, mais on ne voit pas grand chose. Pas très bien, je ne sais pas si je peux les supprimer.
+
+34:10 - Jundo
+On peut voir les prises vertes qui ont été détectées. Les 90%, des trucs comme ça.
+
+34:20 - Ilyes TALBI
+Oui, j'avoue, c'est un peu nul.
+
+34:29 - Ilyes TALBI
+Par contre, les gros triangles, ils ne sont pas désectés.
+
+34:35 - Jundo
+Je pense qu'ils n'ont pas ça dans leur dataset de base.
+
+34:41 - Unidentified Speaker
+Ce n'est pas bien grave.
+
+34:44 - Ilyes TALBI
+En tout cas, vous avez un autre. Là, il y a 123 images. En fait, c'est la même personne qui a uploadé. Pour le coup ça aussi ça vaut de l'or pour nous voilà il y en avait un avec ça c'est différent, c'est la détection de tout le mur je ne sais pas si vous avez besoin de ça Je me suis donné la voix en tête, mais pour le moment, je n'ai pas du tout le cas de pratique, du cas du visage. Oui. OK. Et après, Claude, il m'a fait un truc pas mal en vrai.
+
+
+
+35:47 - Jundo
+Je pense… Ah ouais, c'est très bien fait.
+
+35:52 - Ilyes TALBI
+C'est excellent.
+
+35:53 - Jundo
+Ça y est, on n'a plus d'idée. Super.
+
+35:56 - Ilyes TALBI
+Vous avez été remplacés par Claude. Ça, ce n'est pas des petits trucs comme ça.
+
+36:02 - Jundo
+Ça, c'est des languettes pour dire au niveau de la voix. Où est-ce que tu mets tes mains, où est-ce qu'elles doivent commencer.
+
+36:12 - Ilyes TALBI
+Comment il savait ou il l'a appris, je ne sais pas, mais en tout cas, il le savait.
+
+36:21 - Unidentified Speaker
+OK.
+
+36:21 - Ilyes TALBI
+OK, voilà. En vrai, avec l'autre, déjà, il y avait une bonne partie de ce dont vous avez besoin. Et après aussi, le truc, c'est qu'il faut bien que vous clarifiez le scope du projet, dans le sens jusqu'où vous voulez aller. Et à mon avis, là, en fait, en voyant à ce qui est possible de faire juste avec quelques prompts clôtures, je me dis qu'en fait, c'est peut-être pas si déconnant d'aller jusqu'au bout même avec le mode fantôme.
+
+ C'est vrai qu'au début, quand vous m'avez pitché ça, je me suis dit, attends, construire une simulation d'un squelette qui est en train de grimper un mur d'escalade, ça me paraît un peu ambitieux. Mais en vrai, quand je vois ce qu'il y a là, ça me paraît quelque chose Par contre, il y a une question aussi, c'est qu'au final, vous voulez le faire fonctionner sur un téléphone, donc est-ce que vous avez besoin...
+
+
+
+37:25 - Jundo
+Dans tous les cas, le modèle tourne sur le serveur et on n'envoie que les données au serveur, enfin, dans le serveur, le worker IA en Python, le worker renvoie les données dans l'ADB et le serveur vient les fetch, et de ces données-là, il les envoie aux clients, les clients les rendent dehors. Donc il n'y a aucun process en fait. Côté local, donc normalement ça devrait être un problème pas bloquant quoi.
+
+
+
+37:50 - Unidentified Speaker
+Ok, parfait.
+
+37:51 - Ilyes TALBI
+Et ça va être en flutter, c'est ça, sur le front ? Ouais, c'est ça. Qui va gérer la partie dev mobile ? Dev mobile, il n'y a que moi.
+
+38:04 - Nicolas TORO
+Après, du coup, il y a Jenny et Olivier sur l'IA et Lou et tout. Sur le serveur.
+
+38:16 - Ilyes TALBI
+Je ne sais pas si vous avez d'autres sujets, d'autres questions, d'autres interrogations.
+
+38:39 - Jundo
+si en prio tu dirais un truc, ça serait bypass grinding quoi, dans l'idée ?
+
+38:47 - Ilyes TALBI
+Ouais, entraîner un YOLO qui détecte les prises et ensuite le truc de pathfinding là qui va clusteriser les routes parce que ça dans tous les cas vous en aurez besoin comme ça en fait une fois que t'as trouvé la route derrière Là, Claude, déjà, on ne lui a même pas dit, enfin, je lui ai juste dit que c'était la route verte à droite et il l'a trouvée tout seul. Mais je me dis, en fait, si par exemple, on lui fait déjà, on lui prémâche le travail de trouver la route et de bien découper chacune des routes et de lui dire, tiens, c'est uniquement ça comme possibilité.
+
+ En plus, l'autre truc, c'est que tu fixes les positions possibles des mains et des pieds. Parce que tu as trouvé les positions des prises, donc tu n'as pas besoin de le laisser lui-même faire cette partie-là. Donc Lui, il va se concentrer juste sur l'aspect technique de savoir qu'est-ce qui vient avant, qu'est-ce qui vient après, et il n'aura pas besoin de faire la partie détection. Je pense qu'il y a moyen que ce soit encore plus performant.
+
+ En se disant, en se gardant dans un coin de la tête, dans votre roadmap, qu'à terme, peut-être si vous arrivez à faire une approche l'approche soit déterministe, soit ML pour trouver l'enchaînement idéal de pied et main, il vaut mieux partir sur ça. En sachant qu'il y a moyen d'entraîner, je ne sais pas exactement, mais je vois bien un LSTM ici, puisque tu as un truc, c'est un peu de la donnée séquentielle tu vois, tu as position main et pied tu as un truc qui est séquentiel et donc il y a peut-être un truc à partir d'un mur donné à partir d'un chemin donné donc un chemin c'est des positions de prise et d'un état actuel l'état actuel c'est où sont les mains et où sont les pieds actuellement, tu peux essayer de trouver quel est l'état optimal suivant.
+
+ Dans tous les cas, il nous faut un truc de temporel.
+
+41:13 - Jundo
+Il y a l'STM, peu importe, mais il y a l'STM peut-être plus approprié. La position finale sur un chemin donné, la position finale, c'est toujours la même ou non ?
+
+41:27 - Ilyes TALBI
+C'est toujours les deux mois sur les dernières prises.
+
+41:30 - Jundo
+Et les pieds, ils peuvent être un peu partout, ça ? Oui, ils peuvent même être sur le mur s'ils ont envie. Donc ça ne touche pas d'autres prises.
+
+41:45 - Ilyes TALBI
+D'accord, ok. C'est des contrats en moins.
+
+41:49 - Unidentified Speaker
+Ok, très bien.
+
+41:50 - Ilyes TALBI
+En tout cas, n'hésitez pas, si vous avez des sujets entre entre temps, d'ici à la prochaine... D'ici à la prochaine session.
+
+42:04 - Olivier Pöuech
+D'accord, merci.
+
+42:05 - Ilyes TALBI
+Je pense que c'est la semaine du 19. Est-ce que le lundi 19, c'est jouable pour vous ou pas ?
+
+42:16 - Unidentified Speaker
+Le lundi, c'est un peu compliqué.
+
+42:19 - Nicolas TORO
+On est un peu tous en cours, donc...
+
+42:23 - Unidentified Speaker
+Pas vraiment.
+
+42:24 - Nicolas TORO
+Le mieux, généralement, Généralement c'est le vendredi ou le mardi. Ou alors le lundi très tôt. Le lundi de genre 9h à midi quoi.
+
+42:38 - Jundo
+Lundi de 9h à midi ?
+
+42:42 - Ilyes TALBI
+Oui en fait. En fait moi ma contrainte c'est que j'ai mon mariage le 20. Donc en vrai le 19 je suis dispo De toute façon, je travaille. C'est vrai qu'après, je pense que le reste de la semaine du 18, je ne suis pas sûr de travailler. Je préfère lundi matin, si ça vous va. Lundi tôt. Oui, carrément. On n'a pas les mêmes impératifs. Tout aussi important. Félicitations. Merci. Donc lundi 19 à 10h, c'est bon ?
+
+
+
+43:22 - Nicolas TORO
+Oui, c'est bon. Dix heures françaises aussi.
+
+43:27 - Ilyes TALBI
+Ok, parfait. Je renvoie ça tout de suite.
+
+43:33 - Unidentified Speaker
+Ok, super.
+
+43:35 - Ilyes TALBI
+En tout cas, comme je vous ai dit, entre temps, s'il y a des questions ou quoi, n'hésitez pas Merci. Bonne après-midi, bonne nuit ou bonne journée en fonction de où vous êtes.

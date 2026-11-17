@@ -41,14 +41,14 @@ Méthode appliquée (O4) :
 
 ## Audit technique
 
-### 1) Architecture exécutable observée
+### 1\) Architecture exécutable observée
 
 - **Monorepo** orchestré via moonrepo (`moon.yml`).
 - **Backend Go** (`apps/server`) avec Gin + pgx + RabbitMQ (`apps/server/go.mod`).
 - **Worker IA Python** (`apps/ai/src/worker.py`) consommant la queue `vision.skeleton`.
 - **Infra locale** Docker Compose (`docker-compose.yml`) : PostgreSQL, RabbitMQ, MinIO, server, ai-worker.
 
-### 2) Flux technique principal vérifié
+### 2\) Flux technique principal vérifié
 
 - API expose `GET /v1/videos/upload-url`, `PUT /v1/videos/upload-done/:id`, `GET /v1/videos/download-url/:id`, `POST /v1/analysis`, `GET /v1/analysis/:id` (`apps/server/internal/inbound/http/router/router.go`).
 - Le worker IA :
@@ -58,7 +58,7 @@ Méthode appliquée (O4) :
   - publie un événement (`_publish_event`),
   - ack/nack le message (`apps/ai/src/worker.py`).
 
-### 3) Modèle de données observé (implémenté)
+### 3\) Modèle de données observé (implémenté)
 
 - Table `analyses` créée par migration avec `status`, `result_json`, `processing_time_ms`.
 - Colonnes `progress` et `hints` ajoutées par migrations ultérieures (`apps/server/migrations/20260311000001_add_progress_to_analyses.sql`, `apps/server/migrations/20260312000001_add_hints_to_analyses.sql`).

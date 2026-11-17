@@ -16,7 +16,9 @@ id: 5d09b283-adb5-4bde-b3a4-5d9d79c195d2
 
 This document describes the Ascension REST API for video analysis, route visualization, and climbing coaching.
 
-**Base URL**: `https://api.ascension.app/v1` **Authentication**: JWT Bearer tokens **Format**: JSON
+- **Base URL**: `https://api.ascension-eip.fr/v1`
+- **Authentication**: JWT Bearer tokens
+- **Format**: JSON
 
 ---
 
@@ -25,7 +27,7 @@ This document describes the Ascension REST API for video analysis, route visuali
 ### Register (Sign Up)
 
 ```http
-POST /v1/auth/signup
+POST /v1/auth/register
 Content-Type: application/json
 
 {
@@ -35,6 +37,7 @@ Content-Type: application/json
   "last_name": "Doe",
   "username": "johndoe"
 }
+
 ```
 
 **Response (201 Created)**:
@@ -54,6 +57,7 @@ Content-Type: application/json
   "access_token": "eyJhbGciOiJIUzI1NiIsIn...",
   "refresh_token": "eyJhbGciOiJIUzI1NiIsIn..."
 }
+
 ```
 
 ### Login
@@ -68,6 +72,7 @@ Content-Type: application/json
   "identifier": "user@example.com",
   "password": "SecurePassword123!"
 }
+
 ```
 
 **Response (200 OK)**:
@@ -87,6 +92,7 @@ Content-Type: application/json
   "access_token": "eyJhbGciOiJIUzI1NiIsIn...",
   "refresh_token": "eyJhbGciOiJIUzI1NiIsIn..."
 }
+
 ```
 
 ### Refresh Token
@@ -98,6 +104,7 @@ Content-Type: application/json
 {
   "refresh_token": "eyJhbGciOiJIUzI1NiIsIn..."
 }
+
 ```
 
 **Response (200 OK)**:
@@ -107,6 +114,7 @@ Content-Type: application/json
   "access_token": "eyJhbGciOiJIUzI1NiIsIn...",
   "refresh_token": "eyJhbGciOiJIUzI1NiIsIn..."
 }
+
 ```
 
 ### Logout
@@ -114,6 +122,7 @@ Content-Type: application/json
 ```http
 DELETE /v1/auth/logout
 Authorization: Bearer <access_token>
+
 ```
 
 **Response (204 No Content)**: Empty body
@@ -129,6 +138,7 @@ Request a presigned URL to upload a climbing video directly to object storage.
 ```http
 GET /v1/videos/upload-url?content_type=video/mp4&size=52428800
 Authorization: Bearer <access_token>
+
 ```
 
 **Response (200 OK)**:
@@ -136,9 +146,10 @@ Authorization: Bearer <access_token>
 ```json
 {
   "id": "0191e4b8-7a8f-7c11-9a4f-123456789abc",
-  "upload_url": "https://minio:9000/videos/...",
+  "upload_url": "https://s3.gra.cloud.ovh.net/videos/...",
   "expires_at": "2026-03-01T12:15:00Z"
 }
+
 ```
 
 ### 2\. Confirm Video Upload
@@ -148,6 +159,7 @@ Notify the backend that the client has finished uploading the file to storage:
 ```http
 PUT /v1/videos/upload-done/{video_id}
 Authorization: Bearer <access_token>
+
 ```
 
 **Response (204 No Content)**: Empty body
@@ -157,6 +169,7 @@ Authorization: Bearer <access_token>
 ```http
 GET /v1/videos
 Authorization: Bearer <access_token>
+
 ```
 
 **Response (200 OK)**:
@@ -173,11 +186,12 @@ Authorization: Bearer <access_token>
     "created_at": "2026-03-01T12:00:00Z"
   }
 ]
+
 ```
 
 ### 4\. Start Video Analysis
 
-Enqueues an asynchronous analysis job with the specified analysis `type` (`2d`, `3d`, `hold`, `advice`) and `visibility` (`private`, `friends`, `gym`, `public`).
+Enqueues an asynchronous analysis job with the specified analysis `type` (`2d` or `3d`) and `visibility` (`private`, `friends`, `public`). Videos uploaded during an active climbing session (`climbing_session_id`) are automatically aggregated into end-of-session statistics.
 
 ```http
 POST /v1/analysis
@@ -186,9 +200,11 @@ Content-Type: application/json
 
 {
   "video_id": "0191e4b8-7a8f-7c11-9a4f-123456789abc",
+  "climbing_session_id": "0191e4b8-7a8f-7c11-9a4f-654321abcdef",
   "type": "2d",
   "visibility": "private"
 }
+
 ```
 
 **Response (201 Created)**:
@@ -202,6 +218,7 @@ Content-Type: application/json
   "visibility": "private",
   "created_at": "2026-03-01T12:00:00Z"
 }
+
 ```
 
 ### 5\. Get Analysis Result
@@ -211,6 +228,7 @@ Poll the status or fetch results of a specific analysis:
 ```http
 GET /v1/analysis/{analysis_id}
 Authorization: Bearer <access_token>
+
 ```
 
 **Response (200 OK)**:
@@ -241,15 +259,16 @@ Authorization: Bearer <access_token>
     ]
   }
 }
+
 ```
 
 ---
 
-## Route Ghost (Optimal Path Generation)
+## Route Ghost (Feasible Beta Generation)
 
 ### 1\. Upload Route Photo
 
-Upload a photo of a climbing route to generate the optimal path (ghost).
+Upload a photo of a climbing route (no climber in frame) to detect holds and compute a feasible movement sequence (ghost).
 
 ```http
 POST /analysis/route/request-upload
@@ -260,6 +279,7 @@ Content-Type: application/json
   "file_name": "route-photo.jpg",
   "file_size": 2048000
 }
+
 ```
 
 **Response (200)**:
@@ -269,11 +289,12 @@ Content-Type: application/json
   "route_id": "uuid",
   "upload_url": "https://s3.../presigned-url"
 }
+
 ```
 
 ### 2\. Generate Ghost
 
-Generate the optimal climbing path for the route.
+Detect/group holds on the route photo (letting the user pick detected color/route groups or manually select individual holds) and compute a feasible climbing beta adapted to the user's morphology, returned as step-by-step images derived from the initial photo.
 
 ```http
 POST /analysis/route/generate-ghost
@@ -281,8 +302,10 @@ Authorization: Bearer {token}
 Content-Type: application/json
 
 {
-  "route_id": "uuid"
+  "route_id": "uuid",
+  "selected_hold_ids": ["uuid-1", "uuid-2"]
 }
+
 ```
 
 **Response (202)**:
@@ -292,6 +315,7 @@ Content-Type: application/json
   "ghost_id": "uuid",
   "status": "processing"
 }
+
 ```
 
 ### 3\. Get Ghost Result
@@ -299,6 +323,7 @@ Content-Type: application/json
 ```http
 GET /analysis/ghost/{ghost_id}
 Authorization: Bearer {token}
+
 ```
 
 **Response (200)**:
@@ -308,24 +333,25 @@ Authorization: Bearer {token}
   "id": "uuid",
   "route_id": "uuid",
   "status": "completed",
-  "ghost_path": [
+  "steps": [
     {
       "step": 1,
-      "hand_position": {"x": 100, "y": 200},
-      "foot_position": {"x": 120, "y": 350},
-      "body_position": {"x": 110, "y": 275}
+      "image_url": "https://storage.ascension-eip.fr/ghosts/uuid/step_1.jpg",
+      "hold_id": "uuid",
+      "action": "Right hand to hold #4"
     }
   ]
 }
+
 ```
 
 ---
 
-## Ghost Overlay on Video
+## Video Analysis Comparison
 
-### Compare Video with Ghost
+### Compare Video Analyses Between Climbers
 
-Overlay the ghost path on a climbing video to compare performance.
+Compare two climbing video pose analyses on the **same wall/route** (your own ascent compared against another climber's `public` or `friends`-visible analysis) to evaluate differences in pose, trajectory, and technique.
 
 ```http
 POST /analysis/compare
@@ -333,9 +359,10 @@ Authorization: Bearer {token}
 Content-Type: application/json
 
 {
-  "video_analysis_id": "uuid",
-  "ghost_id": "uuid"
+  "base_analysis_id": "uuid",
+  "compared_analysis_id": "uuid"
 }
+
 ```
 
 **Response (200)**:
@@ -344,17 +371,19 @@ Content-Type: application/json
 {
   "comparison_id": "uuid",
   "metrics": {
-    "path_similarity": 0.78,
+    "pose_similarity": 0.78,
     "efficiency_score": 0.82,
-    "deviations": [
+    "differences": [
       {
         "frame": 45,
+        "limb": "left_arm",
         "difference": 15.5,
-        "note": "Hand reached too high"
+        "note": "Higher elbow flare"
       }
     ]
   }
 }
+
 ```
 
 ---
@@ -374,6 +403,7 @@ Content-Type: application/json
   "file_name": "wall.jpg",
   "file_size": 3145728
 }
+
 ```
 
 **Response (200)**:
@@ -383,6 +413,7 @@ Content-Type: application/json
   "image_id": "uuid",
   "upload_url": "https://s3.../presigned-url"
 }
+
 ```
 
 ### 2\. Detect Holds
@@ -397,6 +428,7 @@ Content-Type: application/json
 {
   "image_id": "uuid"
 }
+
 ```
 
 **Response (200)**:
@@ -419,6 +451,7 @@ Content-Type: application/json
     }
   ]
 }
+
 ```
 
 ### 3\. Correct Hold Type
@@ -433,6 +466,7 @@ Content-Type: application/json
 {
   "type": "sloper"
 }
+
 ```
 
 **Response (200)**:
@@ -444,6 +478,7 @@ Content-Type: application/json
   "position": {"x": 150, "y": 200},
   "manually_corrected": true
 }
+
 ```
 
 **Hold Types**:
@@ -475,6 +510,7 @@ Content-Type: application/json
   "focus_areas": ["technique", "strength"],
   "training_days_per_week": 3
 }
+
 ```
 
 **Response (201)**:
@@ -510,6 +546,7 @@ Content-Type: application/json
     }
   }
 }
+
 ```
 
 ### 2\. Get Routine
@@ -519,6 +556,7 @@ Retrieve the current training routine.
 ```http
 GET /coaching/routine
 Authorization: Bearer {token}
+
 ```
 
 **Response (200)**:
@@ -538,6 +576,7 @@ Authorization: Bearer {token}
     "friday": { "completed": false }
   }
 }
+
 ```
 
 ### 3\. Log Training Session
@@ -555,6 +594,7 @@ Content-Type: application/json
   "duration_minutes": 90,
   "notes": "Felt strong today, completed all exercises"
 }
+
 ```
 
 **Response (201)**:
@@ -564,6 +604,7 @@ Content-Type: application/json
   "session_id": "uuid",
   "logged_at": "2026-02-16T18:30:00Z"
 }
+
 ```
 
 ---
@@ -575,6 +616,7 @@ Content-Type: application/json
 ```http
 GET /v1/users/me
 Authorization: Bearer <access_token>
+
 ```
 
 **Response (200 OK)**:
@@ -590,6 +632,7 @@ Authorization: Bearer <access_token>
   "created_at": "2026-03-01T12:00:00Z",
   "updated_at": "2026-03-01T12:00:00Z"
 }
+
 ```
 
 ### User Management (Admin Only)
@@ -633,6 +676,7 @@ Analysis Progress
     "stage": "skeleton_detection"
   }
 }
+
 ```
 
 Analysis Complete
@@ -645,6 +689,7 @@ Analysis Complete
     "status": "completed"
   }
 }
+
 ```
 
 ---
@@ -666,5 +711,5 @@ Analysis Complete
 **Related Documentation**:
 
 - [Database Schema](database-schema.md)
-- [System Overview](../system-overview.md)
+- [Global Architecture](../globale-architecture.md)
 - [Video Analysis Workflow](../workflows/video-analysis-flow.md)

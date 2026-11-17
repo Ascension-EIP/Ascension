@@ -3,7 +3,7 @@ id: aa084479-25cf-4486-9a98-c2609adbf9c7
 ---
 
 :::success
-**Version:** 1.2
+**Version:** 1.4
 :::
 
 ---
@@ -47,11 +47,12 @@ Both layers rely on the same shared Python validation scripts located in `.githu
 │   ├── dev-to-staging.yml    # Auto create/update PR dev → staging
 │   ├── docs-to-wiki.yml      # Sync docs/ to GitHub Wiki on staging-to-main completion
 │   ├── gemini-pr-review.yml  # AI code review for pull requests
-│   ├── staging-to-main.yml   # Merge staging → main, tag semver, changelog, mirror
-│   └── vps-deploy.yml        # Automatic deployment to VPS host
+│   ├── mirror.yml            # Mirror repository to external targets
+│   ├── staging-to-main.yml   # Merge staging → main, tag semver, changelog
 ├── dependabot.yml            # Dependabot configuration
 ├── keywords.txt              # Allowed types for branch names and commit messages
 └── pull_request_template.md  # Default pull request description template
+
 ```
 
 ---
@@ -108,6 +109,7 @@ Git hooks are shell scripts stored in `.github/hooks/`. They are **not** active 
 git diff --quiet HEAD -- docs || git add docs
 .github/scripts/reformat_code
 echo "$FILES" | xargs git add
+
 ```
 
 ### 3.2 `commit-msg`
@@ -144,6 +146,7 @@ pre-push
     ├── check_branch  → ❌ reject on invalid name
     ├── check_push    → ❌ reject on failed checks
     └── git pull + push
+
 ```
 
 ### 3.4 Enabling hooks locally
@@ -152,6 +155,7 @@ The hooks are stored in `.github/hooks/` instead of `.git/hooks/` so they are tr
 
 ```sh
 git config core.hooksPath .github/hooks
+
 ```
 
 > ℹ️ This command only needs to be run once per clone. After that, all hooks are applied automatically.
@@ -190,6 +194,7 @@ Validates that a commit message follows the Conventional Commits format:
 
 ```
 <type>(<scope>): <description>
+
 ```
 
 - `type` must be one of the keywords in `.github/keywords.txt`.
@@ -222,6 +227,7 @@ Runs the code formatters for each application using the `moon` task runner:
 moon run server:format   # Go (go fmt)
 moon run mobile:format   # Dart (dart format)
 # moon run ai:format     # Python (disabled)
+
 ```
 
 This script is called automatically by the `pre-commit` hook and can also be run manually to format the entire codebase.
@@ -330,6 +336,10 @@ Builds and publishes production artifacts:
 
 - `build_and_push_server`: Builds `apps/server/Dockerfile` (Go server) and pushes to GHCR.
 - `build_and_push_ai`: Builds `apps/ai/Dockerfile` (Python AI worker) and pushes to GHCR.
+
+:::note
+These images are release artifacts only. Production is deployed by Coolify, which builds `main` on every push: see the [API Deployment Guide](../architecture/deployment/api-deployment-guide.md).
+:::
 - `build_and_push_mobile`: Builds Android APK using Flutter 3.47.2 and uploads build artifact.
 - `create_release`: Downloads the APK artifact and creates a GitHub Release for tag `v*`.
 
@@ -355,21 +365,10 @@ Creates or updates an automated Pull Request from `dev` to `staging`, lists incl
 3. Generates and commits `CHANGELOG.md` via `git-cliff`.
 4. Pushes the new version tag to `main` (triggering `deploy.yml`).
 5. Creates a GitHub Release with release notes.
-6. Parses `MIRROR_REPOSITORY_URL` into a dynamic matrix and mirrors all branches, tags, and history to each target repository using `pixta-dev/repository-mirroring-action@v1`.
 
 ---
 
-### 5.6 VPS deploy workflow (`vps-deploy.yml`)
-
-**Name:** `ascension-vps-deploy` **Triggers:**
-
-- `workflow_run` after successful completion of `ascension-deploy`.
-
-Connects to the production VPS via SSH/SCP, updates `docker-compose.yml` & `docker-compose.prod.yml`, pulls latest `ascension-server:latest` and `ascension-ai:latest` images from GHCR, and restarts containers in production mode (`--profile prod`).
-
----
-
-### 5.7 Docs-to-wiki workflow (`docs-to-wiki.yml`)
+### 5.6 Docs-to-wiki workflow (`docs-to-wiki.yml`)
 
 **Name:** `ascension-docs-to-wiki` **Triggers:**
 
@@ -380,7 +379,7 @@ Runs `.github/scripts/generate_wiki` and pushes the flattened Markdown documenta
 
 ---
 
-### 5.8 Gemini PR review workflow (`gemini-pr-review.yml`)
+### 5.7 Gemini PR review workflow (`gemini-pr-review.yml`)
 
 **Name:** `ascension-gemini-pr-review` **Triggers:**
 
@@ -392,18 +391,26 @@ Executes `.github/scripts/gemini_pr_review` using Gemini API to perform automate
 
 ---
 
+### 5.8 Mirror workflow (`mirror.yml`)
+
+**Name:** `ascension-mirror` **Triggers:**
+
+- `workflow_run` after successful completion of `ascension-deploy`.
+- Manual dispatch (`workflow_dispatch`).
+
+Parses `MIRROR_REPOSITORY_URL` into a dynamic matrix and mirrors all branches, tags, and history to each target repository using `pixta-dev/repository-mirroring-action@v1`. By running only after `ascension-deploy` succeeds, it ensures only validated, building releases are mirrored.
+
+---
+
 ## 6\. Secrets and variables
 
 The following secrets and variables must be configured in the GitHub repository settings:
 
 | Name | Type | Used in | Description |
 | --- | --- | --- | --- |
-| `GITHUB_TOKEN` | Secret | `deploy.yml`, `vps-deploy.yml` | Built-in GitHub token for GHCR auth and GitHub releases |
+| `GITHUB_TOKEN` | Secret | `deploy.yml` | Built-in GitHub token for GHCR auth and GitHub releases |
 | `APP_ID` | Secret | `dev-to-staging.yml`, `staging-to-main.yml`, `gemini-pr-review.yml` | GitHub App ID for scoped token generation |
 | `APP_PRIVATE_KEY` | Secret | `dev-to-staging.yml`, `staging-to-main.yml`, `gemini-pr-review.yml` | GitHub App private key for token generation |
-| `MIRROR_SSH_KEY` | Secret | `staging-to-main.yml` | SSH private key for external mirror repositories |
-| `MIRROR_REPOSITORY_URL` | Variable | `staging-to-main.yml` | Comma-separated list of target repositories to mirror to |
-| `VPS_HOST` | Secret | `vps-deploy.yml` | Hostname or IP address of the deployment VPS |
-| `VPS_USER` | Secret | `vps-deploy.yml` | SSH username for deployment VPS |
-| `VPS_SSH_KEY` | Secret | `vps-deploy.yml` | SSH private key for authenticating on deployment VPS |
+| `MIRROR_SSH_KEY` | Secret | `mirror.yml` | SSH private key for external mirror repositories |
+| `MIRROR_REPOSITORY_URL` | Variable | `mirror.yml` | Comma-separated list of target repositories to mirror to |
 | `GEMINI_API_KEY` | Secret | `gemini-pr-review.yml` | API Key for Google Gemini model access |

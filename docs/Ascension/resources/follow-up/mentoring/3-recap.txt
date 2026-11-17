@@ -1,0 +1,58 @@
+Suivi Mentorat 3
+Mon, Oct 19, 2026
+
+Summary:
+
+La réunion a porté sur l’architecture de Flowia, ses priorités techniques et la veille nécessaire.
+• Le produit 2D prime sur le mode fantôme.
+• Le VPS OVH dispose de 24 Go de RAM.
+• Le pathfinding doit intégrer morphologie et qualité des mouvements.
+• L’entraînement YOLO dépend fortement de l’annotation et des réglages.
+• Une expertise INRIA pourrait éclairer l’estimation des mouvements d’escalade.
+
+
+Action Items:
+
+* Olivier Pöuech: Clarifier avec Jenny ses attentes concernant le modèle d’IA à intégrer.
+* L’équipe: Rédiger un document de 10 à 15 questions pour préparer l’entretien avec Lionel Reveret.
+* Ilyes TALBI: Revoir le document de questions avec l’équipe, puis mettre celle-ci en relation avec Lionel Reveret une fois le document validé.
+* Meeting participant: Organisez une visioconférence avec Lionel, si possible pendant la deuxième ou la troisième semaine de novembre.
+* Meeting participant: Envoyez à Ilyes un plan d’interview, quelques questions et les demandes concernant les données ou les conseils attendus de Lionel.
+
+
+Key Discussion Points:
+
+Échanges préliminaires et ressources d’hébergement
+Après des échanges informels, les participants abordent les contraintes de calendrier liées aux examens. Nicolas présente les ressources d’hébergement acquises, soit un VPS et un stockage objet, qui rendent inutile le recours à une option de stockage étudiant.
+
+Architecture de Flowia et périmètre produit
+Les participants examinent les schémas de Flowia, notamment les communications entre l’application mobile et le back-end ainsi que l’infrastructure actuellement déployée. Ils précisent que le mode fantôme demeure une ambition, mais que la priorité est de réaliser un produit 2D fonctionnel.
+
+Collecte de données et objectifs
+Ilyes revient sur la collecte d’images et l’entraînement de modèles YOLO pour la détection d’objets. Olivier fait état de la récupération de vidéos d’escalade et prévoit de clarifier avec Jenny les attentes relatives au modèle à intégrer, tandis que Nicolas indique que les objectifs de l’équipe sont en attente.
+
+Outils de qualité, analytics et performances de l’IA
+Ilyes évoque SonarCube pour l’analyse du code et PostHog pour le suivi du comportement utilisateur, en soulevant une question de conformité RGPD concernant l’enregistrement des sessions. Il rappelle également l’importance de l’analyse des performances des modèles d’intelligence artificielle.
+
+Mise en relation avec un chercheur
+Ilyes TALBI présente Lionel Reveret, chercheur à l’INRIA spécialisé notamment en escalade de vitesse, et propose une interview courte. L’équipe préparera un document de 10 à 15 questions, qui sera revu avec Ilyes avant la mise en relation.
+
+Objectifs et points techniques du projet
+Les participants clarifient les objectifs de veille technologique et de structuration de l’architecture logicielle. Jundo décrit la chaîne de traitement envisagée et identifie le pathfinding comme le principal défi IA, en raison de la prise en compte de la morphologie et de la qualité des mouvements.
+
+Veille technologique et ressources informatiques
+Ilyes recommande d’organiser la veille à l’aide d’un workflow de suivi de sources, éventuellement avec n8n. L’équipe précise qu’elle a pris un VPS OVH VPS4 avec 24 Go de RAM et 300 Go de stockage.
+
+Entraînement de modèles YOLO
+Ilyes conseille Ultralytics pour entraîner les modèles YOLO et décrit les principaux réglages, notamment les classes, le nombre d’époques, la patience, la taille des images et la taille des lots. Il souligne que la qualité de l’annotation et la maîtrise du surapprentissage sont déterminantes.
+
+Motivation et intérêt du projet IP
+Jundo et Ilyes évoquent le besoin de se mettre au travail malgré la fatigue et le manque de motivation. Ilyes présente l’avancement du projet IP comme préférable au report du travail et décrit les séminaires EIP comme moins contraignants que des cours classiques.
+
+Calendrier des sessions et préparation avec Lionel
+Les participants fixent la prochaine session à la semaine du 9 novembre, à 9 h, heure française. Ilyes demande de préparer en avance un échange avec Lionel, potentiellement en visioconférence pendant la deuxième ou la troisième semaine de novembre, et de lui envoyer un plan d’interview ainsi que les questions et demandes du groupe.
+
+
+Notepad:
+
+* No notes

@@ -3,7 +3,7 @@ name: ascension-dev-to-staging
 
 on:
   schedule:
-    - cron: "0 0 * * 1"
+    - cron: "0 0 1 * *"
   workflow_dispatch:
 
 env:
@@ -20,6 +20,7 @@ jobs:
   ########################## CREATE OR UPDATE PR ##############################
   upsert_dev_to_staging_pr:
     runs-on: ubuntu-latest
+    if: github.repository == 'Ascension-EIP/Ascension'
 
     ######################## STEPS ############################################
     steps:

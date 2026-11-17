@@ -17,7 +17,7 @@ DON'T EDIT THIS FILE !
 
 ### Matrice des risques
 
-| # | Risque | Catégorie | Probabilité (1-5) | Impact (1-5) | Criticité (P×I) | Stratégie | Plan de mitigation |
+| \# | Risque | Catégorie | Probabilité (1-5) | Impact (1-5) | Criticité (P×I) | Stratégie | Plan de mitigation |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Précision insuffisante du modèle ML (MediaPipe ne détecte pas correctement les poses d'escalade) | Technique | 4 | 5 | **20** | Réduire | Dataset d'entraînement spécifique escalade, validation par grimpeurs experts, fallback sur détection simplifiée |
 | 2 | Panne du serveur ML (Machine 3 - Workers Python) | Opérationnel | 3 | 4 | **12** | Réduire | Queue RabbitMQ persistante (jobs pas perdus), retry automatique, alerting Grafana immédiat |
@@ -54,6 +54,7 @@ Légende :
   CRITIQUE (>= 15) : [1] ML précision, [3] Départ membre, [RGPD]
   ÉLEVÉ (10-14)    : [2] Panne workers, [4] Fuite données, [6] Upload, [10] Injection
   MODÉRÉ (5-9)     : [5] DB corruption, [7] Provider, [8] Budget, [9] App Store, [11] Latence
+
 ```
 
 ---
@@ -138,10 +139,7 @@ Légende :
 | Srv-API (CX31) | ~30 W | 8 760 | 263 | ~92 kg |
 | Srv-DB (CX41) | ~50 W | 8 760 | 438 | ~153 kg |
 | Srv-ML (CX51) | ~80 W | 8 760 | 701 | ~245 kg |
-| **Total** |
- |
-
- | **1 402** | **~490 kg CO2eq/an** |
+| **Total** |  |  | **1 402** | **~490 kg CO2eq/an** |
 
 > ⚠️ Avec 100% énergie renouvelable Hetzner, l'intensité carbone effective tend vers 0 gCO2/kWh. L'estimation ci-dessus représente le **pire cas** (mix réseau DE résiduel).
 
@@ -158,6 +156,7 @@ Le pipeline CI/CD repose sur **GitHub Actions** + **moonrepo** (monorepo task ru
 ```
 main branch ──► Tag v* ──► GitHub Actions: build + push Docker images ──► Deploy Hetzner
 dev branch  ──► PR     ──► GitHub Actions: tests + lint (affected only)
+
 ```
 
 **CI —** `.github/workflows/ci.yml` (déclenché sur chaque PR) :
@@ -172,6 +171,7 @@ jobs:
         run: moon run :test --affected
       - name: Run affected lint
         run: moon run :lint --affected
+
 ```
 
 **CD —** `.github/workflows/deploy-production.yml` (déclenché sur tag `v*`) :
@@ -190,6 +190,7 @@ jobs:
           docker-compose exec -T api sqlx migrate run
       - name: Health check
         run: curl -f http://localhost:8080/health || exit 1
+
 ```
 
 ---
@@ -258,6 +259,7 @@ Procédure de restauration (Full Server Failure)
 8. Vérifier health check : curl /health (~1 min)
 ─────────────────────────────────────────────
 Total RTO estimé : < 1 heure
+
 ```
 
 ---

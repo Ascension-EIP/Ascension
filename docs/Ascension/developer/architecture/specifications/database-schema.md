@@ -3,7 +3,7 @@ id: 2f73e756-4920-4208-ae1e-6928976f81ec
 ---
 
 :::success
-**Version:** 2.1
+**Version:** 2.5
 :::
 
 ---
@@ -22,38 +22,38 @@ The migrations in `apps/server/internal/outbound/postgres/migrations/` (migratio
 
 ### 1.2 Conventions
 
-| Rule | Convention |
-| --- | --- |
-| Primary keys | `UUID` generated with `uuidv7()` (time-ordered, native in PostgreSQL 18). |
-| Timestamps | Always `TIMESTAMPTZ`. Every mutable table has `created_at` and `updated_at`, the latter maintained by the shared trigger. |
-| Naming | `snake_case` for tables and columns. Tables are plural. Join tables are named after both sides (`ghost_holds`). |
-| Closed value sets | PostgreSQL `ENUM` types (never free `TEXT`). New values are added with `ALTER TYPE ... ADD VALUE`. |
-| Units | Encoded in the column name: `_ms`, `_cm`, `_kg`, `_bytes`, `_cents`, `_min`. |
-| Object storage | Only the `object_key` is stored. The bucket comes from the server configuration. The storage backend is Amazon S3. |
-| Large AI payloads | Stored as `JSONB` in PostgreSQL (`analyses.result`, `ghosts.path`). No secondary object storage for results. |
-| Deletion | Hard delete with `ON DELETE CASCADE`. Account deactivation is a status, not a deletion. |
-| Async job lifecycle | Every AI-processed entity (`analyses`, `ghosts`, `comparisons`) shares the `job_status` enum and the same columns (`status`, `progress`, `error`). |
-| Visibility | Shareable content (`videos`, `analyses`, `routes`, `climbing_sessions`) carries a `visibility` column using the `visibility` enum. |
+| Rule                | Convention                                                                                                                                                                          |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Primary keys        | `UUID` generated with `uuidv7()` (time-ordered, native in PostgreSQL 18).                                                                                                           |
+| Timestamps          | Always `TIMESTAMPTZ`. Every mutable table has `created_at` and `updated_at`, the latter maintained by the shared trigger.                                                           |
+| Naming              | `snake_case` for tables and columns. Tables are plural. Join tables are named after both sides (`ghost_holds`).                                                                     |
+| Closed value sets   | PostgreSQL `ENUM` types (never free `TEXT`). New values are added with `ALTER TYPE ... ADD VALUE`.                                                                                  |
+| Units               | Encoded in the column name: `_ms`, `_cm`, `_kg`, `_bytes`, `_cents`, `_min`.                                                                                                        |
+| Object storage      | Only the `object_key` is stored. The bucket comes from the server configuration. The storage backend is S3-compatible (RustFS in local/dev, OVHcloud Object Storage in production). |
+| Large AI payloads   | Stored as `JSONB` in PostgreSQL (`analyses.result`, `ghosts.path`). No secondary object storage for results.                                                                        |
+| Deletion            | Hard delete with `ON DELETE CASCADE`. Account deactivation is a status, not a deletion.                                                                                             |
+| Async job lifecycle | Every AI-processed entity (`analyses`, `ghosts`, `comparisons`) shares the `job_status` enum and the same columns (`status`, `progress`, `error`).                                  |
+| Visibility          | Shareable content (`videos`, `analyses`, `routes`, `climbing_sessions`) carries a `visibility` column using the `visibility` enum.                                                  |
 
 ### 1.3 Feature Coverage
 
-| Feature | Tables |
-| --- | --- |
-| F01 Morphological profile | `user_profiles`, `user_body_constraints` |
-| F02 / F03 Video analysis and skeleton | `videos`, `analyses` |
-| F04 Score and progression | `climbing_sessions`, `analysis_scores` |
-| F05 Ghost comparison | `comparisons` |
-| F06 Hold analysis | `routes`, `holds` |
-| F07 Ghost without climbing | `routes`, `holds`, `ghosts`, `ghost_holds` |
-| F08 3D mobile experience | `analyses` (type `3d`) |
-| F09 Personalised advice | `analyses.hints` |
-| F10 Coach and training programs | `goals`, `training_programs`, `training_program_sessions`, `exercises`, `training_logs` |
-| F11 Community and sharing | `friendships`, `follows`, `visibility` columns |
-| F12 Assisted climbing (AR) | Real-time only, no persistence beyond `climbing_sessions` |
-| F13 Subscriptions and quotas | `subscription_plans`, `subscriptions`, `subscription_events`, `quota_usages` |
-| F14 Onboarding and tutorials | `tutorial_progress` |
-| Gym partnerships | `gyms`, `users.role = 'gym'` |
-| Authentication | `users`, `sessions` |
+| Feature                               | Tables                                                                                  |
+| ------------------------------------- | --------------------------------------------------------------------------------------- |
+| F01 Morphological profile             | `user_profiles`, `user_body_constraints`                                                |
+| F02 / F03 Video analysis and skeleton | `videos`, `analyses`                                                                    |
+| F04 Score and progression             | `climbing_sessions`, `analysis_scores`                                                  |
+| F05 Video analysis comparison         | `comparisons`                                                                           |
+| F06 Hold analysis                     | `routes`, `holds`                                                                       |
+| F07 Ghost Mode                        | `routes`, `holds`, `ghosts`, `ghost_holds`                                              |
+| F08 3D mobile experience              | `analyses` (type `3d`)                                                                  |
+| F09 Personalised advice               | `analyses.hints`                                                                        |
+| F10 Coach and training programs       | `goals`, `training_programs`, `training_program_sessions`, `exercises`, `training_logs` |
+| F11 Community and sharing             | `friendships`, `follows`, `visibility` columns                                          |
+| F12 Assisted climbing (AR)            | Real-time only, no persistence beyond `climbing_sessions`                               |
+| F13 Subscriptions and quotas          | `subscription_plans`, `subscriptions`, `subscription_events`, `quota_usages`            |
+| F14 Onboarding and tutorials          | `tutorial_progress`                                                                     |
+| Gym partnerships                      | `gyms`, `users.role = 'gym'`                                                            |
+| Authentication                        | `users`, `sessions`                                                                     |
 
 ---
 
@@ -93,7 +93,6 @@ erDiagram
     ROUTES ||--o{ GHOSTS : generates
     GHOSTS ||--o{ GHOST_HOLDS : uses
     HOLDS ||--o{ GHOST_HOLDS : selected_in
-    GHOSTS ||--o{ COMPARISONS : compared_in
 
     GOALS ||--o{ TRAINING_PROGRAMS : drives
     TRAINING_PROGRAMS ||--o{ TRAINING_PROGRAM_SESSIONS : schedules
@@ -102,9 +101,60 @@ erDiagram
 
     SUBSCRIPTION_PLANS ||--o{ SUBSCRIPTIONS : priced_by
     SUBSCRIPTIONS ||--o{ SUBSCRIPTION_EVENTS : emits
+
 ```
 
-Summary: `users` is the root of every branch. The video branch (`climbing_sessions` → `videos` → `analyses` → `analysis_scores`) holds the biomechanical analysis. The route branch (`routes` → `holds` → `ghosts`) holds the Ghost Mode without climbing, and `comparisons` joins both branches for the Ghost Mode in comparison. The coaching branch (`goals` → `training_programs` → `training_program_sessions` → `exercises`, with `training_logs` for what was actually done) and the business branch (`subscription_plans` → `subscriptions` → `subscription_events`, `quota_usages`) are independent of the AI branches.
+Summary: `users` is the root of every branch. The video branch (`climbing_sessions` → `videos` → `analyses` → `analysis_scores`) holds the biomechanical analysis and user-to-user same-wall `comparisons`. The route branch (`routes` → `holds` → `ghosts`) holds the Ghost Mode without climbing, strictly decoupled from video analyses and comparisons. The coaching branch (`goals` → `training_programs` → `training_program_sessions` → `exercises`, with `training_logs` for what was actually done) and the business branch (`subscription_plans` → `subscriptions` → `subscription_events`, `quota_usages`) are independent of the AI branches.
+
+---
+
+### 2.1 Expected Data Volumes & Sizing
+
+This section formalizes the sizing models and projected data growth across entities for the evaluation bar of Mandatory Objective 2.
+
+#### 2.1.1 Volumetry Hypotheses & Usage Tiers
+
+The volumetry calculations rely on the business model quotas and observed climbing practices:
+
+- **Freemium**: 10 analyses/month, max 5 routines.
+- **Premium**: 30 analyses/month, 30 Ghost Mode uses/month, unlimited routines.
+- **Infinity**: 100 analyses/month, 100 Ghost Mode uses/month, unlimited routines.
+- **Average active user**: ~15 video analyses/month and ~3 climbing sessions/month.
+- **Video retention rule**: Raw climbing videos in S3 are deleted after 7 days via lifecycle policies unless explicitly flagged `retained = true` by the climber. Biomechanical JSONB results in PostgreSQL are preserved indefinitely.
+
+#### 2.1.2 Database Entity Sizing & Growth Projections
+
+| Entity / Table                                               | Avg. Row Size      | 100 Users (MVP)         | 1,000 Users (Growth)   | 10,000 Users (Scale)    | Notes & Storage Characteristics                                                                                    |
+| :----------------------------------------------------------- | :----------------- | :---------------------- | :--------------------- | :---------------------- | :----------------------------------------------------------------------------------------------------------------- |
+| **`users` + `user_profiles` + `user_body_constraints`**      | ~1.2 KB / user     | ~120 KB                 | ~1.2 MB                | ~12 MB                  | Core user credentials, morphology, and injury zones. Very low growth.                                              |
+| **`sessions`**                                               | ~300 B             | ~30 KB                  | ~300 KB                | ~3 MB                   | Active JWT sessions with user agent & IP hash. Pruned periodically.                                                |
+| **`climbing_sessions`**                                      | ~250 B             | ~3.6K rows/yr (~900 KB) | ~36K rows/yr (~9 MB)   | ~360K rows/yr (~90 MB)  | Climber session logs (~3 sessions/user/month).                                                                     |
+| **`videos`**                                                 | ~500 B             | ~18K rows/yr (~9 MB)    | ~180K rows/yr (~90 MB) | ~1.8M rows/yr (~900 MB) | Metadata only (`object_key`, resolution, duration). Binary stored in S3.                                           |
+| **`analyses`**                                               | **~55 KB** (JSONB) | ~18K rows/yr (~1 GB)    | ~180K rows/yr (~10 GB) | ~1.8M rows/yr (~100 GB) | Contains `result` (33 2D keypoints + angles + speeds, ~50 KB) and `hints` (~5 KB). Primary database volume driver. |
+| **`analysis_scores`**                                        | ~150 B             | ~18K rows/yr (~2.7 MB)  | ~180K rows/yr (~27 MB) | ~1.8M rows/yr (~270 MB) | Synthetic numerical scoring derived from analysis.                                                                 |
+| **`routes`**                                                 | ~350 B             | ~600 rows (~210 KB)     | ~6K rows (~2.1 MB)     | ~60K rows (~21 MB)      | Boulders / walls photographed. Photos stored in S3.                                                                |
+| **`holds`**                                                  | ~350 B             | ~24K rows (~8.4 MB)     | ~240K rows (~84 MB)    | ~2.4M rows (~840 MB)    | 30 to 50 holds per route (coordinates + polygon points).                                                           |
+| **`ghosts` + `ghost_holds`**                                 | ~8 KB              | ~3.6K rows (~29 MB)     | ~36K rows (~290 MB)    | ~360K rows (~2.9 GB)    | Contains `ghosts.path` JSONB (beta steps, hold sequences, body center).                                            |
+| **`training_programs` + `sessions` + `exercises`**           | ~400 B             | ~1.2K rows (~480 KB)    | ~12K rows (~4.8 MB)    | ~120K rows (~48 MB)     | Personalized programs and planned routines.                                                                        |
+| **`training_logs`**                                          | ~250 B             | ~6K rows (~1.5 MB)      | ~60K rows (~15 MB)     | ~600K rows (~150 MB)    | Drills and completed exercises.                                                                                    |
+| **`subscriptions` + `subscription_events` + `quota_usages`** | ~300 B             | ~2.4K rows (~720 KB)    | ~24K rows (~7.2 MB)    | ~240K rows (~72 MB)     | Billing lifecycle, webhook events, and monthly quota counters.                                                     |
+| **Total PostgreSQL Data Disk**                               | —                  | **~1.1 GB / year**      | **~10.5 GB / year**    | **~105 GB / year**      | Sized for standard NVMe disk on the OVHcloud VPS-4 (200 GB available).                                             |
+
+#### 2.1.3 Binary Media Volumetry (Object Storage — RustFS / OVHcloud S3)
+
+- **Raw Video Size**: 20 MB to 50 MB per climb (1080p, 30 fps, 10–45 seconds duration).
+- **Route Photos**: 2 MB to 5 MB per photo (high-resolution wall capture).
+- **Active Storage Sizing with 7-Day Purge Policy**:
+  - **100 users**: ~35 videos active simultaneously ≈ **1.2 GB** to **1.8 GB** active.
+  - **1,000 users**: ~350 videos active simultaneously ≈ **12 GB** to **18 GB** active (plus ~15 GB persistent routes = **~35 GB** total).
+  - **10,000 users**: ~3,500 videos active simultaneously ≈ **120 GB** to **180 GB** active (plus ~150 GB persistent routes = **~350 GB** total).
+- **Storage Provider Compliance**: The unlimited elastic capacity of **OVHcloud Object Storage Standard (Gravelines)** easily accommodates this workload with negligible monthly cost (~0.01 €/GB/month, zero egress fees), while the **200 GB NVMe** disk of the Milan VPS-4 safely holds the PostgreSQL database and Redis/RabbitMQ queues for several years of growth.
+
+#### 2.1.4 Scaling & Database Performance Strategies
+
+1. **Sequential UUIDv7**: Primary keys use `uuidv7()` (native in PostgreSQL 18), providing temporal ordering. This completely eliminates random-insertion page splits and prevents B-Tree index fragmentation as tables reach millions of rows.
+2. **Table Partitioning**: As the `analyses` table approaches 1 million rows (~50 GB), range partitioning by `created_at` (monthly partitions) will be activated to maintain constant index depth and allow rapid dropping of expired historical data if required.
+3. **JSONB Compaction**: The `analyses.result` column stores only filtered landmarks and metrics; uncompressed frame bitmaps and raw video bytes never enter the database engine.
 
 ---
 
@@ -137,7 +187,7 @@ CREATE TYPE body_constraint_type AS ENUM ('missing', 'injured');
 CREATE TYPE visibility AS ENUM ('private', 'friends', 'public');
 CREATE TYPE video_status AS ENUM ('pending', 'completed');
 CREATE TYPE analysis_type AS ENUM ('2d', '3d');
-CREATE TYPE job_status AS ENUM ('pending', 'processing', 'generating_hints', 'completed', 'failed');
+CREATE TYPE job_status AS ENUM ('pending', 'started', 'running', 'success', 'failed');
 CREATE TYPE hold_type AS ENUM ('jug', 'crimp', 'sloper', 'pinch', 'pocket', 'edge', 'volume', 'foothold');
 CREATE TYPE hold_source AS ENUM ('ai', 'manual');
 CREATE TYPE goal_status AS ENUM ('active', 'achieved', 'abandoned');
@@ -151,11 +201,12 @@ CREATE TYPE subscription_event_type AS ENUM (
     'payment_failed', 'canceled', 'expired'
 );
 CREATE TYPE tutorial_status AS ENUM ('not_started', 'in_progress', 'completed');
+
 ```
 
 Notes:
 
-- `job_status` is shared by `analyses`, `ghosts` and `comparisons`. `generating_hints` is only reached by `analyses`.
+- `job_status` is shared by `analyses`, `ghosts` and `comparisons`, and its values are identical to the statuses published on RabbitMQ (`schemas/job_status.schema.json`): `pending` is set by the server when it creates the row, `started` when the worker picks the job, `running` while it processes it, then `success` or `failed`. There is no separate `generating_hints` value: the advice step is part of `running`.
 - `grading_system` distinguishes bouldering (`font`, `v_scale`) from route climbing (`french`, `yds`). The grade itself is stored as `TEXT` (`6a+`, `V4`, `7A`).
 - `body_zone` follows the MediaPipe segment layout so that constraints can be mapped directly onto skeleton landmarks.
 
@@ -169,6 +220,7 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 ```
 
 Every table with an `updated_at` column attaches it with:
@@ -178,6 +230,7 @@ CREATE TRIGGER update_<table>_updated_at
     BEFORE UPDATE ON <table>
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
 ```
 
 The trigger statement is omitted from the table definitions below for brevity.
@@ -217,6 +270,7 @@ CREATE TABLE users (
 
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_users_status ON users(status);
+
 ```
 
 Business rules:
@@ -252,6 +306,7 @@ CREATE TABLE user_profiles (
     CONSTRAINT chk_user_profiles_level
         CHECK ((climbing_level IS NULL) = (grading_system IS NULL))
 );
+
 ```
 
 Business rules:
@@ -284,6 +339,7 @@ CREATE INDEX idx_user_body_constraints_user_id ON user_body_constraints(user_id)
 CREATE UNIQUE INDEX uq_user_body_constraints_active
     ON user_body_constraints(user_id, zone)
     WHERE ended_at IS NULL;
+
 ```
 
 Business rules:
@@ -311,6 +367,7 @@ CREATE TABLE sessions (
 
 CREATE INDEX idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX idx_sessions_expires_at ON sessions(expires_at);
+
 ```
 
 Business rules:
@@ -337,6 +394,7 @@ CREATE TABLE tutorial_progress (
     CONSTRAINT chk_tutorial_progress_completed
         CHECK (status <> 'completed' OR completed_at IS NOT NULL)
 );
+
 ```
 
 Business rules:
@@ -370,6 +428,7 @@ CREATE TABLE gyms (
 
 CREATE INDEX idx_gyms_city ON gyms(country_code, city);
 CREATE INDEX idx_gyms_owner_user_id ON gyms(owner_user_id);
+
 ```
 
 Business rules:
@@ -415,6 +474,7 @@ CREATE TABLE climbing_sessions (
 
 CREATE INDEX idx_climbing_sessions_user_started ON climbing_sessions(user_id, started_at DESC);
 CREATE INDEX idx_climbing_sessions_gym_id ON climbing_sessions(gym_id);
+
 ```
 
 Business rules:
@@ -451,6 +511,7 @@ CREATE TABLE videos (
 CREATE INDEX idx_videos_user_created ON videos(user_id, created_at DESC);
 CREATE INDEX idx_videos_climbing_session_id ON videos(climbing_session_id);
 CREATE INDEX idx_videos_expiry ON videos(expires_at) WHERE retained = FALSE;
+
 ```
 
 Business rules:
@@ -467,14 +528,15 @@ One AI processing run on a video (F02, F03, F08, F09). Several analyses may exis
 ```sql
 CREATE TABLE analyses (
     id                  UUID PRIMARY KEY DEFAULT uuidv7(),
-    video_id            UUID NOT NULL REFERENCES videos(id) ON DELETE CASCADE,
+    video_id            UUID NOT NULL UNIQUE REFERENCES videos(id) ON DELETE CASCADE,
     type                analysis_type NOT NULL DEFAULT '2d',
     status              job_status NOT NULL DEFAULT 'pending',
     progress            SMALLINT NOT NULL DEFAULT 0,
     result              JSONB,
+    advice              TEXT,
     hints               JSONB,
     error               TEXT,
-    processing_time_ms  INTEGER,
+    processing_time_ms  INTERVAL,
     started_at          TIMESTAMPTZ,
     completed_at        TIMESTAMPTZ,
     visibility          visibility NOT NULL DEFAULT 'private',
@@ -483,19 +545,25 @@ CREATE TABLE analyses (
 
     CONSTRAINT chk_analyses_progress CHECK (progress BETWEEN 0 AND 100),
     CONSTRAINT chk_analyses_completed
-        CHECK (status <> 'completed' OR (result IS NOT NULL AND completed_at IS NOT NULL)),
+        CHECK (status <> 'success' OR (result IS NOT NULL AND completed_at IS NOT NULL)),
     CONSTRAINT chk_analyses_failed
         CHECK (status <> 'failed' OR error IS NOT NULL)
 );
 
 CREATE INDEX idx_analyses_video_created ON analyses(video_id, created_at DESC);
-CREATE INDEX idx_analyses_status ON analyses(status) WHERE status IN ('pending', 'processing', 'generating_hints');
+CREATE INDEX idx_analyses_status ON analyses(status) WHERE status IN ('pending', 'started', 'running');
+
 ```
 
 Business rules:
 
-- The status flow is `pending` → `processing` → `generating_hints` → `completed`, or `failed` from any state. The worker sets `started_at` when it picks the job, and `progress` from 0 to 99 during processing, then 100 on completion.
-- No uniqueness on `(video_id, type)`: a user may relaunch an analysis. The API returns the latest completed analysis of each type by default.
+- The status flow is `pending` → `started` → `running` → `success`, or `failed` from any state. The server creates the row as `pending`. The worker sets `started` and `started_at` when it picks the job (`progress` 0), `running` while it processes it (`progress` up to 90), then `success` and `progress` 100.
+- `success` is set only after the advice step, so `result` and `completed_at` are always present on a `success` row (enforced by `chk_analyses_completed`). `hints` may stay `NULL` on a `success` row if the LLM call failed: the advice step then publishes `failed` on `pose.advice.status` and can be relaunched with `pose.advice.requested`.
+- `video_id` is currently `UNIQUE` in the real database (migration `20260918172427`): a video can have only one analysis, so a `2d` and a `3d` run, or a retry after a failure, cannot coexist. The intended model is several analyses per video, with no uniqueness on `(video_id, type)`. The constraint is not changed yet (see `task/handoff-server-go.md`); the worker does not depend on it.
+- An analysis has no `climbing_session_id`: it belongs to the climbing session of its video (`videos.climbing_session_id`), and an analysis outside any session is allowed. The server links a video only to a session of the same user (`GET /v1/videos/upload-url`, `POST /v1/sessions/:id/analyses`). Deleting the session sets `videos.climbing_session_id` to `NULL` and keeps the videos and their analyses.
+- `processing_time_ms` is an `INTERVAL` (the Go server reads it as a `time.Duration`), despite its name. The worker writes `NOW() - started_at` when it completes the job. `ghosts` and `comparisons` use an `INTEGER` of milliseconds.
+- `advice` (`TEXT`) is the legacy free-text advice, still read by the Go server. The worker writes the structured `hints` instead. `advice` will be dropped once the server exposes `hints`.
+- The worker writes `status`, `progress`, `result`, `hints`, `error`, `started_at`, `completed_at` and `processing_time_ms`: the migrations must be applied before it starts.
 - The partial index on `status` keeps the "in-flight jobs" lookup cheap without indexing millions of completed rows.
 
 `result` **structure** (written by the AI worker, consumed by the mobile app for client-side rendering):
@@ -511,7 +579,12 @@ Business rules:
       "timestamp_ms": 0,
       "pose_detected": true,
       "landmarks": {
-        "left_shoulder": { "x": 0.51, "y": 0.32, "z": -0.12, "visibility": 0.98 }
+        "left_shoulder": {
+          "x": 0.51,
+          "y": 0.32,
+          "z": -0.12,
+          "visibility": 0.98
+        }
       },
       "angles": {
         "left_elbow": 145.2,
@@ -568,6 +641,7 @@ CREATE TABLE analysis_scores (
         endurance_score BETWEEN 0 AND 100
     )
 );
+
 ```
 
 Business rules:
@@ -575,11 +649,31 @@ Business rules:
 - `details` holds the intermediate metrics that produced the scores (average joint angles, time on wall, number of pauses, and so on). Anything that must be charted over time gets promoted to a column.
 - Scores are immutable once written; a new analysis produces a new row.
 
+### 6.5 `video_contexts`
+
+A placeholder for the context of a video, created ahead of its feature (migration `20261114003000_create_video_contexts_table`). It holds an identifier only, has no relation yet, and no code reads or writes it.
+
+```sql
+CREATE TABLE IF NOT EXISTS video_contexts (
+    id UUID PRIMARY KEY
+);
+
+CREATE OR REPLACE TRIGGER update_video_contexts_updated_at
+    BEFORE UPDATE ON video_contexts
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+```
+
+:::warning
+The trigger sets `updated_at`, a column the table does not have: any `UPDATE` on `video_contexts` fails until the table gets its real columns, `updated_at` included.
+:::
+
 ---
 
 ## 7\. Routes, Holds and Ghost Mode
 
-Recommended split: the route photo is its own entity (`routes`), because it has a life independent of any video (F07 works without climbing). Holds belong to the route. A ghost is a computed path on a route for a given user morphology. A comparison joins a ghost with a video analysis (F05). All storage references are S3 object keys; the bucket is a configuration value and never appears in the schema.
+Recommended split: the route photo is its own entity (`routes`), because it has a life independent of any video. Holds belong to the route. A ghost is a computed path on a route for a given user morphology, producing step-by-step guidance images (F07). A comparison joins two video analyses between climbers/sessions (F05). All storage references are S3 object keys; the bucket is a configuration value and never appears in the schema.
 
 ### 7.1 `routes`
 
@@ -607,6 +701,7 @@ CREATE TABLE routes (
 
 CREATE INDEX idx_routes_user_created ON routes(user_id, created_at DESC);
 CREATE INDEX idx_routes_gym_id ON routes(gym_id);
+
 ```
 
 Business rules:
@@ -644,6 +739,7 @@ CREATE TABLE holds (
 
 CREATE INDEX idx_holds_route_id ON holds(route_id);
 CREATE INDEX idx_holds_corrected ON holds(route_id) WHERE corrected_at IS NOT NULL;
+
 ```
 
 Business rules:
@@ -655,7 +751,7 @@ Business rules:
 
 ### 7.3 `ghosts`
 
-Optimal movement path computed for a route and a user morphology (F05, F07). Same job lifecycle as `analyses`.
+Feasible movement path computed from a route photo, selected holds, and user morphology (F07). Same job lifecycle as `analyses`.
 
 ```sql
 CREATE TABLE ghosts (
@@ -675,19 +771,20 @@ CREATE TABLE ghosts (
 
     CONSTRAINT chk_ghosts_progress CHECK (progress BETWEEN 0 AND 100),
     CONSTRAINT chk_ghosts_completed
-        CHECK (status <> 'completed' OR (path IS NOT NULL AND completed_at IS NOT NULL)),
+        CHECK (status <> 'success' OR (path IS NOT NULL AND completed_at IS NOT NULL)),
     CONSTRAINT chk_ghosts_failed
         CHECK (status <> 'failed' OR error IS NOT NULL)
 );
 
 CREATE INDEX idx_ghosts_route_created ON ghosts(route_id, created_at DESC);
 CREATE INDEX idx_ghosts_user_id ON ghosts(user_id);
+
 ```
 
 Business rules:
 
 - `morphology` is a snapshot of `user_profiles` and active `user_body_constraints` at request time, so the ghost stays reproducible.
-- `path` is a list of steps in image pixel coordinates: `{"steps": [{"step": 1, "left_hand": {"hold_id": "...", "x": 100, "y": 200}, "right_hand": {...}, "left_foot": {...}, "right_foot": {...}, "center_of_mass": {"x": 110, "y": 275}}]}`.
+- `path` is a list of steps with step image references and move details: `{"steps": [{"step": 1, "image_key": "ghosts/uuid/step_1.jpg", "hold_id": "uuid", "action": "Right hand to hold #4", "center_of_mass": {"x": 110, "y": 275}}]}`.
 - Ghost Mode is a premium feature; the quota check happens in the API before the row is created.
 
 ### 7.4 `ghost_holds`
@@ -704,6 +801,7 @@ CREATE TABLE ghost_holds (
 );
 
 CREATE INDEX idx_ghost_holds_hold_id ON ghost_holds(hold_id);
+
 ```
 
 Business rules:
@@ -712,24 +810,24 @@ Business rules:
 
 ### 7.5 `comparisons`
 
-Comparison of a video analysis with a ghost (F05). Same job lifecycle as `analyses`.
+Comparison of two climbing video analyses between climbers or sessions (F05). Same job lifecycle as `analyses`.
 
 ```sql
 CREATE TABLE comparisons (
-    id                  UUID PRIMARY KEY DEFAULT uuidv7(),
-    analysis_id         UUID NOT NULL REFERENCES analyses(id) ON DELETE CASCADE,
-    ghost_id            UUID NOT NULL REFERENCES ghosts(id) ON DELETE CASCADE,
-    status              job_status NOT NULL DEFAULT 'pending',
-    progress            SMALLINT NOT NULL DEFAULT 0,
-    similarity_score    NUMERIC(5, 2),
-    efficiency_score    NUMERIC(5, 2),
-    metrics             JSONB,
-    error               TEXT,
-    processing_time_ms  INTEGER,
-    started_at          TIMESTAMPTZ,
-    completed_at        TIMESTAMPTZ,
-    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    id                   UUID PRIMARY KEY DEFAULT uuidv7(),
+    base_analysis_id     UUID NOT NULL REFERENCES analyses(id) ON DELETE CASCADE,
+    compared_analysis_id UUID NOT NULL REFERENCES analyses(id) ON DELETE CASCADE,
+    status               job_status NOT NULL DEFAULT 'pending',
+    progress             SMALLINT NOT NULL DEFAULT 0,
+    similarity_score     NUMERIC(5, 2),
+    efficiency_score     NUMERIC(5, 2),
+    metrics              JSONB,
+    error                TEXT,
+    processing_time_ms   INTEGER,
+    started_at           TIMESTAMPTZ,
+    completed_at         TIMESTAMPTZ,
+    created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     CONSTRAINT chk_comparisons_progress CHECK (progress BETWEEN 0 AND 100),
     CONSTRAINT chk_comparisons_scores CHECK (
@@ -737,16 +835,17 @@ CREATE TABLE comparisons (
         (efficiency_score IS NULL OR efficiency_score BETWEEN 0 AND 100)
     ),
     CONSTRAINT chk_comparisons_completed
-        CHECK (status <> 'completed' OR (metrics IS NOT NULL AND completed_at IS NOT NULL))
+        CHECK (status <> 'success' OR (metrics IS NOT NULL AND completed_at IS NOT NULL))
 );
 
-CREATE INDEX idx_comparisons_analysis_id ON comparisons(analysis_id);
-CREATE INDEX idx_comparisons_ghost_id ON comparisons(ghost_id);
+CREATE INDEX idx_comparisons_base_analysis_id ON comparisons(base_analysis_id);
+CREATE INDEX idx_comparisons_compared_analysis_id ON comparisons(compared_analysis_id);
+
 ```
 
 Business rules:
 
-- `metrics` holds the frame-aligned deviations rendered as the ghost overlay: `{"alignment": {"offset_ms": 350}, "deviations": [{"frame": 45, "timestamp_ms": 1500, "limb": "left_hand", "distance_px": 15.5, "note": "Hand reached too high"}]}`.
+- `metrics` holds the frame-aligned comparison differences between climber videos: `{"differences": [{"frame": 45, "timestamp_ms": 1500, "limb": "left_arm", "difference": 15.5, "note": "Higher elbow flare"}]}`.
 - `similarity_score` and `efficiency_score` are promoted to columns for progression charts.
 
 ---
@@ -781,6 +880,7 @@ CREATE TABLE goals (
 
 CREATE INDEX idx_goals_user_id ON goals(user_id);
 CREATE UNIQUE INDEX uq_goals_active ON goals(user_id) WHERE status = 'active';
+
 ```
 
 Business rules:
@@ -813,6 +913,7 @@ CREATE TABLE training_programs (
 
 CREATE INDEX idx_training_programs_author_user_id ON training_programs(author_user_id);
 CREATE UNIQUE INDEX uq_training_programs_active ON training_programs(goal_id) WHERE status = 'active';
+
 ```
 
 Business rules:
@@ -841,6 +942,7 @@ CREATE TABLE training_program_sessions (
     CONSTRAINT chk_training_program_sessions_day CHECK (day_of_week BETWEEN 1 AND 7),
     CONSTRAINT uq_training_program_sessions_slot UNIQUE (program_id, week_number, day_of_week)
 );
+
 ```
 
 Business rules:
@@ -868,6 +970,7 @@ CREATE TABLE exercises (
 
     CONSTRAINT uq_exercises_position UNIQUE (program_session_id, position)
 );
+
 ```
 
 Business rules:
@@ -899,6 +1002,7 @@ CREATE TABLE training_logs (
 CREATE INDEX idx_training_logs_user_performed ON training_logs(user_id, performed_on DESC);
 CREATE INDEX idx_training_logs_program_session_id ON training_logs(program_session_id);
 CREATE INDEX idx_training_logs_climbing_session_id ON training_logs(climbing_session_id);
+
 ```
 
 Business rules:
@@ -933,6 +1037,7 @@ CREATE UNIQUE INDEX uq_friendships_pair
     ON friendships(LEAST(requester_id, addressee_id), GREATEST(requester_id, addressee_id));
 CREATE INDEX idx_friendships_addressee_pending
     ON friendships(addressee_id) WHERE status = 'pending';
+
 ```
 
 Business rules:
@@ -956,6 +1061,7 @@ CREATE TABLE follows (
 );
 
 CREATE INDEX idx_follows_followed_id ON follows(followed_id);
+
 ```
 
 Business rules:
@@ -967,10 +1073,10 @@ Business rules:
 `videos`, `analyses`, `routes` and `climbing_sessions` carry a `visibility` column. Access is resolved as follows:
 
 | Visibility | Owner | Accepted friend | Follower | Anyone |
-| --- | --- | --- | --- | --- |
-| `private` | Yes | No | No | No |
-| `friends` | Yes | Yes | No | No |
-| `public` | Yes | Yes | Yes | Yes |
+| ---------- | ----- | --------------- | -------- | ------ |
+| `private`  | Yes   | No              | No       | No     |
+| `friends`  | Yes   | Yes             | No       | No     |
+| `public`   | Yes   | Yes             | Yes      | Yes    |
 
 An analysis is never more visible than its video: the effective visibility is the most restrictive of the two. A `blocked` friendship overrides everything. Deactivated users are treated as `private` everywhere.
 
@@ -1002,15 +1108,16 @@ CREATE TABLE subscription_plans (
 
     CONSTRAINT chk_subscription_plans_price CHECK (price_cents >= 0)
 );
+
 ```
 
 Seed data:
 
-| code | name | price\_cents | monthly\_analysis\_quota | monthly\_ghost\_quota | ghost\_mode\_enabled | max\_routines | ads\_enabled | server\_priority | stripe\_price\_id |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `freemium` | Freemium | 0 | 10 | 0 | false | 5 | true | false | `NULL` |
-| `premium` | Premium | 2000 | 30 | 30 | true | `NULL` (unlimited) | false | false | set in prod |
-| `infinity` | Infinity | 3000 | 100 | 100 | true | `NULL` (unlimited) | false | true | set in prod |
+| code       | name     | price\_cents | monthly\_analysis\_quota | monthly\_ghost\_quota | ghost\_mode\_enabled | max\_routines      | ads\_enabled | server\_priority | stripe\_price\_id |
+| ---------- | -------- | ------------ | ------------------------ | --------------------- | -------------------- | ------------------ | ------------ | ---------------- | ----------------- |
+| `freemium` | Freemium | 0            | 10                       | 0                     | false                | 5                  | true         | false            | `NULL`            |
+| `premium`  | Premium  | 2000         | 30                       | 30                    | true                 | `NULL` (unlimited) | false        | false            | set in prod       |
+| `infinity` | Infinity | 3000         | 100                      | 100                   | true                 | `NULL` (unlimited) | false        | true             | set in prod       |
 
 ### 10.2 `subscriptions`
 
@@ -1039,6 +1146,7 @@ CREATE UNIQUE INDEX uq_subscriptions_current
     ON subscriptions(user_id) WHERE status IN ('trialing', 'active', 'past_due');
 CREATE INDEX idx_subscriptions_period_end ON subscriptions(current_period_end)
     WHERE status IN ('trialing', 'active', 'past_due');
+
 ```
 
 Business rules:
@@ -1068,6 +1176,7 @@ CREATE TABLE subscription_events (
 CREATE INDEX idx_subscription_events_user_occurred ON subscription_events(user_id, occurred_at DESC);
 CREATE INDEX idx_subscription_events_type_occurred ON subscription_events(type, occurred_at DESC);
 CREATE INDEX idx_subscription_events_subscription_id ON subscription_events(subscription_id);
+
 ```
 
 Business rules:
@@ -1091,6 +1200,7 @@ CREATE TABLE quota_usages (
     CONSTRAINT chk_quota_usages_period CHECK (period_start = DATE_TRUNC('month', period_start)::DATE),
     CONSTRAINT chk_quota_usages_counts CHECK (analyses_count >= 0 AND ghosts_count >= 0)
 );
+
 ```
 
 Business rules:
@@ -1136,21 +1246,23 @@ SELECT cron.schedule('clean-old-quota-usages', '0 3 1 * *', $$
     DELETE FROM quota_usages
      WHERE period_start < DATE_TRUNC('month', NOW()) - INTERVAL '24 months';
 $$);
+
 ```
 
-Storage objects are not deleted by the database queries alone. When `clean-abandoned-uploads` or `clean-expired-videos` prunes rows, the Go server/cron worker reconciliation job or S3 bucket lifecycle rules purge the corresponding object keys from MinIO/S3.
+Storage objects are not deleted by the database queries alone. When `clean-abandoned-uploads` or `clean-expired-videos` prunes rows, the Go server/cron worker reconciliation job or S3 bucket lifecycle rules purge the corresponding object keys from RustFS (local/dev) or OVHcloud Object Storage (production).
 
 ---
 
 ## 12\. Sample Queries
 
-Latest completed analysis of each type for a video:
+Latest successful analysis of each type for a video:
 
 ```sql
 SELECT DISTINCT ON (type) *
   FROM analyses
- WHERE video_id = $1 AND status = 'completed'
+ WHERE video_id = $1 AND status = 'success'
  ORDER BY type, created_at DESC;
+
 ```
 
 Remaining quota for a user this month:
@@ -1165,6 +1277,7 @@ SELECT COALESCE(p.monthly_analysis_quota, f.monthly_analysis_quota) - COALESCE(q
   LEFT JOIN quota_usages q
          ON q.user_id = u.id AND q.period_start = DATE_TRUNC('month', NOW())::DATE
  WHERE u.id = $1 AND f.code = 'freemium';
+
 ```
 
 Weekly progression curve (F04):
@@ -1179,6 +1292,7 @@ SELECT DATE_TRUNC('week', started_at)::DATE AS week,
  WHERE user_id = $1 AND scored_at IS NOT NULL AND started_at >= NOW() - INTERVAL '12 weeks'
  GROUP BY week
  ORDER BY week;
+
 ```
 
 Route with its current holds and latest ghost:
@@ -1187,10 +1301,11 @@ Route with its current holds and latest ghost:
 SELECT r.*,
        (SELECT json_agg(h ORDER BY h.created_at) FROM holds h WHERE h.route_id = r.id) AS holds,
        (SELECT g.path FROM ghosts g
-         WHERE g.route_id = r.id AND g.user_id = $2 AND g.status = 'completed'
+         WHERE g.route_id = r.id AND g.user_id = $2 AND g.status = 'success'
          ORDER BY g.created_at DESC LIMIT 1) AS ghost_path
   FROM routes r
  WHERE r.id = $1;
+
 ```
 
 Content visible to a viewer (friend check):
@@ -1214,6 +1329,7 @@ SELECT v.*
          WHERE b.status = 'blocked'
            AND LEAST(b.requester_id, b.addressee_id) = LEAST($1, $2)
            AND GREATEST(b.requester_id, b.addressee_id) = GREATEST($1, $2));
+
 ```
 
 ---
@@ -1224,19 +1340,22 @@ The full data model specified in this document has been partitioned and applied 
 
 The migration history evolved from the initial prototype schema (`20260905000001` to `20260905000005`) to the complete modular suite implemented on 2026-09-18 (`20260918172358` through `20260918222653`):
 
-| Migration File Prefix | Feature / Domain | Content & Changes Applied |
-| --- | --- | --- |
-| `20260918172358` | Base Enums & Extensions | Core PostgreSQL extensions (`uuid-ossp`, `pgcrypto`) and enum types (`user_role`, `job_status`, `visibility`, `video_status`, `body_zone`, `hold_type`, etc.). |
-| `20260918174541` | Shared Trigger | `trigger_set_updated_at` function for automatic `updated_at` timestamp management across all tables. |
-| `20260918174719` – `20260918175402` | Core Auth & Users | Tables `users` (with `first_name`, `last_name`, `username`, `password_hash`, `role`), `sessions` (with `token_hash`, `user_agent`, `ip_address`, `revoked_at`), `user_profiles`, and `user_body_constraints`. |
-| `20260918182744` – `20260918183049` | Onboarding & Gyms | Tables `tutorial_progress` and `gyms`. |
-| `20260918183204` – `20260918183601` | Sessions & Videos | Tables `climbing_sessions` and `videos` (with `object_key`, `size_bytes`, `duration_ms`, `content_type`, `fps`, `visibility`, `retained`). |
-| `20260918183756` – `20260918184024` | Analyses & Scores | Tables `analyses` (with `status` enum, `processing_time_ms`, `result` JSONB, `hints` JSONB) and `analysis_scores`. |
-| `20260918184203` – `20260918184715` | Routes & Holds | Tables `routes` and `holds` (with classification, coordinates, polygon points). |
-| `20260918184918` – `20260918185521` | Ghosts & Comparisons | Tables `ghosts`, `ghost_holds`, and `comparisons` (with metrics and trajectory comparison data). |
-| `20260918221841` – `20260918222129` | Coaching & Training | Tables `goals`, `training_programs`, `training_program_sessions`, `exercises`, and `training_logs`. |
-| `20260918222236` – `20260918222340` | Social & Community | Tables `friendships` and `follows`. |
-| `20260918222453` – `20260918222653` | Subscriptions & Quotas | Tables `subscription_plans`, `subscriptions`, `subscription_events`, and `quota_usages`. |
+| Migration File Prefix               | Feature / Domain        | Content & Changes Applied                                                                                                                                                                                                                                                                                                                                                  |
+| ----------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `20260918172358`                    | Base Enums & Extensions | Core PostgreSQL extensions (`uuid-ossp`, `pgcrypto`) and enum types (`user_role`, `job_status`, `visibility`, `video_status`, `body_zone`, `hold_type`, etc.).                                                                                                                                                                                                             |
+| `20260918174541`                    | Shared Trigger          | `trigger_set_updated_at` function for automatic `updated_at` timestamp management across all tables.                                                                                                                                                                                                                                                                       |
+| `20260918174719` – `20260918175402` | Core Auth & Users       | Tables `users` (with `first_name`, `last_name`, `username`, `password_hash`, `role`), `sessions` (with `token_hash`, `user_agent`, `ip_address`, `revoked_at`), `user_profiles`, and `user_body_constraints`.                                                                                                                                                              |
+| `20260918182744` – `20260918183049` | Onboarding & Gyms       | Tables `tutorial_progress` and `gyms`.                                                                                                                                                                                                                                                                                                                                     |
+| `20260918183204` – `20260918183601` | Sessions & Videos       | Tables `climbing_sessions` and `videos` (with `object_key`, `size_bytes`, `duration_ms`, `content_type`, `fps`, `visibility`, `retained`).                                                                                                                                                                                                                                 |
+| `20260918183756` – `20260918184024` | Analyses & Scores       | Tables `analyses` (with `status` enum, `processing_time_ms` INTERVAL, `result` JSONB, `advice` TEXT) and `analysis_scores`. `hints` JSONB is added by `20261030200100`.                                                                                                                                                                                                    |
+| `20260918184203` – `20260918184715` | Routes & Holds          | Tables `routes` and `holds` (with classification, coordinates, polygon points).                                                                                                                                                                                                                                                                                            |
+| `20260918184918` – `20260918185521` | Ghosts & Comparisons    | Tables `ghosts`, `ghost_holds`, and `comparisons` (with metrics and trajectory comparison data). *Note:* the historical `20260918214857_create_comparaisons_table.up.sql` migration still references legacy `ghost_id` and must be superseded by a follow-up migration matching section 7.5 (`base_analysis_id` / `compared_analysis_id`). |
+| `20260918221841` – `20260918222129` | Coaching & Training     | Tables `goals`, `training_programs`, `training_program_sessions`, `exercises`, and `training_logs`.                                                                                                                                                                                                                                                                        |
+| `20260918222236` – `20260918222340` | Social & Community      | Tables `friendships` and `follows`.                                                                                                                                                                                                                                                                                                                                        |
+| `20260918222453` – `20260918222653` | Subscriptions & Quotas  | Tables `subscription_plans`, `subscriptions`, `subscription_events`, and `quota_usages`.                                                                                                                                                                                                                                                                                   |
+| `20261030200000`                    | Job status alignment    | `job_status` becomes `pending, started, running, success, failed` (same values as the RabbitMQ statuses). `processing` and `generating_hints` become `running`, `completed` becomes `success`. The `chk_*_completed` checks and `idx_analyses_status` are recreated. The `down` migration maps `started`/`running` back to `processing` and `success` back to `completed`. |
+| `20261030200100`                    | Analyses hints          | Adds `analyses.hints JSONB` (nullable), written by the AI worker (`schemas/hints.schema.json`). `advice TEXT` is kept for the Go server.                                                                                                                                                                                                                                   |
+| `20261112120000`                    | Video session link      | `videos.climbing_session_id` now references `climbing_sessions(id)` instead of `users(id)` (`ON DELETE SET NULL`), since the `videos` migration runs before `climbing_sessions` exists. Values that are not climbing session IDs become `NULL`.                                                                                                                            |
 
 All tables conform to the foreign key constraints, indexes, and check constraints detailed in sections 3 through 10.
 
@@ -1246,4 +1365,4 @@ All tables conform to the foreign key constraints, indexes, and check constraint
 
 - [API Specification](api-specification.md)
 - [Feature catalogue](../../../administrative/features-catalog.md)
-- [System Overview](../system-overview.md)
+- [Global Architecture](../globale-architecture.md)

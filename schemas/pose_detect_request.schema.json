@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PoseDetectRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["job_id", "object_key"],
+  "properties": {
+    "job_id": { "type": "string" },
+    "object_key": { "type": "string" }
+  }
+}

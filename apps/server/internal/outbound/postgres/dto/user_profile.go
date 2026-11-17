@@ -1,8 +1,8 @@
-// @date 2026-09-20
+// @date 2026-09-24
 // @file user_profile.go
 // @brief DTO mapping the user_profiles row to the model.
 // @project Ascension
-// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package dto

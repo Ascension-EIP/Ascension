@@ -1,0 +1,73 @@
+Architecture IA pour l’escalade
+Tue, Sep 29, 2026
+
+Summary:
+
+La réunion définit l’architecture technique de l’analyse d’escalade et du mode fantôme.
+• YOLOv8 détectera les prises d’escalade
+• OpenCV analysera leur couleur dominante
+• Le clustering regroupera les prises par voie
+• Le pathfinding servira à l’analyse et au mode fantôme
+• L’exécution IA sera centralisée sur un serveur
+• Google Drive et Colab remplaceront temporairement le VPS
+• Prochaine session: lundi 19 à 10 h
+
+
+Action Items:
+
+* Olivier Pöuech: Mettre à jour le script de collecte de vidéos de grimpe sur YouTube et Instagram
+* Ilyes TALBI: Envoyer les informations sur l’offre de stockage de 400 Go destinée aux étudiants
+* Jundo: Utiliser Google Drive et Google Colab pour stocker les images et lancer l’entraînement du modèle YOLO
+* Meeting participant: Constituer un échantillon varié d’environ 300 images pour entraîner YOLO sur les prises d’escalade
+* Jundo: Réviser les images à annoter demain.
+* Ilyes TALBI: Examiner la possibilité d’utiliser Claude ou un script pour annoter automatiquement le jeu de données.
+* Jundo: Vérifier les jeux de données d’escalade disponibles sur Roboflow.
+* Jundo: Évaluer les jeux de données annotés de 47 et 123 images pour l’entraînement du détecteur.
+* Ilyes TALBI: Renvoyer la confirmation de la prochaine session prévue le lundi 19 à 10 heures.
+
+
+Key Discussion Points:
+
+Décomposition de la solution IA
+Ilyes demande si l’équipe a avancé sur la décomposition de la solution en briques techniques et fonctionnelles. Jundo explique que la partie consacrée à l’analyse et aux conseils de l’IA est en cours de structuration, mais que les autres fonctionnalités ne le sont pas encore.
+
+Analyse des mouvements et pathfinding
+L’équipe examine les données susceptibles d’alimenter les conseils de l’IA, notamment les squelettes extraits image par image et les séquences de mouvements. Ilyes oriente la discussion vers des règles statiques ou des méthodes de vision par ordinateur, tandis que Jundo distingue l’analyse 2D du mode fantôme et identifie le pathfinding comme une fonctionnalité centrale.
+
+Test de génération d’une voie optimale
+Ilyes propose de tester Claude avec une image de mur d’escalade afin d’évaluer sa capacité à recommander une séquence de mouvements. Le test produit une progression visuelle avec des positions de mains et de pieds jugées globalement cohérentes, malgré certaines ambiguïtés d’interprétation des prises et des volumes.
+
+Contraintes de la track technique
+Ilyes explique qu’une sortie générée par Claude pourrait servir à créer des données de distillation pour un modèle open source. Il rappelle également que la track technique implique probablement un travail de recherche sur les algorithmes et l’entraînement, contrairement à une approche davantage centrée sur le résultat utilisateur.
+
+Détection des prises par vision par ordinateur
+L’équipe examine les méthodes utilisées par Claude, notamment le traitement classique des images et la détection par couleur. Ilyes recommande d’entraîner un modèle YOLO pour détecter les prises, les isoler selon leur couleur et regrouper les prises correspondant à chaque voie.
+
+Données, stockage et annotation
+Ilyes interroge l’équipe sur l’existence d’un jeu de données de murs d’escalade. Olivier explique que la collecte de vidéos est en cours de reprise, mais qu’elle reste bloquée par l’absence de VPS et par un besoin de stockage estimé à environ 300 Go. Ilyes recommande d’utiliser Google Drive et Google Colab plutôt que d’attendre les ressources d’Epitech, puis conseille de limiter l’annotation à un échantillon varié.
+
+Détection et regroupement des prises
+Ilyes TALBI propose d’utiliser YOLOv8 pour détecter les prises, puis OpenCV et le clustering pour analyser leurs couleurs, leurs positions et leur appartenance probable à une même voie. Une validation par l’utilisateur pourrait être ajoutée pour confirmer ou corriger les prises détectées.
+
+Annotation et jeux de données
+L’équipe examine les possibilités d’annotation automatique ou manuelle d’un jeu de données destiné à l’entraînement. Des ressources Roboflow comprenant 47 et 123 images sont identifiées, avec une distinction entre segmentation et détection par boîtes englobantes.
+
+Évaluation des modèles et génération de mouvements
+Les participants testent des données existantes et constatent que certaines prises vertes sont détectées, tandis que les gros triangles le sont moins bien. Claude produit également des résultats jugés convaincants pour positionner les membres et générer des indications de placement des mains et des pieds.
+
+Périmètre et architecture technique
+Ilyes TALBI recommande de clarifier le périmètre du projet et estime qu’une simulation complète en mode fantôme pourrait être envisageable. Jundo précise que le modèle fonctionnera côté serveur via un worker Python, tandis que l’application mobile Flutter recevra et affichera les données.
+
+Priorisation du pipeline IA
+La priorité proposée est de détecter les prises avec YOLO, de regrouper les voies par clustering et de transmettre au modèle de mouvement un ensemble de possibilités déjà réduit. Cette séparation doit permettre au modèle de se concentrer sur l’ordre des mouvements plutôt que sur la détection visuelle.
+
+Modélisation séquentielle des mouvements
+Ilyes TALBI évoque une approche déterministe ou fondée sur l’apprentissage automatique pour trouver l’enchaînement optimal des positions de mains et de pieds. Les participants envisagent un modèle séquentiel, potentiellement un LSTM, en tenant compte de la position actuelle et de la position finale sur la voie.
+
+Prochaine session
+Les participants discutent des disponibilités pour la prochaine session et écartent le lundi en journée, sauf le lundi matin. Le rendez-vous est finalement fixé au lundi 19 à 10 heures, heure française, et Ilyes TALBI doit envoyer la confirmation.
+
+
+Notepad:
+
+* No notes

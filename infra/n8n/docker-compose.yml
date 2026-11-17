@@ -1,0 +1,34 @@
+# n8n (Community Edition) for the technology watch, deployed as a Coolify service.
+# Coolify generates SERVICE_URL_N8N, SERVICE_FQDN_N8N and SERVICE_PASSWORD_64_N8NENCRYPTION
+# on the first deployment and keeps them in the service environment variables.
+# Guide: docs/Ascension/developer/architecture/deployment/n8n-technology-watch-guide.md
+services:
+  n8n:
+    image: "n8nio/n8n:2.47.5"
+    restart: unless-stopped
+    environment:
+      - SERVICE_URL_N8N_5678
+      - "N8N_HOST=${SERVICE_FQDN_N8N}"
+      - "N8N_EDITOR_BASE_URL=${SERVICE_URL_N8N}"
+      - "WEBHOOK_URL=${SERVICE_URL_N8N}"
+      - N8N_PROTOCOL=https
+      - N8N_PORT=5678
+      - N8N_PROXY_HOPS=1
+      - "N8N_ENCRYPTION_KEY=${SERVICE_PASSWORD_64_N8NENCRYPTION}"
+      - GENERIC_TIMEZONE=Europe/Paris
+      - TZ=Europe/Paris
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_PERSONALIZATION_ENABLED=false
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=336
+      - EXECUTIONS_DATA_PRUNE_MAX_COUNT=5000
+    volumes:
+      - "/opt/ascension/n8n/data:/home/node/.n8n"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "wget -qO- http://127.0.0.1:5678/healthz >/dev/null || exit 1"
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s

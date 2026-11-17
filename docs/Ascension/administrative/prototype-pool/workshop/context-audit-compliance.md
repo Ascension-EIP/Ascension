@@ -117,6 +117,7 @@ Instead of returning a server-encoded enhanced video (traditional approach: 50 M
 ```
 Traditional: Video (50 MB) → AI → Encoded Video (50 MB) → Client     [100 MB, 75 s]
 Ascension:   Video (50 MB) → AI → JSON (50 KB) → Client renders       [50 MB, 45 s]
+
 ```
 
 **Component interaction diagram:**
@@ -144,6 +145,7 @@ C4Container
     Rel(worker, storage, "Reads raw videos / Writes results", "S3 API")
     Rel(worker, db, "Writes analysis results (JSONB)", "TCP / psycopg2")
     Rel(api, mobile, "Pushes real-time status via WebSocket", "WSS")
+
 ```
 
 **Video analysis data flow (sequence):**
@@ -173,6 +175,7 @@ sequenceDiagram
     User->>API: GET /analysis/video/{analysis_id}
     API-->>User: { status: completed, result: { frames: [...] } }
     Note over User: Flutter CustomPainter renders skeleton overlay locally
+
 ```
 
 **Single Points of Failure (SPOF) analysis:**
@@ -197,6 +200,7 @@ The pipeline uses moonrepo's `--affected` flag to only test/build the projects i
 ```
 main branch ──► Tag v* ──► Build Docker images ──► Deploy to Hetzner (SSH)
 dev branch  ──► PR      ──► Tests + Lint (affected projects only)
+
 ```
 
 CI jobs on every Pull Request:
@@ -206,6 +210,7 @@ CI jobs on every Pull Request:
   run: moon run :test --affected
 - name: Run affected lint
   run: moon run :lint --affected
+
 ```
 
 CD jobs on every `v*` tag release:
@@ -219,6 +224,7 @@ CD jobs on every `v*` tag release:
   run: docker-compose up -d --no-deps api worker && docker-compose exec -T api sqlx migrate run
 - name: Health check
   run: curl -f http://localhost:8080/health || exit 1
+
 ```
 
 **Monitoring stack:**
@@ -331,6 +337,7 @@ User photographs route
     → Worker writes JSONB result to PostgreSQL
     → WebSocket push notification to Flutter
     → Flutter renders skeleton overlay with CustomPainter
+
 ```
 
 **Degraded journey (network loss during upload):**
@@ -369,6 +376,7 @@ The Rust API manages authentication internally. On `POST /auth/register` and `PO
 
 ```http
 Authorization: Bearer <jwt_access_token>
+
 ```
 
 **Role-Based Access Control (RBAC):**
@@ -410,6 +418,7 @@ Roles are stored in PostgreSQL (`subscription_tier` column on `users` table). Th
 ```nginx
 limit_req_zone $binary_remote_addr zone=api:10m rate=30r/m;
 limit_req zone=api burst=10 nodelay;
+
 ```
 
 **Flutter-specific security:** No DOM/XSS attack surface (Flutter renders via its own engine). Input fields sanitized before transmission. No sensitive data stored in local storage on device.
@@ -473,6 +482,7 @@ Ascension processes two categories of personal data, one of which is **sensitive
    [ ] I would like to receive tips, offers and updates from Ascension. (OPTIONAL)
 3. User cannot proceed without accepting Consent 1.
 4. All consents are timestamped and stored in the `user_consents` table.
+
 ```
 
 ---
@@ -500,6 +510,7 @@ DELETE FROM users WHERE id = $1;
 --   goals → training_sessions
 --   sessions
 --   user_consents
+
 ```
 
 S3 video files are deleted asynchronously via a PostgreSQL trigger that queues a MinIO deletion job — ensuring no orphaned files remain after account deletion.
@@ -523,6 +534,7 @@ MinIO lifecycle policies enforce automatic deletion:
 Bucket: videos/
 Rule: Delete objects with tag "saved=false" after 7 days
 Rule: Delete all objects after 90 days (unless saved=true tag present)
+
 ```
 
 ---

@@ -1,0 +1,69 @@
+# Production deployment of the Go API, as a Coolify "Docker Compose" application.
+# Coolify builds this file from the main branch and redeploys it on every push.
+# Values come from the Coolify environment variables: ${VAR:?} marks a required one.
+# The server reads STORAGE_* and QUEUE_*; the Coolify variables keep their MINIO_* and
+# RABBITMQ_* names, so they are mapped here.
+# Guide: docs/Ascension/developer/architecture/deployment/api-deployment-guide.md
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - PORT=8080
+      - HTTPS=false
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - "POSTGRES_HOST=${POSTGRES_HOST:?}"
+      - "POSTGRES_PORT=${POSTGRES_PORT:-5432}"
+      - "POSTGRES_DB=${POSTGRES_DB:?}"
+      - "POSTGRES_USER=${POSTGRES_USER:?}"
+      - "POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?}"
+      - "POSTGRES_PARAMS=${POSTGRES_PARAMS:-sslmode=disable}"
+      - "QUEUE_HOST=${RABBITMQ_HOST:?}"
+      - "QUEUE_PORT=${RABBITMQ_PORT:-5672}"
+      - "QUEUE_USER=${RABBITMQ_USER:?}"
+      - "QUEUE_PASS=${RABBITMQ_PASS:?}"
+      - "STORAGE_ENDPOINT=${MINIO_ENDPOINT:?}"
+      - "STORAGE_REGION=${MINIO_REGION:?}"
+      - "STORAGE_BUCKET=${MINIO_BUCKET:?}"
+      - "STORAGE_ID=${MINIO_ID:?}"
+      - "STORAGE_SECRET=${MINIO_SECRET:?}"
+      - "AUTH_JWT_SECRET=${AUTH_JWT_SECRET:?}"
+      - "AUTH_SESSION_SECRET=${AUTH_SESSION_SECRET:?}"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "wget -qO- http://127.0.0.1:8080/healthz >/dev/null || exit 1"
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Expired sessions and videos clean-up, from the same image.
+  cron:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["./cron"]
+    restart: unless-stopped
+    # No port to probe: Coolify takes the health of the application from the api service only.
+    exclude_from_hc: true
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - "POSTGRES_HOST=${POSTGRES_HOST:?}"
+      - "POSTGRES_PORT=${POSTGRES_PORT:-5432}"
+      - "POSTGRES_DB=${POSTGRES_DB:?}"
+      - "POSTGRES_USER=${POSTGRES_USER:?}"
+      - "POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?}"
+      - "POSTGRES_PARAMS=${POSTGRES_PARAMS:-sslmode=disable}"
+      - "QUEUE_HOST=${RABBITMQ_HOST:?}"
+      - "QUEUE_PORT=${RABBITMQ_PORT:-5672}"
+      - "QUEUE_USER=${RABBITMQ_USER:?}"
+      - "QUEUE_PASS=${RABBITMQ_PASS:?}"
+      - "STORAGE_ENDPOINT=${MINIO_ENDPOINT:?}"
+      - "STORAGE_REGION=${MINIO_REGION:?}"
+      - "STORAGE_BUCKET=${MINIO_BUCKET:?}"
+      - "STORAGE_ID=${MINIO_ID:?}"
+      - "STORAGE_SECRET=${MINIO_SECRET:?}"
+      - "AUTH_SESSION_SECRET=${AUTH_SESSION_SECRET:?}"

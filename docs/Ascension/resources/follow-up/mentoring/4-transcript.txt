@@ -1,0 +1,585 @@
+Suvi Mentorat 4
+Mon, Nov 9, 2026
+
+2:52 - Unidentified Speaker
+Sous-titrage ST' 501 Merci à tous.
+
+4:43 - Nicolas TORO
+C'est pas mal ce qu'il dit. Alors normalement c'est ça, après t'es censé le jouer en jeu, c'est-à-dire que t'es censé faire des activités et t'es censé te moquer parce que t'as pas un accès, je sais pas quoi. Je pense que tu vas quand même un peu parler avec nous.
+
+8:44 - Nicolas TORO
+J'avais pas vu, il a fait un mail en fait aujourd'hui. Il a fait un mail à Lionel aujourd'hui du coup.
+
+10:35 - Nicolas TORO
+ouais ouais moi j'ai accès mais lui il n'est pas là pour l'instant je sais pas je Je ne comprends pas.
+
+12:08 - Unidentified Speaker
+Merci à tous.
+
+13:06 - Ilyes TALBI
+Hello ?
+
+13:07 - Unidentified Speaker
+Tu m'entends ? Allo ?
+
+13:09 - Ilyes TALBI
+Oui, ça va ?
+
+13:11 - Nicolas TORO
+Oui, ça va, oui. Ça va nickel.
+
+13:15 - Ilyes TALBI
+Est-ce que les autres nous rejoignent ?
+
+13:18 - Unidentified Speaker
+Oui, normalement, ils sont en cours d'acceptation. Ils ont fait une demande pour pouvoir accéder à la réunion.
+
+13:25 - Nicolas TORO
+À chaque fois, moi, je peux accéder à la réunion, mais pas eux. Donc, ils ont besoin d'avoir un accord pour accéder à chaque fois. Ah mince, je vois personne.
+
+13:38 - Ilyes TALBI
+Ah ok. Il n'y a que Christophe qui peut rejoindre. Oui, OK, je viens de voir la demande. Hello Christophe. Ça va ?
+
+13:47 - Unidentified Speaker
+Oui, nickel.
+
+13:48 - Christophe Vandevoir
+Et toi ? Ça va.
+
+13:50 - Ilyes TALBI
+Et comment je pourrais aller mal avec le cadre qu'il y a derrière moi ? Je suis à la con là. Vous avez dit, je crois, non ? Je vous avais dit que je serais dans le même fuseau horaire que certains d'entre vous. Non, je ne sais plus. C'est ce groupe là où il y a des gens en Corée.
+
+14:15 - Nicolas TORO
+Non, je crois que c'est pas vrai.
+
+14:17 - Ilyes TALBI
+Oui, on est 4 en Corée sur 5. Ah oui, ok, voilà, c'est ça.
+
+14:23 - Nicolas TORO
+Donc, on est à peu près sur le même fuseau horaire, là.
+
+14:27 - Christophe Vandevoir
+Il est 16h chez moi.
+
+14:29 - Ilyes TALBI
+Ouais, ben nous 17.
+
+14:31 - Christophe Vandevoir
+Ok, trop bien. Nice.
+
+14:32 - Nicolas TORO
+Tout le monde est là ?
+
+14:35 - Unidentified Speaker
+Non.
+
+14:35 - Ilyes TALBI
+Ah oui, on attend encore nous. Ouais, ok. Ok. Parfait. Je ne sais pas si tu as vu, Nicolas, j'ai envoyé le mail.
+
+14:44 - Unidentified Speaker
+J'ai fait partir aujourd'hui un email. Je vais voir.
+
+14:47 - Ilyes TALBI
+Ça fait un moment que je ne lui ai pas parlé, mais je vais voir. Je ne sais pas. A priori, il devrait… S'il voit mon mail, en tout cas, il sera OK pour vous accorder une trentaine de minutes.
+
+15:02 - Unidentified Speaker
+Sinon, j'ai une autre option.
+
+15:04 - Ilyes TALBI
+C'était quelqu'un qui travaillait dans la même équipe à l'époque. Et je pense qu'il est un petit peu plus accessible. Parce que c'est vraiment compliqué de... Je peux te promettre un meeting avec Macron plus facilement que de te promettre un meeting avec un chercheur.
+
+15:26 - Unidentified Speaker
+Ok, très bien.
+
+15:27 - Ilyes TALBI
+Sinon, j'ai vu votre email, la doc est très carrée. Je ne connaissais pas le truc la Densho, ça ?
+
+15:37 - Nicolas TORO
+En fait, c'est un truc un peu fait maison. Ok, trop bien.
+
+15:43 - Ilyes TALBI
+C'est pour ça que c'est un truc, c'est vous qui l'avez hébergé ? En fait, c'est un truc que Christophe a créé de son côté.
+
+15:54 - Nicolas TORO
+C'est lui qui a développé Densho et tout, parce qu'il en avait marre d'utiliser des trucs comme Confluence ou TGS ou des trucs qui n'était pas assez compliqué et du coup il a créé son propre outil et depuis nous on l'héberge sur notre VPS enfin on va l'héberger sur notre VPS mais voilà et ça marche nickel et on trouve ça mieux.
+
+16:24 - Ilyes TALBI
+Ok, trop bien.
+
+16:26 - Unidentified Speaker
+Nice.
+
+16:26 - Ilyes TALBI
+En tout cas c'est très clean, j'ai vu qu'il y avait Un certain nombre d'éléments qui étaient là. Après bon, la docuser, c'est vrai que je n'ai pas eu le temps de la lire. En sachant que une docuser, c'est juste ici en gros pour avoir toutes les infos au bon endroit. Mais je pense que l'idée c'est que ce soit plus des trucs en mode des vidéos peut-être, des vidéos, des tutoriels de comment est-ce que vous utilisez la solution, etc.
+
+ Oui, c'est ça.
+
+16:59 - Nicolas TORO
+Pour l'instant, les docuser, on n'est pas trop attardé, on a resté vraiment sur la doc développeur parce que c'était ce qui était important pour l'instant et que pour l'instant on n'a pas d'utilisateur. Mais c'est juste, on en fera une, on fera sûrement des vidéos, des petits tutoriels, etc.
+
+17:19 - Ilyes TALBI
+pour comment utiliser l'application, mais pour l'instant, c'est vraiment pas la priorité. Ok, très bien. J'ai regardé aussi les documents que vous m'avez envoyés. Les schémas en particulier et aussi notre document, c'était quoi déjà ? C'était Caractérisation du point dur, une disposition de la vie opérationnelle. J'avais regardé un petit peu ça. Je suis d'accord avec vous sur la partie cohérence physique, la résolution, quand tu vas donner un chemin, pour ton parcours, il faut que ce soit cohérent.
+
+ Tu ne vas pas dire au mec de mettre son pied à droite, son pied droit, par exemple. Il ne faut pas croiser les jambes sur le mur. Je ne sais pas si vous avez déjà des pistes, des pistes que vous voulez essayer.
+
+18:22 - Jundo
+Je commente.
+
+18:24 - Nicolas TORO
+Oui, on t'entend.
+
+18:25 - Ilyes TALBI
+Ok, top.
+
+18:26 - Jundo
+J'essaie de set-up mon micro. Non, on n'a pas de piste encore. On s'est plus focalisé sur… Olivier pourra-t-en parler, mais sur la détection des prises et tout ça. Oui, carrément.
+
+18:38 - Ilyes TALBI
+Peut-être moi, je vous donne peut-être comme ça une idée, en tout cas, comment j'aborderais le sujet, mais ce n'est pas forcément la solution principale. C'est facile de parler, mais après, quand il faut faire, c'est un petit peu plus compliqué. Mais je pense que moi, je ne me casserai pas la tête à implémenter ça en mode apprentissage. Je mettrai plus des critères géométriques du style le pied gauche, il ne peut pas être à plus de 15 % de la taille du corps de la personne à droite du pied droit, par exemple.
+
+ On peut avoir une situation dans laquelle le pied droit est là, le pied gauche est ici. Mais pas ici. Je mettrais en ensemble une liste de ce genre de critères géométriques sur les dépendances entre les positions des quatre membres, puisque c'est ça dont il s'agit, plus le fait de considérer que, par exemple, il ne peut pas y avoir plus de deux membres. Il faut toujours qu'il y ait au moins deux membres qui soient accrochés à une prise, soit un bras, une jambe, soit les deux mains, soit une main, une jambe, soit les deux mains, mais pas une seule main, par exemple, ou un seul pied.
+
+ Je ne pense pas que ce soit assez logique. Vous faites une liste de tous les critères géométriques que vous avez en tête. Ensuite, quand il y a un chemin qui est résolu, l'idée, c'est de vérifier est-ce que ces critères-là sont respectés ou pas ? Je pense. Ça ne sert à rien de faire un truc hyper fancy avec un algorithme dédié ou quoi. Juste un système de vérification comme ça, ça peut faire un truc.
+
+
+
+20:25 - Olivier Pöuech
+Je n'ai pas l'info, mais est-ce que ce n'est pas mieux de mettre ça comme règle de base, au lieu de mettre ça en système de vérification, à la fin, mettre ça juste au début du processus pour qu'il sache dès le début ce qu'il peut et ne peut pas faire plutôt que juste vérifier la fin.
+
+20:48 - Ilyes TALBI
+Sinon, tu regardes pour chacun des membres, bras gauche par exemple, tu as ton modèle qui va prédire la meilleure prochaine position pour bras gauche et ce modèle-là, il peut juste choisir parmi une liste finie de prises possibles. Il ne pourra pas choisir mais donc tu as une vérification à chaque étape. Parce que c'est séquentiel, ta prédiction elle se fait en gros, tu as la position à un instant T et tu peux avoir la position juste après, de manière séquentielle.
+
+ Pour une position à un instant T, tu peux savoir quels sont les points qui peuvent être atteints par les prochaines positions possibles Et ton modèle, il choisit parmi 100. Oui, c'est peut-être plus simple. Et si tu vois qu'il n'y a pas de solution, tu dis, regarde, redescends et refais un autre. Et Olivier, peut-être, si tu veux, tu peux donner quelques inputs sur le YOLO.
+
+21:56 - Olivier Pöuech
+Oui, du coup, j'ai entraîné, j'ai fait un truc c'est assez basique, j'ai juste histoire que ça tourne mais j'ai entraîné le YOLO avec il n'y avait pas des gros gros datasets que j'ai trouvé sur Roboflow du coup j'ai mixé trois datasets il y en avait deux en segmentation et un où vraiment c'était juste des gros rectangles et du coup j'ai un résultat qui est à peu près ok bon j'ai pas encore bossé sur la détection du coup de la couleur des prises les différentes voies, pour l'instant il est juste sur le mur, il fait aucune différenciation, il essaie juste de récupérer toutes les prises donc je vais continuer à affiner ça histoire d'avoir un truc qui est à peu près ok et quand j'aurai tous ces paramètres qui seront bons, je pense que l'idée ce serait de créer un dataset beaucoup plus gros et de le faire tourner sur le VPS parce que pour l'instant, j'ai juste fait mes petits runs en local mais je pense que je ne vais pas trop tarder à migrer sur le VPS.
+
+
+
+23:01 - Ilyes TALBI
+En sachant que récemment j'ai testé une approche d'utilisation de Cloud Code sur l'annotation d'images ce que j'ai fait, après je lui ai donné accès à un GPU mais peut-être que vous pouvez juste lui donner accès au VPS ou alors à un environnement, enfin une VM et je lui ai dit Tu vas aller chercher sur Internet un modèle de vision par ordinateur basique.
+
+23:30 - Unidentified Speaker
+Tu vas faire de la détection de personnes.
+
+23:33 - Ilyes TALBI
+Je devais détecter des personnes dans un resto avec une vue plongeante, un truc un peu... En soi, c'est juste de la détection de personnes, mais l'angle n'est pas habituel, donc il n'y avait pas de modèle qui fonctionnait déjà. Je lui ai donné mille images. Je lui ai dit, tu vas faire une préanalyse des mini-images avec un modèle déjà existant. Ensuite, tu vas faire la vérification des images. Les images que tu as validées, tu les réutilises pour l'entraînement.
+
+ De manière séquentielle, au début, il a réussi à valider 100 images. Ensuite, après l'entraînement, il en a validé 300 de plus.
+
+24:10 - Unidentified Speaker
+Au dernier entraînement, il en a validé 600.
+
+24:12 - Ilyes TALBI
+Moi, ce que j'ai fait, c'est que je lui ai donné accès à un GPU. Je lui ai dit, tu entraînes le modèle sur le GPU. Tu fais la notation et tu fais la vérification sur le GPU.
+
+24:25 - Unidentified Speaker
+Je ne pensais pas que ça allait marcher, mais vraiment, ça a marché.
+
+24:29 - Ilyes TALBI
+Non seulement ça a marché, mais en plus, dans les moments où le modèle était en train de s'entraîner, il n'utilisait pas de token, puisqu'en fait, il arrête la session et il s'est mis un système de notification. Donc, quand l'entraînement s'est terminé, il me dit, c'est bon, l'entraînement est terminé sur la machine. J'ai fermé l'instance et ça m'a coûté un truc. Bon, après, vous pouvez trouver n'importe quel VM.
+
+ Moi, c'était juste parce que je voulais faire ça sur GPU, mais en gros, ça m'a coûté un truc du genre 10 centimes par heure pendant une dizaine d'heures, un truc comme ça.
+
+25:02 - Unidentified Speaker
+Un euro à peu près pour avoir un modèle hyper calé. J'ai utilisé Vast AI pour louer la VM.
+
+25:09 - Ilyes TALBI
+Je lui ai juste donné la clé API de Vast, c'est-à-dire que ce n'est même pas moi qui ai créé l'instance. Je lui ai dit, va regarder ce qu'il y a comme GPU, c'est quoi le truc le plus optimisé pour entraîner un YOLO. Je ne sais plus ce qu'il avait pris. Il avait pris un truc avec une 4086, je crois, en taille du genre.
+
+25:33 - Olivier Pöuech
+Et il a fait son travail.
+
+25:35 - Unidentified Speaker
+Je pourrais essayer de setup ça.
+
+25:37 - Ilyes TALBI
+Je pense que ça peut être une bonne idée de travailler quand même.
+
+25:44 - Unidentified Speaker
+Ok.
+
+25:44 - Ilyes TALBI
+Il y avait cette partie aussi. Je ne sais pas si tu avais autre chose sur la partie.
+
+25:51 - Olivier Pöuech
+Non, c'est l'heure où j'en suis en tout cas.
+
+25:54 - Ilyes TALBI
+Sur le scope, je ne me souviens pas si vous considérez que la caméra est fixe ou si ça peut bouger.
+
+26:02 - Olivier Pöuech
+Du coup, en fait, nous, le truc où on était parti, c'était pour la détection de prise. On va récupérer un screen au moment où on voit le mieux et toutes les prises et où il n'y a pas de personne devant ou quoi. Et de ce screen-là, on lancera la détection de prise. Et après, la vidéo, on n'est pas parti du principe qu'elle serait totalement stable. Peut-être qu'au début, pour l'entraînement, etc., ce serait le mieux.
+
+ Et quand on aurait une version stable de ça, on pourra entraîner sur juste quelqu'un qui tient la caméra et où il y aurait des micro-ajustements ou des trucs comme ça.
+
+26:36 - Ilyes TALBI
+Ouais, OK. Parce qu'en fait, après, si tu as un truc, une caméra qui bouge, après, Il ne faut pas que la caméra non plus filme une autre piste et après elle revient.
+
+26:47 - Olivier Pöuech
+Ça, c'est mort. Ça ne marchera pas.
+
+26:49 - Ilyes TALBI
+Par contre, si c'est juste les mouvements qui sont liés au fait que c'est un humain qui tient la caméra, ça peut bouger. Ça, en fait, c'est juste des modèles de tracking assez simples. ByteTrack, par exemple, ce qui est intégré à YOLO dans Ultra 8X, il fera l'affaire largement. Je pense qu'il y a moyen de partir sur sur un truc comme ça.
+
+27:13 - Unidentified Speaker
+Ok.
+
+27:13 - Ilyes TALBI
+Ah oui, ok, je viens de voir, vous l'avez bien écrit le truc de maintien de l'équilibre. Le grimpeur doit garder au moins trois appuis stables.
+
+27:26 - Olivier Pöuech
+Dans l'idée, quand on grimpe, c'est s'il dégage trois appuis, qu'on peut. Ok.
+
+27:32 - Ilyes TALBI
+C'est-à-dire que de manière séquentielle, pour une prise donnée, tu dois dire c'est quoi le prochain mouvement.
+
+27:40 - Unidentified Speaker
+Je pense qu'on a plusieurs manières de le faire.
+
+27:43 - Olivier Pöuech
+Je ne sais pas exactement vers quoi on va se diriger, mais ça va être dans l'idée un truc un peu de pathfinding, de quel est le prochain mouvement le plus optimisé qui nous permet de faire le moins d'efforts pour nous rapprocher le plus de la fin. Donc monter ou aller vers la droite, ça dépend de vers où est la et je pense qu'il va falloir faire... On ne peut pas juste faire ça move par move parce qu'il y a un move qui peut nous rapprocher énormément mais après nous mettre dans une position où on ne pourra plus du tout avancer ou alors le prochain move il sera beaucoup plus compliqué que juste deux moves un peu moyens du coup il faudra aussi voir ça mais je pense que c'est comme ça qu'on l'avait visualiser.
+
+ Je me demande si cette partie algorithmique, on va dire pure, qui vient après la vision, qui va travailler sur ça ?
+
+28:43 - Ilyes TALBI
+On ne sait pas.
+
+28:45 - Jundo
+Pour l'instant, sur l'IA, c'est Jeanny et moi.
+
+28:48 - Olivier Pöuech
+Pour l'instant, je déploie la détection de prise et quand j'aurai juste le modèle qui tournera et qui sera un peu provoqué, je pourrai peut-être commencer à bosser dessus. C'est quoi les priorités aussi à ce niveau-là ?
+
+29:05 - Ilyes TALBI
+OK, parce que je pense qu'en fait, à mon avis, vous pouvez aborder les deux sujets comme deux sujets différents pour l'instant. Et après, vous les combinez dans le sens où en fait, aujourd'hui, tu peux peut-être avec Cloud ou manuellement ou quoi, générer des pistes d'escalade. Donc en fait, tu imagines un repère en fait sur ton image, tu prends des positions de prise et ensuite vous faites juste un algo assez simple, un solver en fait, un solver en piton qui va à partir des positions des quatre membres vous dire c'est quoi la meilleure solution pour arriver tout en haut en sachant que derrière la position des prises elle sera récupérée par la computer vision et ce sera votre moyen de relier on va dire les deux briques quoi mais je pense que ça c'est pas Prenez de l'avance sur la partie algo de solver, s'il y en a d'entre vous qui sont dispo pour commencer à travailler sur ça, je vous conseille de faire ça.
+
+ N'attendez pas que toute la partie vision soit finie pour avancer dessus.
+
+30:29 - Unidentified Speaker
+C'est une suggestion en tout cas.
+
+30:32 - Ilyes TALBI
+Après il y a la partie différenciation selon la morphologie. Je ne sais pas trop comment aborder le problème.
+
+30:40 - Olivier Pöuech
+Ça va être dans les règles du start qu'on lui met. Parce que dans les règles qu'on va lui imposer ou dans les méthodes de vérification, ça dépend comment est-ce qu'on va aborder le problème. Mais quand on va imposer ces règles-là, la range qu'il va avoir pour atteindre une prise, elle va être différente suivant sa taille et sa morphologie. Ah oui, ok. Et du coup, suivant ces règles-là, on va voir s'il peut faire ce mouvement-là ou pas, et du coup, ça va influencer le reste.
+
+
+
+31:14 - Ilyes TALBI
+Oui, limite tu imagines un rayon autour de la prise qui te dit quelles sont les prises atteignables et le rayon n'est plus grand en fonction de l'amertume.
+
+31:24 - Unidentified Speaker
+Très clair.
+
+31:25 - Olivier Pöuech
+Je pense que ce point-là va beaucoup influencer, enfin je pense que c'est la plus-value, entre guillemets, du projet. C'est qu'avec la différence de morphologie on va pouvoir aussi analyser les changements au niveau du centre de gravité et du coup faire des calculs sur... Se rapprocher au plus de la réalité au niveau de la force appliquée sur un mouvement vu qu'on analyse vis-à-vis de la morphologie parce que s'il y a un mec d'un mètre cinquante qui fait le même mouvement que quelqu'un d'un mètre quatre-vingt-dix avec deux poids qui sont totalement distincts aussi du centre de gravité les forces appliquées vont être clairement différentes et il y a des mouvements qui vont être beaucoup plus simples pour un mec petit que pour un mec grand et inversement.
+
+ Donc je pense que c'est une grosse plus-value de le prendre en compte dans la pipeline.
+
+32:20 - Ilyes TALBI
+Là ça me fait penser à un truc, c'est comment vous gérez les perspectives ? Parce qu'en fait en fonction de l'angle du mur sur l'image, tu peux avoir deux prises qui vont paraître très très proches alors qu'en fait elles sont loin, les distances peuvent ne pas être réalistes. Et le problème c'est comme ton mur d'escalade, ce n'est pas un truc qui est standard, parce qu'en fait le truc de base quand on veut résoudre ce genre de problème-là, c'est l'homographie.
+
+ Mais là, En fait, l'homographie, il faut pouvoir avoir des points de référence. Mais là, il n'y a peut-être pas de point de référence.
+
+33:05 - Olivier Pöuech
+Il n'y a pas un truc qui est commun à tous les murs d'escalade que vous pouvez aller chercher ? Si je ne dis pas de bêtises, je crois que Johnny avait regardé ce sujet-là précisément. Je crois qu'il a des petits problèmes pour se connecter.
+
+33:20 - Ilyes TALBI
+Il est parti et revenu.
+
+33:22 - Olivier Pöuech
+Je sais que pendant la pipeline, il avait regardé le projet. Au début, on voulait utiliser Sam3D pour essayer de gérer cette perspective-là et trouver l'angle du mur. Je sais que ça a été abandonné et que maintenant, on ne l'utilise plus. Johnny, tu es là ou pas ? Oui, c'est juste qu'on a des problèmes de code.
+
+33:41 - Jundo
+Je ne sais pas ce que vous étiez en train de dire.
+
+33:46 - Olivier Pöuech
+Au niveau de la perspective du mur, tu te souviens de ce que tu avais regardé ? Comment est-ce que tu regardes l'angle du mur, etc.
+
+33:54 - Jundo
+Dans tous les cas, vu que c'est des images, on peut toujours essayer de faire de la 2D, de la 3D, avec du Gaussian splatting ou plein d'autres méthodes de computer vision qui nous permet, on va dire, d'avoir un peu une idée de la profondeur. Après, on ne sait pas encore ce que ça va donner en termes d'efficacité ou en termes d'accuracy, mais c'est les méthodes que nous, déjà, on est en train de voir en cours de computer vision ils disent que souvent, le problème c'est un peu ça.
+
+ Pour résoudre ça, on utilise d'autres modèles, d'autres types de modèles mathématiques, on va dire, pour capter la profondeur. Ah ok, il y a un cours.
+
+34:33 - Ilyes TALBI
+Ah oui, tu as un cours de computer vision.
+
+34:36 - Jundo
+Ah oui, dans l'université. On a un cours de deep learning, mais là, il est quand même vachement orienté sur notre IP, on dirait.
+
+34:44 - Ilyes TALBI
+C'est vraiment ce qu'on fait. C'est vraiment ça. Ok, donc aujourd'hui, TP, pour détecter les prises d'un mur d'escalade.
+
+34:51 - Unidentified Speaker
+Franchement, c'est toute la partie 3D.
+
+34:53 - Jundo
+Comment faire un avatar à partir d'une image 2D, comment le reconstruire, comment se capter la profondeur et tout ça. En vrai, on va essayer de piocher là-dedans et dans ce que Claude nous dit aussi. On va faire de la veille là-dessus, on va voir aussi. Mais ça n'a pas l'air non plus d'être le plus gros des problèmes. C'en est un, mais il y a plein de solutions. On va voir la curiosité. Encore une fois, si on intègre la validation de l'utilisateur, en fait, ça résout tous les problèmes derrière.
+
+ Même si on dira que ces deux prises, c'est la même, l'utilisateur va dire non, tu t'es trompé.
+
+35:33 - Ilyes TALBI
+Oui, en soi, peut-être que la solution, c'est peut-être la segmentation du mur d'escalade et derrière, l'utilisateur valide un peu la forme du mur pour aider un petit peu sur la mesure des distances entre les frises. En suggérant, je pense que ce n'est pas choquant si, par exemple, d'un point de vue utilisation, vous dites à l'utilisateur que le modèle est plus performant si on voit le mur de face.
+
+
+
+36:04 - Unidentified Speaker
+N'essayez pas de faire des trucs trop fancy ou trop compliqués.
+
+36:08 - Ilyes TALBI
+Essayez de le mettre avec un angle sur le côté, les résultats seront moins bons. Moi, ça ne me choquerait pas qu'il y ait ça sur une application qui trouve sa logique. Très clair sur ce point-là. Du coup, le dernier point sur l'averti, j'étais en train de regarder averti critères de réussite, c'était le temps de calcul. Moins de 30 secondes donc je ne sais pas si c'est des trucs...
+
+36:42 - Olivier Pöuech
+ça du coup dans tous les cas on va avoir un peu deux étapes je ne sais pas les 30 secondes si ça comprend les deux étapes ou pas mais dans l'idée on va avoir du coup la première étape où on va faire la détection de prise avec la validation utilisateur et dans un second temps où on aura toutes les données bien là du coup on aura le modèle qui t'aidera dessus donc je ne sais pas trop les 30 secondes, ce que ça prend en compte exactement ?
+
+
+
+37:10 - Nicolas TORO
+Les 30 secondes, c'était originellement pour le temps du pathfinding. D'abord, la reconnaissance de prise qui n'est pas comptée dans les 30 secondes. Après, dès qu'il y a tous les paramètres qui sont bons, etc. Et que l'utilisateur envoie tout, tu as les 30 secondes pour trouver les bons chemins.
+
+37:27 - Olivier Pöuech
+Ça, je pense qu'en ISRA, on va juste essayer de jongler entre l'accuracy et le temps pour avoir le meilleur résultat possible.
+
+37:36 - Ilyes TALBI
+Sur ça, je pense que l'intuition que j'ai, je ne sais pas si vous connaissez les algorithmes génétiques. Je ne saurais pas vous expliquer exactement comment ça fonctionne, mais il me semble que sur ces trucs d'optimisation, en recherche du chemin optimal, etc., sous contrainte, c'est ça qui peut bien fonctionner. C'est l'algorithme. Les trucs algorithmes génétiques avec, je ne sais plus comment ça s'appelle, c'est un truc avec fourmi dedans.
+
+ Est-ce que c'est l'algorithme de la fourmi ou un truc du genre ? Mais chercher de ce côté-là, je pense, il y a moyen que ça puisse vous aider. Je ne pense pas qu'il y ait besoin d'entraîner un modèle Ok. L'algorithme de colonne de fourmis. Peut-être ça, oui. J'avais utilisé dans un... On avait fait un hackathon, c'était un truc en gros l'objectif c'était d'optimiser le fonctionnement d'une ville dans le cadre d'une smart city.
+
+ Donc en gros t'as... Tu as des critères comme la satisfaction des gens, la consommation d'énergie, tous ces trucs-là, et tu dois prendre des décisions qui vont optimiser ces critères-là.
+
+39:09 - Unidentified Speaker
+Vous, en fait, techniquement, c'est un petit peu ça.
+
+39:13 - Ilyes TALBI
+Vous devez prendre des décisions sur des critères qui vont… En fait, le critère, ça va être est-ce que la prise, elle est possible ? Est-ce que l'équilibre, il est respecté ? Et le troisième, c'est… minimiser l'effort. Après, il y aura besoin de caractériser aussi comment est-ce que vous calculez l'effort concrètement.
+
+39:41 - Olivier Pöuech
+Ça peut être un peu compliqué.
+
+39:46 - Ilyes TALBI
+On va regarder ça vers le premier temps. J'ai vu c'est ça Du coup, ? Sur On la partie ne veille, l'a c'est très pas bien encore ce fait, que vous mais avez on fait. Vous a avez prévu fait un de 8N, le faire.
+
+40:01 - Nicolas TORO
+On a déjà noté tout ce qu'il fallait faire et juste, on va le faire. C'est dans nos tâches.
+
+40:10 - Unidentified Speaker
+Voilà, je pense que c'est très bien ça.
+
+40:16 - Ilyes TALBI
+C'est le genre de truc qui va être apprécié du jury sur la partie veille. Avoir un truc un peu bien cadré avec un flow automatisé, etc. C'est bien. Ok. Vous avez d'autres sujets, là, sur les 15 minutes qui nous restent ?
+
+40:40 - Olivier Pöuech
+Moi, pour ma part, je ne sais pas trop à quel point est-ce que je dois pousser. Parce que du coup, il y a forcément la reconnaissance de couleur pour les voix. Ça, je pense que ça ne va pas être très compliqué. Mais après, il y a aussi la reconnaissance de prise. Et je ne sais pas à quel point est-ce que je dois pousser ça avant de passer à autre chose, potentiellement à côté du problème ou si vraiment, parce qu'en fait forcément même si on a le meilleur algo du monde, si on n'arrive pas à reconnaître les prises, c'est un peu useless.
+
+ Donc je ne sais pas à quel point est-ce que je dois pousser ça, à quel point est-ce que ça doit être accurate avant de pouvoir entre guillemets passer à autre chose.
+
+41:23 - Ilyes TALBI
+La reconnaissance des prises, c'est le fait de différencier entre...
+
+41:26 - Jundo
+Du type de prises.
+
+41:27 - Ilyes TALBI
+Ouais, soit prises minces... Je pense que c'est un truc dont vous avez besoin sur la modèle de computer vision. Parce que vous ne pouvez pas faire ça en fait, il n'y a pas de... Moi honnêtement c'est un truc que tu intègres plus tard.
+
+41:42 - Jundo
+Tu fais ton testering de couleurs et tout ça, tu sais où sont les prises déjà, ensuite on va pouvoir travailler par spanning avec déjà les datas que tu as pu nous fournir, et derrière on peut revenir sur ce truc de détection pour le peaufiner et encore une fois améliorer les conseils de l'IA. Mais si tu bloques trop sur l'algo dessus, je pense que tu peux perdre beaucoup de temps et au final on n'avance pas sur l'algo.
+
+
+
+42:06 - Olivier Pöuech
+Mais d'un autre côté, si on arrive à un moment où on a l'algo mais qu'on n'a pas la détection de prise, ça ne sert à rien.
+
+42:12 - Jundo
+Oui, mais il dépend que des outputs de la détection de prise. Donc à partir du moment où il y en a, on a tout le fonctionnement derrière. Et si juste il n'est plus fourni en amont, tant mieux. Mais s'il n'est pas plus fourni, ça ne nous empêche pas Je pense qu'en y repensant, je suis d'accord avec toi.
+
+42:29 - Ilyes TALBI
+Peut-être qu'en fait, dans un premier temps, on ne différencie pas les prises. Parce qu'après, de toute façon, en fait, ton yolo, une fois qu'il est prêt, pour détecter des prises de manière générale, entraîner un yolo pour différencier les prises pieds, mains ou autres, c'est juste à noter plus de... Plus d'image, d'une manière plus fine les images. C'est vrai que je suis d'accord que peut-être l'approche que je suggère souvent, c'est de faire le 360 du projet en version simple et ensuite revenir sur chaque briche.
+
+ Je suis d'accord sur ce mode d'avancement. S'il n'y a pas d'autres sujets, on peut regarder Par objectif, savoir où vous en êtes. D'ailleurs, sur la partie pédagogique, vous avez des plans en temps régulièrement ? Oui, on en a eu un vendredi dernier.
+
+43:42 - Nicolas TORO
+C'est super bien. C'est moins régulier que toi.
+
+43:49 - Ilyes TALBI
+Oui, parce que je sais que j'ai un groupe pour lequel ils n'ont quasiment pas eu de rendez-vous pédagogique sur les trois derniers mois.
+
+44:03 - Nicolas TORO
+Sur les trois derniers mois, c'était notre deuxième cours hier.
+
+44:09 - Ilyes TALBI
+Ok, très bien. Alors, sur les objectifs du coup, Le premier, on l'a traité, c'était la partie point dur du projet. Ensuite, structure, document and make your technical architecture reliable. Je pense que vous êtes en très bonne posture pour l'instant. Cette approche de documentation complète.
+
+44:44 - Unidentified Speaker
+Le Densho, c'est très propre.
+
+44:47 - Ilyes TALBI
+Votre GitHub, j'ai regardé très rapidement. Le GitHub, c'était juste pour le README parce qu'il y avait un README qui était demandé.
+
+44:59 - Nicolas TORO
+Je t'ai juste envoyé le lien du GitHub où tu vois le README en premier.
+
+45:06 - Ilyes TALBI
+Les instructions d'installation, ce n'est pas Ce n'est pas des trucs qui sont encore en place, c'est ça ?
+
+45:16 - Nicolas TORO
+Il y a un truc local.
+
+45:19 - Olivier Pöuech
+Les instructions d'installation sur la doc ou sur le...
+
+45:23 - Ilyes TALBI
+Sur le readme, oui. Je crois que c'est la même. C'est le clone, après on lance le service avec Moon.
+
+45:32 - Nicolas TORO
+C'est comment le lancer en local, après dans l'idée, si tu fais Si tu suis les instructions du readme, le quick start en local dev, ça fonctionne. Il n'y a pas de souci avec ça.
+
+45:53 - Ilyes TALBI
+Mais après, c'est juste pour du local.
+
+45:57 - Unidentified Speaker
+Ok, très clair.
+
+45:59 - Ilyes TALBI
+Vous êtes sur Flutter, Flutter, Go, Rust, Python ?
+
+46:05 - Nicolas TORO
+Non, Rust.
+
+46:06 - Olivier Pöuech
+Ce qui s'est passé, c'est que quand on a commencé le projet, on était passé sur Rust.
+
+46:13 - Nicolas TORO
+On a eu deux semaines de prototypage. À la fin de ces deux semaines, on s'est rendu compte que ça n'allait pas le faire toute l'année.
+
+46:24 - Ilyes TALBI
+On est passé sur Go et pour l'instant, ça va mieux. OK, parfait. Parce que c'est juste dans l'idée de minimiser la stack que vous utilisez.
+
+46:35 - Nicolas TORO
+Ok, très clair.
+
+46:36 - Ilyes TALBI
+Les schémas aussi, ils étaient clairs. En soi, le premier schéma d'architecture globale du système, il n'est pas lisible dans le PDF. J'avoue que je ne peux pas... Il est un peu ici, mais après normalement, si tu zoomes, ce n'est pas censé être flou.
+
+46:56 - Nicolas TORO
+Après, c'est vrai qu'il y a beaucoup d'informations. Il faudrait peut-être que...
+
+47:02 - Ilyes TALBI
+Ah oui c'était flou, c'était flou parce que j'étais dans l'aperçu.
+
+47:16 - Unidentified Speaker
+J'aime beaucoup le diagramme de séquence aussi.
+
+47:43 - Ilyes TALBI
+C'est sur des vidéos enregistrées, il n'y a pas d'analyse.
+
+47:48 - Nicolas TORO
+Pour l'analyse de pose, c'est des vidéos enregistrées où tu as ton pote qui grimpe, tu l'enregistres et après, dès qu'il a fini de grimper, tu t'envoies quoi ?
+
+48:04 - Ilyes TALBI
+Le mode fantôme, c'est une photo. Parfait.
+
+48:11 - Unidentified Speaker
+Donc ça, c'est très clair.
+
+48:14 - Ilyes TALBI
+Ensuite. Work with technical expert. Là, oui, j'espère que Lionel va répondre rapidement. Je te laisserai gérer toi, Nicolas, avec lui pour organiser un rapport.
+
+48:32 - Nicolas TORO
+Dès que j'ai une réponse, j'essaie de tout organiser.
+
+48:38 - Ilyes TALBI
+Et si dans 3 jours, il n'y a pas de réponse, juste ping moi et je fais un follow-up. Et si dans 10 jours, on n'a pas de réponse, j'écris la deuxième option dont je t'ai parlé. Ok, pas de souci. Ils travaillent dans l'équipe de Lionel.
+
+48:59 - Nicolas TORO
+Ils ont travaillé sur les mêmes sujets.
+
+49:02 - Ilyes TALBI
+Je pense qu'il est un peu plus accessible. J'ai ses contacts. J'ai d'autres contacts, je n'ai pas que son mail, donc je pourrais le trouver ailleurs. Et vous aussi, de toute façon, de votre côté, sur cet objectif complémentaire, essayez d'aller chercher aussi de votre côté si vous pouvez trouver des experts qui peuvent...
+
+49:23 - Nicolas TORO
+Dans l'idée, un seul, ça ne suffit pas normalement pour l'objectif, donc il va falloir qu'on...
+
+49:29 - Ilyes TALBI
+Exactement, dans tous les cas, il faudra aller parler à deux personnes. Regardez les papiers de recherche, en vrai. Regardez les papiers de recherche et envoyez des mails aux gens qui les ont écrits, tout simplement, je pense. Si vous faites une vingtaine de mails, c'est sûr qu'il y aura au moins deux, trois personnes qui vont ensuite. Et vous êtes à l'aise en anglais s'il y a besoin de faire un truc en anglais ?
+
+
+
+50:00 - Nicolas TORO
+Oui, aucun problème.
+
+50:01 - Ilyes TALBI
+Parce que sur ce sujet-là, de toute façon, il faut pouvoir le faire dans n'importe quelle langue. Limite même en chinois, prenez des cours de voie.
+
+50:11 - Olivier Pöuech
+C'est un peu plus compliqué tout de suite. C'est délicat. Il y a plein de délimitations qui nous sont propres.
+
+50:19 - Unidentified Speaker
+J'imagine.
+
+50:20 - Ilyes TALBI
+Et l'objectif, je veux l'objectif complémentaire 2, mesure, test et optimiser les performances techniques. Tu nous avais demandé des indicateurs clés, etc.
+
+50:29 - Nicolas TORO
+On s'est demandé dans le sujet, mais je t'avoue qu'on ne savait pas trop, donc on a pris des trucs plutôt simples.
+
+50:38 - Ilyes TALBI
+Oui, je pense, temps de traitement des vidéos, ça, ça me paraît pertinent. Et les autres métriques, ça peut être des choses très orientées à un modèle de computer vision, typiquement les métriques style map, par exemple, ce qui donne en fait les performances sur la détection et la localisation des prises et ça peut être aussi des métriques un peu plus orientées un peu plus concrètes du style, est-ce que quand mon modèle détecte 20 prises, est-ce que j'ai bien 20 prises par exemple ?
+
+ Je peux y réfléchir aussi de mon côté pour voir s'il y a d'autres choses sur lesquelles on peut aller. En sachant que ça peut être technique sur la brique IA, mais ça peut être aussi des choses autour de votre architecture.
+
+51:51 - Nicolas TORO
+Oui, on n'est pas obligé de se focuser sur l'IA là-dessus.
+
+51:55 - Olivier Pöuech
+Oui, je ne pense pas que vous ayez besoin Je ne sais pas exactement si c'est ce que tu disais pour la détection de prise, mais la map dont tu parlais, c'est à peu près l'idée d'un facteur de confiance sur à quel point est-ce que l'IA est sûre que c'est une prise ? Oui, c'est ça exactement. Ça, je l'ai déjà implémenté dans le modèle de détection pour l'instant.
+
+52:31 - Ilyes TALBI
+Parfait. Après, ce que je vous dis, c'est que ça peut être aussi des... Je ne sais pas, par exemple, si vous faites un test de charge au niveau de votre application, ça peut rentrer dans ce point-là.
+
+52:45 - Unidentified Speaker
+En gros, à quel point l'API, à quel point ça impacte le temps de réponse en fonction du nombre d'utilisateurs.
+
+52:52 - Ilyes TALBI
+Si je suis à 30 utilisateurs en même temps, Si je suis à 50, on est là, etc. Si vous étiez en track solution, je vous aurais carrément dit de mettre en place des trucs style post-hoc qui vous donnent des infos sur c'est où que les gens cliquent, etc. Mais je ne pense pas que ça soit parti là. Laissez-le peut-être en backup au cas où.
+
+53:20 - Unidentified Speaker
+En parenthèse. Vous n'avez pas d'autres idées.
+
+53:24 - Ilyes TALBI
+Je crois que c'est le truc le plus pertinent. Ok, bon dernier, il nous reste trois minutes. On va regarder comment organiser le prochain point. Je ne sais plus si vous avez la date en tête, le prochain point.
+
+53:50 - Nicolas TORO
+Moi, j'avais noté que c'était vers la semaine du 30 novembre.
+
+53:58 - Unidentified Speaker
+Ok.
+
+53:58 - Nicolas TORO
+Dans trois semaines, classique.
+
+54:01 - Ilyes TALBI
+Yes, ok. Tu passes peut-être lundi même heure ?
+
+54:07 - Nicolas TORO
+Oui, nous, généralement, ça nous va lundi même heure. Pas besoin de faire trop… C'est pas trop compliqué.
+
+54:21 - Ilyes TALBI
+Ok, parfait. Je vous envoie le site. Parfait. N'hésitez pas, entre temps, s'il y a des sujets, à me contacter.
+
+54:32 - Nicolas TORO
+Yes.
+
+54:33 - Unidentified Speaker
+Ok.
+
+54:33 - Ilyes TALBI
+Merci. Bonne éducation.
+
+54:35 - Nicolas TORO
+Bonne journée.
+
+54:36 - Ilyes TALBI
+Bonne journée.

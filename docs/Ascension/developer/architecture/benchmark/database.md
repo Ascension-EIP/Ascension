@@ -43,6 +43,7 @@ flowchart TD
             Series["Joint Velocity Timeseries"]
         end
     end
+
 ```
 
 *Figure: PostgreSQL satisfies both strict relational integrity and high-density JSONB biomechanical telemetry within a single database.*

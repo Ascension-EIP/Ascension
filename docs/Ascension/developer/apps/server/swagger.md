@@ -61,6 +61,7 @@ Add the root documentation annotations above the `main` package or function:
 // @in header
 // @name Authorization
 // @description Type "Bearer" followed by a space and JWT token.
+
 ```
 
 ---
@@ -86,6 +87,7 @@ Place declarative `@Summary`, `@Tags`, `@Param`, and `@Success`/`@Failure` annot
 func (h *AnalysisHandler) Create(c *gin.Context) {
     // ...
 }
+
 ```
 
 ---
@@ -100,6 +102,7 @@ type CreateAnalyseRequest struct {
     Type       string    `json:"type" binding:"required" example:"2d" enums:"2d,3d"`
     Visibility string    `json:"visibility" binding:"required" example:"private" enums:"private,friends,public"`
 }
+
 ```
 
 ---
@@ -110,12 +113,14 @@ type CreateAnalyseRequest struct {
 
 ```bash
 go install github.com/swaggo/swag/cmd/swag@latest
+
 ```
 
 2. Generate documentation files (`docs/swagger/`):
 
 ```bash
 swag init -g cmd/server/main.go -o ./docs/swagger
+
 ```
 
 3. Mount the handler in `internal/inbound/http/router/router.go`:
@@ -129,6 +134,7 @@ import (
 
 // Inside router.New:
 app.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 ```
 
 4. Verify by navigating to `http://localhost:8080/swagger/index.html`.

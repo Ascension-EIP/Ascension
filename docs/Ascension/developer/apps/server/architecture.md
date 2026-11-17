@@ -3,7 +3,7 @@ id: 8a400878-485e-480a-b6c4-a7bc4cd0e4be
 ---
 
 :::success
-**Version:** 1.2
+**Version:** 1.3
 :::
 
 ---
@@ -24,7 +24,7 @@ This document explains how the Ascension backend server is structured and why it
 | **Goroutines** | Concurrency handling |
 | **PostgreSQL 18** | Relational database with JSONB document support |
 | **RabbitMQ 4.x** | AMQP message broker for asynchronous job dispatching |
-| **MinIO** | S3-compatible object storage for videos and frames |
+| **RustFS / OVHcloud S3** | S3-compatible object storage for videos and frames |
 | **robfig/cron/v3** | Cron scheduler for background cleanup tasks |
 | **golang-migrate/v4** | Database schema migrations engine |
 | **log/slog** | Standard library structured logger |
@@ -41,9 +41,9 @@ graph TD
     subgraph Outside ["OUTSIDE"]
         HTTP["HTTP Requests<br>(Inbound / Adapters)"]
         Cron["Cron Scheduler<br>(cmd/cron & internal/job)"]
-
+        
         DB["PostgreSQL Database<br>(Outbound / Adapters)"]
-        Ext["RabbitMQ / MinIO<br>(Outbound / Adapters)"]
+        Ext["RabbitMQ / Object Storage (S3)<br>(Outbound / Adapters)"]
     end
 
     subgraph Domain ["DOMAIN (Core)"]
@@ -51,7 +51,7 @@ graph TD
         Models["Models (internal/model)"]
         Ports["Ports / Interfaces (internal/model/ports)"]
         Services["Services (internal/service)"]
-
+        
         Note["Knows NOTHING about Gin or HTTP<br>Knows NOTHING about SQL queries"]
     end
 
@@ -116,7 +116,7 @@ Implements the domain ports defined in `internal/model/ports.go`:
 | --- | --- | --- |
 | `internal/outbound/postgres/` | PostgreSQL adapter using `pgxpool` | `UserRepository`, `SessionRepository`, `VideoRepository`, `AnalysisRepository`, `TransactionManager` |
 | `internal/outbound/rabbitmq/` | RabbitMQ adapter using `amqp091-go` | `AnalysisQueue` |
-| `internal/outbound/minio/` | S3-compatible adapter using `minio-go/v7` | `VideoStorage` |
+| `internal/outbound/rustfs/` | S3 adapter using the AWS SDK for Go v2 (connects to RustFS & OVHcloud S3) | `VideoStorage` |
 
 ---
 
@@ -126,27 +126,33 @@ Implements the domain ports defined in `internal/model/ports.go`:
 
 Background maintenance workers orchestrated via `robfig/cron/v3`:
 
-- `ClearExpiredSessions`: Purges expired or revoked refresh sessions daily.
-- `ClearUploadExpiredVideos`: Cleans up abandoned presigned video uploads hourly.
-- `ClearExpiredVideos`: Purges completed videos that have passed retention and were not marked `retained`.
+| Job | Schedule | Role |
+| --- | --- | --- |
+| `ClearExpiredSessions` | Daily at midnight | Purges expired or revoked refresh sessions |
+| `ClearUploadExpiredVideos` | Daily at midnight | Cleans up abandoned presigned video uploads |
+| `ClearExpiredVideos` | Daily at midnight | Purges completed videos that have passed retention and were not marked `retained` |
+| `ClearOldQuotaUsage` | Monthly, on the 1st at 03:00 | Deletes the quota usage periods older than 24 months |
+| `AnalysisStaleDetection` | Every minute | Marks as `failed` ("Job processing timed out") the analyses still `pending` 15 minutes after their creation |
+
+The cron connects to PostgreSQL, the object storage and RabbitMQ when it starts, and applies the pending migrations like the API.
 
 ---
 
-## Step-by-step Request Flow Example (`POST /v1/auth/signup`)
+## Step-by-step Request Flow Example (`POST /v1/auth/register`)
 
 ```
 Client
   │
-  │  POST /v1/auth/signup  { "username": "...", "email": "...", "password": "...", "first_name": "...", "last_name": "..." }
+  │  POST /v1/auth/register  { "username": "...", "email": "...", "password": "...", "first_name": "...", "last_name": "..." }
   ▼
 Gin Router  (internal/inbound/http/router/router.go)
   │  Matches route, applies RateLimiter(1m, 5)
   ▼
-Handler: AuthHandler.SignupLogin()  (internal/inbound/http/handler/auth.go)
-  │  1. Binds JSON body → request.SignupLoginForm
-  │  2. Converts DTO to model.SignupForm
+Handler: AuthHandler.Register()  (internal/inbound/http/handler/auth.go)
+  │  1. Binds JSON body → request.RegisterForm
+  │  2. Converts DTO to model.RegisterForm
   ▼
-Service: AuthService.SignupLogin()  (internal/service/auth.go)
+Service: AuthService.Register()  (internal/service/auth.go)
   │  1. Invokes UserService.CreateUser() → hashes password with bcrypt
   │  2. Calls UserRepository.CreateUser() (via port)
   │  3. Issues JWT access token via JWTService
@@ -160,6 +166,7 @@ Handler
   │  Serializes DTO to JSON and returns HTTP 200 OK
   ▼
 Client
+
 ```
 
 ---
@@ -216,10 +223,11 @@ apps/server/
     ├── outbound/                       # Infrastructure adapters
     │   ├── postgres/                   # PostgreSQL storage repository (pgx implementation)
     │   ├── rabbitmq/                   # RabbitMQ message broker adapter
-    │   └── minio/                      # MinIO / S3 object storage adapter
+    │   └── rustfs/                     # S3 object storage adapter (RustFS / OVHcloud S3)
     └── setup/
         ├── config/                     # Environment configuration loader
         └── logger/                     # Structured logger constructor (slog)
+
 ```
 
 ---
@@ -242,8 +250,9 @@ Database schema migrations are applied automatically at server startup or on dem
 The server parses all environment variables through `internal/setup/config/config.go` with domain-specific prefixes:
 
 - `POSTGRES_*` : Database host, port, database name (`POSTGRES_DB`), user, password, and SSL parameters.
-- `MINIO_*` : Object storage endpoint, credentials, bucket name, and URL expiration durations.
-- `RABBITMQ_*` : Message broker host, port, user, password, TLS, and queue names.
+- `STORAGE_*` : Object storage configuration (RustFS in dev, OVHcloud S3 in prod): endpoint, signing region, credentials, bucket name, and URL expiration durations.
+- `QUEUE_*` : Message broker host, port, user, password, TLS, and the name of the topic exchange shared with the AI worker.
+- `VIDEO_*` : Video retention duration.
 - `AUTH_*` : JWT and session secret keys and expiration durations.
 - `PORT` & `HTTPS` : HTTP server listener configuration.
 - `LOG_LEVEL` & `LOG_PRETTY` : Logging verbosity and formatting.

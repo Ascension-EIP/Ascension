@@ -30,6 +30,7 @@ flowchart TD
     Worker --> Bio["Biomechanical Analyzer\n- Joint angles & center of mass\n- Extension & fatigue metrics"]
     Pose --> Storage[("PostgreSQL & Object Storage\n(JSON Landmarks & Artifacts)")]
     Bio --> Storage
+
 ```
 
 *Figure: Asynchronous AI pipeline detailing pose extraction and biomechanical inference within the Python worker.*

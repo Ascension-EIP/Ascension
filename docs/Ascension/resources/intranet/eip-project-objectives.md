@@ -12,6 +12,12 @@ id: 5dbcaee3-a00b-4389-8320-866046792c20
 
 ---
 
+:::warning
+This is a resume of the EIP Project Objectives. To view each objective in detail, please visit this page : [eip-objectives-delivery](../../administrative/eip-objectives-delivery/readme.md).
+:::
+
+---
+
 ## Introduction
 
 Welcome to the Technical Track of the Epitech Innovative Project (EIP), where engineering excellence meets innovation. This track is designed for students who are passionate about pushing technological boundaries, solving complex technical challenges, and building solutions that stand out through their architectural elegance, performance, and reliability.
