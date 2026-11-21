@@ -7,6 +7,7 @@
 // @status done
 import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
@@ -99,7 +100,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
 
-  void _validateAndSubmit() {
+  Future<void> _validateAndSubmit() async {
     setState(() {
       _firstNameError = _firstNameController.text.trim().isEmpty
           ? context.tr('auth.requiredField')
@@ -144,7 +145,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         _confirmPasswordError != null;
 
     if (!hasErrors) {
-      ref
+      final isSuccess = await ref
           .read(authFormControllerProvider.notifier)
           .register(
             username: _usernameController.text.trim(),
@@ -153,6 +154,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             email: _emailController.text.trim(),
             password: _passwordController.text,
           );
+
+      if (isSuccess) {
+        TextInput.finishAutofillContext(shouldSave: true);
+      } else {
+        TextInput.finishAutofillContext(shouldSave: false);
+      }
     }
   }
 
@@ -182,144 +189,155 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               constraints: const BoxConstraints(maxWidth: 440),
               child: Form(
                 key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (errorMessage != null) ...[
-                      FAlert(
-                        variant: FAlertVariant.destructive,
-                        title: Text(errorMessage),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                    // First Name and Last Name first!
-                    Row(
-                      children: [
-                        Expanded(
-                          child: FTextField(
-                            control: FTextFieldControl.managed(
-                              controller: _firstNameController,
-                            ),
-                            label: Text(context.tr('auth.firstName')),
-                            error: _firstNameError != null
-                                ? Text(_firstNameError!)
-                                : null,
-                            enabled: !isLoading,
-                            textInputAction: TextInputAction.next,
-                          ),
+                child: AutofillGroup(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (errorMessage != null) ...[
+                        FAlert(
+                          variant: FAlertVariant.destructive,
+                          title: Text(errorMessage),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: FTextField(
-                            control: FTextFieldControl.managed(
-                              controller: _lastNameController,
-                            ),
-                            label: Text(context.tr('auth.lastName')),
-                            error: _lastNameError != null
-                                ? Text(_lastNameError!)
-                                : null,
-                            enabled: !isLoading,
-                            textInputAction: TextInputAction.next,
-                          ),
-                        ),
+                        const SizedBox(height: 12),
                       ],
-                    ),
-                    const SizedBox(height: 16),
-                    // Username (auto-suggested from First Name & Last Name)
-                    FTextField(
-                      control: FTextFieldControl.managed(
-                        controller: _usernameController,
-                      ),
-                      focusNode: _usernameFocusNode,
-                      label: Text(context.tr('auth.username')),
-                      hint: 'alex_climber',
-                      error: _usernameError != null
-                          ? Text(_usernameError!)
-                          : null,
-                      enabled: !isLoading,
-                      textInputAction: TextInputAction.next,
-                    ),
-                    const SizedBox(height: 16),
-                    // Email
-                    FTextField(
-                      control: FTextFieldControl.managed(
-                        controller: _emailController,
-                      ),
-                      label: Text(context.tr('auth.email')),
-                      hint: 'climber@ascension.app',
-                      error: _emailError != null ? Text(_emailError!) : null,
-                      enabled: !isLoading,
-                      textInputAction: TextInputAction.next,
-                    ),
-                    const SizedBox(height: 16),
-                    // Password
-                    FTextField.password(
-                      control: FTextFieldControl.managed(
-                        controller: _passwordController,
-                      ),
-                      label: Text(context.tr('auth.password')),
-                      error: _passwordError != null
-                          ? Text(_passwordError!)
-                          : null,
-                      enabled: !isLoading,
-                      textInputAction: TextInputAction.next,
-                    ),
-                    const SizedBox(height: 16),
-                    // Confirm Password
-                    FTextField.password(
-                      control: FTextFieldControl.managed(
-                        controller: _confirmPasswordController,
-                      ),
-                      label: Text(context.tr('auth.confirmPassword')),
-                      error: _confirmPasswordError != null
-                          ? Text(_confirmPasswordError!)
-                          : null,
-                      enabled: !isLoading,
-                      textInputAction: TextInputAction.done,
-                      onSubmit: (_) => _validateAndSubmit(),
-                    ),
-                    const SizedBox(height: 28),
-                    // Submit button
-                    FButton(
-                      onPress: isLoading ? null : _validateAndSubmit,
-                      prefix: isLoading
-                          ? const Padding(
-                              padding: EdgeInsets.only(right: 8),
-                              child: FCircularProgress(
-                                size: FCircularProgressSizeVariant.sm,
+                      // First Name and Last Name first!
+                      Row(
+                        children: [
+                          Expanded(
+                            child: FTextField(
+                              control: FTextFieldControl.managed(
+                                controller: _firstNameController,
                               ),
-                            )
-                          : null,
-                      child: Text(context.tr('auth.register')),
-                    ),
-                    const SizedBox(height: 20),
-                    // Bottom link to Sign In
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(
-                          context.tr('auth.hasAccount'),
-                          style: context.theme.typography.body.sm.copyWith(
-                            color: context.theme.colors.mutedForeground,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        GestureDetector(
-                          onTap: isLoading
-                              ? null
-                              : () => context.goNamed(AppRoute.login.name),
-                          child: Text(
-                            context.tr('auth.signIn'),
-                            style: context.theme.typography.body.sm.copyWith(
-                              color: context.theme.colors.primary,
-                              fontWeight: FontWeight.bold,
+                              label: Text(context.tr('auth.firstName')),
+                              autofillHints: const [AutofillHints.givenName],
+                              error: _firstNameError != null
+                                  ? Text(_firstNameError!)
+                                  : null,
+                              enabled: !isLoading,
+                              textInputAction: TextInputAction.next,
                             ),
                           ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: FTextField(
+                              control: FTextFieldControl.managed(
+                                controller: _lastNameController,
+                              ),
+                              label: Text(context.tr('auth.lastName')),
+                              autofillHints: const [AutofillHints.familyName],
+                              error: _lastNameError != null
+                                  ? Text(_lastNameError!)
+                                  : null,
+                              enabled: !isLoading,
+                              textInputAction: TextInputAction.next,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // Username (auto-suggested from First Name & Last Name)
+                      FTextField(
+                        control: FTextFieldControl.managed(
+                          controller: _usernameController,
                         ),
-                      ],
-                    ),
-                  ],
+                        focusNode: _usernameFocusNode,
+                        label: Text(context.tr('auth.username')),
+                        hint: 'alex_climber',
+                        autofillHints: const [
+                          AutofillHints.username,
+                          AutofillHints.newUsername,
+                        ],
+                        error: _usernameError != null
+                            ? Text(_usernameError!)
+                            : null,
+                        enabled: !isLoading,
+                        textInputAction: TextInputAction.next,
+                      ),
+                      const SizedBox(height: 16),
+                      // Email
+                      FTextField(
+                        control: FTextFieldControl.managed(
+                          controller: _emailController,
+                        ),
+                        label: Text(context.tr('auth.email')),
+                        hint: 'climber@ascension.app',
+                        autofillHints: const [AutofillHints.email],
+                        error: _emailError != null ? Text(_emailError!) : null,
+                        enabled: !isLoading,
+                        textInputAction: TextInputAction.next,
+                      ),
+                      const SizedBox(height: 16),
+                      // Password
+                      FTextField.password(
+                        control: FTextFieldControl.managed(
+                          controller: _passwordController,
+                        ),
+                        label: Text(context.tr('auth.password')),
+                        autofillHints: const [AutofillHints.newPassword],
+                        error: _passwordError != null
+                            ? Text(_passwordError!)
+                            : null,
+                        enabled: !isLoading,
+                        textInputAction: TextInputAction.next,
+                      ),
+                      const SizedBox(height: 16),
+                      // Confirm Password
+                      FTextField.password(
+                        control: FTextFieldControl.managed(
+                          controller: _confirmPasswordController,
+                        ),
+                        label: Text(context.tr('auth.confirmPassword')),
+                        autofillHints: const [AutofillHints.newPassword],
+                        error: _confirmPasswordError != null
+                            ? Text(_confirmPasswordError!)
+                            : null,
+                        enabled: !isLoading,
+                        textInputAction: TextInputAction.done,
+                        onSubmit: (_) => _validateAndSubmit(),
+                      ),
+                      const SizedBox(height: 28),
+                      // Submit button
+                      FButton(
+                        onPress: isLoading ? null : _validateAndSubmit,
+                        prefix: isLoading
+                            ? const Padding(
+                                padding: EdgeInsets.only(right: 8),
+                                child: FCircularProgress(
+                                  size: FCircularProgressSizeVariant.sm,
+                                ),
+                              )
+                            : null,
+                        child: Text(context.tr('auth.register')),
+                      ),
+                      const SizedBox(height: 20),
+                      // Bottom link to Sign In
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            context.tr('auth.hasAccount'),
+                            style: context.theme.typography.body.sm.copyWith(
+                              color: context.theme.colors.mutedForeground,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          GestureDetector(
+                            onTap: isLoading
+                                ? null
+                                : () => context.goNamed(AppRoute.login.name),
+                            child: Text(
+                              context.tr('auth.signIn'),
+                              style: context.theme.typography.body.sm.copyWith(
+                                color: context.theme.colors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

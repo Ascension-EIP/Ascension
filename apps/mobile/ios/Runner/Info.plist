@@ -73,5 +73,7 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Authenticate to sign in to your Ascension account securely.</string>
 </dict>
 </plist>

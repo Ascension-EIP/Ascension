@@ -36,7 +36,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
     switch (result) {
       case Success(:final data):
-        await _persistSession(data);
+        await _persistSession(data, identifier);
         return Success(data);
       case Error(:final failure):
         return Error(failure);
@@ -88,12 +88,18 @@ class AuthRepositoryImpl implements AuthRepository {
     return token != null && token.isNotEmpty;
   }
 
-  Future<void> _persistSession(AuthSession session) async {
+  Future<void> _persistSession(
+    AuthSession session, [
+    String? identifier,
+  ]) async {
     await secureStorage.saveTokens(
       accessToken: session.accessToken,
       refreshToken: session.refreshToken,
     );
     await secureStorage.saveUserId(session.user.id);
+    if (identifier != null && identifier.isNotEmpty) {
+      await secureStorage.saveSavedIdentifier(identifier);
+    }
   }
 }
 
