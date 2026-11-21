@@ -37,7 +37,9 @@ class AnalysisSelectionScreen extends ConsumerWidget {
         type: AnalysisType.pose2d,
         title: context.tr('sessions.analysisPose2dTitle'),
         description: context.tr('sessions.analysisPose2dDesc'),
-        icon: FLucideIcons.video,
+        icon: FLucideIcons.personStanding,
+        badgeText: context.tr('sessions.analysisBadgeVideo'),
+        badgeIcon: FLucideIcons.video,
         visible: true,
       ),
       _AnalysisOption(
@@ -45,6 +47,8 @@ class AnalysisSelectionScreen extends ConsumerWidget {
         title: context.tr('sessions.analysisPose3dTitle'),
         description: context.tr('sessions.analysisPose3dDesc'),
         icon: FLucideIcons.box,
+        badgeText: '3D',
+        badgeIcon: FLucideIcons.box,
         visible: _show3DPoseAnalysis, // Masqué pour le BTP
       ),
       _AnalysisOption(
@@ -52,6 +56,8 @@ class AnalysisSelectionScreen extends ConsumerWidget {
         title: context.tr('sessions.analysisGhostTitle'),
         description: context.tr('sessions.analysisGhostDesc'),
         icon: FLucideIcons.ghost,
+        badgeText: context.tr('sessions.analysisBadgePhoto'),
+        badgeIcon: FLucideIcons.camera,
         visible: true,
       ),
       _AnalysisOption(
@@ -59,6 +65,8 @@ class AnalysisSelectionScreen extends ConsumerWidget {
         title: context.tr('sessions.analysisAssistedTitle'),
         description: context.tr('sessions.analysisAssistedDesc'),
         icon: FLucideIcons.sparkles,
+        badgeText: 'Audio',
+        badgeIcon: FLucideIcons.sparkles,
         visible: _showAssistedClimbing, // Masqué pour le BTP
       ),
     ];
@@ -71,11 +79,11 @@ class AnalysisSelectionScreen extends ConsumerWidget {
         prefixes: [FHeaderAction.back(onPress: () => context.pop())],
       ),
       child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 540),
-            child: Column(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isConstrained = constraints.maxHeight < 560;
+
+            final content = Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
@@ -85,97 +93,156 @@ class AnalysisSelectionScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Column(
-                  children: [
-                    for (int i = 0; i < visibleOptions.length; i++) ...[
-                      GestureDetector(
-                            onTap: () => _onSelectAnalysis(
-                              context,
-                              ref,
-                              visibleOptions[i].type,
-                            ),
-                            child: FCard(
-                              child: Padding(
-                                padding: const EdgeInsets.all(18),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: context.theme.colors.muted,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Icon(
-                                        visibleOptions[i].icon,
-                                        size: 26,
-                                        color: context.theme.colors.primary,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 14),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            visibleOptions[i].title,
-                                            style: context
-                                                .theme
-                                                .typography
-                                                .body
-                                                .md
-                                                .copyWith(
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            visibleOptions[i].description,
-                                            style: context
-                                                .theme
-                                                .typography
-                                                .body
-                                                .xs
-                                                .copyWith(
-                                                  color: context
-                                                      .theme
-                                                      .colors
-                                                      .mutedForeground,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Icon(
-                                      FLucideIcons.chevronRight,
-                                      size: 18,
-                                      color:
-                                          context.theme.colors.mutedForeground,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          )
-                          .animate()
-                          .fadeIn(
-                            duration: 250.ms,
-                            delay: (50 * i).ms,
-                            curve: Curves.easeOut,
-                          )
-                          .slideY(begin: 0.04, end: 0),
-                      if (i < visibleOptions.length - 1)
-                        const SizedBox(height: 14),
-                    ],
-                  ],
-                ),
+                for (int i = 0; i < visibleOptions.length; i++) ...[
+                  if (isConstrained)
+                    _buildOptionCard(
+                      context,
+                      ref,
+                      visibleOptions[i],
+                      i,
+                      isExpanded: false,
+                    )
+                  else
+                    Expanded(
+                      child: _buildOptionCard(
+                        context,
+                        ref,
+                        visibleOptions[i],
+                        i,
+                        isExpanded: true,
+                      ),
+                    ),
+                  if (i < visibleOptions.length - 1)
+                    SizedBox(height: isConstrained ? 14 : 16),
+                ],
               ],
-            ),
-          ),
+            );
+
+            if (isConstrained) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 540),
+                    child: content,
+                  ),
+                ),
+              );
+            }
+
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 540),
+                  child: content,
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
+  }
+
+  Widget _buildOptionCard(
+    BuildContext context,
+    WidgetRef ref,
+    _AnalysisOption option,
+    int index, {
+    required bool isExpanded,
+  }) {
+    final cardContent = Container(
+      width: double.infinity,
+      height: isExpanded ? double.infinity : null,
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: context.theme.colors.muted,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  option.icon,
+                  size: 26,
+                  color: context.theme.colors.primary,
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    option.title,
+                    textAlign: TextAlign.center,
+                    style: context.theme.typography.body.lg.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+              ),
+              FBadge(
+                variant: FBadgeVariant.secondary,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      option.badgeIcon,
+                      size: 12,
+                      color: context.theme.colors.mutedForeground,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(option.badgeText),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (isExpanded) const Spacer() else const SizedBox(height: 14),
+          Text(
+            option.description,
+            style: context.theme.typography.body.sm.copyWith(
+              color: context.theme.colors.mutedForeground,
+              height: 1.45,
+            ),
+          ),
+          if (isExpanded) const Spacer() else const SizedBox(height: 14),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text(
+                context.tr('sessions.analysisStartAction'),
+                style: context.theme.typography.body.sm.copyWith(
+                  color: context.theme.colors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                FLucideIcons.arrowRight,
+                size: 16,
+                color: context.theme.colors.primary,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => _onSelectAnalysis(context, ref, option.type),
+          child: FCard(child: cardContent),
+        )
+        .animate()
+        .fadeIn(duration: 250.ms, delay: (40 * index).ms, curve: Curves.easeOut)
+        .slideY(begin: 0.04, end: 0);
   }
 }
 
@@ -185,6 +252,8 @@ class _AnalysisOption {
     required this.title,
     required this.description,
     required this.icon,
+    required this.badgeText,
+    required this.badgeIcon,
     required this.visible,
   });
 
@@ -192,5 +261,7 @@ class _AnalysisOption {
   final String title;
   final String description;
   final IconData icon;
+  final String badgeText;
+  final IconData badgeIcon;
   final bool visible;
 }

@@ -46,10 +46,21 @@ const Map<String, String> enTranslations = {
   'auth.passwordsDoNotMatch': 'Passwords do not match',
   'auth.invalidEmail': 'Please enter a valid email address',
   'auth.requiredField': 'This field is required',
+  'auth.biometricPrompt': 'Authenticate to access Ascension',
+  'auth.biometricSignIn': 'Biometric sign in',
+  'auth.biometricUnavailable': 'Biometrics is not available on this device',
 
   // Settings
   'settings.title': 'Settings',
   'settings.account': 'Account',
+  'settings.security': 'Security',
+  'settings.biometrics': 'Biometric sign in',
+  'settings.biometricsSubtitle': 'Use fingerprint or Face ID to sign in',
+  'settings.biometricsEnablePrompt':
+      'Confirm your identity to enable biometrics',
+  'settings.biometricsPasswordTitle': 'Confirm your password',
+  'settings.biometricsPasswordPrompt':
+      'Enter your password to enable biometric sign-in',
   'settings.logout': 'Sign Out',
 
   // Home
@@ -94,13 +105,19 @@ const Map<String, String> enTranslations = {
   'sessions.analysisMenuTitle': 'Analysis',
   'sessions.selectAnalysisPrompt': 'Select the desired analysis type',
   'sessions.analysisPose2dTitle': '2D Pose Analysis',
-  'sessions.analysisPose2dDesc': '2D extraction of 33 keypoints via MediaPipe',
+  'sessions.analysisPose2dDesc': 'Film a video of your climb. The AI tracks your movements, analyzes your posture, and gives you personalized coaching advice to improve.',
   'sessions.analysisPose3dTitle': '3D Pose Analysis',
-  'sessions.analysisPose3dDesc': '3D reconstruction and biomechanical posture',
+  'sessions.analysisPose3dDesc': 'Visualize your climb in 3D to explore your movements and posture from any angle.',
   'sessions.analysisGhostTitle': 'Ghost Mode',
-  'sessions.analysisGhostDesc': 'Step-by-step guidance and optimal beta',
+  'sessions.analysisGhostDesc': 'Take a photo of a route or boulder. The AI finds a movement sequence tailored to your body and guides you hold by hold.',
   'sessions.analysisAssistedTitle': 'Assisted Climbing',
-  'sessions.analysisAssistedDesc': 'Real-time analysis with audio guidance',
+  'sessions.analysisAssistedDesc':
+      'Real-time audio voice guidance during your climb.',
+  'sessions.analysisBadgeVideo': 'Video',
+  'sessions.analysisBadgePhoto': 'Photo',
+  'sessions.analysisStartAction': 'Start',
+  'sessions.analysisActionVideo': 'Record my climb',
+  'sessions.analysisActionPhoto': 'Analyze route',
 
   // Visibility
   'sessions.visibility.public': 'Public',

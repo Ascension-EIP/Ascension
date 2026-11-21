@@ -45,10 +45,23 @@ const Map<String, String> frTranslations = {
   'auth.passwordsDoNotMatch': 'Les mots de passe ne correspondent pas',
   'auth.invalidEmail': 'Veuillez saisir une adresse email valide',
   'auth.requiredField': 'Ce champ est requis',
+  'auth.biometricPrompt': 'Authentifiez-vous pour accéder à Ascension',
+  'auth.biometricSignIn': 'Connexion biométrique',
+  'auth.biometricUnavailable':
+      'La biométrie n\'est pas disponible sur cet appareil',
 
   // Settings
   'settings.title': 'Paramètres',
   'settings.account': 'Compte',
+  'settings.security': 'Sécurité',
+  'settings.biometrics': 'Connexion biométrique',
+  'settings.biometricsSubtitle':
+      'Utiliser l\'empreinte digitale ou Face ID pour vous connecter',
+  'settings.biometricsEnablePrompt':
+      'Confirmez votre identité pour activer la biométrie',
+  'settings.biometricsPasswordTitle': 'Confirmer votre mot de passe',
+  'settings.biometricsPasswordPrompt':
+      'Saisissez votre mot de passe pour activer la connexion biométrique',
   'settings.logout': 'Se déconnecter',
 
   // Home
@@ -91,14 +104,18 @@ const Map<String, String> frTranslations = {
   'sessions.analysisMenuTitle': 'Analyse',
   'sessions.selectAnalysisPrompt': 'Sélectionnez le type d\'analyse souhaité',
   'sessions.analysisPose2dTitle': 'Analyse de pose 2D',
-  'sessions.analysisPose2dDesc':
-      'Détection 2D des 33 points clés par MediaPipe',
+  'sessions.analysisPose2dDesc': 'Filmez votre ascension en vidéo. L\'IA suit vos mouvements, analyse votre posture et vous donne des conseils de coaching personnalisés pour progresser.',
   'sessions.analysisPose3dTitle': 'Analyse de pose 3D',
-  'sessions.analysisPose3dDesc': 'Reconstruction 3D et posture biomécanique',
+  'sessions.analysisPose3dDesc': 'Visualisez votre grimpe en 3D pour explorer vos mouvements et votre posture sous tous les angles.',
   'sessions.analysisGhostTitle': 'Mode fantôme',
-  'sessions.analysisGhostDesc': 'Guidage pas à pas et beta optimale',
+  'sessions.analysisGhostDesc': 'Photographiez un bloc ou une voie. L\'IA détermine une séquence de mouvements adaptée à votre morphologie et vous guide prise par prise.',
   'sessions.analysisAssistedTitle': 'Grimpe assistée',
-  'sessions.analysisAssistedDesc': 'Analyse temps réel avec guidage vocal',
+  'sessions.analysisAssistedDesc': 'Guidage vocal en temps réel pour orienter vos mouvements pendant l\'ascension.',
+  'sessions.analysisBadgeVideo': 'Vidéo',
+  'sessions.analysisBadgePhoto': 'Photo',
+  'sessions.analysisStartAction': 'Commencer',
+  'sessions.analysisActionVideo': 'Filmer mon ascension',
+  'sessions.analysisActionPhoto': 'Analyser la voie',
 
   // Visibility
   'sessions.visibility.public': 'Publique',
