@@ -136,6 +136,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ],
       ),
       child: SafeArea(
+        top: false,
         child: Align(
           alignment: Alignment.topCenter,
           child: SingleChildScrollView(

@@ -95,6 +95,7 @@ class _NewSessionScreenState extends ConsumerState<NewSessionScreen> {
         ],
       ),
       child: SafeArea(
+        top: false,
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: ConstrainedBox(

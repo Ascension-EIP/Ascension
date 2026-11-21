@@ -159,6 +159,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ],
       ),
       child: SafeArea(
+        top: false,
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           child: Center(

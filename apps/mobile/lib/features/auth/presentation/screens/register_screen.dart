@@ -181,6 +181,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         ],
       ),
       child: SafeArea(
+        top: false,
         child: Align(
           alignment: Alignment.topCenter,
           child: SingleChildScrollView(

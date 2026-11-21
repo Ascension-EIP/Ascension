@@ -79,6 +79,7 @@ class AnalysisSelectionScreen extends ConsumerWidget {
         prefixes: [FHeaderAction.back(onPress: () => context.pop())],
       ),
       child: SafeArea(
+        top: false,
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isConstrained = constraints.maxHeight < 560;
