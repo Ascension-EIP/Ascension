@@ -49,24 +49,11 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('Analyse biomécanique en cours...'), findsOneWidget);
       expect(find.text('Téléversement en cours...'), findsOneWidget);
-      expect(
-        find.text('Téléversement sécurisé de la vidéo (S3)'),
-        findsOneWidget,
-      );
-      expect(
-        find.text('Extraction des articulations MediaPipe Pose'),
-        findsOneWidget,
-      );
-      expect(
-        find.text('Calcul des vitesses et amplitudes de mouvement'),
-        findsOneWidget,
-      );
-      expect(
-        find.text('Génération des conseils de coaching par l\'IA'),
-        findsOneWidget,
-      );
+      expect(find.text('Envoi de la vidéo sur nos serveurs'), findsOneWidget);
+      expect(find.text('Extraction du squelette du grimpeur'), findsOneWidget);
+      expect(find.text('Calcul des données'), findsOneWidget);
+      expect(find.text('Génération des conseils'), findsOneWidget);
 
       final cancelFinder = find.text('Annuler');
       expect(cancelFinder, findsOneWidget);

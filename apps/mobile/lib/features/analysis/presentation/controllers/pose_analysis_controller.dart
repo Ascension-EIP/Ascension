@@ -95,6 +95,19 @@ class PoseAnalysisController extends Notifier<PoseAnalysisState> {
     state = const PoseAnalysisState(flowStep: PoseAnalysisFlowStep.selection);
   }
 
+  /// Returns from an error state back to video preview if a video was selected,
+  /// or back to selection otherwise.
+  void returnToPreviewOrSelection() {
+    if (state.selectedVideoFile != null) {
+      state = state.copyWith(
+        flowStep: PoseAnalysisFlowStep.preview,
+        clearError: true,
+      );
+    } else {
+      cancelPreview();
+    }
+  }
+
   /// Confirms analysis and executes the full upload and analysis pipeline.
   Future<void> confirmAndStartAnalysis({
     String? climbingSessionId,
@@ -108,7 +121,7 @@ class PoseAnalysisController extends Notifier<PoseAnalysisState> {
       flowStep: PoseAnalysisFlowStep.processing,
       uploadProgress: 0.05,
       analysisProgress: 0,
-      currentProcessingStep: 'Initialisation de l\'envoi...',
+      currentProcessingStep: 'analysis.statusInit',
       clearError: true,
     );
 
@@ -118,7 +131,7 @@ class PoseAnalysisController extends Notifier<PoseAnalysisState> {
 
       // 1. Request S3 upload presigned URL
       state = state.copyWith(
-        currentProcessingStep: 'Préparation du stockage sécurisé (S3)...',
+        currentProcessingStep: 'analysis.statusPreparingUpload',
         uploadProgress: 0.1,
       );
 
@@ -140,7 +153,7 @@ class PoseAnalysisController extends Notifier<PoseAnalysisState> {
       if (_isDisposed) return;
       state = state.copyWith(
         videoId: videoId,
-        currentProcessingStep: 'Téléversement de la vidéo...',
+        currentProcessingStep: 'analysis.statusUploading',
       );
 
       // 2. Upload binary video stream to S3
@@ -163,7 +176,7 @@ class PoseAnalysisController extends Notifier<PoseAnalysisState> {
       if (_isDisposed) return;
       state = state.copyWith(
         uploadProgress: 0.75,
-        currentProcessingStep: 'Finalisation du téléversement...',
+        currentProcessingStep: 'analysis.statusFinalizingUpload',
       );
 
       // 3. Notify backend upload is complete
@@ -175,7 +188,7 @@ class PoseAnalysisController extends Notifier<PoseAnalysisState> {
       if (_isDisposed) return;
       state = state.copyWith(
         uploadProgress: 0.85,
-        currentProcessingStep: 'Déclenchement de l\'analyse biomécanique...',
+        currentProcessingStep: 'analysis.statusTriggering',
       );
 
       // 4. Trigger 2D pose analysis
@@ -197,8 +210,7 @@ class PoseAnalysisController extends Notifier<PoseAnalysisState> {
       state = state.copyWith(
         analysisId: analysisId,
         uploadProgress: 1.0,
-        currentProcessingStep:
-            'Extraction MediaPipe & calcul des articulations...',
+        currentProcessingStep: 'analysis.statusExtractingSkeleton',
       );
 
       // 5. Poll for analysis completion
@@ -263,8 +275,8 @@ class PoseAnalysisController extends Notifier<PoseAnalysisState> {
           state = state.copyWith(
             analysisProgress: resp.progress,
             currentProcessingStep: resp.progress < 50
-                ? 'Extraction des points clés MediaPipe Pose...'
-                : 'Calcul biomécanique des vitesses et extensions...',
+                ? 'analysis.statusExtractingSkeleton'
+                : 'analysis.statusComputingData',
           );
         }
 

@@ -79,25 +79,16 @@ class AnalysisProcessingView extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              // Title
-              Text(
-                context.tr('analysis.processing'),
-                textAlign: TextAlign.center,
-                style: context.theme.typography.display.sm.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
               // Current Status description
               Text(
                 currentStep.isNotEmpty
-                    ? currentStep
-                    : 'Traitement de votre vidéo par le pipeline IA...',
+                    ? (context.tr(currentStep) != currentStep
+                          ? context.tr(currentStep)
+                          : currentStep)
+                    : context.tr('analysis.statusProcessing'),
                 textAlign: TextAlign.center,
-                style: context.theme.typography.body.sm.copyWith(
-                  color: context.theme.colors.mutedForeground,
+                style: context.theme.typography.body.md.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
               ),
 
@@ -123,8 +114,8 @@ class AnalysisProcessingView extends StatelessWidget {
                     children: [
                       Text(
                         isUploadComplete
-                            ? 'Analyse IA en cours'
-                            : 'Envoi sécurisé',
+                            ? context.tr('analysis.analyzing')
+                            : context.tr('analysis.uploading'),
                         style: context.theme.typography.body.xs.copyWith(
                           color: context.theme.colors.mutedForeground,
                         ),
@@ -203,23 +194,29 @@ class AnalysisProcessingView extends StatelessWidget {
     required bool isDone,
     required bool isActive,
   }) {
-    Color iconColor;
-    IconData icon;
-
+    Widget iconWidget;
     if (isDone) {
-      iconColor = context.theme.colors.primary;
-      icon = FLucideIcons.checkCircle2;
+      iconWidget = Icon(
+        FLucideIcons.checkCircle2,
+        size: 18,
+        color: context.theme.colors.primary,
+      );
     } else if (isActive) {
-      iconColor = const Color(0xFF00E5FF);
-      icon = FLucideIcons.loader2;
+      iconWidget =
+          const Icon(FLucideIcons.loader2, size: 18, color: Color(0xFF00E5FF))
+              .animate(onPlay: (controller) => controller.repeat())
+              .rotate(duration: 1000.ms, curve: Curves.linear);
     } else {
-      iconColor = context.theme.colors.mutedForeground.withValues(alpha: 0.4);
-      icon = FLucideIcons.circle;
+      iconWidget = Icon(
+        FLucideIcons.circle,
+        size: 18,
+        color: context.theme.colors.mutedForeground.withValues(alpha: 0.4),
+      );
     }
 
     return Row(
       children: [
-        Icon(icon, size: 18, color: iconColor),
+        iconWidget,
         const SizedBox(width: 10),
         Expanded(
           child: Text(

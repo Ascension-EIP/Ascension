@@ -26,150 +26,13 @@ class RecordScreen extends ConsumerStatefulWidget {
 }
 
 class _RecordScreenState extends ConsumerState<RecordScreen> {
-  void _openCameraMenu() {
-    showFSheet<void>(
-      context: context,
-      side: FLayout.btt,
-      builder: (sheetContext) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: context.theme.colors.primary.withValues(
-                        alpha: 0.12,
-                      ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      FLucideIcons.video,
-                      size: 20,
-                      color: context.theme.colors.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Options d\'enregistrement',
-                      style: context.theme.typography.body.md.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              FTile(
-                prefix: const Icon(FLucideIcons.camera),
-                title: const Text('Ouvrir la caméra directement'),
-                subtitle: const Text(
-                  'Lancer immédiatement l\'enregistrement vidéo',
-                ),
-                onPress: () {
-                  Navigator.of(sheetContext).pop();
-                  ref
-                      .read(poseAnalysisControllerProvider.notifier)
-                      .recordVideo();
-                },
-              ),
-              const SizedBox(height: 8),
-              FTile(
-                prefix: const Icon(FLucideIcons.timer),
-                title: const Text('Enregistrement avec retardateur (5s)'),
-                subtitle: const Text(
-                  'Délai pour vous positionner au pied de la voie',
-                ),
-                onPress: () {
-                  Navigator.of(sheetContext).pop();
-                  _startCountdownAndRecord(5);
-                },
-              ),
-              const SizedBox(height: 8),
-              FTile(
-                prefix: const Icon(FLucideIcons.folderOpen),
-                title: const Text('Choisir dans la galerie'),
-                subtitle: const Text('Importer une vidéo déjà tournée'),
-                onPress: () {
-                  Navigator.of(sheetContext).pop();
-                  ref
-                      .read(poseAnalysisControllerProvider.notifier)
-                      .pickVideoFromGallery();
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _startCountdownAndRecord(int seconds) async {
-    int remaining = seconds;
-    await showFDialog<void>(
-      context: context,
-      builder: (dialogContext, style, animation) => FDialog(
-        animation: animation,
-        builder: (ctx, dialogStyle) => StatefulBuilder(
-          builder: (builderContext, setDialogState) {
-            Future.delayed(const Duration(seconds: 1), () {
-              if (dialogContext.mounted) {
-                if (remaining > 1) {
-                  setDialogState(() {
-                    remaining--;
-                  });
-                } else {
-                  Navigator.of(dialogContext).pop();
-                  ref
-                      .read(poseAnalysisControllerProvider.notifier)
-                      .recordVideo();
-                }
-              }
-            });
-
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Préparation', style: dialogStyle.titleTextStyle),
-                  const SizedBox(height: 12),
-                  Text(
-                    '$remaining',
-                    style: ctx.theme.typography.display.xl.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 48,
-                      color: ctx.theme.colors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Positionnez-vous face au mur...',
-                    style: dialogStyle.bodyTextStyle,
-                  ),
-                  const SizedBox(height: 20),
-                  FButton(
-                    variant: FButtonVariant.outline,
-                    onPress: () => Navigator.of(dialogContext).pop(),
-                    child: const Text('Annuler'),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
   void _handleBackPress() {
     final state = ref.read(poseAnalysisControllerProvider);
-    if (state.isPreview) {
+    if (state.isError) {
+      ref
+          .read(poseAnalysisControllerProvider.notifier)
+          .returnToPreviewOrSelection();
+    } else if (state.isPreview) {
       ref.read(poseAnalysisControllerProvider.notifier).cancelPreview();
     } else if (state.isCompleted) {
       ref.read(poseAnalysisControllerProvider.notifier).reset();
@@ -193,30 +56,39 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
         'analysis.recordHeaderTitle',
       ),
       PoseAnalysisFlowStep.preview => context.tr('analysis.previewTitle'),
-      PoseAnalysisFlowStep.processing => 'Analyse en cours',
+      PoseAnalysisFlowStep.processing => context.tr(
+        'analysis.processingHeader',
+      ),
       PoseAnalysisFlowStep.completed => context.tr('analysis.resultsTitle'),
-      PoseAnalysisFlowStep.error => 'Erreur d\'analyse',
+      PoseAnalysisFlowStep.error => context.tr('analysis.errorHeader'),
     };
 
-    return FScaffold(
-      header: FHeader.nested(
-        title: Text(headerTitle),
-        prefixes: [FHeaderAction.back(onPress: _handleBackPress)],
-        suffixes: state.isCompleted
-            ? [
-                FHeaderAction(
-                  icon: const Icon(FLucideIcons.check),
-                  onPress: () {
-                    ref.read(poseAnalysisControllerProvider.notifier).reset();
-                    context.pop();
-                  },
-                ),
-              ]
-            : [],
-      ),
-      child: SafeArea(
-        top: false,
-        child: _buildCurrentFlowStep(context, state, activeSession?.id),
+    return PopScope(
+      canPop: state.isSelection,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _handleBackPress();
+      },
+      child: FScaffold(
+        header: FHeader.nested(
+          title: Text(headerTitle),
+          prefixes: [FHeaderAction.back(onPress: _handleBackPress)],
+          suffixes: state.isCompleted
+              ? [
+                  FHeaderAction(
+                    icon: const Icon(FLucideIcons.check),
+                    onPress: () {
+                      ref.read(poseAnalysisControllerProvider.notifier).reset();
+                      context.pop();
+                    },
+                  ),
+                ]
+              : [],
+        ),
+        child: SafeArea(
+          top: false,
+          child: _buildCurrentFlowStep(context, state, activeSession?.id),
+        ),
       ),
     );
   }
@@ -264,7 +136,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
         );
 
       case PoseAnalysisFlowStep.error:
-        return _buildErrorView(context, state.errorMessage);
+        return _buildErrorView(context, state.errorMessage, activeSessionId);
     }
   }
 
@@ -324,82 +196,26 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
 
               const SizedBox(height: 28),
 
-              // BIG ACTION BUTTON: Filmer sa grimpe
-              GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: _openCameraMenu,
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 24,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            context.theme.colors.primary,
-                            context.theme.colors.primary.withValues(
-                              alpha: 0.85,
-                            ),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: context.theme.colors.primary.withValues(
-                              alpha: 0.25,
-                            ),
-                            blurRadius: 18,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
+              // ACTION BUTTON 1: Filmer sa grimpe
+              FButton(
+                    onPress: () {
+                      ref
+                          .read(poseAnalysisControllerProvider.notifier)
+                          .recordVideo();
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              shape: BoxShape.circle,
+                          const Icon(FLucideIcons.video, size: 20),
+                          const SizedBox(width: 10),
+                          Text(
+                            context.tr('analysis.recordTitle'),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
                             ),
-                            child: const Icon(
-                              FLucideIcons.video,
-                              size: 28,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  context.tr('analysis.recordTitle'),
-                                  style: context.theme.typography.body.lg
-                                      .copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Ouvre la caméra avec options et retardateur',
-                                  style: context.theme.typography.body.xs
-                                      .copyWith(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.85,
-                                        ),
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Icon(
-                            FLucideIcons.arrowRight,
-                            size: 20,
-                            color: Colors.white,
                           ),
                         ],
                       ),
@@ -409,9 +225,9 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                   .fadeIn(duration: 250.ms, delay: 50.ms)
                   .slideY(begin: 0.05),
 
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
 
-              // SECOND ACTION BUTTON: Sélectionner une vidéo
+              // ACTION BUTTON 2: Sélectionner une vidéo
               FButton(
                     variant: FButtonVariant.outline,
                     onPress: () {
@@ -419,13 +235,22 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                           .read(poseAnalysisControllerProvider.notifier)
                           .pickVideoFromGallery();
                     },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(FLucideIcons.folderOpen, size: 18),
-                        const SizedBox(width: 8),
-                        Text(context.tr('analysis.selectVideo')),
-                      ],
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(FLucideIcons.folderOpen, size: 20),
+                          const SizedBox(width: 10),
+                          Text(
+                            context.tr('analysis.selectVideo'),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   )
                   .animate()
@@ -498,7 +323,14 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 15, color: context.theme.colors.mutedForeground),
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Icon(
+            icon,
+            size: 15,
+            color: context.theme.colors.mutedForeground,
+          ),
+        ),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
@@ -513,7 +345,13 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
     );
   }
 
-  Widget _buildErrorView(BuildContext context, String? errorMessage) {
+  Widget _buildErrorView(
+    BuildContext context,
+    String? errorMessage,
+    String? activeSessionId,
+  ) {
+    final hasVideo =
+        ref.read(poseAnalysisControllerProvider).selectedVideoFile != null;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -551,12 +389,32 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
             const SizedBox(height: 24),
             FButton(
               onPress: () {
-                ref
-                    .read(poseAnalysisControllerProvider.notifier)
-                    .cancelPreview();
+                final controller = ref.read(
+                  poseAnalysisControllerProvider.notifier,
+                );
+                if (hasVideo) {
+                  controller.confirmAndStartAnalysis(
+                    climbingSessionId: activeSessionId,
+                    title: 'Analyse de grimpe',
+                  );
+                } else {
+                  controller.cancelPreview();
+                }
               },
               child: Text(context.tr('analysis.retry')),
             ),
+            if (hasVideo) ...[
+              const SizedBox(height: 10),
+              FButton(
+                variant: FButtonVariant.outline,
+                onPress: () {
+                  ref
+                      .read(poseAnalysisControllerProvider.notifier)
+                      .returnToPreviewOrSelection();
+                },
+                child: Text(context.tr('analysis.backToPreview')),
+              ),
+            ],
           ],
         ),
       ),

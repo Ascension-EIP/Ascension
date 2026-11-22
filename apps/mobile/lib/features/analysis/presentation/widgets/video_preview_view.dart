@@ -27,174 +27,112 @@ class VideoPreviewView extends StatelessWidget {
   final VoidCallback onConfirm;
   final VoidCallback onCancel;
 
-  String _formatFileSize(int? bytes) {
-    if (bytes == null || bytes <= 0) return 'Taille inconnue';
-    final mb = bytes / (1024 * 1024);
-    return '${mb.toStringAsFixed(1)} Mo';
-  }
-
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Video preview player
-          VideoAnalysisPlayer(videoFile: videoFile, initialPlay: true),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Constrain the video height so that video + slider + controls bar
+        // end right above the bottom of the screen (the Android navigation bar).
+        final maxVideoHeight = constraints.maxHeight.isFinite
+            ? (constraints.maxHeight - 110).clamp(240.0, constraints.maxHeight)
+            : 480.0;
 
-          const SizedBox(height: 16),
-
-          // Video Info Chip Row
-          Row(
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: context.theme.colors.muted,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      FLucideIcons.film,
-                      size: 14,
-                      color: context.theme.colors.mutedForeground,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      _formatFileSize(videoSizeBytes),
-                      style: context.theme.typography.body.xs.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
+              // Video preview player constrained in height
+              VideoAnalysisPlayer(
+                videoFile: videoFile,
+                initialPlay: true,
+                maxVideoHeight: maxVideoHeight,
               ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: context.theme.colors.muted,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      FLucideIcons.check,
-                      size: 14,
-                      color: context.theme.colors.primary,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Prête pour analyse',
-                      style: context.theme.typography.body.xs.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
 
-          const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
-          // Confirmation Prompt Card
-          FCard(
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+              // Confirmation Prompt Card
+              FCard(
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: context.theme.colors.primary.withValues(
-                            alpha: 0.12,
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: context.theme.colors.primary.withValues(
+                                alpha: 0.12,
+                              ),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              FLucideIcons.sparkles,
+                              size: 20,
+                              color: context.theme.colors.primary,
+                            ),
                           ),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          FLucideIcons.sparkles,
-                          size: 20,
-                          color: context.theme.colors.primary,
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              context.tr('analysis.confirmTitle'),
+                              style: context.theme.typography.body.md.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        context.tr('analysis.confirmPrompt'),
+                        style: context.theme.typography.body.sm.copyWith(
+                          color: context.theme.colors.foreground,
+                          height: 1.45,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          context.tr('analysis.confirmTitle'),
-                          style: context.theme.typography.body.md.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                      const SizedBox(height: 18),
+
+                      // Confirm button
+                      FButton(
+                        onPress: onConfirm,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(FLucideIcons.uploadCloud, size: 18),
+                            const SizedBox(width: 8),
+                            Text(context.tr('analysis.confirmYes')),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      // Cancel / Re-record button
+                      FButton(
+                        variant: FButtonVariant.outline,
+                        onPress: onCancel,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(FLucideIcons.rotateCcw, size: 16),
+                            const SizedBox(width: 8),
+                            Text(context.tr('analysis.confirmNo')),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    context.tr('analysis.confirmPrompt'),
-                    style: context.theme.typography.body.sm.copyWith(
-                      color: context.theme.colors.foreground,
-                      height: 1.45,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'La vidéo sera stockée en toute sécurité puis traitée par notre pipeline d\'IA pour extraire la posture et les métriques de votre ascension.',
-                    style: context.theme.typography.body.xs.copyWith(
-                      color: context.theme.colors.mutedForeground,
-                      height: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Confirm button
-                  FButton(
-                    onPress: onConfirm,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(FLucideIcons.uploadCloud, size: 18),
-                        const SizedBox(width: 8),
-                        Text(context.tr('analysis.confirmYes')),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // Cancel / Re-record button
-                  FButton(
-                    variant: FButtonVariant.outline,
-                    onPress: onCancel,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(FLucideIcons.rotateCcw, size: 16),
-                        const SizedBox(width: 8),
-                        Text(context.tr('analysis.confirmNo')),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.05),
-        ],
-      ),
+                ),
+              ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.05),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
     );
   }
 }
