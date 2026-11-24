@@ -5,13 +5,13 @@
 # @author Livoooo <zarigu92@gmail.com>
 # @copyright (c) 2026 Ascension
 # @status done
-"""Hold detection CLI: check, merge, train, predict, colors."""
+"""Hold detection training CLI: check, merge, train, predict.
+
+Inference and hold colours run in the AI worker (apps/ai, step `_3_holds`).
+"""
 
 import argparse
-from collections import Counter
 from pathlib import Path
-
-import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
 MODELS_DIR = ROOT / "models"
@@ -68,68 +68,6 @@ def predict(args: argparse.Namespace) -> None:
         project=str(RUNS_DIR),
         name="predict",
     )
-
-
-def colors(args: argparse.Namespace) -> None:
-    import json
-
-    import cv2
-    from ultralytics import YOLO
-
-    from holds.colors import Palette, draw, image_colors
-
-    palette = Palette.load(ROOT / args.palette)
-    model = YOLO(args.weights)
-    out_dir = RUNS_DIR / "colors"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    for result in model.predict(
-        source=args.source, imgsz=args.imgsz, conf=args.conf, stream=True, verbose=False
-    ):
-        image = result.orig_img
-        polygons = [] if result.masks is None else list(result.masks.xy)
-        hold_colors = image_colors(image, polygons, palette)
-        holds = []
-        for i, (polygon, color) in enumerate(zip(polygons, hold_colors)):
-            if color is None:
-                continue
-            holds.append(
-                {
-                    "id": i,
-                    "class": result.names[int(result.boxes.cls[i])],
-                    "confidence": round(float(result.boxes.conf[i]), 3),
-                    "polygon": np.round(polygon.astype(float), 1).tolist(),
-                    "color": {
-                        "name": color.name,
-                        "distance": color.distance,
-                        "rgb": list(color.rgb),
-                        "lab": list(color.descriptor),
-                    },
-                }
-            )
-        stem = Path(result.path).stem
-        height, width = image.shape[:2]
-        payload = {
-            "image": Path(result.path).name,
-            "size": [width, height],
-            "holds": holds,
-        }
-        (out_dir / f"{stem}.json").write_text(json.dumps(payload), encoding="utf-8")
-        cv2.imwrite(str(out_dir / f"{stem}.jpg"), draw(image, polygons, hold_colors))
-        names = Counter(h["color"]["name"] for h in holds)
-        print(f"{stem}: {len(holds)} holds {dict(names.most_common())}")
-    print(f"Results saved to {out_dir}")
-
-
-def colors_eval(args: argparse.Namespace) -> None:
-    from holds.colors import Palette, evaluate
-
-    report = evaluate(
-        ROOT / args.data, Palette.load(ROOT / args.palette), tuple(args.splits)
-    )
-    print(f"accuracy {report['accuracy']:.3f} on {report['holds']} holds")
-    for name, (accuracy, count) in report["per_color"].items():
-        print(f"  {name:8s} {accuracy:.3f}  (n={count})")
-    print("most frequent confusions (truth -> predicted):", report["confusions"])
 
 
 def main() -> None:
@@ -190,26 +128,6 @@ def main() -> None:
     # holds under 25 px goes from 0.47 to 0.66) and the user validates holds anyway.
     p_pred.add_argument("--conf", type=float, default=0.10)
     p_pred.set_defaults(func=predict)
-
-    p_col = sub.add_parser(
-        "colors", help="Detect holds and name their colour (JSON + overlay)"
-    )
-    p_col.add_argument("source", help="image, folder or glob")
-    p_col.add_argument(
-        "--weights", default=str(RUNS_DIR / "holds" / "weights" / "best.pt")
-    )
-    p_col.add_argument("--palette", default="configs/colors.yaml")
-    p_col.add_argument("--imgsz", type=int, default=1024)
-    p_col.add_argument("--conf", type=float, default=0.10)
-    p_col.set_defaults(func=colors)
-
-    p_ceval = sub.add_parser(
-        "colors-eval", help="Colour naming accuracy on ground-truth hold masks"
-    )
-    p_ceval.add_argument("--data", default="datasets/holds")
-    p_ceval.add_argument("--palette", default="configs/colors.yaml")
-    p_ceval.add_argument("--splits", nargs="+", default=["val", "test"])
-    p_ceval.set_defaults(func=colors_eval)
 
     args = parser.parse_args()
     args.func(args)
