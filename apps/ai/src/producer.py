@@ -39,12 +39,8 @@ class Seeded(NamedTuple):
     video_id: str  # `advices.id`: the job id of the advice
 
 
-def seed(video: str, db: PostgreSQL | None = None, storage: RustFS | None = None) -> Seeded:
-    """Create a user, a video row, a `pending` analysis and a `pending` advice, and upload ``video``.
-
-    The bucket is created if missing (the worker never does it), so this runs
-    without the Go server. Everything is named after a unique suffix.
-    """
+def _connect(db: PostgreSQL | None, storage: RustFS | None) -> tuple[PostgreSQL, RustFS]:
+    """Connect to the database and the storage; create the bucket if missing (the worker never does it)."""
     db = db or PostgreSQL().setup_config().connect()
     storage = storage or RustFS().setup_config()
     if storage.client is None:
@@ -53,15 +49,28 @@ def seed(video: str, db: PostgreSQL | None = None, storage: RustFS | None = None
         except PermanentError:
             # `connect` builds the client before checking the bucket, so it is usable here.
             storage.client.create_bucket(Bucket=storage.config.bucket)
+    return db, storage
 
-    name = f"seed{uuid4().hex[:12]}"
-    object_key = f"seed/{name}{Path(video).suffix}"
-    storage.client.upload_file(video, storage.config.bucket, object_key)
-    user = db.connection.execute(
+
+def _seed_user(db: PostgreSQL, name: str) -> str:
+    return db.connection.execute(
         "INSERT INTO users (username, first_name, last_name, email, password_hash)"
         " VALUES (%s, 'Seed', 'Seed', %s, 'x') RETURNING id",
         (name, f"{name}@example.com"),
     ).fetchone()[0]
+
+
+def seed(video: str, db: PostgreSQL | None = None, storage: RustFS | None = None) -> Seeded:
+    """Create a user, a video row, a `pending` analysis and a `pending` advice, and upload ``video``.
+
+    The bucket is created if missing (the worker never does it), so this runs
+    without the Go server. Everything is named after a unique suffix.
+    """
+    db, storage = _connect(db, storage)
+    name = f"seed{uuid4().hex[:12]}"
+    object_key = f"seed/{name}{Path(video).suffix}"
+    storage.client.upload_file(video, storage.config.bucket, object_key)
+    user = _seed_user(db, name)
     video_id = db.connection.execute(
         "INSERT INTO videos (user_id, object_key, content_type) VALUES (%s, %s, 'video/mp4') RETURNING id",
         (user, object_key),
