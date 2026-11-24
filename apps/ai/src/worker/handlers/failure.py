@@ -19,6 +19,11 @@ _MESSAGES = {
     ("db", True): "Database unavailable",
     ("db", False): "Job not found",
     ("result", False): "Result not found",
+    # Hold detection (route photo)
+    ("photo", True): "Storage unavailable",
+    ("photo", False): "Photo not found",
+    ("holds", False): "Unreadable photo",
+    ("model", False): "Hold model unavailable",
 }
 
 # Table of the job -> name of the `PostgreSQL` method that ends it in `failed`.
