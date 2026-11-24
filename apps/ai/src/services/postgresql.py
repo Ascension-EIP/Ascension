@@ -23,6 +23,9 @@ logger = logging.getLogger(__name__)
 PROGRESS_RESULT_SAVED = 85
 PROGRESS_MAX_RUNNING = 99
 
+_SET_PROGRESS = "status = %s, progress = %s"
+_SET_FAILED = "status = %s, error = %s"
+
 
 class PostgreSQL:
     """Connection to PostgreSQL and the job operations on `analyses` and `advices`.
@@ -111,7 +114,7 @@ class PostgreSQL:
         """Sets `running` and the progress, capped at 99 (100 is `complete`)."""
         self._update(
             job_id,
-            "status = %s, progress = %s",
+            _SET_PROGRESS,
             Status.RUNNING.value,
             max(0, min(progress, PROGRESS_MAX_RUNNING)),
         )
@@ -150,7 +153,7 @@ class PostgreSQL:
 
     def fail(self, job_id: str, message: str) -> None:
         """Ends the job with `failed`; `message` must be short, without traceback."""
-        self._update(job_id, "status = %s, error = %s", Status.FAILED.value, message)
+        self._update(job_id, _SET_FAILED, Status.FAILED.value, message)
 
     def get_status(self, job_id: str) -> Status:
         """Returns the current status (the handler skips a job already in `success`)."""
@@ -190,7 +193,7 @@ class PostgreSQL:
         """Sets `running` and the advice progress, capped at 99 (100 is `complete_advice`)."""
         self._update(
             video_id,
-            "status = %s, progress = %s",
+            _SET_PROGRESS,
             Status.RUNNING.value,
             max(0, min(progress, PROGRESS_MAX_RUNNING)),
             table="advices",
@@ -211,7 +214,7 @@ class PostgreSQL:
         """Ends the advice with `failed`; `message` must be short, without traceback."""
         self._update(
             video_id,
-            "status = %s, error = %s",
+            _SET_FAILED,
             Status.FAILED.value,
             message,
             table="advices",
