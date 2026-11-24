@@ -12,6 +12,7 @@ dependencies = [
     "dotenv>=0.9.9",
     "mediapipe==0.10.35",
     "numpy>=2.4.6",
+    "onnxruntime>=1.24",
     "openai>=3.49.0",
     "opencv-contrib-python>=5.0.0.93",
     "pika>=1.4.4",
