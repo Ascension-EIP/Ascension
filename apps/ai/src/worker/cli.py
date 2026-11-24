@@ -68,6 +68,19 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--model", help="Overrides LLM_MODEL.")
     p.add_argument("--base-url", help="Overrides LLM_BASE_URL.")
     p.set_defaults(run=_pose_advice)
+
+    p = sub.add_parser("holds-detect", help="Route photo -> holds JSON (contour, type, colour).")
+    p.add_argument("--image", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--render", help="Also write the photo with every hold drawn in its colour.")
+    p.add_argument("--conf", type=float, help="Minimum confidence. Default: 0.10")
+    p.add_argument("--model", help="ONNX model. Overrides HOLDS_MODEL_PATH.")
+    p.set_defaults(run=_holds_detect)
+
+    p = sub.add_parser("holds-colors-eval", help="Colour name accuracy on a labelled dataset (holds merge output).")
+    p.add_argument("--dataset", required=True, help="e.g. ../holds/datasets/holds")
+    p.add_argument("--splits", nargs="+", default=["val", "test"])
+    p.set_defaults(run=_holds_colors_eval)
     return parser
 
 
@@ -148,6 +161,28 @@ def _pose_advice(args: argparse.Namespace) -> None:
         hints = PoseAdvice(llm, llm.config.model).process(result)
         Path(args.out).write_text(hints.model_dump_json(exclude_none=True))
     log.info("Wrote %s", args.out)
+
+
+def _holds_detect(args: argparse.Namespace) -> None:
+    from pathlib import Path
+
+    from worker._3_holds._0_hold_detect import detect_holds
+    from worker._3_holds._1_hold_segment import HoldSegmenter, model_path
+
+    segmenter = HoldSegmenter(args.model or model_path())
+    result = detect_holds(args.image, segmenter, args.render, **_kwargs(args, confidence="conf"))
+    Path(args.out).write_text(result.model_dump_json(exclude_none=True))
+    log.info("Wrote %s (%d holds)", args.out, len(result.holds))
+
+
+def _holds_colors_eval(args: argparse.Namespace) -> None:
+    from worker._3_holds.evaluate import evaluate_colors
+
+    report = evaluate_colors(args.dataset, tuple(args.splits))
+    print(f"accuracy {report['accuracy']:.3f} on {report['holds']} holds")
+    for name, (accuracy, count) in report["per_color"].items():
+        print(f"  {name:8s} {accuracy:.3f}  (n={count})")
+    print("most frequent confusions (truth -> predicted):", report["confusions"])
 
 
 def consume() -> None:
