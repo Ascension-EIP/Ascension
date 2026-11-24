@@ -131,6 +131,72 @@ class Hints(BaseModel):
     summary: str
 
 
+class HoldDetectRequest(BaseModel):
+    """Payload of holds.detect.requested: detect the holds of a route photo. job_id is routes.id."""
+
+    job_id: str
+    object_key: str
+
+
+class HoldColor(BaseModel):
+    """Dominant colour of the hold. rgb is reliable for display; name is the closest reference
+    colour and is less reliable (distance: lower is closer).
+    """
+    distance: float
+    name: str
+    rgb: list[int]
+
+
+class HoldBox(BaseModel):
+    h: float
+    w: float
+    x: float
+    y: float
+
+
+class HoldPoint(BaseModel):
+    x: float
+    y: float
+
+
+class HoldContour(BaseModel):
+    """Same format as holds.contour: polygon of the hold and its bounding box."""
+
+    bbox: HoldBox
+    points: list[HoldPoint]
+
+
+class HoldType(StrEnum):
+    """Values of the hold_type enum of the database. The detector only returns unknown (any
+    hold) and volume.
+    """
+    CRIMP = "crimp"
+    EDGE = "edge"
+    FOOTHOLD = "foothold"
+    JUG = "jug"
+    PINCH = "pinch"
+    POCKET = "pocket"
+    SLOPER = "sloper"
+    UNKNOWN = "unknown"
+    VOLUME = "volume"
+
+
+class DetectedHold(BaseModel):
+    confidence: float
+    contour: HoldContour
+    type: HoldType
+    color: Optional[HoldColor] = None
+
+
+class HoldDetectResult(BaseModel):
+    """Holds detected on a route photo. Coordinates are pixels of the original photo
+    (image_width x image_height). The worker stores each hold as one row of the holds table.
+    """
+    holds: list[DetectedHold]
+    image_height: int
+    image_width: int
+
+
 class Job(BaseModel):
     job_id: str
 
@@ -155,6 +221,8 @@ class PoseDetectRequest(BaseModel):
 
 
 class RoutingKey(StrEnum):
+    HOLDS_DETECT_REQUESTED = "holds.detect.requested"
+    HOLDS_DETECT_STATUS = "holds.detect.status"
     POSE_ADVICE_REQUESTED = "pose.advice.requested"
     POSE_ADVICE_STATUS = "pose.advice.status"
     POSE_DETECT_COMPLETED = "pose.detect.completed"
