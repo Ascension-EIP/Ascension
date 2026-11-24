@@ -415,9 +415,9 @@ As for `upload-done`, these errors answer `500` instead of a `4xx`: the video er
 
 ---
 
-### GET /v1/videos/ — List videos
+### GET /v1/videos — List videos
 
-Returns one page of the caller's videos. The route is declared with a trailing slash: `GET /v1/videos` answers `301 Moved Permanently` to `/v1/videos/`.
+Returns one page of the caller's videos.
 
 **Query parameters:**
 
