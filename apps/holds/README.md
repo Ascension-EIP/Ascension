@@ -1,10 +1,12 @@
 # holds
 
 :::warning
-**Version:** 0.1
+**Version:** 0.2
 :::
 
-Climbing hold detection and route reading (pipeline block B), based on Ultralytics YOLO26-seg.
+Training tool of the hold detection model (pipeline block B), based on Ultralytics YOLO26-seg: dataset merge, training, evaluation and export.
+
+The detection itself runs in the AI worker ([apps/ai](../ai/README.md), step `_3_holds`), on the ONNX model written by `export`. The worker needs neither PyTorch nor Ultralytics, which stay in this project.
 
 ---
 
@@ -41,25 +43,20 @@ The merge:
 ```bash
 uv run python -m holds train --model yolo26s-seg.pt --imgsz 1024 --epochs 100
 uv run python -m holds predict path/to/wall.jpg
-uv run python -m holds colors path/to/wall.jpg   # detection + colour of every hold
-uv run python -m holds colors-eval               # colour naming accuracy on ground truth
+moon run holds:export   # runs/holds/weights/best.pt -> apps/ai/resources/holds_seg.onnx
 ```
 
-Training outputs go to `runs/holds/`, predictions to `runs/predict/`, colours to `runs/colors/` (one `.json` and one overlay `.jpg` per image).
+Training outputs go to `runs/holds/`, predictions to `runs/predict/`.
 
 Detection uses a confidence threshold of 0.10 by default: small footholds are found far more often (recall on holds under 25 px goes from 0.47 at 0.25 to 0.66), and the user validates holds anyway.
 
 ---
 
-## Hold colours (B3)
+## Updating the model of the worker
 
-Each hold colour is computed in CIELAB space from its mask (`src/holds/colors.py`):
+1. Train (`moon run holds:train`) and check the masks mAP of `runs/holds/` on the test split.
+2. Export: `moon run holds:export` writes `apps/ai/resources/holds_seg.onnx`. It keeps the standard head, and the worker applies the NMS itself: the end-to-end head finds fewer holds (recall 0.63 against 0.70 on the test split).
+3. Check it in the worker: `cd ../ai && uv run worker holds-detect --image path/to/wall.jpg --out /tmp/holds.json --render /tmp/holds.jpg`.
+4. Commit the new `holds_seg.onnx` with the worker: it is versioned like the MediaPipe models, so the Docker image always contains it.
 
-- the mask border is eroded to ignore wall pixels;
-- the colour is the median of the 10 % most saturated pixels, so chalk is ignored;
-- the photo colour cast is removed using the wall around the holds;
-- the result is named after the closest reference in `configs/colors.yaml` (11 colours).
-
-The JSON output gives, for each hold, its class, confidence, polygon and colour (`name`, `distance` to the reference, display `rgb`, `lab` descriptor).
-
-Known limits: the displayed `rgb` is reliable, the `name` less so. Naming reaches about 83 % within a calibrated gym and about 60 % in an unseen one, mostly red/orange, green/yellow and chalked black/cream confusions.
+The hold colours (step B3) are computed by the worker too (`apps/ai/src/worker/_3_holds/_2_hold_color.py`). Their accuracy is measured on the merged dataset of this project with `uv run worker holds-colors-eval --dataset ../holds/datasets/holds` from `apps/ai`.
