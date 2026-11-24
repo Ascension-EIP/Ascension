@@ -197,7 +197,7 @@ def test_consumer_runs_one_job_at_a_time_and_stops_its_executor():
     broker = make_broker()
     broker.start_consuming()
     consumed = [c.kwargs["queue"] for c in broker.channel.basic_consume.call_args_list]
-    assert sorted(consumed) == ["poses.advice", "poses.detect"]  # one consumer per queue, not per binding
+    assert sorted(consumed) == ["holds.detect", "poses.advice", "poses.detect"]  # one consumer per queue, not per binding
     with pytest.raises(RuntimeError):  # the executor is shut down once consuming ends
         broker.submit(lambda: None)
 

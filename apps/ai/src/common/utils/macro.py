@@ -7,6 +7,7 @@
 # @status done
 from common.models.broker import Bind
 from shared.models import RoutingKey
+from worker.handlers.hold_detect_request import hold_detect_request
 from worker.handlers.pose_advice_request import pose_advice_request
 from worker.handlers.pose_detect_request import pose_detect_request
 
@@ -20,5 +21,10 @@ BROKER_BINDINGS: list[Bind] = [
         queue="poses.advice",
         routing_key=RoutingKey.POSE_ADVICE_REQUESTED,
         callback=pose_advice_request,
+    ),
+    Bind(
+        queue="holds.detect",
+        routing_key=RoutingKey.HOLDS_DETECT_REQUESTED,
+        callback=hold_detect_request,
     ),
 ]
