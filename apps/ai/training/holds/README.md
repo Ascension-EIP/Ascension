@@ -6,7 +6,9 @@
 
 Training tool of the hold detection model (pipeline block B), based on Ultralytics YOLO26-seg: dataset merge, training, evaluation and export.
 
-The detection itself runs in the AI worker ([apps/ai](../ai/README.md), step `_3_holds`), on the ONNX model written by `export`. The worker needs neither PyTorch nor Ultralytics, which stay in this project.
+The detection itself runs in the AI worker ([apps/ai](../../README.md), step `_3_holds`), on the ONNX model written by `export`. The worker needs neither PyTorch nor Ultralytics, which stay in this project.
+
+This project lives in `apps/ai/training/holds` but keeps its own `pyproject.toml` and environment: the worker's tests, lint and Docker image ignore `training/`. The moon project is still `holds` (`moon run holds:<task>`).
 
 ---
 
@@ -56,7 +58,7 @@ Detection uses a confidence threshold of 0.10 by default: small footholds are fo
 
 1. Train (`moon run holds:train`) and check the masks mAP of `runs/holds/` on the test split.
 2. Export: `moon run holds:export` writes `apps/ai/resources/holds_seg.onnx`. It keeps the standard head, and the worker applies the NMS itself: the end-to-end head finds fewer holds (recall 0.63 against 0.70 on the test split).
-3. Check it in the worker: `cd ../ai && uv run worker holds-detect --image path/to/wall.jpg --out /tmp/holds.json --render /tmp/holds.jpg`.
+3. Check it in the worker: `cd ../.. && uv run worker holds-detect --image path/to/wall.jpg --out /tmp/holds.json --render /tmp/holds.jpg`.
 4. Commit the new `holds_seg.onnx` with the worker: it is versioned like the MediaPipe models, so the Docker image always contains it.
 
-The hold colours (step B3) are computed by the worker too (`apps/ai/src/worker/_3_holds/_2_hold_color.py`). Their accuracy is measured on the merged dataset of this project with `uv run worker holds-colors-eval --dataset ../holds/datasets/holds` from `apps/ai`.
+The hold colours (step B3) are computed by the worker too (`apps/ai/src/worker/_3_holds/_2_hold_color.py`). Their accuracy is measured on the merged dataset of this project with `uv run worker holds-colors-eval --dataset training/holds/datasets/holds` from `apps/ai`.

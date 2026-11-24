@@ -78,7 +78,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(run=_holds_detect)
 
     p = sub.add_parser("holds-colors-eval", help="Colour name accuracy on a labelled dataset (holds merge output).")
-    p.add_argument("--dataset", required=True, help="e.g. ../holds/datasets/holds")
+    p.add_argument("--dataset", required=True, help="e.g. training/holds/datasets/holds")
     p.add_argument("--splits", nargs="+", default=["val", "test"])
     p.set_defaults(run=_holds_colors_eval)
     return parser

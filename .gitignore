@@ -87,10 +87,10 @@ biomechanics.json
 # =============================================================================
 # Holds (hold detection: datasets, model weights, training runs)
 # =============================================================================
-apps/holds/models/*.pt
-apps/holds/datasets/*
-!apps/holds/datasets/.gitkeep
-apps/holds/runs/
+apps/ai/training/holds/models/*.pt
+apps/ai/training/holds/datasets/*
+!apps/ai/training/holds/datasets/.gitkeep
+apps/ai/training/holds/runs/
 
 # =============================================================================
 # Go

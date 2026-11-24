@@ -1,13 +1,13 @@
 # @date 2026-11-24
 # @file evaluate.py
-# @brief Accuracy of the hold colour names on a labelled dataset (built by apps/holds).
+# @brief Accuracy of the hold colour names on a labelled dataset (built by apps/ai/training/holds).
 # @project Ascension
 # @author Livoooo <zarigu92@gmail.com>
 # @copyright (c) 2026 Ascension
 # @status done
 """Colour name accuracy on ground-truth hold masks.
 
-The dataset is the output of ``holds merge`` (apps/holds): YOLO segmentation labels in
+The dataset is the output of ``holds merge`` (apps/ai/training/holds): YOLO segmentation labels in
 ``labels/<split>/`` and the original class of every instance in ``meta.json``. Only instances
 whose original class is a colour (``<colour>_hold``, as in the Guillaume dataset) are scored.
 """

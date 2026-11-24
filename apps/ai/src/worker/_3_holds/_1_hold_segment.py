@@ -7,7 +7,7 @@
 # @status done
 """Instance segmentation of holds and volumes with ONNX Runtime (no PyTorch, no ultralytics).
 
-The model is trained and exported by ``apps/holds`` (``holds export``). Its two outputs are:
+The model is trained and exported by ``apps/ai/training/holds`` (``holds export``). Its two outputs are:
 
 - ``output0`` (1, 4 + classes + 32, anchors): box (cx, cy, w, h), class scores and mask
   coefficients of every candidate, in the letterboxed input frame;

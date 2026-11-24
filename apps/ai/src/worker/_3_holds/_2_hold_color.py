@@ -35,7 +35,7 @@ LIGHTNESS_PERCENTILE = 25
 LIGHTNESS_WEIGHT = 0.5  # lightness counts half as much as colour in the distance
 
 #: Reference descriptors (L, a, b): median per colour on the train splits of the Guillaume
-#: (polygon masks) and eeqyl (ellipses inscribed in boxes) datasets, see apps/holds.
+#: (polygon masks) and eeqyl (ellipses inscribed in boxes) datasets, see apps/ai/training/holds.
 PALETTE: dict[str, tuple[float, float, float]] = {
     "black": (17.5, -0.2, -0.4),
     "blue": (30.5, 3.6, -30.6),

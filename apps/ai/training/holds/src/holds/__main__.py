@@ -7,7 +7,9 @@
 # @status done
 """Hold detection training CLI: check, merge, train, predict, export.
 
-Inference runs in the AI worker (apps/ai, step `_3_holds`) on the ONNX model written by `export`.
+Inference runs in the AI worker (apps/ai/src/worker/_3_holds) on the ONNX model written by `export`.
+This project lives in apps/ai/training/holds with its own environment: PyTorch and Ultralytics
+must never reach the worker image.
 """
 
 import argparse
@@ -17,7 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 MODELS_DIR = ROOT / "models"
 RUNS_DIR = ROOT / "runs"
-WORKER_MODEL = ROOT.parent / "ai" / "resources" / "holds_seg.onnx"
+WORKER_MODEL = ROOT.parents[1] / "resources" / "holds_seg.onnx"  # apps/ai/resources
 
 
 def check(_: argparse.Namespace) -> None:

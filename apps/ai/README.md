@@ -182,7 +182,7 @@ Every step runs on its own: no RabbitMQ, no database, no storage. The output of 
 | Command                           | Input                | Output                                       | Main options (defaults)                                                                                           |
 | --------------------------------- | -------------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `uv run worker holds-detect`      | `--image`            | `--out` holds JSON (contour, type, colour)   | `--render` writes the photo with every hold drawn in its colour, `--conf` (0.10), `--model`                       |
-| `uv run worker holds-colors-eval` | `--dataset`          | Colour name accuracy, per colour             | `--splits` (`val test`). The dataset is the output of `holds merge` (apps/holds)                                  |
+| `uv run worker holds-colors-eval` | `--dataset`          | Colour name accuracy, per colour             | `--splits` (`val test`). The dataset is the output of `holds merge` (apps/ai/training/holds)                      |
 | `uv run worker pose-skeleton`     | `--video`            | `--out` raw skeleton JSON                    | `--render` writes a video with the skeleton drawn                                                                 |
 | `uv run worker pose-filter`       | `--input`            | `--out` filtered JSON                        | `--min-visibility` (0.5), `--max-gap` (5 frames), `--window` (5 frames)                                           |
 | `uv run worker pose-metrics`      | `--input`            | `--out` JSON with speeds and metrics         | `--bent-arm` (0.8)                                                                                                |
@@ -210,10 +210,10 @@ The thresholds are named constants in `src/worker/_1_mediapipe/` and can be over
 
 ```bash
 uv run worker holds-detect --image path/to/wall.jpg --out /tmp/holds.json --render /tmp/holds.jpg
-uv run worker holds-colors-eval --dataset ../holds/datasets/holds
+uv run worker holds-colors-eval --dataset training/holds/datasets/holds
 ```
 
-The hold model is trained in [apps/holds](../holds/README.md) and exported to `resources/holds_seg.onnx` with `moon run holds:export`. The worker runs it with ONNX Runtime on the CPU (no PyTorch): detection took 0.7 s per photo (median, at most 1 s) on the 11 test photos of apps/holds, measured on a laptop CPU.
+The hold model is trained in [training/holds](training/holds/README.md) (its own environment, ignored by the worker tests, lint and image) and exported to `resources/holds_seg.onnx` with `moon run holds:export`. The worker runs it with ONNX Runtime on the CPU (no PyTorch): detection took 0.7 s per photo (median, at most 1 s) on the 11 test photos of training/holds, measured on a laptop CPU.
 
 ---
 
@@ -284,7 +284,7 @@ Without `--upstream none`, moon first runs the upstream tasks, including `root:s
 | `src/shared/models.py`             | Generated from `schemas/`. Never edit it                                                                                                                                        |
 | `src/producer.py`                  | Stand-in for the Go server                                                                                                                                                      |
 | `scripts/download-model.sh`        | Downloads the MediaPipe model                                                                                                                                                   |
-| `resources/`                       | MediaPipe models, hold model `holds_seg.onnx` (42 MB, exported by apps/holds) and the sample video `example-2.mp4`                                                              |
+| `resources/`                       | MediaPipe models, hold model `holds_seg.onnx` (42 MB, exported by training/holds) and the sample video `example-2.mp4`                                                          |
 | `tests/`                           | See [Tests](#tests)                                                                                                                                                             |
 
 Pipeline steps take and return data. They do not depend on RabbitMQ, the database or storage.
@@ -306,7 +306,7 @@ The contract between the worker and the server lives in `schemas/` at the reposi
 - **An invalid payload goes to the dead-letter queue without any status.** The analysis stays `pending` in the database. The server's cron job marks an analysis still `pending` after 15 minutes as `failed`.
 - **Progress 75 is never written.** Skeleton, filtering, metrics and movements run in one call, so the progress goes from 70 to 80.
 - **No reconnection.** If the RabbitMQ connection drops, the process exits with a non-zero code and Docker restarts it. The worker finishes the running job first.
-- **Hold detection misses small footholds and does not classify grips.** On the test split of apps/holds, about 66 % of the holds smaller than 25 px (on a 1600 px photo) are found, against more than 90 % of the larger ones. Every hold is typed `unknown` (or `volume`).
+- **Hold detection misses small footholds and does not classify grips.** On the test split of training/holds, about 66 % of the holds smaller than 25 px (on a 1600 px photo) are found, against more than 90 % of the larger ones. Every hold is typed `unknown` (or `volume`).
 - **Colour names are a hint, not a fact.** The displayed `rgb` is reliable; the `name` is right for about 62 % of the holds of the Guillaume dataset (83 % with a palette calibrated on that gym, about 60 % in an unseen one). Red/orange, green/yellow and chalked black/cream are the usual confusions. The user validates the holds of a route anyway.
 - **The Go server does not publish hold jobs yet.** The contract is ready (`schemas/hold_detect_request.schema.json`, `holds.detect.requested`, the `routes` job columns); the routes of the API remain to be written.
 - **The end-to-end test is not in the CI.** It needs `docker compose`. Processing time of `example-2.mp4` (10 s, 1.6 MB) was measured at about 6 s on a CPU, with a simulated LLM. This is a baseline from a single video.
