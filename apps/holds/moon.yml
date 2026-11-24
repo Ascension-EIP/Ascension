@@ -72,6 +72,15 @@ tasks:
       - 'install'
       - 'setup'
 
+  # Writes the ONNX model of the AI worker (apps/ai/resources/holds_seg.onnx) from runs/holds.
+  export:
+    command: 'uv'
+    args: ['run', 'python', '-m', 'holds', 'export']
+    options:
+      cache: false
+    deps:
+      - 'install'
+
   clean:
     script: |
       rm -rf .venv .ruff_cache .pytest_cache

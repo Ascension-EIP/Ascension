@@ -5,17 +5,19 @@
 # @author Livoooo <zarigu92@gmail.com>
 # @copyright (c) 2026 Ascension
 # @status done
-"""Hold detection training CLI: check, merge, train, predict.
+"""Hold detection training CLI: check, merge, train, predict, export.
 
-Inference and hold colours run in the AI worker (apps/ai, step `_3_holds`).
+Inference runs in the AI worker (apps/ai, step `_3_holds`) on the ONNX model written by `export`.
 """
 
 import argparse
+import shutil
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 MODELS_DIR = ROOT / "models"
 RUNS_DIR = ROOT / "runs"
+WORKER_MODEL = ROOT.parent / "ai" / "resources" / "holds_seg.onnx"
 
 
 def check(_: argparse.Namespace) -> None:
@@ -68,6 +70,21 @@ def predict(args: argparse.Namespace) -> None:
         project=str(RUNS_DIR),
         name="predict",
     )
+
+
+def export(args: argparse.Namespace) -> None:
+    """Export trained weights to the ONNX model read by the AI worker."""
+    from ultralytics import YOLO
+
+    # Standard head (one-to-many): the worker applies NMS itself. The end-to-end head
+    # (nms=False) skips NMS but finds fewer holds (recall 0.63 vs 0.70 on the test split).
+    exported = YOLO(args.weights).export(
+        format="onnx", imgsz=args.imgsz, opset=17, simplify=True
+    )
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    shutil.move(exported, out)
+    print(f"ONNX model written to {out}")
 
 
 def main() -> None:
@@ -128,6 +145,16 @@ def main() -> None:
     # holds under 25 px goes from 0.47 to 0.66) and the user validates holds anyway.
     p_pred.add_argument("--conf", type=float, default=0.10)
     p_pred.set_defaults(func=predict)
+
+    p_exp = sub.add_parser(
+        "export", help="Export trained weights to the ONNX model of the AI worker"
+    )
+    p_exp.add_argument(
+        "--weights", default=str(RUNS_DIR / "holds" / "weights" / "best.pt")
+    )
+    p_exp.add_argument("--imgsz", type=int, default=1024)
+    p_exp.add_argument("--out", default=str(WORKER_MODEL))
+    p_exp.set_defaults(func=export)
 
     args = parser.parse_args()
     args.func(args)
