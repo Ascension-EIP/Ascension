@@ -70,4 +70,4 @@ def pose_advice_request(payload: Job):
         with_retry(lambda: db.complete_advice(job_id, hints))
         broker.publish(RoutingKey.POSE_ADVICE_STATUS, JobStatus(job_id=job_id, status=Status.SUCCESS))
     except Exception as exc:
-        raise fail_job(job_id, RoutingKey.POSE_ADVICE_STATUS, stage, exc, advice=True) from exc
+        raise fail_job(job_id, RoutingKey.POSE_ADVICE_STATUS, stage, exc, table="advices") from exc

@@ -21,6 +21,9 @@ _MESSAGES = {
     ("result", False): "Result not found",
 }
 
+# Table of the job -> name of the `PostgreSQL` method that ends it in `failed`.
+_FAIL_METHODS = {"analyses": "fail", "advices": "fail_advice", "routes": "fail_route"}
+
 
 def short_message(stage: str, exc: Exception) -> str:
     """Short, secret-free message for a failed ``stage``; the details stay in the logs."""
@@ -29,19 +32,20 @@ def short_message(stage: str, exc: Exception) -> str:
     return "Analysis failed"
 
 
-def fail_job(job_id: str, status_key: RoutingKey, stage: str, exc: Exception, advice: bool = False) -> PermanentError:
+def fail_job(
+    job_id: str, status_key: RoutingKey, stage: str, exc: Exception, table: str = "analyses"
+) -> PermanentError:
     """Report a definitive failure once and return the error to raise.
 
-    Writes ``failed`` in the database (``advices`` if ``advice``, else ``analyses``), publishes the
-    ``failed`` status with a short message, and logs the traceback. Raising the
-    returned `PermanentError` makes the ``consume`` wrapper dead-letter the message
+    Writes ``failed`` in the job row of ``table`` (``analyses``, ``advices`` or ``routes``),
+    publishes the ``failed`` status with a short message, and logs the traceback. Raising
+    the returned `PermanentError` makes the ``consume`` wrapper dead-letter the message
     without retrying.
     """
     message = short_message(stage, exc)
     log.error("Job %s failed (%s): %s", job_id, stage, message, exc_info=exc)
     try:
-        db = get_db()
-        (db.fail_advice if advice else db.fail)(job_id, message)
+        getattr(get_db(), _FAIL_METHODS[table])(job_id, message)
     except Exception:  # noqa: BLE001
         log.exception("Job %s: could not write the failure in the database", job_id)
     try:
