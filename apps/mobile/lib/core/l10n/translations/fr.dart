@@ -160,6 +160,8 @@ const Map<String, String> frTranslations = {
       'Posez ou stabilisez votre smartphone sur un support fixe ou un trépied.',
   'analysis.tipLighting': 'Privilégiez un bon éclairage uniforme et évitez les contre-jours puissants.',
   'analysis.previewTitle': 'Aperçu de la vidéo',
+  'analysis.videoPlaybackErrorTitle': 'Aperçu vidéo indisponible',
+  'analysis.videoPlaybackErrorDesc': 'La lecture vidéo n\'est pas prise en charge sur cette plateforme ou pour ce fichier. Vous pouvez tout de même continuer.',
   'analysis.confirmTitle': 'Confirmation de l\'analyse',
   'analysis.confirmPrompt':
       'Êtes-vous sûr de vouloir faire analyser cette vidéo de grimpe ?',

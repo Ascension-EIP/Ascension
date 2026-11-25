@@ -8,6 +8,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:forui/forui.dart';
 import 'package:mobile/core/l10n/app_localizations.dart';
 import 'package:mobile/features/analysis/domain/entities/pose_landmarks.dart';
@@ -40,6 +41,7 @@ class VideoAnalysisPlayer extends StatefulWidget {
 class _VideoAnalysisPlayerState extends State<VideoAnalysisPlayer> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
+  bool _hasError = false;
   bool _showSkeleton = true;
   final bool _showAngles = true;
   double _playbackSpeed = 1.0;
@@ -74,6 +76,11 @@ class _VideoAnalysisPlayerState extends State<VideoAnalysisPlayer> {
       }
     } catch (e) {
       debugPrint('Error initializing video player: $e');
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+        });
+      }
     }
   }
 
@@ -89,8 +96,12 @@ class _VideoAnalysisPlayerState extends State<VideoAnalysisPlayer> {
 
   @override
   void dispose() {
-    _controller.removeListener(_onControllerUpdate);
-    _controller.dispose();
+    if (_isInitialized) {
+      _controller.removeListener(_onControllerUpdate);
+    }
+    try {
+      _controller.dispose();
+    } catch (_) {}
     super.dispose();
   }
 
@@ -124,6 +135,54 @@ class _VideoAnalysisPlayerState extends State<VideoAnalysisPlayer> {
 
   @override
   Widget build(BuildContext context) {
+    if (_hasError) {
+      return FCard(
+        child: SizedBox(
+          height: 240,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: context.theme.colors.muted,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      FLucideIcons.videoOff,
+                      size: 28,
+                      color: context.theme.colors.mutedForeground,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    context.tr('analysis.videoPlaybackErrorTitle'),
+                    textAlign: TextAlign.center,
+                    style: context.theme.typography.body.md.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: context.theme.colors.foreground,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    context.tr('analysis.videoPlaybackErrorDesc'),
+                    textAlign: TextAlign.center,
+                    style: context.theme.typography.body.sm.copyWith(
+                      color: context.theme.colors.mutedForeground,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.03);
+    }
+
     if (!_isInitialized) {
       return Container(
         height: 280,

@@ -164,6 +164,8 @@ const Map<String, String> enTranslations = {
   'analysis.tipLighting':
       'Ensure good, even lighting and avoid strong backlighting.',
   'analysis.previewTitle': 'Video Preview',
+  'analysis.videoPlaybackErrorTitle': 'Video preview unavailable',
+  'analysis.videoPlaybackErrorDesc': 'Video playback is not supported on this platform or for this file. You can still proceed.',
   'analysis.confirmTitle': 'Confirm Analysis',
   'analysis.confirmPrompt':
       'Are you sure you want to analyze this climb video?',
