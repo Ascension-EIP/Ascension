@@ -36,23 +36,25 @@ class Broker:
 
     def setup_config(self) -> Self:
         broker_user = (
-            os.getenv("RABBITMQ_DEFAULT_USER")
+            os.getenv("QUEUE_USER")
+            or os.getenv("RABBITMQ_DEFAULT_USER")
             or os.getenv("RABBITMQ_USER")
             or "ascension"
         )
         broker_pass = (
-            os.getenv("RABBITMQ_DEFAULT_PASS")
+            os.getenv("QUEUE_PASS")
+            or os.getenv("RABBITMQ_DEFAULT_PASS")
             or os.getenv("RABBITMQ_PASS")
             or "ascension"
         )
         self.config = BrokerModel(
-            host=os.getenv("RABBITMQ_HOST", "localhost"),
-            port=int(os.getenv("RABBITMQ_PORT", "5672")),
+            host=os.getenv("QUEUE_HOST") or os.getenv("RABBITMQ_HOST") or "localhost",
+            port=int(os.getenv("QUEUE_PORT") or os.getenv("RABBITMQ_PORT") or "5672"),
             user=broker_user,
             password=broker_pass,
             retry_delay=int(os.getenv("RABBITMQ_RETRY_DELAY", "5")),
             max_retries=int(os.getenv("RABBITMQ_MAX_RETRIES", "12")),
-            exchange="events",
+            exchange=os.getenv("QUEUE_EXCHANGE_EVENT") or "events",
         )
         throw_if_none(self.config)
         log.info("Broker config: %s:%d", self.config.host, self.config.port)

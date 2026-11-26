@@ -241,19 +241,13 @@ STORAGE_SECRET=ascension
 STORAGE_UPLOAD_EXP=1h
 STORAGE_DOWNLOAD_EXP=1h
 
-# RabbitMQ, read by the Go server
+# RabbitMQ, shared by the Go server, AI worker, and RabbitMQ container (docker-compose.yml)
 QUEUE_HOST=localhost
 QUEUE_PORT=5672
 QUEUE_USER=ascension
 QUEUE_PASS=ascension
 QUEUE_TLS=false
 QUEUE_EXCHANGE_EVENT=events
-
-# RabbitMQ, read by the AI worker
-RABBITMQ_HOST=localhost
-RABBITMQ_PORT=5672
-RABBITMQ_USER=ascension
-RABBITMQ_PASS=ascension
 
 # Backend Server
 PORT=8080

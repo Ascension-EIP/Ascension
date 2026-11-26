@@ -24,11 +24,11 @@ services:
     container_name: ascension-rabbitmq
     restart: unless-stopped
     ports:
-      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${QUEUE_PORT:-5672}:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-ascension}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-ascension}
+      RABBITMQ_DEFAULT_USER: ${QUEUE_USER:-ascension}
+      RABBITMQ_DEFAULT_PASS: ${QUEUE_PASS:-ascension}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
@@ -78,8 +78,8 @@ services:
       - POSTGRES_PARAMS=${POSTGRES_PARAMS:-sslmode=disable}
       - QUEUE_HOST=rabbitmq
       - QUEUE_PORT=5672
-      - QUEUE_USER=${RABBITMQ_DEFAULT_USER:-${QUEUE_USER:-ascension}}
-      - QUEUE_PASS=${RABBITMQ_DEFAULT_PASS:-${QUEUE_PASS:-ascension}}
+      - QUEUE_USER=${QUEUE_USER:-ascension}
+      - QUEUE_PASS=${QUEUE_PASS:-ascension}
       - QUEUE_TLS=false
       - STORAGE_ENDPOINT=http://rustfs:9000
       - STORAGE_REGION=${STORAGE_REGION:-us-east-1}
@@ -116,10 +116,10 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-ascension}
       - POSTGRES_DB=${POSTGRES_DB:-ascension}
       - POSTGRES_DB_URL=postgres://${POSTGRES_USER:-ascension}:${POSTGRES_PASSWORD:-ascension}@postgresql:5432/${POSTGRES_DB:-ascension}
-      - RABBITMQ_HOST=rabbitmq
-      - RABBITMQ_PORT=5672
-      - RABBITMQ_USER=${RABBITMQ_DEFAULT_USER:-${RABBITMQ_USER:-ascension}}
-      - RABBITMQ_PASS=${RABBITMQ_DEFAULT_PASS:-${RABBITMQ_PASS:-ascension}}
+      - QUEUE_HOST=rabbitmq
+      - QUEUE_PORT=5672
+      - QUEUE_USER=${QUEUE_USER:-ascension}
+      - QUEUE_PASS=${QUEUE_PASS:-ascension}
       - STORAGE_ENDPOINT=http://rustfs:9000
       - STORAGE_ID=${STORAGE_ID:-ascension}
       - STORAGE_SECRET=${STORAGE_SECRET:-ascension}
