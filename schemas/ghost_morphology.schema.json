@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GhostMorphology",
+  "description": "Format of ghosts.morphology.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "height_cm"
+  ],
+  "properties": {
+    "height_cm": {
+      "type": "number"
+    },
+    "arm_span_cm": {
+      "description": "Defaults to height_cm.",
+      "type": "number"
+    },
+    "dominant_hand": {
+      "type": "string",
+      "enum": [
+        "left",
+        "right",
+        "ambidextrous"
+      ]
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/BodyConstraint"
+      }
+    }
+  },
+  "definitions": {
+    "BodyConstraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "zone",
+        "type"
+      ],
+      "properties": {
+        "zone": {
+          "$ref": "hints.schema.json#/definitions/BodyZone"
+        },
+        "type": {
+          "$ref": "#/definitions/ConstraintType"
+        }
+      }
+    },
+    "ConstraintType": {
+      "type": "string",
+      "enum": [
+        "missing",
+        "injured"
+      ]
+    }
+  }
+}

@@ -9,6 +9,8 @@
     "pose.detect.status",
     "pose.advice.status",
     "holds.detect.requested",
-    "holds.detect.status"
+    "holds.detect.status",
+    "ghosts.compute.requested",
+    "ghosts.compute.status"
   ]
 }

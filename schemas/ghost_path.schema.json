@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GhostPath",
+  "description": "Format of ghosts.path. Coordinates are pixels of the route photo (y down); landmark names are the keys of Frame.landmarks.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "image_width",
+    "image_height",
+    "wall_angle_deg",
+    "steps"
+  ],
+  "properties": {
+    "image_width": {
+      "type": "integer"
+    },
+    "image_height": {
+      "type": "integer"
+    },
+    "wall_angle_deg": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/GhostStep"
+      }
+    }
+  },
+  "definitions": {
+    "GhostPoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "x",
+        "y"
+      ],
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      }
+    },
+    "GhostHolds": {
+      "description": "Hold id under each limb, null when the limb is free.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "left_hand",
+        "right_hand",
+        "left_foot",
+        "right_foot"
+      ],
+      "properties": {
+        "left_hand": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "right_hand": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "left_foot": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "right_foot": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "GhostStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "holds",
+        "center_of_mass",
+        "landmarks"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer"
+        },
+        "moved_limb": {
+          "$ref": "analysis_result.schema.json#/definitions/Limb"
+        },
+        "holds": {
+          "$ref": "#/definitions/GhostHolds"
+        },
+        "center_of_mass": {
+          "$ref": "#/definitions/GhostPoint"
+        },
+        "landmarks": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/GhostPoint"
+          }
+        }
+      },
+      "description": "One pose of the ghost. moved_limb is the limb moved to reach it, absent for the start step."
+    }
+  }
+}

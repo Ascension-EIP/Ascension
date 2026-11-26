@@ -61,6 +61,58 @@ type Pause struct {
 	StartMS    int64 `json:"start_ms"`
 }
 
+// Payload of ghosts.compute.requested: compute the ghost of a route. job_id is ghosts.id.
+type GhostComputeRequest struct {
+	JobID      string          `json:"job_id"`
+	Preference *BetaPreference `json:"preference,omitempty"`
+}
+
+// Format of ghosts.morphology.
+type GhostMorphology struct {
+	// Defaults to height_cm.
+	ArmSpanCM    *float64         `json:"arm_span_cm,omitempty"`
+	Constraints  []BodyConstraint `json:"constraints,omitempty"`
+	DominantHand *DominantHand    `json:"dominant_hand,omitempty"`
+	HeightCM     float64          `json:"height_cm"`
+}
+
+type BodyConstraint struct {
+	Type ConstraintType `json:"type"`
+	Zone BodyZone       `json:"zone"`
+}
+
+// Format of ghosts.path. Coordinates are pixels of the route photo (y down); landmark names
+// are the keys of Frame.landmarks.
+type GhostPath struct {
+	ImageHeight  int64       `json:"image_height"`
+	ImageWidth   int64       `json:"image_width"`
+	Steps        []GhostStep `json:"steps"`
+	WallAngleDeg *float64    `json:"wall_angle_deg"`
+}
+
+// One pose of the ghost. moved_limb is the limb moved to reach it, absent for the start
+// step.
+type GhostStep struct {
+	CenterOfMass GhostPoint            `json:"center_of_mass"`
+	Holds        GhostHolds            `json:"holds"`
+	Index        int64                 `json:"index"`
+	Landmarks    map[string]GhostPoint `json:"landmarks"`
+	MovedLimb    *Limb                 `json:"moved_limb,omitempty"`
+}
+
+type GhostPoint struct {
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
+}
+
+// Hold id under each limb, null when the limb is free.
+type GhostHolds struct {
+	LeftFoot  *string `json:"left_foot"`
+	LeftHand  *string `json:"left_hand"`
+	RightFoot *string `json:"right_foot"`
+	RightHand *string `json:"right_hand"`
+}
+
 type Hints struct {
 	GeneratedAt time.Time `json:"generated_at"`
 	Items       []Hint    `json:"items"`
@@ -80,8 +132,11 @@ type Hint struct {
 
 // Payload of holds.detect.requested: detect the holds of a route photo. job_id is routes.id.
 type HoldDetectRequest struct {
-	JobID     string `json:"job_id"`
-	ObjectKey string `json:"object_key"`
+	// Direction of the ground in the camera frame of the photo (OpenCV axes: x right, y down, z
+	// forward), any norm; sent by the mobile from the accelerometer.
+	Gravity   []float64 `json:"gravity,omitempty"`
+	JobID     string    `json:"job_id"`
+	ObjectKey string    `json:"object_key"`
 }
 
 // Holds detected on a route photo. Coordinates are pixels of the original photo
@@ -90,6 +145,7 @@ type HoldDetectResult struct {
 	Holds       []DetectedHold `json:"holds"`
 	ImageHeight int64          `json:"image_height"`
 	ImageWidth  int64          `json:"image_width"`
+	Wall        *WallPlane     `json:"wall,omitempty"`
 }
 
 type DetectedHold struct {
@@ -125,6 +181,18 @@ type HoldPoint struct {
 	Y float64 `json:"y"`
 }
 
+// Plane of the wall estimated from the photo. homography maps photo pixels to centimetres
+// in the wall plane (y up).
+type WallPlane struct {
+	// Wall angle: 0 vertical, > 0 overhang, < 0 slab; null when the gravity is unknown.
+	AngleDeg    *float64    `json:"angle_deg"`
+	FocalPx     float64     `json:"focal_px"`
+	Homography  [][]float64 `json:"homography"`
+	InlierRatio float64     `json:"inlier_ratio"`
+	// Name of the depth model.
+	Model string `json:"model"`
+}
+
 type Job struct {
 	JobID string `json:"job_id"`
 }
@@ -147,6 +215,23 @@ const (
 	LimbLeftHand  Limb = "left_hand"
 	LimbRightFoot Limb = "right_foot"
 	LimbRightHand Limb = "right_hand"
+)
+
+// Style of the beta: easy (easiest), power (fewer and longer moves), technique (short
+// moves, more foot placements). The worker defaults to easy.
+type BetaPreference string
+
+const (
+	BetaPreferenceTechnique BetaPreference = "technique"
+	Easy                    BetaPreference = "easy"
+	Power                   BetaPreference = "power"
+)
+
+type ConstraintType string
+
+const (
+	Injured ConstraintType = "injured"
+	Missing ConstraintType = "missing"
 )
 
 type BodyZone string
@@ -184,14 +269,22 @@ const (
 	Torso             BodyZone = "torso"
 )
 
+type DominantHand string
+
+const (
+	Ambidextrous DominantHand = "ambidextrous"
+	Left         DominantHand = "left"
+	Right        DominantHand = "right"
+)
+
 type FocusArea string
 
 const (
-	Endurance   FocusArea = "endurance"
-	Flexibility FocusArea = "flexibility"
-	Mental      FocusArea = "mental"
-	Strength    FocusArea = "strength"
-	Technique   FocusArea = "technique"
+	Endurance          FocusArea = "endurance"
+	Flexibility        FocusArea = "flexibility"
+	FocusAreaTechnique FocusArea = "technique"
+	Mental             FocusArea = "mental"
+	Strength           FocusArea = "strength"
 )
 
 // Values of the hold_type enum of the database. The detector only returns unknown (any
@@ -223,11 +316,13 @@ const (
 type RoutingKey string
 
 const (
-	HoldsDetectRequested RoutingKey = "holds.detect.requested"
-	HoldsDetectStatus    RoutingKey = "holds.detect.status"
-	PoseAdviceRequested  RoutingKey = "pose.advice.requested"
-	PoseAdviceStatus     RoutingKey = "pose.advice.status"
-	PoseDetectCompleted  RoutingKey = "pose.detect.completed"
-	PoseDetectRequested  RoutingKey = "pose.detect.requested"
-	PoseDetectStatus     RoutingKey = "pose.detect.status"
+	GhostsComputeRequested RoutingKey = "ghosts.compute.requested"
+	GhostsComputeStatus    RoutingKey = "ghosts.compute.status"
+	HoldsDetectRequested   RoutingKey = "holds.detect.requested"
+	HoldsDetectStatus      RoutingKey = "holds.detect.status"
+	PoseAdviceRequested    RoutingKey = "pose.advice.requested"
+	PoseAdviceStatus       RoutingKey = "pose.advice.status"
+	PoseDetectCompleted    RoutingKey = "pose.detect.completed"
+	PoseDetectRequested    RoutingKey = "pose.detect.requested"
+	PoseDetectStatus       RoutingKey = "pose.detect.status"
 )
