@@ -11,6 +11,7 @@ import 'package:forui/forui.dart';
 import 'package:mobile/app/app_theme.dart';
 import 'package:mobile/core/l10n/app_localizations.dart';
 import 'package:mobile/features/analysis/domain/entities/pose_landmarks.dart';
+import 'package:mobile/features/analysis/presentation/controllers/pose_analysis_state.dart';
 import 'package:mobile/features/analysis/presentation/widgets/analysis_advice_tab.dart';
 import 'package:mobile/features/analysis/presentation/widgets/analysis_processing_view.dart';
 import 'package:mobile/features/analysis/presentation/widgets/analysis_statistics_tab.dart';
@@ -47,7 +48,7 @@ void main() {
           ),
         ),
       );
-      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 400));
 
       expect(find.text('Téléversement en cours...'), findsOneWidget);
       expect(find.text('Envoi de la vidéo sur nos serveurs'), findsOneWidget);
@@ -61,6 +62,91 @@ void main() {
       await tester.tap(cancelFinder);
       await tester.pump(const Duration(milliseconds: 200));
       expect(cancelPressed, isTrue);
+    });
+
+    testWidgets('renders upload speed and ETA pills during upload stage', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _buildTestableWidget(
+          child: AnalysisProcessingView(
+            uploadProgress: 0.5,
+            analysisProgress: 0,
+            processingStage: AnalysisProcessingStage.uploading,
+            uploadSpeedBytesPerSec: 2.5 * 1024 * 1024,
+            estimatedRemainingSeconds: 18,
+            currentStep: 'analysis.statusUploading',
+            onCancel: () {},
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(find.text('2.5 Mo/s'), findsOneWidget);
+      expect(find.text('Environ 18 s restantes'), findsOneWidget);
+      expect(find.text('13%'), findsOneWidget);
+    });
+
+    testWidgets(
+      'renders logical percentage and extrapolated ETA during pose detection',
+      (tester) async {
+        await tester.pumpWidget(
+          _buildTestableWidget(
+            child: AnalysisProcessingView(
+              uploadProgress: 1.0,
+              analysisProgress: 35,
+              processingStage: AnalysisProcessingStage.detectingPose,
+              estimatedRemainingSeconds: 24,
+              currentStep: 'analysis.statusExtractingSkeleton',
+              onCancel: () {},
+            ),
+          ),
+        );
+        await tester.pump(const Duration(milliseconds: 400));
+
+        // 35/70 of the 25%->75% window = 50%
+        expect(find.text('50%'), findsOneWidget);
+        expect(find.text('Environ 24 s restantes'), findsOneWidget);
+      },
+    );
+
+    testWidgets('renders advice stage and 100% finishing completion state', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _buildTestableWidget(
+          child: AnalysisProcessingView(
+            uploadProgress: 1.0,
+            analysisProgress: 100,
+            adviceProgress: 50,
+            processingStage: AnalysisProcessingStage.generatingAdvice,
+            currentStep: 'analysis.statusGeneratingAdvice',
+            onCancel: () {},
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(find.text('Conseils IA'), findsOneWidget);
+      expect(find.text('92%'), findsOneWidget);
+
+      await tester.pumpWidget(
+        _buildTestableWidget(
+          child: AnalysisProcessingView(
+            uploadProgress: 1.0,
+            analysisProgress: 100,
+            adviceProgress: 100,
+            processingStage: AnalysisProcessingStage.finishing,
+            currentStep: 'analysis.statusCompleted',
+            onCancel: () {},
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(find.text('Terminé'), findsOneWidget);
+      expect(find.text('100%'), findsOneWidget);
+      expect(find.text('Analyse terminée !'), findsOneWidget);
     });
   });
 

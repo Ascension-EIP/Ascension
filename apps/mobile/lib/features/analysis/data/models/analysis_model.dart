@@ -249,6 +249,7 @@ class AdviceResponseModel {
   final String? error;
 
   bool get isSuccess => status.toLowerCase() == 'success';
+  bool get isFailed => status.toLowerCase() == 'failed';
 
   factory AdviceResponseModel.fromJson(Map<String, dynamic> json) {
     AnalysisAdvice? parsedAdvice;

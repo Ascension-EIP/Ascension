@@ -123,6 +123,10 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
         return AnalysisProcessingView(
           uploadProgress: state.uploadProgress,
           analysisProgress: state.analysisProgress,
+          adviceProgress: state.adviceProgress,
+          processingStage: state.processingStage,
+          uploadSpeedBytesPerSec: state.uploadSpeedBytesPerSec,
+          estimatedRemainingSeconds: state.estimatedRemainingSeconds,
           currentStep: state.currentProcessingStep,
           onCancel: () {
             ref.read(poseAnalysisControllerProvider.notifier).cancelPreview();

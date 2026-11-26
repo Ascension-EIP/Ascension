@@ -24,7 +24,7 @@ abstract class AnalysisRepository {
     required String uploadUrl,
     required File videoFile,
     required String contentType,
-    void Function(double progress)? onProgress,
+    void Function(int sent, int total)? onProgress,
   });
 
   Future<Result<void>> notifyUploadDone(String videoId);
@@ -36,6 +36,10 @@ abstract class AnalysisRepository {
   });
 
   Future<Result<AnalysisResponseModel>> getAnalysis(String analysisId);
+
+  Future<Result<AdviceResponseModel>> triggerAdvice(String videoId);
+
+  Future<Result<AdviceResponseModel>> getAdviceStatus(String videoId);
 
   Future<Result<AnalysisAdvice?>> getAdvice(String videoId);
 

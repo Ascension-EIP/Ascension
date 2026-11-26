@@ -41,6 +41,8 @@ abstract class AnalysisRemoteDataSource {
 
   Future<Result<AnalysisResponseModel>> getAnalysis(String analysisId);
 
+  Future<Result<AdviceResponseModel>> triggerAdvice(String videoId);
+
   Future<Result<AdviceResponseModel>> getAdvice(String videoId);
 
   Future<Result<String>> getVideoDownloadUrl(String videoId);
@@ -168,6 +170,20 @@ class AnalysisRemoteDataSourceImpl implements AnalysisRemoteDataSource {
         return AnalysisResponseModel.fromJson(data);
       }
       throw const FormatException('Invalid analysis details response');
+    });
+  }
+
+  @override
+  Future<Result<AdviceResponseModel>> triggerAdvice(String videoId) async {
+    final result = await _apiClient.post<dynamic>(
+      ApiEndpoints.adviceDetails(videoId),
+    );
+
+    return result.map((data) {
+      if (data is Map<String, dynamic>) {
+        return AdviceResponseModel.fromJson(data);
+      }
+      throw const FormatException('Invalid advice trigger response');
     });
   }
 

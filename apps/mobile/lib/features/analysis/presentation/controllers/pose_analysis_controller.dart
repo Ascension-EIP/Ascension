@@ -23,15 +23,20 @@ import 'package:mobile/features/climb_session/presentation/controllers/climb_ses
 class PoseAnalysisController extends Notifier<PoseAnalysisState> {
   final ImagePicker _imagePicker = ImagePicker();
   bool _isDisposed = false;
+  int _runId = 0;
 
   @override
   PoseAnalysisState build() {
     _isDisposed = false;
+    _runId = 0;
     ref.onDispose(() {
       _isDisposed = true;
+      _runId++;
     });
     return const PoseAnalysisState();
   }
+
+  bool _isActiveRun(int runId) => !_isDisposed && _runId == runId;
 
   AnalysisRepository get _repo => ref.read(analysisRepositoryProvider);
 
@@ -90,8 +95,9 @@ class PoseAnalysisController extends Notifier<PoseAnalysisState> {
     }
   }
 
-  /// Cancels the current video preview and returns to the selection screen.
+  /// Cancels the current video preview or in-flight analysis and returns to selection.
   void cancelPreview() {
+    _runId++;
     state = const PoseAnalysisState(flowStep: PoseAnalysisFlowStep.selection);
   }
 
@@ -108,7 +114,7 @@ class PoseAnalysisController extends Notifier<PoseAnalysisState> {
     }
   }
 
-  /// Confirms analysis and executes the full upload and analysis pipeline.
+  /// Confirms analysis and executes the full upload, pose analysis, and advice pipeline.
   Future<void> confirmAndStartAnalysis({
     String? climbingSessionId,
     String? title,
@@ -117,12 +123,18 @@ class PoseAnalysisController extends Notifier<PoseAnalysisState> {
     final videoFile = state.selectedVideoFile;
     if (videoFile == null) return;
 
+    final runId = ++_runId;
+
     state = state.copyWith(
       flowStep: PoseAnalysisFlowStep.processing,
+      processingStage: AnalysisProcessingStage.uploading,
       uploadProgress: 0.05,
       analysisProgress: 0,
+      adviceProgress: 0,
       currentProcessingStep: 'analysis.statusInit',
       clearError: true,
+      clearUploadSpeed: true,
+      clearEta: true,
     );
 
     try {
@@ -150,22 +162,64 @@ class PoseAnalysisController extends Notifier<PoseAnalysisState> {
       final uploadData = (uploadUrlResult as Success<VideoUploadUrlModel>).data;
       final videoId = uploadData.videoId;
 
-      if (_isDisposed) return;
+      if (!_isActiveRun(runId)) return;
       state = state.copyWith(
         videoId: videoId,
         currentProcessingStep: 'analysis.statusUploading',
       );
 
-      // 2. Upload binary video stream to S3
+      // 2. Upload binary video stream to S3 with speed & ETA calculation
+      final uploadStartTime = DateTime.now();
+      var lastUpdateTime = uploadStartTime;
+      var lastBytes = 0;
+      double? smoothedSpeed;
+
       final s3Result = await _repo.uploadVideoToS3(
         uploadUrl: uploadData.uploadUrl,
         videoFile: videoFile,
         contentType: contentType,
-        onProgress: (p) {
-          if (!_isDisposed) {
-            // Upload takes 10% to 70% of the overall progress
-            state = state.copyWith(uploadProgress: 0.1 + (p * 0.6));
+        onProgress: (sent, total) {
+          if (!_isActiveRun(runId) || total <= 0) return;
+
+          final now = DateTime.now();
+          final sinceLastMs = now.difference(lastUpdateTime).inMilliseconds;
+          final isComplete = sent >= total;
+
+          // Throttle UI updates to avoid excessive rebuilds while keeping telemetry responsive
+          if (!isComplete && sinceLastMs < 150) return;
+
+          final progressRatio = (sent / total).clamp(0.0, 1.0);
+          final elapsedSec =
+              now.difference(uploadStartTime).inMilliseconds / 1000.0;
+
+          if (elapsedSec > 0.2 && sent > 0) {
+            final instantSpeed = sinceLastMs > 0
+                ? (sent - lastBytes) / (sinceLastMs / 1000.0)
+                : sent / elapsedSec;
+            final avgSpeed = sent / elapsedSec;
+            final sampleSpeed = instantSpeed > 0 ? instantSpeed : avgSpeed;
+
+            smoothedSpeed = smoothedSpeed == null
+                ? avgSpeed
+                : (smoothedSpeed! * 0.65) + (sampleSpeed * 0.35);
           }
+
+          lastUpdateTime = now;
+          lastBytes = sent;
+
+          int? etaSeconds;
+          if (smoothedSpeed != null && smoothedSpeed! > 0 && !isComplete) {
+            final remainingBytes = (total - sent).clamp(0, total);
+            etaSeconds = (remainingBytes / smoothedSpeed!).ceil().clamp(1, 600);
+          }
+
+          // S3 binary upload covers 10% -> 90% of the upload phase
+          state = state.copyWith(
+            uploadProgress: 0.1 + (progressRatio * 0.8),
+            uploadSpeedBytesPerSec: smoothedSpeed,
+            estimatedRemainingSeconds: etaSeconds,
+            clearEta: etaSeconds == null,
+          );
         },
       );
 
@@ -173,10 +227,12 @@ class PoseAnalysisController extends Notifier<PoseAnalysisState> {
         throw Exception(failure.message);
       }
 
-      if (_isDisposed) return;
+      if (!_isActiveRun(runId)) return;
       state = state.copyWith(
-        uploadProgress: 0.75,
+        uploadProgress: 0.93,
         currentProcessingStep: 'analysis.statusFinalizingUpload',
+        clearUploadSpeed: true,
+        clearEta: true,
       );
 
       // 3. Notify backend upload is complete
@@ -185,9 +241,9 @@ class PoseAnalysisController extends Notifier<PoseAnalysisState> {
         throw Exception(failure.message);
       }
 
-      if (_isDisposed) return;
+      if (!_isActiveRun(runId)) return;
       state = state.copyWith(
-        uploadProgress: 0.85,
+        uploadProgress: 0.97,
         currentProcessingStep: 'analysis.statusTriggering',
       );
 
@@ -206,17 +262,34 @@ class PoseAnalysisController extends Notifier<PoseAnalysisState> {
           (triggerResult as Success<AnalysisResponseModel>).data;
       final analysisId = analysisData.id;
 
-      if (_isDisposed) return;
+      if (!_isActiveRun(runId)) return;
       state = state.copyWith(
         analysisId: analysisId,
         uploadProgress: 1.0,
+        processingStage: AnalysisProcessingStage.detectingPose,
         currentProcessingStep: 'analysis.statusExtractingSkeleton',
       );
 
-      // 5. Poll for analysis completion
-      final finalResult = await _pollAnalysisUntilFinished(analysisId, videoId);
+      // 5. Poll for 2D pose analysis completion (with ETA extrapolation)
+      var finalResult = await _pollAnalysisUntilFinished(analysisId, runId);
+      if (!_isActiveRun(runId)) return;
 
-      if (_isDisposed) return;
+      // 6. Trigger & poll AI coaching advice once pose analysis is complete
+      final advice = await _triggerAndPollAdvice(videoId, runId);
+      if (!_isActiveRun(runId)) return;
+
+      if (advice != null) {
+        finalResult = PoseAnalysisResult(
+          fps: finalResult.fps,
+          width: finalResult.width,
+          height: finalResult.height,
+          frames: finalResult.frames,
+          metrics: finalResult.metrics,
+          movements: finalResult.movements,
+          pauses: finalResult.pauses,
+          advice: advice,
+        );
+      }
 
       // Link to session if one is active
       try {
@@ -241,69 +314,131 @@ class PoseAnalysisController extends Notifier<PoseAnalysisState> {
         debugPrint('Could not attach analysis to active session: $e');
       }
 
+      if (!_isActiveRun(runId)) return;
+
+      // 7. Completion micro-animation: visibly check off all steps at 100% before transitioning
+      state = state.copyWith(
+        processingStage: AnalysisProcessingStage.finishing,
+        analysisProgress: 100,
+        adviceProgress: 100,
+        currentProcessingStep: 'analysis.statusCompleted',
+        clearUploadSpeed: true,
+        clearEta: true,
+      );
+
+      await Future.delayed(const Duration(milliseconds: 650));
+      if (!_isActiveRun(runId)) return;
+
       state = state.copyWith(
         flowStep: PoseAnalysisFlowStep.completed,
         analysisProgress: 100,
+        adviceProgress: 100,
         analysisResult: finalResult,
       );
     } catch (e) {
-      if (_isDisposed) return;
+      if (!_isActiveRun(runId)) return;
       state = state.copyWith(
         flowStep: PoseAnalysisFlowStep.error,
         errorMessage: 'Échec de l\'analyse : $e',
+        clearUploadSpeed: true,
+        clearEta: true,
       );
     }
   }
 
-  /// Polls the analysis status every 1.5 seconds until success or failure.
+  /// Polls the 2D pose analysis status every 1.5 seconds until success or failure,
+  /// extrapolating remaining time after the first meaningful progress return.
   Future<PoseAnalysisResult> _pollAnalysisUntilFinished(
     String analysisId,
-    String videoId,
+    int runId,
   ) async {
     const maxAttempts = 60; // 90 seconds timeout max
+    const skeletonEndProgress = 70; // AI worker runs MediaPipe from 5% to 70%
+
+    final pollingStartTime = DateTime.now();
+    int? baselineProgress;
+    DateTime? baselineTime;
+
     for (int attempt = 0; attempt < maxAttempts; attempt++) {
-      if (_isDisposed) throw Exception('Analysis cancelled');
+      if (!_isActiveRun(runId)) throw Exception('Analysis cancelled');
 
       await Future.delayed(const Duration(milliseconds: 1500));
-      if (_isDisposed) throw Exception('Analysis cancelled');
+      if (!_isActiveRun(runId)) throw Exception('Analysis cancelled');
 
       final checkResult = await _repo.getAnalysis(analysisId);
       if (checkResult is Success<AnalysisResponseModel>) {
         final resp = checkResult.data;
+        final now = DateTime.now();
 
         if (resp.progress > state.analysisProgress) {
+          int? extrapolatedEta = state.estimatedRemainingSeconds;
+          var shouldClearEta = false;
+
+          if (resp.progress < skeletonEndProgress) {
+            if (baselineProgress == null) {
+              baselineProgress = resp.progress;
+              baselineTime = now;
+
+              // If the first poll already returned meaningful progress, extrapolate right away
+              if (resp.progress >= 10) {
+                final elapsedSec =
+                    now.difference(pollingStartTime).inMilliseconds / 1000.0;
+                if (elapsedSec >= 0.5) {
+                  final rate = resp.progress / elapsedSec;
+                  if (rate > 0) {
+                    extrapolatedEta =
+                        (((skeletonEndProgress - resp.progress) / rate).ceil() +
+                                2)
+                            .clamp(1, 300);
+                  }
+                }
+              }
+            } else if (resp.progress > baselineProgress) {
+              final elapsedSec =
+                  now.difference(baselineTime!).inMilliseconds / 1000.0;
+              if (elapsedSec >= 0.5) {
+                final rate = (resp.progress - baselineProgress) / elapsedSec;
+                if (rate > 0) {
+                  extrapolatedEta =
+                      (((skeletonEndProgress - resp.progress) / rate).ceil() +
+                              2)
+                          .clamp(1, 300);
+                }
+              }
+            }
+          } else {
+            shouldClearEta = true;
+          }
+
+          final isMetricsStage = resp.progress >= skeletonEndProgress;
           state = state.copyWith(
             analysisProgress: resp.progress,
-            currentProcessingStep: resp.progress < 50
-                ? 'analysis.statusExtractingSkeleton'
-                : 'analysis.statusComputingData',
+            processingStage: isMetricsStage
+                ? AnalysisProcessingStage.computingMetrics
+                : AnalysisProcessingStage.detectingPose,
+            currentProcessingStep: isMetricsStage
+                ? 'analysis.statusComputingData'
+                : 'analysis.statusExtractingSkeleton',
+            estimatedRemainingSeconds: shouldClearEta ? null : extrapolatedEta,
+            clearEta: shouldClearEta,
           );
         }
 
         if (resp.isSuccess) {
-          var result = resp.result ?? _createFallbackResult();
-
-          // Try to fetch advice as well
-          try {
-            final adviceResult = await _repo.getAdvice(videoId);
-            if (adviceResult is Success<AnalysisAdvice?> &&
-                adviceResult.data != null) {
-              result = PoseAnalysisResult(
-                fps: result.fps,
-                width: result.width,
-                height: result.height,
-                frames: result.frames,
-                metrics: result.metrics,
-                movements: result.movements,
-                pauses: result.pauses,
-                advice: adviceResult.data,
-              );
-            }
-          } catch (e) {
-            debugPrint('Advice not yet available: $e');
+          // Ensure the metrics step is visibly shown even when it completes between two polls
+          if (state.processingStage !=
+              AnalysisProcessingStage.computingMetrics) {
+            state = state.copyWith(
+              analysisProgress: 100,
+              processingStage: AnalysisProcessingStage.computingMetrics,
+              currentProcessingStep: 'analysis.statusComputingData',
+              clearEta: true,
+            );
+            await Future.delayed(const Duration(milliseconds: 350));
+            if (!_isActiveRun(runId)) throw Exception('Analysis cancelled');
           }
 
-          return result;
+          return resp.result ?? _createFallbackResult();
         }
 
         if (resp.isFailed) {
@@ -315,8 +450,84 @@ class PoseAnalysisController extends Notifier<PoseAnalysisState> {
     throw TimeoutException('Le délai d\'attente de l\'analyse a expiré');
   }
 
+  /// Triggers AI coaching advice generation (POST /v1/advices/:videoId) and polls
+  /// until ready. Failures or timeouts are non-fatal so pose analysis results still open.
+  Future<AnalysisAdvice?> _triggerAndPollAdvice(
+    String videoId,
+    int runId,
+  ) async {
+    state = state.copyWith(
+      processingStage: AnalysisProcessingStage.generatingAdvice,
+      adviceProgress: 10,
+      currentProcessingStep: 'analysis.statusGeneratingAdvice',
+      clearEta: true,
+    );
+
+    try {
+      final triggerResult = await _repo.triggerAdvice(videoId);
+      if (!_isActiveRun(runId)) return null;
+
+      if (triggerResult is Success<AdviceResponseModel>) {
+        final triggered = triggerResult.data;
+        if (triggered.isSuccess && triggered.advice != null) {
+          state = state.copyWith(adviceProgress: 100);
+          return triggered.advice;
+        }
+        if (triggered.progress > state.adviceProgress) {
+          state = state.copyWith(adviceProgress: triggered.progress);
+        }
+      } else if (triggerResult case Error(:final failure)) {
+        debugPrint(
+          'Trigger advice returned error (will check existing): ${failure.message}',
+        );
+        final existingResult = await _repo.getAdviceStatus(videoId);
+        if (existingResult is Success<AdviceResponseModel> &&
+            existingResult.data.isSuccess) {
+          state = state.copyWith(adviceProgress: 100);
+          return existingResult.data.advice;
+        }
+        return null;
+      }
+
+      // Poll GET /v1/advices/:videoId every 1.5s (up to 30 seconds max)
+      const maxAdviceAttempts = 20;
+      for (int attempt = 0; attempt < maxAdviceAttempts; attempt++) {
+        if (!_isActiveRun(runId)) return null;
+
+        await Future.delayed(const Duration(milliseconds: 1500));
+        if (!_isActiveRun(runId)) return null;
+
+        final statusResult = await _repo.getAdviceStatus(videoId);
+        if (statusResult is Success<AdviceResponseModel>) {
+          final resp = statusResult.data;
+
+          if (resp.isSuccess) {
+            state = state.copyWith(adviceProgress: 100);
+            return resp.advice;
+          }
+
+          if (resp.isFailed) {
+            debugPrint('Advice generation failed: ${resp.error}');
+            return null;
+          }
+
+          // Keep progress bar moving smoothly while LLM generates advice
+          final nextProgress = resp.progress > state.adviceProgress
+              ? resp.progress
+              : (state.adviceProgress + 8).clamp(0, 92);
+          state = state.copyWith(adviceProgress: nextProgress);
+        }
+      }
+    } catch (e) {
+      debugPrint('Advice generation unavailable: $e');
+    }
+
+    return null;
+  }
+
   /// Reset to initial state for a new climb analysis
   void reset() {
+    _runId++;
     state = const PoseAnalysisState(flowStep: PoseAnalysisFlowStep.selection);
   }
 

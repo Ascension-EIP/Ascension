@@ -41,17 +41,13 @@ class AnalysisRepositoryImpl implements AnalysisRepository {
     required String uploadUrl,
     required File videoFile,
     required String contentType,
-    void Function(double progress)? onProgress,
+    void Function(int sent, int total)? onProgress,
   }) {
     return _remoteDataSource.uploadVideoToS3(
       uploadUrl: uploadUrl,
       videoFile: videoFile,
       contentType: contentType,
-      onProgress: (sent, total) {
-        if (total > 0 && onProgress != null) {
-          onProgress(sent / total);
-        }
-      },
+      onProgress: onProgress,
     );
   }
 
@@ -76,6 +72,16 @@ class AnalysisRepositoryImpl implements AnalysisRepository {
   @override
   Future<Result<AnalysisResponseModel>> getAnalysis(String analysisId) {
     return _remoteDataSource.getAnalysis(analysisId);
+  }
+
+  @override
+  Future<Result<AdviceResponseModel>> triggerAdvice(String videoId) {
+    return _remoteDataSource.triggerAdvice(videoId);
+  }
+
+  @override
+  Future<Result<AdviceResponseModel>> getAdviceStatus(String videoId) {
+    return _remoteDataSource.getAdvice(videoId);
   }
 
   @override

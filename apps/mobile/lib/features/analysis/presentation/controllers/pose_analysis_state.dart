@@ -27,14 +27,35 @@ enum PoseAnalysisFlowStep {
   error,
 }
 
+enum AnalysisProcessingStage {
+  /// Step 1: Requesting URL, uploading video to S3, and triggering pose analysis (0% -> 25%)
+  uploading,
+
+  /// Step 2: MediaPipe frame-by-frame skeleton extraction (25% -> 75%)
+  detectingPose,
+
+  /// Step 3: Biomechanical metrics & movement computation (75% -> 85%)
+  computingMetrics,
+
+  /// Step 4: Triggering & polling AI coaching advice generation (85% -> 99%)
+  generatingAdvice,
+
+  /// Finalization micro-animation before transitioning to results (100%)
+  finishing,
+}
+
 class PoseAnalysisState extends Equatable {
   const PoseAnalysisState({
     this.flowStep = PoseAnalysisFlowStep.selection,
+    this.processingStage = AnalysisProcessingStage.uploading,
     this.selectedVideoFile,
     this.videoDuration,
     this.videoSizeBytes,
     this.uploadProgress = 0.0,
     this.analysisProgress = 0,
+    this.adviceProgress = 0,
+    this.uploadSpeedBytesPerSec,
+    this.estimatedRemainingSeconds,
     this.currentProcessingStep = '',
     this.analysisResult,
     this.videoId,
@@ -43,11 +64,15 @@ class PoseAnalysisState extends Equatable {
   });
 
   final PoseAnalysisFlowStep flowStep;
+  final AnalysisProcessingStage processingStage;
   final File? selectedVideoFile;
   final Duration? videoDuration;
   final int? videoSizeBytes;
   final double uploadProgress;
   final int analysisProgress;
+  final int adviceProgress;
+  final double? uploadSpeedBytesPerSec;
+  final int? estimatedRemainingSeconds;
   final String currentProcessingStep;
   final PoseAnalysisResult? analysisResult;
   final String? videoId;
@@ -62,25 +87,39 @@ class PoseAnalysisState extends Equatable {
 
   PoseAnalysisState copyWith({
     PoseAnalysisFlowStep? flowStep,
+    AnalysisProcessingStage? processingStage,
     File? selectedVideoFile,
     Duration? videoDuration,
     int? videoSizeBytes,
     double? uploadProgress,
     int? analysisProgress,
+    int? adviceProgress,
+    double? uploadSpeedBytesPerSec,
+    int? estimatedRemainingSeconds,
     String? currentProcessingStep,
     PoseAnalysisResult? analysisResult,
     String? videoId,
     String? analysisId,
     String? errorMessage,
     bool clearError = false,
+    bool clearUploadSpeed = false,
+    bool clearEta = false,
   }) {
     return PoseAnalysisState(
       flowStep: flowStep ?? this.flowStep,
+      processingStage: processingStage ?? this.processingStage,
       selectedVideoFile: selectedVideoFile ?? this.selectedVideoFile,
       videoDuration: videoDuration ?? this.videoDuration,
       videoSizeBytes: videoSizeBytes ?? this.videoSizeBytes,
       uploadProgress: uploadProgress ?? this.uploadProgress,
       analysisProgress: analysisProgress ?? this.analysisProgress,
+      adviceProgress: adviceProgress ?? this.adviceProgress,
+      uploadSpeedBytesPerSec: clearUploadSpeed
+          ? null
+          : (uploadSpeedBytesPerSec ?? this.uploadSpeedBytesPerSec),
+      estimatedRemainingSeconds: clearEta
+          ? null
+          : (estimatedRemainingSeconds ?? this.estimatedRemainingSeconds),
       currentProcessingStep:
           currentProcessingStep ?? this.currentProcessingStep,
       analysisResult: analysisResult ?? this.analysisResult,
@@ -93,11 +132,15 @@ class PoseAnalysisState extends Equatable {
   @override
   List<Object?> get props => [
     flowStep,
+    processingStage,
     selectedVideoFile,
     videoDuration,
     videoSizeBytes,
     uploadProgress,
     analysisProgress,
+    adviceProgress,
+    uploadSpeedBytesPerSec,
+    estimatedRemainingSeconds,
     currentProcessingStep,
     analysisResult,
     videoId,
