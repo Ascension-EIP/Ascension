@@ -206,10 +206,13 @@ def _search(
     preference: BetaPreference,
     wall_angle_deg: float | None,
     use_heuristic: bool = True,
+    stats: dict[str, int] | None = None,
 ) -> tuple[list[Step], float]:
     """Run the search and return the beta with its cost.
 
     ``use_heuristic=False`` makes it a plain Dijkstra (used to check the heuristic).
+    ``stats``, when given, receives ``expansions``: the number of expanded states,
+    a machine-independent measure of the search cost.
     """
     start_marks, finish_marks = _default_marks(holds)
     n = len(holds)
@@ -419,6 +422,8 @@ def _search(
             h = heuristic(new)
             heapq.heappush(heap, (ng + h, h, next(counter), ng, nkey))
 
+    if stats is not None:
+        stats["expansions"] = expansions
     if goal is None:
         top = max(reached, key=lambda i: (ys[i], ids[i]))
         beyond = [i for i in range(n) if holds[i].hand and i not in reached]
