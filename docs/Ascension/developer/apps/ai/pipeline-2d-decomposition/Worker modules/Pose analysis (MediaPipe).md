@@ -79,7 +79,7 @@ moon run ai:pose-detect -- --video resources/example-2.mp4 --out /tmp/ascension/
 
 ## Run it as a job
 
-Start the infrastructure and the worker as described in [Worker modules](../Worker%20modules.md) (`moon run root:db-up`, `moon run server:migrate`, `moon run ai:dev`). The job is `pose.detect` on the queue `poses.detect`. Then, in another terminal:
+Start the infrastructure and the worker as described in [Worker modules](readme.md) (`moon run root:db-up`, `moon run server:migrate`, `moon run ai:dev`). The job is `pose.detect` on the queue `poses.detect`. Then, in another terminal:
 
 ```bash
 cd apps/ai
