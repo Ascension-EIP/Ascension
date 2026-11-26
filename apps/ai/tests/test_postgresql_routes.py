@@ -14,7 +14,7 @@ import pytest
 
 from common.utils.errors import PermanentError, TransientError
 from services.postgresql import PostgreSQL
-from shared.models import HoldDetectResult, Status
+from shared.models import HoldDetectResult, Status, WallPlane
 
 HOLD = {
     "type": "unknown",
@@ -156,3 +156,38 @@ class TestRoutesAgainstDatabase:
             db.get_route_status(str(uuid4()))
         with pytest.raises(PermanentError):
             db.save_holds(str(uuid4()), RESULT)
+
+
+# --- wall plane stored with the holds ----------------------------------------------------------
+
+WALL = WallPlane(
+    focal_px=2500.0, homography=[[0.1, 0, 0], [0, -0.1, 50], [0, 0, 1]], inlier_ratio=0.93, model="moge-2-vits-normal", angle_deg=12.345
+)
+
+
+def test_save_holds_with_a_wall_writes_it_in_the_same_transaction():
+    db, cursor = transactional()
+    db.save_holds("r", RESULT.model_copy(update={"wall": WALL}))
+    statements = [c.args[0] for c in cursor.execute.call_args_list]
+    assert statements[1].startswith("UPDATE routes SET wall_plane")  # right after the image size
+    params = cursor.execute.call_args_list[1].args[1]
+    assert params[0].obj["homography"] == WALL.homography and params[0].obj["model"] == "moge-2-vits-normal"
+    assert params[1:] == (12.35, "r")  # NUMERIC(5, 2)
+    assert "DELETE FROM holds" in statements[2] and [s.startswith("INSERT INTO holds") for s in statements[3:]] == [True, True]
+
+
+def test_save_holds_without_a_wall_keeps_the_stored_one():
+    db, cursor = transactional()
+    db.save_holds("r", RESULT)
+    assert not any("wall_plane" in c.args[0] for c in cursor.execute.call_args_list)
+
+
+@pytest.mark.integration
+@pytest.mark.skipif(not URL, reason="TEST_POSTGRES_URL not set")
+def test_the_wall_is_stored_on_the_route(db, route_id):
+    db.save_holds(route_id, RESULT.model_copy(update={"wall": WALL}))
+    plane, angle = db.connection.execute("SELECT wall_plane, wall_angle_deg FROM routes WHERE id = %s", (route_id,)).fetchone()
+    assert WallPlane.model_validate(plane).homography == WALL.homography
+    assert float(angle) == 12.35
+    db.save_holds(route_id, RESULT)  # a detection without a wall keeps the plane of the photo
+    assert db.connection.execute("SELECT wall_plane IS NOT NULL FROM routes WHERE id = %s", (route_id,)).fetchone() == (True,)
