@@ -197,6 +197,16 @@ tasks:
     deps:
       - 'install'
 
+  dev-prod:
+    command: 'bash'
+    args: ['scripts/run.sh', '--prod']
+    options:
+      persistent: true
+      cache: false
+      envFile: true
+    deps:
+      - 'install'
+
   clean:
     command: 'flutter'
     args: ['clean']

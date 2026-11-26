@@ -47,8 +47,8 @@ func New(
 	{
 		usersGroup := v1.Group("/users", authMW(model.UserRoleAdmin))
 		{
-			usersGroup.POST("/", userH.Create)
-			usersGroup.GET("/", userH.List)
+			usersGroup.POST("", userH.Create)
+			usersGroup.GET("", userH.List)
 			usersGroup.GET("/:id", userH.GetByID)
 			usersGroup.PUT("/:id", userH.Update)
 			usersGroup.DELETE("/:id", userH.Delete)
@@ -69,13 +69,13 @@ func New(
 			videosGroup.POST("/upload-url", videoH.GetUploadURL)
 			videosGroup.PUT("/upload-done/:id", videoH.UploadComplete)
 			videosGroup.GET("/download-url/:id", videoH.GetDownloadURL)
-			videosGroup.GET("/", videoH.ListVideos)
+			videosGroup.GET("", videoH.ListVideos)
 			videosGroup.GET("/:id", videoH.GetVideo)
 		}
 
 		analysesGroup := v1.Group("/analysis", middleware.RateLimiter(time.Minute, 10), authMW())
 		{
-			analysesGroup.POST("/", analysisH.Create)
+			analysesGroup.POST("", analysisH.Create)
 			analysesGroup.GET("", analysisH.List)
 			analysesGroup.GET("/:id", analysisH.GetByID)
 		}

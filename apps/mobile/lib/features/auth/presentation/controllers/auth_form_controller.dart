@@ -7,7 +7,10 @@
 // @status done
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/core/services/biometric_service.dart';
+import 'package:mobile/core/utils/result.dart';
 import 'package:mobile/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:mobile/features/auth/presentation/controllers/auth_state.dart';
@@ -36,21 +39,30 @@ class AuthFormController extends AsyncNotifier<void> {
         remember: remember,
       );
 
-      bool isSuccess = false;
-      result.when(
-        success: (session) {
+      switch (result) {
+        case Success(:final data):
+          // If biometric is enabled, ensure the stored password stays in sync
+          final biometricService = ref.read(biometricServiceProvider);
+          if (await biometricService.isBiometricEnabled()) {
+            await biometricService.saveBiometricCredentials(
+              identifier: identifier.trim(),
+              password: password,
+            );
+          }
+
+          TextInput.finishAutofillContext(shouldSave: true);
+          await Future<void>.delayed(const Duration(milliseconds: 250));
+
           ref
               .read(authStateProvider.notifier)
-              .setAuthenticated(userId: session.user.id);
+              .setAuthenticated(userId: data.user.id);
           state = const AsyncData(null);
-          isSuccess = true;
-        },
-        error: (failure) {
+          return true;
+        case Error(:final failure):
+          TextInput.finishAutofillContext(shouldSave: false);
           state = AsyncError(failure.message, StackTrace.current);
-          isSuccess = false;
-        },
-      );
-      return isSuccess;
+          return false;
+      }
     } catch (error, stackTrace) {
       state = AsyncError(error.toString(), stackTrace);
       return false;
@@ -78,21 +90,21 @@ class AuthFormController extends AsyncNotifier<void> {
         remember: remember,
       );
 
-      bool isSuccess = false;
-      result.when(
-        success: (session) {
+      switch (result) {
+        case Success(:final data):
+          TextInput.finishAutofillContext(shouldSave: true);
+          await Future<void>.delayed(const Duration(milliseconds: 250));
+
           ref
               .read(authStateProvider.notifier)
-              .setAuthenticated(userId: session.user.id);
+              .setAuthenticated(userId: data.user.id);
           state = const AsyncData(null);
-          isSuccess = true;
-        },
-        error: (failure) {
+          return true;
+        case Error(:final failure):
+          TextInput.finishAutofillContext(shouldSave: false);
           state = AsyncError(failure.message, StackTrace.current);
-          isSuccess = false;
-        },
-      );
-      return isSuccess;
+          return false;
+      }
     } catch (error, stackTrace) {
       state = AsyncError(error.toString(), stackTrace);
       return false;
