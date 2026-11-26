@@ -165,8 +165,7 @@ void main() {
         // Tap the back button in the header
         final backBtn = find.byType(FHeaderAction).first;
         await tester.tap(backBtn);
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pumpAndSettle();
 
         expect(fakeController.state.flowStep, PoseAnalysisFlowStep.preview);
       },
