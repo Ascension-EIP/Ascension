@@ -23,6 +23,9 @@ dist/
 venv/
 ENV/
 
+# Model training projects (own environment with PyTorch, datasets, runs): never in the worker image
+training/
+
 # IDE
 .idea/
 .vscode/

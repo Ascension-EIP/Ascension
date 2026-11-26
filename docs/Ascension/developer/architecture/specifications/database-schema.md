@@ -3,7 +3,7 @@ id: 2f73e756-4920-4208-ae1e-6928976f81ec
 ---
 
 :::success
-**Version:** 2.5
+**Version:** 2.6
 :::
 
 ---
@@ -32,7 +32,7 @@ The migrations in `apps/server/internal/outbound/postgres/migrations/` (migratio
 | Object storage      | Only the `object_key` is stored. The bucket comes from the server configuration. The storage backend is S3-compatible (RustFS in local/dev, OVHcloud Object Storage in production). |
 | Large AI payloads   | Stored as `JSONB` in PostgreSQL (`analyses.result`, `ghosts.path`). No secondary object storage for results.                                                                        |
 | Deletion            | Hard delete with `ON DELETE CASCADE`. Account deactivation is a status, not a deletion.                                                                                             |
-| Async job lifecycle | Every AI-processed entity (`analyses`, `ghosts`, `comparisons`) shares the `job_status` enum and the same columns (`status`, `progress`, `error`).                                  |
+| Async job lifecycle | Every AI-processed entity (`analyses`, `routes` for the hold detection, `ghosts`, `comparisons`) shares the `job_status` enum and the same columns (`status`, `progress`, `error`). |
 | Visibility          | Shareable content (`videos`, `analyses`, `routes`, `climbing_sessions`) carries a `visibility` column using the `visibility` enum.                                                  |
 
 ### 1.3 Feature Coverage
@@ -188,7 +188,7 @@ CREATE TYPE visibility AS ENUM ('private', 'friends', 'public');
 CREATE TYPE video_status AS ENUM ('pending', 'completed');
 CREATE TYPE analysis_type AS ENUM ('2d', '3d');
 CREATE TYPE job_status AS ENUM ('pending', 'started', 'running', 'success', 'failed');
-CREATE TYPE hold_type AS ENUM ('jug', 'crimp', 'sloper', 'pinch', 'pocket', 'edge', 'volume', 'foothold');
+CREATE TYPE hold_type AS ENUM ('jug', 'crimp', 'sloper', 'pinch', 'pocket', 'edge', 'volume', 'foothold', 'unknown');
 CREATE TYPE hold_source AS ENUM ('ai', 'manual');
 CREATE TYPE goal_status AS ENUM ('active', 'achieved', 'abandoned');
 CREATE TYPE focus_area AS ENUM ('technique', 'strength', 'endurance', 'flexibility', 'mental');
@@ -206,7 +206,8 @@ CREATE TYPE tutorial_status AS ENUM ('not_started', 'in_progress', 'completed');
 
 Notes:
 
-- `job_status` is shared by `analyses`, `ghosts` and `comparisons`, and its values are identical to the statuses published on RabbitMQ (`schemas/job_status.schema.json`): `pending` is set by the server when it creates the row, `started` when the worker picks the job, `running` while it processes it, then `success` or `failed`. There is no separate `generating_hints` value: the advice step is part of `running`.
+- `hold_type` `unknown` is a hold whose grip type is not known: the hold detector finds holds and volumes but does not classify grips yet.
+- `job_status` is shared by `analyses`, `routes` (hold detection), `ghosts` and `comparisons`, and its values are identical to the statuses published on RabbitMQ (`schemas/job_status.schema.json`): `pending` is set by the server when it creates the row, `started` when the worker picks the job, `running` while it processes it, then `success` or `failed`. There is no separate `generating_hints` value: the advice step is part of `running`.
 - `grading_system` distinguishes bouldering (`font`, `v_scale`) from route climbing (`french`, `yds`). The grade itself is stored as `TEXT` (`6a+`, `V4`, `7A`).
 - `body_zone` follows the MediaPipe segment layout so that constraints can be mapped directly onto skeleton landmarks.
 
@@ -692,11 +693,22 @@ CREATE TABLE routes (
     image_width       SMALLINT NOT NULL,
     image_height      SMALLINT NOT NULL,
     visibility        visibility NOT NULL DEFAULT 'private',
+    status            job_status NOT NULL DEFAULT 'pending',
+    progress          SMALLINT NOT NULL DEFAULT 0,
+    error             TEXT,
+    processing_time_ms INTEGER,
+    started_at        TIMESTAMPTZ,
+    completed_at      TIMESTAMPTZ,
     created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     CONSTRAINT chk_routes_grade
-        CHECK ((grade IS NULL) = (grading_system IS NULL))
+        CHECK ((grade IS NULL) = (grading_system IS NULL)),
+    CONSTRAINT chk_routes_progress CHECK (progress BETWEEN 0 AND 100),
+    CONSTRAINT chk_routes_completed
+        CHECK (status <> 'success' OR completed_at IS NOT NULL),
+    CONSTRAINT chk_routes_failed
+        CHECK (status <> 'failed' OR error IS NOT NULL)
 );
 
 CREATE INDEX idx_routes_user_created ON routes(user_id, created_at DESC);
@@ -707,7 +719,8 @@ CREATE INDEX idx_routes_gym_id ON routes(gym_id);
 Business rules:
 
 - `color` is the hold colour set by the route setter (used for the colour-based hold selection of F06). It is free text (`red`, `#E53935`) normalised by the app.
-- `image_width` and `image_height` are the reference frame of every hold position and ghost path.
+- `image_width` and `image_height` are the reference frame of every hold position and ghost path. The hold detection worker overwrites them with the real size of the photo, so the server may create the route with 0.
+- `status`, `progress`, `error`, `started_at`, `completed_at` and `processing_time_ms` track the hold detection job (queue `holds.detect`, migration `20261124120000_add_hold_detection`). The server creates the route in `pending` and publishes `holds.detect.requested` with `job_id = routes.id`; the worker writes the holds, then `success` or `failed`.
 
 ### 7.2 `holds`
 
@@ -725,6 +738,8 @@ CREATE TABLE holds (
     predicted_type        hold_type,
     predicted_confidence  NUMERIC(4, 3),
     predicted_contour     JSONB,
+    color                 JSONB,
+    predicted_color       JSONB,
     corrected_at          TIMESTAMPTZ,
     created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -748,6 +763,8 @@ Business rules:
 - When the user corrects a hold, the current values change and `corrected_at` is set. The pair (`predicted_*`, current) feeds the learning loop of F06.
 - `source = 'manual'` is a hold drawn by the user when detection missed it; its `predicted_*` columns are `NULL`.
 - `contour` is a polygon in image pixel coordinates: `{"points": [{"x": 120, "y": 340}, ...], "bbox": {"x": 100, "y": 320, "w": 60, "h": 45}}`.
+- `color` is the dominant colour of the hold: `{"name": "blue", "rgb": [20, 60, 200], "distance": 3.2}`. `rgb` is reliable for display; `name` is the closest reference colour and a hint only (lower `distance` is closer). `predicted_color` freezes the detected value. Both are `NULL` when the hold is too small to measure.
+- The detector writes `type = predicted_type = 'unknown'` for a hold and `'volume'` for a volume, with `source = 'ai'`. A new detection of the same route replaces the AI holds whose `corrected_at` is `NULL` and keeps the corrected ones.
 
 ### 7.3 `ghosts`
 

@@ -16,12 +16,22 @@ from pydantic import ValidationError
 
 from common.models.database import DatabaseModel
 from common.utils.errors import PermanentError, TransientError, throw_if_none
-from shared.models import AnalysisResult, Hints, Status
+from shared.models import AnalysisResult, Hints, HoldDetectResult, Status
 
 logger = logging.getLogger(__name__)
 
 PROGRESS_RESULT_SAVED = 85
 PROGRESS_MAX_RUNNING = 99
+PROGRESS_HOLDS_SAVED = 90
+
+_SET_PROGRESS = "status = %s, progress = %s"
+_SET_FAILED = "status = %s, error = %s"
+
+_INSERT_HOLD = (
+    "INSERT INTO holds (route_id, source, type, contour, color,"
+    " predicted_type, predicted_confidence, predicted_contour, predicted_color)"
+    " VALUES (%s, 'ai', %s, %s, %s, %s, %s, %s, %s)"
+)
 
 
 class PostgreSQL:
@@ -89,6 +99,40 @@ class PostgreSQL:
             raise PermanentError(f"job {job_id}: no such row")
         return row
 
+    def _transaction(self, job_id: str, statements: list[tuple[str, tuple]]) -> None:
+        """Runs several statements in one transaction; the first one must return a row.
+
+        Same reconnection and error mapping as `_execute`. Nothing is written if a
+        statement fails.
+
+        Raises:
+            TransientError: The database is unreachable.
+            PermanentError: The first statement matched no row, or a constraint is violated.
+        """
+        for attempt in range(2):
+            try:
+                if self.connection is None or self.connection.closed:
+                    self.connect()
+                self._run_statements(job_id, statements)
+                return
+            except psycopg.OperationalError as error:
+                if self.connection is not None:
+                    self.connection.close()
+                if attempt:
+                    raise TransientError(f"database unavailable: {error}") from error
+                logger.warning("database connection lost, reconnecting: %s", error)
+            except (psycopg.DataError, psycopg.IntegrityError) as error:
+                raise PermanentError(f"job {job_id}: {error}") from error
+
+    def _run_statements(self, job_id: str, statements: list[tuple[str, tuple]]) -> None:
+        """Body of `_transaction`: rolled back as a whole when anything raises."""
+        first, *rest = statements
+        with self.connection.transaction(), self.connection.cursor() as cursor:
+            if cursor.execute(*first).fetchone() is None:
+                raise PermanentError(f"job {job_id}: no such row")
+            for sql, params in rest:
+                cursor.execute(sql, params)
+
     def _update(
         self, job_id: str, assignments: str, *params: Any, table: str = "analyses"
     ) -> None:
@@ -111,7 +155,7 @@ class PostgreSQL:
         """Sets `running` and the progress, capped at 99 (100 is `complete`)."""
         self._update(
             job_id,
-            "status = %s, progress = %s",
+            _SET_PROGRESS,
             Status.RUNNING.value,
             max(0, min(progress, PROGRESS_MAX_RUNNING)),
         )
@@ -150,7 +194,7 @@ class PostgreSQL:
 
     def fail(self, job_id: str, message: str) -> None:
         """Ends the job with `failed`; `message` must be short, without traceback."""
-        self._update(job_id, "status = %s, error = %s", Status.FAILED.value, message)
+        self._update(job_id, _SET_FAILED, Status.FAILED.value, message)
 
     def get_status(self, job_id: str) -> Status:
         """Returns the current status (the handler skips a job already in `success`)."""
@@ -190,7 +234,7 @@ class PostgreSQL:
         """Sets `running` and the advice progress, capped at 99 (100 is `complete_advice`)."""
         self._update(
             video_id,
-            "status = %s, progress = %s",
+            _SET_PROGRESS,
             Status.RUNNING.value,
             max(0, min(progress, PROGRESS_MAX_RUNNING)),
             table="advices",
@@ -211,7 +255,7 @@ class PostgreSQL:
         """Ends the advice with `failed`; `message` must be short, without traceback."""
         self._update(
             video_id,
-            "status = %s, error = %s",
+            _SET_FAILED,
             Status.FAILED.value,
             message,
             table="advices",
@@ -223,3 +267,79 @@ class PostgreSQL:
             "SELECT status FROM advices WHERE id = %s", (video_id,), video_id
         )
         return Status(value)
+
+    # Hold detection: `route_id` is `routes.id`, the job id of `holds.detect.requested`.
+
+    def get_route_status(self, route_id: str) -> Status:
+        """Returns the detection status (the handler skips a route already in `success`)."""
+        (value,) = self._execute(
+            "SELECT status FROM routes WHERE id = %s", (route_id,), route_id
+        )
+        return Status(value)
+
+    def mark_route_started(self, route_id: str) -> None:
+        """Takes the detection job: resets the state a previous delivery may have left."""
+        self._update(
+            route_id,
+            "status = %s, progress = 0, started_at = NOW(), error = NULL,"
+            " completed_at = NULL, processing_time_ms = NULL",
+            Status.STARTED.value,
+            table="routes",
+        )
+
+    def update_route_progress(self, route_id: str, progress: int) -> None:
+        """Sets `running` and the progress, capped at 99 (100 is `complete_route`)."""
+        self._update(
+            route_id,
+            _SET_PROGRESS,
+            Status.RUNNING.value,
+            max(0, min(progress, PROGRESS_MAX_RUNNING)),
+            table="routes",
+        )
+
+    def save_holds(self, route_id: str, result: HoldDetectResult) -> None:
+        """Replaces the AI holds of the route with ``result``, in one transaction.
+
+        Holds drawn or corrected by the user are kept, so a redelivered job never
+        duplicates holds nor loses a correction. The real photo size replaces the one
+        the server stored, since every hold coordinate is relative to it.
+        """
+        statements: list[tuple[str, tuple]] = [
+            (
+                (
+                    "UPDATE routes SET image_width = %s, image_height = %s, progress = %s"
+                    " WHERE id = %s RETURNING id"
+                ),
+                (result.image_width, result.image_height, PROGRESS_HOLDS_SAVED, route_id),
+            ),
+            (
+                "DELETE FROM holds WHERE route_id = %s AND source = 'ai' AND corrected_at IS NULL",
+                (route_id,),
+            ),
+        ]
+        for hold in result.holds:
+            contour = Jsonb(hold.contour.model_dump(mode="json"))
+            color = Jsonb(hold.color.model_dump(mode="json")) if hold.color else None
+            statements.append(
+                (
+                    _INSERT_HOLD,
+                    (route_id, hold.type.value, contour, color, hold.type.value, hold.confidence, contour, color),
+                )
+            )
+        self._transaction(route_id, statements)
+
+    def complete_route(self, route_id: str) -> None:
+        """Ends the detection with `success` (`processing_time_ms` is an integer here)."""
+        self._update(
+            route_id,
+            "status = %s, progress = 100, completed_at = NOW(),"
+            " processing_time_ms = (EXTRACT(EPOCH FROM NOW() - started_at) * 1000)::INTEGER",
+            Status.SUCCESS.value,
+            table="routes",
+        )
+
+    def fail_route(self, route_id: str, message: str) -> None:
+        """Ends the detection with `failed`; `message` must be short, without traceback."""
+        self._update(
+            route_id, _SET_FAILED, Status.FAILED.value, message, table="routes"
+        )

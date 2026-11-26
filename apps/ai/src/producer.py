@@ -12,6 +12,8 @@ Usage (from ``apps/ai``, or ``moon run ai:producer -- <args>``)::
     uv run python src/producer.py seed --video resources/example-2.mp4
     uv run python src/producer.py detect --job-id <id> --object-key <key>
     uv run python src/producer.py advice --job-id <id>
+    uv run python src/producer.py seed-route --image path/to/wall.jpg
+    uv run python src/producer.py holds --job-id <route_id> --object-key <key>
 
 Messages are the generated types of ``shared.models``.
 """
@@ -29,7 +31,13 @@ from common.utils.logger import log
 from services.postgresql import PostgreSQL
 from services.rabbitmq import Broker
 from services.rustfs import RustFS
-from shared.models import Job, PoseDetectRequest, RoutingKey
+from shared.models import HoldDetectRequest, Job, PoseDetectRequest, RoutingKey
+
+
+class SeededRoute(NamedTuple):
+    route_id: str  # job id of `holds.detect.requested`
+    object_key: str
+    user_id: str
 
 
 class Seeded(NamedTuple):
@@ -39,12 +47,8 @@ class Seeded(NamedTuple):
     video_id: str  # `advices.id`: the job id of the advice
 
 
-def seed(video: str, db: PostgreSQL | None = None, storage: RustFS | None = None) -> Seeded:
-    """Create a user, a video row, a `pending` analysis and a `pending` advice, and upload ``video``.
-
-    The bucket is created if missing (the worker never does it), so this runs
-    without the Go server. Everything is named after a unique suffix.
-    """
+def _connect(db: PostgreSQL | None, storage: RustFS | None) -> tuple[PostgreSQL, RustFS]:
+    """Connect to the database and the storage; create the bucket if missing (the worker never does it)."""
     db = db or PostgreSQL().setup_config().connect()
     storage = storage or RustFS().setup_config()
     if storage.client is None:
@@ -53,15 +57,28 @@ def seed(video: str, db: PostgreSQL | None = None, storage: RustFS | None = None
         except PermanentError:
             # `connect` builds the client before checking the bucket, so it is usable here.
             storage.client.create_bucket(Bucket=storage.config.bucket)
+    return db, storage
 
-    name = f"seed{uuid4().hex[:12]}"
-    object_key = f"seed/{name}{Path(video).suffix}"
-    storage.client.upload_file(video, storage.config.bucket, object_key)
-    user = db.connection.execute(
+
+def _seed_user(db: PostgreSQL, name: str) -> str:
+    return db.connection.execute(
         "INSERT INTO users (username, first_name, last_name, email, password_hash)"
         " VALUES (%s, 'Seed', 'Seed', %s, 'x') RETURNING id",
         (name, f"{name}@example.com"),
     ).fetchone()[0]
+
+
+def seed(video: str, db: PostgreSQL | None = None, storage: RustFS | None = None) -> Seeded:
+    """Create a user, a video row, a `pending` analysis and a `pending` advice, and upload ``video``.
+
+    The bucket is created if missing (the worker never does it), so this runs
+    without the Go server. Everything is named after a unique suffix.
+    """
+    db, storage = _connect(db, storage)
+    name = f"seed{uuid4().hex[:12]}"
+    object_key = f"seed/{name}{Path(video).suffix}"
+    storage.client.upload_file(video, storage.config.bucket, object_key)
+    user = _seed_user(db, name)
     video_id = db.connection.execute(
         "INSERT INTO videos (user_id, object_key, content_type) VALUES (%s, %s, 'video/mp4') RETURNING id",
         (user, object_key),
@@ -71,7 +88,25 @@ def seed(video: str, db: PostgreSQL | None = None, storage: RustFS | None = None
     return Seeded(str(job_id), object_key, str(user), str(video_id))
 
 
-def publish(routing_key: RoutingKey, payload: Job | PoseDetectRequest) -> None:
+def seed_route(image: str, db: PostgreSQL | None = None, storage: RustFS | None = None) -> SeededRoute:
+    """Create a user and a `pending` route, and upload its photo ``image``.
+
+    The photo size is left at 0: the worker writes the real size with the holds, as
+    the server may not know it when it creates the route.
+    """
+    db, storage = _connect(db, storage)
+    name = f"seed{uuid4().hex[:12]}"
+    object_key = f"seed/{name}{Path(image).suffix}"
+    storage.client.upload_file(image, storage.config.bucket, object_key)
+    user = _seed_user(db, name)
+    route_id = db.connection.execute(
+        "INSERT INTO routes (user_id, image_object_key, image_width, image_height) VALUES (%s, %s, 0, 0) RETURNING id",
+        (user, object_key),
+    ).fetchone()[0]
+    return SeededRoute(str(route_id), object_key, str(user))
+
+
+def publish(routing_key: RoutingKey, payload: Job | PoseDetectRequest | HoldDetectRequest) -> None:
     broker = Broker().setup_config().connect().setup_channel()
     try:
         broker.publish(routing_key, payload)
@@ -89,6 +124,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--object-key", required=True)
     p = sub.add_parser("advice", help="Publish pose.advice.requested (--job-id is the video id).")
     p.add_argument("--job-id", required=True)
+    p = sub.add_parser("seed-route", help="Create a test user and route; upload the photo; print route_id and object_key.")
+    p.add_argument("--image", required=True)
+    p = sub.add_parser("holds", help="Publish holds.detect.requested (--job-id is the route id).")
+    p.add_argument("--job-id", required=True)
+    p.add_argument("--object-key", required=True)
     return parser
 
 
@@ -101,6 +141,11 @@ def main(argv: list[str] | None = None) -> None:
             print(f"job_id={seeded.job_id}\nobject_key={seeded.object_key}\nvideo_id={seeded.video_id}")
         elif args.command == "detect":
             publish(RoutingKey.POSE_DETECT_REQUESTED, PoseDetectRequest(job_id=args.job_id, object_key=args.object_key))
+        elif args.command == "seed-route":
+            seeded = seed_route(args.image)
+            print(f"route_id={seeded.route_id}\nobject_key={seeded.object_key}")
+        elif args.command == "holds":
+            publish(RoutingKey.HOLDS_DETECT_REQUESTED, HoldDetectRequest(job_id=args.job_id, object_key=args.object_key))
         else:
             publish(RoutingKey.POSE_ADVICE_REQUESTED, Job(job_id=args.job_id))
     except Exception as e:  # noqa: BLE001

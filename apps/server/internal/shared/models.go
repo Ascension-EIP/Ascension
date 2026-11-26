@@ -78,6 +78,53 @@ type Hint struct {
 	Title       string     `json:"title"`
 }
 
+// Payload of holds.detect.requested: detect the holds of a route photo. job_id is routes.id.
+type HoldDetectRequest struct {
+	JobID     string `json:"job_id"`
+	ObjectKey string `json:"object_key"`
+}
+
+// Holds detected on a route photo. Coordinates are pixels of the original photo
+// (image_width x image_height). The worker stores each hold as one row of the holds table.
+type HoldDetectResult struct {
+	Holds       []DetectedHold `json:"holds"`
+	ImageHeight int64          `json:"image_height"`
+	ImageWidth  int64          `json:"image_width"`
+}
+
+type DetectedHold struct {
+	Color      *HoldColor  `json:"color,omitempty"`
+	Confidence float64     `json:"confidence"`
+	Contour    HoldContour `json:"contour"`
+	Type       HoldType    `json:"type"`
+}
+
+// Dominant colour of the hold. rgb is reliable for display; name is the closest reference
+// colour and is less reliable (distance: lower is closer).
+type HoldColor struct {
+	Distance float64 `json:"distance"`
+	Name     string  `json:"name"`
+	RGB      []int64 `json:"rgb"`
+}
+
+// Same format as holds.contour: polygon of the hold and its bounding box.
+type HoldContour struct {
+	Bbox   HoldBox     `json:"bbox"`
+	Points []HoldPoint `json:"points"`
+}
+
+type HoldBox struct {
+	H float64 `json:"h"`
+	W float64 `json:"w"`
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
+}
+
+type HoldPoint struct {
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
+}
+
 type Job struct {
 	JobID string `json:"job_id"`
 }
@@ -147,6 +194,22 @@ const (
 	Technique   FocusArea = "technique"
 )
 
+// Values of the hold_type enum of the database. The detector only returns unknown (any
+// hold) and volume.
+type HoldType string
+
+const (
+	Crimp    HoldType = "crimp"
+	Edge     HoldType = "edge"
+	Foothold HoldType = "foothold"
+	Jug      HoldType = "jug"
+	Pinch    HoldType = "pinch"
+	Pocket   HoldType = "pocket"
+	Sloper   HoldType = "sloper"
+	Unknown  HoldType = "unknown"
+	Volume   HoldType = "volume"
+)
+
 type Status string
 
 const (
@@ -160,9 +223,11 @@ const (
 type RoutingKey string
 
 const (
-	PoseAdviceRequested RoutingKey = "pose.advice.requested"
-	PoseAdviceStatus    RoutingKey = "pose.advice.status"
-	PoseDetectCompleted RoutingKey = "pose.detect.completed"
-	PoseDetectRequested RoutingKey = "pose.detect.requested"
-	PoseDetectStatus    RoutingKey = "pose.detect.status"
+	HoldsDetectRequested RoutingKey = "holds.detect.requested"
+	HoldsDetectStatus    RoutingKey = "holds.detect.status"
+	PoseAdviceRequested  RoutingKey = "pose.advice.requested"
+	PoseAdviceStatus     RoutingKey = "pose.advice.status"
+	PoseDetectCompleted  RoutingKey = "pose.detect.completed"
+	PoseDetectRequested  RoutingKey = "pose.detect.requested"
+	PoseDetectStatus     RoutingKey = "pose.detect.status"
 )
