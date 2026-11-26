@@ -198,3 +198,91 @@ def test_unexpected_detection_error_has_no_detail_in_the_status(monkeypatch):
     run(monkeypatch, w)
     failed = [c for c in w.calls if c[0] == "publish" and c[2] == "failed"]
     assert failed == [("publish", "holds.detect.status", "failed", "Analysis failed")]
+
+
+# --- wall geometry (pathfinding) --------------------------------------------------------------
+
+import logging
+
+import numpy as np
+import pytest
+
+
+class FakeDepth:
+    """Depth estimator replaced by a plane facing the camera at 3 m (or by a failure)."""
+
+    def __init__(self, depth=None, error: Exception | None = None):
+        self.depth = np.full((300, 400), 3.0, np.float32) if depth is None else depth
+        self.error = error
+        self.images: list[np.ndarray] = []
+
+    def __call__(self, image):
+        self.images.append(image)
+        if self.error:
+            raise self.error
+        return self.depth, 400.0
+
+
+def run_wall(monkeypatch, w: Route, depth_getter, body: bytes = BODY) -> None:
+    """Like `run`, with the photo reader and the depth estimator in play."""
+    monkeypatch.setattr(errors.time, "sleep", lambda _s: None)
+    monkeypatch.setattr(consume_mod, "get_broker", lambda: w)
+    for mod in (holds_mod, failure):
+        monkeypatch.setattr(mod, "get_broker", lambda: w)
+        monkeypatch.setattr(mod, "get_db", lambda: w)
+    monkeypatch.setattr(holds_mod, "get_storage", lambda: w)
+    monkeypatch.setattr(holds_mod, "get_hold_segmenter", lambda: "segmenter")
+    monkeypatch.setattr(holds_mod, "get_depth_estimator", depth_getter)
+    photo = np.zeros((300, 400, 3), np.uint8)
+    fake = SimpleNamespace(detect_holds=lambda path, segmenter: RESULT.model_copy(deep=True), read_image=lambda path: photo)
+    monkeypatch.setitem(sys.modules, "worker._3_holds._0_hold_detect", fake)
+    holds_mod.hold_detect_request(None, Method(), None, body)
+
+
+def test_the_wall_is_estimated_and_stored_with_the_holds(monkeypatch):
+    w, depth = Route(), FakeDepth()
+    run_wall(monkeypatch, w, lambda: depth, b'{"job_id": "r", "object_key": "routes/r.jpg", "gravity": [0, 9.8, 0]}')
+    assert w.status == Status.SUCCESS
+    wall = w.saved.wall
+    assert wall is not None and len(wall.homography) == 3 and wall.focal_px == 400.0
+    assert wall.model == "moge-2-vits-normal" and wall.inlier_ratio > 0.99
+    assert wall.angle_deg == pytest.approx(0, abs=0.5)  # gravity along y: a vertical wall
+    assert depth.images[0].shape == (300, 400, 3)
+
+
+def test_without_gravity_the_wall_has_no_angle(monkeypatch):
+    w = Route()
+    run_wall(monkeypatch, w, lambda: FakeDepth())
+    assert w.saved.wall is not None and w.saved.wall.angle_deg is None
+
+
+def missing_model():
+    raise FileNotFoundError("depth model not found: resources/moge-2-vits-normal.onnx")
+
+
+@pytest.mark.parametrize(
+    "getter",
+    [
+        missing_model,
+        lambda: FakeDepth(error=RuntimeError("onnxruntime: out of memory")),
+        lambda: FakeDepth(depth=np.full((300, 400), np.nan, np.float32)),  # nothing valid: no plane
+        lambda: FakeDepth(depth=np.random.default_rng(0).uniform(1, 9, (300, 400)).astype(np.float32)),  # not a plane
+        lambda: FakeDepth(depth=np.full((10, 10), 3.0, np.float32)),  # not the size of the photo
+    ],
+    ids=["model-missing", "model-crashes", "all-nan", "not-planar", "wrong-size"],
+)
+def test_a_wall_failure_never_fails_the_detection(monkeypatch, caplog, getter):
+    w = Route()
+    with caplog.at_level(logging.WARNING):
+        run_wall(monkeypatch, w, getter)
+    assert w.status == Status.SUCCESS and w.names()[-3:] == ["db.complete", "holds.detect.status=success", "ack"]
+    assert w.saved.wall is None and len(w.saved.holds) == 1  # the holds are stored anyway
+    assert "wall" in caplog.text.lower()
+
+
+@pytest.mark.parametrize("gravity", ["[0, 1]", "[0, 1, 0, 0]", "[0, 0, 0]"])
+def test_an_invalid_gravity_fails_the_job_with_a_clear_message(monkeypatch, gravity):
+    w = Route()
+    run_wall(monkeypatch, w, lambda: FakeDepth(), f'{{"job_id": "r", "object_key": "k", "gravity": {gravity}}}'.encode())
+    assert w.names() == ["db.fail", "holds.detect.status=failed", "nack"]
+    assert ("db.fail", "Invalid gravity") in w.calls

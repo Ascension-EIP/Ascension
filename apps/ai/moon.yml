@@ -14,6 +14,17 @@ tasks:
       - 'scripts/download-model.sh'
     outputs:
       - 'resources/pose_landmarker_full.task'
+    deps:
+      - 'setup-depth'
+
+  # Pathfinding depth model (134 MB, not versioned, not cached by moon): skipped when already present.
+  setup-depth:
+    command: 'bash'
+    args: ['scripts/download-depth-model.sh']
+    inputs:
+      - 'scripts/download-depth-model.sh'
+    options:
+      cache: false
 
   install:
     command: 'uv'

@@ -7,7 +7,7 @@
 # @status done
 import logging
 import os
-from typing import Any, Self
+from typing import Any, NamedTuple, Self
 
 import psycopg
 from psycopg import Connection
@@ -16,7 +16,15 @@ from pydantic import ValidationError
 
 from common.models.database import DatabaseModel
 from common.utils.errors import PermanentError, TransientError, throw_if_none
-from shared.models import AnalysisResult, Hints, HoldDetectResult, Status
+from shared.models import (
+    AnalysisResult,
+    ClimberMorphology,
+    Hints,
+    HoldDetectResult,
+    PathfindingResult,
+    Status,
+    WallPlane,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +40,18 @@ _INSERT_HOLD = (
     " predicted_type, predicted_confidence, predicted_contour, predicted_color)"
     " VALUES (%s, 'ai', %s, %s, %s, %s, %s, %s, %s)"
 )
+
+
+class PathfindingInput(NamedTuple):
+    """Everything the pathfinding job reads: the `pathfindings` row, its route and the holds of the route."""
+
+    morphology: ClimberMorphology
+    image_width: int
+    image_height: int
+    feet_free: bool
+    wall: WallPlane | None
+    holds: list[dict]  # rows {id, type, contour, usable, start_limbs, finish_limbs}
+    selected_ids: list[str]  # `pathfinding_holds`: empty means every usable hold of the route
 
 
 class PostgreSQL:
@@ -71,8 +91,8 @@ class PostgreSQL:
         self.connection = psycopg.connect(url, autocommit=True)
         return self
 
-    def _execute(self, sql: str, params: tuple, job_id: str) -> tuple:
-        """Runs one statement that returns a row (SELECT or UPDATE ... RETURNING).
+    def _execute(self, sql: str, params: tuple, job_id: str, many: bool = False) -> Any:
+        """Runs one statement that returns a row (SELECT or UPDATE ... RETURNING), or every row if ``many``.
 
         Reconnects once if the connection was closed, for instance after the
         minutes a MediaPipe run keeps it idle.
@@ -85,7 +105,8 @@ class PostgreSQL:
             try:
                 if self.connection is None or self.connection.closed:
                     self.connect()
-                row = self.connection.execute(sql, params).fetchone()
+                cursor = self.connection.execute(sql, params)
+                row = cursor.fetchall() if many else cursor.fetchone()
                 break
             except psycopg.OperationalError as error:
                 if self.connection is not None:
@@ -300,6 +321,9 @@ class PostgreSQL:
     def save_holds(self, route_id: str, result: HoldDetectResult) -> None:
         """Replaces the AI holds of the route with ``result``, in one transaction.
 
+        The wall plane of ``result`` (if any) is written in the same transaction (``wall_plane``,
+        ``wall_angle_deg``).
+
         Holds drawn or corrected by the user are kept, so a redelivered job never
         duplicates holds nor loses a correction. The real photo size replaces the one
         the server stored, since every hold coordinate is relative to it.
@@ -317,6 +341,19 @@ class PostgreSQL:
                 (route_id,),
             ),
         ]
+        if result.wall is not None:
+            # Without a wall the stored one stays: it describes the photo, not the detected holds.
+            statements.insert(
+                1,
+                (
+                    "UPDATE routes SET wall_plane = %s, wall_angle_deg = %s WHERE id = %s RETURNING id",
+                    (
+                        Jsonb(result.wall.model_dump(mode="json", exclude_none=True)),
+                        None if result.wall.angle_deg is None else round(result.wall.angle_deg, 2),
+                        route_id,
+                    ),
+                ),
+            )
         for hold in result.holds:
             contour = Jsonb(hold.contour.model_dump(mode="json"))
             color = Jsonb(hold.color.model_dump(mode="json")) if hold.color else None
@@ -343,3 +380,87 @@ class PostgreSQL:
         self._update(
             route_id, _SET_FAILED, Status.FAILED.value, message, table="routes"
         )
+
+    # Pathfinding job on a `pathfindings` row: `pathfinding_id` is `pathfindings.id`, the job id of `pathfinding.compute.requested`.
+
+    def get_pathfinding_status(self, pathfinding_id: str) -> Status:
+        """Returns the pathfinding status (the handler skips a pathfinding already in `success`)."""
+        (value,) = self._execute("SELECT status FROM pathfindings WHERE id = %s", (pathfinding_id,), pathfinding_id)
+        return Status(value)
+
+    def mark_pathfinding_started(self, pathfinding_id: str) -> None:
+        """Takes the pathfinding job: resets the state a previous delivery may have left."""
+        self._update(
+            pathfinding_id,
+            "status = %s, progress = 0, started_at = NOW(), error = NULL, result = NULL,"
+            " completed_at = NULL, processing_time_ms = NULL",
+            Status.STARTED.value,
+            table="pathfindings",
+        )
+
+    def update_pathfinding_progress(self, pathfinding_id: str, progress: int) -> None:
+        """Sets `running` and the progress, capped at 99 (100 is `complete_pathfinding`)."""
+        self._update(
+            pathfinding_id,
+            _SET_PROGRESS,
+            Status.RUNNING.value,
+            max(0, min(progress, PROGRESS_MAX_RUNNING)),
+            table="pathfindings",
+        )
+
+    def get_pathfinding_input(self, pathfinding_id: str) -> PathfindingInput:
+        """Reads the pathfinding row, its route (size, `feet_free`, wall plane), the holds of the route and `pathfinding_holds`.
+
+        Raises:
+            PermanentError: Unknown pathfinding, or a stored morphology or wall plane that does not match the schema.
+        """
+        route_id, morphology, width, height, feet_free, wall = self._execute(
+            "SELECT g.route_id, g.morphology, r.image_width, r.image_height, r.feet_free, r.wall_plane"
+            " FROM pathfindings g JOIN routes r ON r.id = g.route_id WHERE g.id = %s",
+            (pathfinding_id,),
+            pathfinding_id,
+        )
+        try:
+            parsed_morphology = ClimberMorphology.model_validate(morphology)
+            parsed_wall = None if wall is None else WallPlane.model_validate(wall)
+        except ValidationError as error:
+            raise PermanentError(f"pathfinding {pathfinding_id}: stored morphology or wall plane is invalid") from error
+        holds = self._execute(
+            "SELECT id, type, contour, usable, start_limbs, finish_limbs FROM holds WHERE route_id = %s ORDER BY id",
+            (route_id,),
+            pathfinding_id,
+            many=True,
+        )
+        selected = self._execute(
+            "SELECT hold_id FROM pathfinding_holds WHERE pathfinding_id = %s ORDER BY position NULLS LAST, hold_id",
+            (pathfinding_id,),
+            pathfinding_id,
+            many=True,
+        )
+        return PathfindingInput(
+            parsed_morphology,
+            width,
+            height,
+            feet_free,
+            parsed_wall,
+            [
+                {"id": str(i), "type": kind, "contour": contour, "usable": usable, "start_limbs": start, "finish_limbs": finish}
+                for i, kind, contour, usable, start, finish in holds
+            ],
+            [str(h) for (h,) in selected],
+        )
+
+    def complete_pathfinding(self, pathfinding_id: str, result: PathfindingResult) -> None:
+        """Stores ``result`` and ends the pathfinding with `success` in one statement (`processing_time_ms` is an integer)."""
+        self._update(
+            pathfinding_id,
+            "result = %s, status = %s, progress = 100, completed_at = NOW(),"
+            " processing_time_ms = (EXTRACT(EPOCH FROM NOW() - started_at) * 1000)::INTEGER",
+            Jsonb(result.model_dump(mode="json", exclude_none=True)),
+            Status.SUCCESS.value,
+            table="pathfindings",
+        )
+
+    def fail_pathfinding(self, pathfinding_id: str, message: str) -> None:
+        """Ends the pathfinding with `failed`; `message` must be short, without traceback."""
+        self._update(pathfinding_id, _SET_FAILED, Status.FAILED.value, message, table="pathfindings")

@@ -8,7 +8,8 @@
   "properties": {
     "image_width": { "type": "integer" },
     "image_height": { "type": "integer" },
-    "holds": { "type": "array", "items": { "$ref": "#/definitions/DetectedHold" } }
+    "holds": { "type": "array", "items": { "$ref": "#/definitions/DetectedHold" } },
+    "wall": { "$ref": "#/definitions/WallPlane" }
   },
   "definitions": {
     "HoldType": {
@@ -55,6 +56,27 @@
         "name": { "type": "string" },
         "rgb": { "type": "array", "items": { "type": "integer" }, "minItems": 3, "maxItems": 3 },
         "distance": { "type": "number" }
+      }
+    },
+    "WallPlane": {
+      "description": "Plane of the wall estimated from the photo. homography maps photo pixels to centimetres in the wall plane (y up).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["homography", "angle_deg", "focal_px", "inlier_ratio", "model"],
+      "properties": {
+        "homography": {
+          "type": "array",
+          "items": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "angle_deg": {
+          "description": "Wall angle: 0 vertical, > 0 overhang, < 0 slab; null when the gravity is unknown.",
+          "type": ["number", "null"]
+        },
+        "focal_px": { "type": "number" },
+        "inlier_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "model": { "description": "Name of the depth model.", "type": "string" }
       }
     },
     "DetectedHold": {

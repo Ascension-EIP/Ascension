@@ -7,6 +7,13 @@
   "required": ["job_id", "object_key"],
   "properties": {
     "job_id": { "type": "string" },
-    "object_key": { "type": "string" }
+    "object_key": { "type": "string" },
+    "gravity": {
+      "description": "Direction of the ground in the camera frame of the photo (OpenCV axes: x right, y down, z forward), any norm; sent by the mobile from the accelerometer.",
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 3,
+      "maxItems": 3
+    }
   }
 }

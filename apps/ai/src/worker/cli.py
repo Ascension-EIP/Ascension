@@ -81,7 +81,60 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--dataset", required=True, help="e.g. training/holds/datasets/holds")
     p.add_argument("--splits", nargs="+", default=["val", "test"])
     p.set_defaults(run=_holds_colors_eval)
+
+    p = sub.add_parser("pathfinding-depth", help="Route photo -> metric depth map in metres (.npy).")
+    p.add_argument("--image", required=True)
+    p.add_argument("--out", required=True, help="Depth map (H, W) float32 in metres, NaN where invalid.")
+    p.add_argument("--render", help="Also write a coloured picture of the depth map.")
+    p.set_defaults(run=_pathfinding_depth)
+
+    p = sub.add_parser(
+        "pathfinding-wall",
+        help="Route photo (+ holds JSON) -> holds JSON with the wall plane (depth model, plane fit, homography).",
+    )
+    p.add_argument("--image", required=True)
+    p.add_argument("--out", required=True, help="HoldDetectResult with `wall`; the marks of the holds are kept.")
+    p.add_argument("--holds", help="Holds JSON (HoldDetectResult, holds may carry start_limbs/finish_limbs). Default: detect them.")
+    p.add_argument("--gravity", type=float, nargs=3, metavar=("GX", "GY", "GZ"), help="Direction of the floor, camera frame.")
+    p.set_defaults(run=_pathfinding_wall)
+
+    p = sub.add_parser("pathfinding-beta", help="Holds JSON with a wall -> beta JSON (A* search: hold under each limb at each step).")
+    p.add_argument("--input", required=True, help="Output of pathfinding-wall.")
+    p.add_argument("--out", required=True)
+    _climber_options(p)
+    p.set_defaults(run=_pathfinding_beta)
+
+    p = sub.add_parser("pathfinding-pose", help="Beta JSON + holds JSON with a wall -> PathfindingResult JSON (posture of each step, photo pixels).")
+    p.add_argument("--input", required=True, help="Output of pathfinding-beta.")
+    p.add_argument("--holds", required=True, help="Output of pathfinding-wall.")
+    p.add_argument("--out", required=True)
+    p.add_argument("--render", help="Also write the photo with the skeletons drawn on it (needs --image).")
+    p.add_argument("--image")
+    p.set_defaults(run=_pathfinding_pose)
+
+    p = sub.add_parser("pathfinding", help="Route photo -> PathfindingResult JSON: pathfinding-wall, pathfinding-beta and pathfinding-pose in one go.")
+    p.add_argument("--image", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--render", help="Also write the photo with the skeletons drawn on it.")
+    p.add_argument("--holds", help="Holds JSON (HoldDetectResult, holds may carry start_limbs/finish_limbs). Default: detect them.")
+    p.add_argument("--gravity", type=float, nargs=3, metavar=("GX", "GY", "GZ"), help="Direction of the floor, camera frame.")
+    _climber_options(p)
+    p.set_defaults(run=_pathfinding)
+
+    p = sub.add_parser("depth-eval", help="Depth error on annotated wall photos (pairs of pixels and real distances).")
+    p.add_argument("--dataset", required=True, help="Folder with the photos and annotations.json")
+    p.set_defaults(run=_depth_eval)
     return parser
+
+
+def _climber_options(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--morphology", help="ClimberMorphology JSON (height, arm span, constraints). Overrides --height and --arm-span.")
+    p.add_argument("--height", type=float, default=175.0, help="Height in cm. Default: 175")
+    p.add_argument("--arm-span", type=float, default=178.0, help="Arm span in cm. Default: 178")
+    p.add_argument("--preference", choices=["easy", "power", "technique"], default="easy", help="Default: easy")
+    p.add_argument("--feet-free", action="store_true", help="Every usable hold of the photo can hold a foot.")
+    p.add_argument("--selected", help="Ids of the holds of the route, comma separated (default: all; the id is the index in the file).")
+    p.add_argument("--color", help="Colour name of the route: adds the holds whose color.name is this one (like routes.color) to --selected.")
 
 
 def _write(path: str, data: dict) -> None:
@@ -183,6 +236,179 @@ def _holds_colors_eval(args: argparse.Namespace) -> None:
     for name, (accuracy, count) in report["per_color"].items():
         print(f"  {name:8s} {accuracy:.3f}  (n={count})")
     print("most frequent confusions (truth -> predicted):", report["confusions"])
+
+
+def _pathfinding_depth(args: argparse.Namespace) -> None:
+    from pathlib import Path
+
+    import cv2
+    import numpy as np
+
+    from worker._3_holds._0_hold_detect import read_image
+    from worker._4_pathfinding._1_depth import render_depth
+    from worker.runtime import get_depth_estimator
+
+    depth, focal = get_depth_estimator()(read_image(args.image))
+    np.save(args.out, depth)
+    if args.render:
+        cv2.imwrite(args.render, render_depth(depth))
+    valid = depth[np.isfinite(depth)]
+    median = f"{np.median(valid):.2f}" if valid.size else "n/a"
+    print(f"focal {focal:.1f} px, depth median {median} m, {valid.size / depth.size:.0%} valid pixels")
+    log.info("Wrote %s", Path(args.out))
+
+
+def _write_json(path: str, data: dict) -> None:
+    import json
+    from pathlib import Path
+
+    Path(path).write_text(json.dumps(data))
+    log.info("Wrote %s", path)
+
+
+def _pathfinding_wall_data(args: argparse.Namespace) -> dict:
+    """Holds JSON of ``--holds`` (or detected) plus the ``wall`` of the photo."""
+    from pathlib import Path
+
+    import numpy as np
+
+    from common.utils.errors import PermanentError
+    from shared.models import HoldDetectResult
+    from worker._3_holds._0_hold_detect import detect_holds, read_image
+    from worker._4_pathfinding._1_depth import depth_model_path
+    from worker._4_pathfinding._4_pathfinding import (
+        estimate_photo_wall,
+        validate_gravity,
+    )
+    from worker.runtime import get_depth_estimator, get_hold_segmenter
+
+    validate_gravity(args.gravity)
+    image = read_image(args.image)
+    if args.holds:
+        data = _read(args.holds)
+        result = HoldDetectResult.model_validate(data)  # the marks of the holds stay in `data`
+    else:
+        result = detect_holds(args.image, get_hold_segmenter())
+        data = result.model_dump(mode="json", exclude_none=True)
+    if (result.image_width, result.image_height) != image.shape[:2][::-1]:
+        raise PermanentError(
+            f"holds are for a {result.image_width}x{result.image_height} photo, not {image.shape[1]}x{image.shape[0]}"
+        )
+    polygons = [np.array([(p.x, p.y) for p in hold.contour.points]) for hold in result.holds]
+    model = Path(depth_model_path()).stem
+    wall = estimate_photo_wall(image, polygons, get_depth_estimator(), args.gravity, model)
+    log.info("Wall: %s, inliers %.0f%%", f"{wall.angle_deg:.1f} deg" if wall.angle_deg is not None else "angle unknown", 100 * wall.inlier_ratio)
+    return data | {"wall": wall.model_dump(mode="json", exclude_none=True)}
+
+
+def _wall_data(data: dict, source: str = "holds") -> tuple:
+    """Wall and holds of a pathfinding-wall output (``data``, read from ``source``)."""
+    from common.utils.errors import PermanentError
+    from shared.models import HoldDetectResult
+    from worker._4_pathfinding._4_pathfinding import (
+        photo_holds_from_dicts,
+        validate_wall,
+    )
+
+    result = HoldDetectResult.model_validate(data)
+    if result.wall is None:
+        raise PermanentError(f"{source} has no wall: run pathfinding-wall first")
+    validate_wall(result.wall)
+    return result.wall, photo_holds_from_dicts(data["holds"])
+
+
+def _selected_ids(args: argparse.Namespace, rows: list[dict]) -> list[str]:
+    """Ids from --selected plus those of the holds of the --color colour (name compared in lower case)."""
+    from common.utils.errors import PermanentError
+
+    selected = [i for i in (args.selected or "").split(",") if i]
+    if args.color:
+        wanted = args.color.lower()
+        names = {(row.get("color") or {}).get("name", "").lower() for row in rows} - {""}
+        if wanted not in names:
+            raise PermanentError(f"no hold of colour {args.color!r}; colours in the file: {', '.join(sorted(names)) or 'none'}")
+        selected += [str(row.get("id", i)) for i, row in enumerate(rows) if (row.get("color") or {}).get("name", "").lower() == wanted]
+    return selected
+
+
+def _pathfinding_beta_data(args: argparse.Namespace, wall, holds, rows: list[dict]) -> dict:
+    from shared.models import BetaPreference, ClimberMorphology
+    from worker._4_pathfinding._4_pathfinding import beta_to_json, find_beta_for_route
+
+    if args.morphology:
+        morphology = ClimberMorphology.model_validate(_read(args.morphology))
+    else:
+        morphology = ClimberMorphology(height_cm=args.height, arm_span_cm=args.arm_span)
+    preference = BetaPreference(args.preference)
+    selected = _selected_ids(args, rows)
+    steps = find_beta_for_route(holds, wall, args.feet_free, selected, morphology, preference)
+    log.info("Beta: %d steps", len(steps))
+    return beta_to_json(steps, morphology.height_cm, preference, wall.angle_deg)
+
+
+def _pathfinding_path(beta: dict, wall, holds, size: tuple[int, int]):
+    from worker._4_pathfinding._4_pathfinding import beta_from_json, pose_steps
+
+    steps, height = beta_from_json(beta)
+    return pose_steps(steps, holds, wall, height, size)
+
+
+def _pathfinding_wall(args: argparse.Namespace) -> None:
+    _write_json(args.out, _pathfinding_wall_data(args))
+
+
+def _pathfinding_beta(args: argparse.Namespace) -> None:
+    data = _read(args.input)
+    wall, holds = _wall_data(data, args.input)
+    _write_json(args.out, _pathfinding_beta_data(args, wall, holds, data["holds"]))
+
+
+def _write_pathfinding(args: argparse.Namespace, path, image_path: str | None) -> None:
+    from pathlib import Path
+
+    import cv2
+
+    from worker._3_holds._0_hold_detect import read_image
+    from worker._4_pathfinding._4_pathfinding import render_pathfinding
+
+    Path(args.out).write_text(path.model_dump_json(exclude_none=True))
+    log.info("Wrote %s (%d steps)", args.out, len(path.steps))
+    if args.render:
+        cv2.imwrite(args.render, render_pathfinding(read_image(image_path), path))
+
+
+def _pathfinding_pose(args: argparse.Namespace) -> None:
+    from common.utils.errors import PermanentError
+
+    if args.render and not args.image:
+        raise PermanentError("--render needs --image")
+    data = _read(args.holds)
+    wall, holds = _wall_data(data, args.holds)
+    path = _pathfinding_path(_read(args.input), wall, holds, (data["image_width"], data["image_height"]))
+    _write_pathfinding(args, path, args.image)
+
+
+def _pathfinding(args: argparse.Namespace) -> None:
+    data = _pathfinding_wall_data(args)
+    wall, holds = _wall_data(data)
+    path = _pathfinding_path(_pathfinding_beta_data(args, wall, holds, data["holds"]), wall, holds, (data["image_width"], data["image_height"]))
+    _write_pathfinding(args, path, args.image)
+
+
+def _depth_eval(args: argparse.Namespace) -> None:
+    from worker._4_pathfinding._1_depth import evaluate_depth
+    from worker.runtime import get_depth_estimator
+
+    report = evaluate_depth(args.dataset, get_depth_estimator())
+    for image in report["images"]:
+        print(
+            f"{image['image']}: mean {image['mean']:.1%} median {image['median']:.1%} "
+            f"({len(image['errors'])} pairs, focal {image['focal_px']:.1f} px)"
+        )
+    print(
+        f"all: {report['pairs']} pairs ({report['skipped']} skipped) "
+        f"mean {report['mean']:.1%} median {report['median']:.1%}"
+    )
 
 
 def consume() -> None:

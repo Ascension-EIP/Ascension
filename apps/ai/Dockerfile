@@ -21,6 +21,8 @@ COPY pyproject.toml uv.lock* ./
 RUN uv sync --frozen --no-install-project
 
 COPY . .
+# The depth model (141 MB) is not versioned (GitHub limit of 100 MB): download it into the image.
+RUN bash scripts/download-depth-model.sh
 RUN uv sync --frozen
 
 ENTRYPOINT ["uv", "run", "worker"]

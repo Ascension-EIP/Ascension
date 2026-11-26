@@ -8,6 +8,7 @@
 from common.utils.errors import PermanentError, TransientError
 from common.utils.logger import log
 from shared.models import JobStatus, RoutingKey, Status
+from worker._4_pathfinding._2_beta import NoBetaError
 from worker.runtime import get_broker, get_db
 
 # (stage, is_transient) -> short message stored in the database and sent in statuses.
@@ -24,14 +25,28 @@ _MESSAGES = {
     ("photo", False): "Photo not found",
     ("holds", False): "Unreadable photo",
     ("model", False): "Hold model unavailable",
+    ("gravity", False): "Invalid gravity",
+    # Pathfinding computation
+    ("input", True): "Database unavailable",
+    ("input", False): "Invalid pathfinding data",
+    ("wall", False): "Wall geometry missing",
+    ("wall_shape", False): "Wall geometry invalid",
+    ("pathfinding", False): "Pathfinding failed",
 }
 
 # Table of the job -> name of the `PostgreSQL` method that ends it in `failed`.
-_FAIL_METHODS = {"analyses": "fail", "advices": "fail_advice", "routes": "fail_route"}
+_FAIL_METHODS = {"analyses": "fail", "advices": "fail_advice", "routes": "fail_route", "pathfindings": "fail_pathfinding"}
 
 
 def short_message(stage: str, exc: Exception) -> str:
-    """Short, secret-free message for a failed ``stage``; the details stay in the logs."""
+    """Short, secret-free message for a failed ``stage``; the details stay in the logs.
+
+    A `NoBetaError` names the holds around the missing passage, so the client can show where it is.
+    """
+    if isinstance(exc, NoBetaError):
+        if len(exc.hold_ids) == 2:
+            return f"No beta between holds {exc.hold_ids[0]} and {exc.hold_ids[1]}"
+        return f"No beta: {exc}"[:200]
     if isinstance(exc, (TransientError, PermanentError)):
         return _MESSAGES.get((stage, isinstance(exc, TransientError)), "Analysis failed")
     return "Analysis failed"
@@ -42,7 +57,7 @@ def fail_job(
 ) -> PermanentError:
     """Report a definitive failure once and return the error to raise.
 
-    Writes ``failed`` in the job row of ``table`` (``analyses``, ``advices`` or ``routes``),
+    Writes ``failed`` in the job row of ``table`` (``analyses``, ``advices``, ``routes`` or ``pathfindings``),
     publishes the ``failed`` status with a short message, and logs the traceback. Raising
     the returned `PermanentError` makes the ``consume`` wrapper dead-letter the message
     without retrying.
