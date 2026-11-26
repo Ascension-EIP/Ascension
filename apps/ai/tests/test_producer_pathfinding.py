@@ -1,6 +1,6 @@
 # @date 2026-11-25
 # @file test_producer_pathfinding.py
-# @brief The pathfinding part of the producer: seed a ghost on a route, publish pathfinding.compute.requested.
+# @brief The pathfinding part of the producer: seed a pathfinding on a route, publish pathfinding.compute.requested.
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
@@ -40,25 +40,25 @@ def test_producer_pathfinding_carries_the_preference(sent):
     )
 
 
-def test_seed_ghost_inserts_a_pending_ghost_on_the_user_of_the_route():
+def test_seed_pathfinding_inserts_a_pending_pathfinding_on_the_user_of_the_route():
     db = MagicMock()
-    db.connection.execute.return_value.fetchone.side_effect = [("user-id",), ("ghost-id",)]
-    seeded = producer.seed_ghost("route-id", ClimberMorphology(height_cm=180, arm_span_cm=183), db)
-    assert seeded == producer.SeededGhost("ghost-id", "user-id")
+    db.connection.execute.return_value.fetchone.side_effect = [("user-id",), ("pathfinding-id",)]
+    seeded = producer.seed_pathfinding("route-id", ClimberMorphology(height_cm=180, arm_span_cm=183), db)
+    assert seeded == producer.SeededPathfinding("pathfinding-id", "user-id")
     select, insert = (c.args for c in db.connection.execute.call_args_list)
     assert "FROM routes" in select[0] and select[1] == ("route-id",)
-    assert insert[0].startswith("INSERT INTO ghosts") and insert[1][:2] == ("route-id", "user-id")
+    assert insert[0].startswith("INSERT INTO pathfindings") and insert[1][:2] == ("route-id", "user-id")
     assert json.loads(insert[1][2]) == {"height_cm": 180.0, "arm_span_cm": 183.0}
 
 
-def test_seed_ghost_on_an_unknown_route_fails():
+def test_seed_pathfinding_on_an_unknown_route_fails():
     db = MagicMock()
     db.connection.execute.return_value.fetchone.return_value = None
     with pytest.raises(ValueError, match="route"):
-        producer.seed_ghost("nope", db=db)
+        producer.seed_pathfinding("nope", db=db)
 
 
-def test_producer_seed_ghost_prints_the_ghost_id(monkeypatch, capsys):
-    monkeypatch.setattr(producer, "seed_ghost", lambda route_id, morphology=None, db=None: producer.SeededGhost("ghost-id", "user-id"))
-    producer.main(["seed-ghost", "--route-id", "r", "--height", "170"])
-    assert "ghost_id=ghost-id" in capsys.readouterr().out
+def test_producer_seed_pathfinding_prints_the_pathfinding_id(monkeypatch, capsys):
+    monkeypatch.setattr(producer, "seed_pathfinding", lambda route_id, morphology=None, db=None: producer.SeededPathfinding("pathfinding-id", "user-id"))
+    producer.main(["seed-pathfinding", "--route-id", "r", "--height", "170"])
+    assert "pathfinding_id=pathfinding-id" in capsys.readouterr().out

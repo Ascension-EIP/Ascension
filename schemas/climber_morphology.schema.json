@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ClimberMorphology",
-  "description": "Format of ghosts.morphology: the climber body used by the pathfinding.",
+  "description": "Format of pathfindings.morphology: the climber body used by the pathfinding.",
   "type": "object",
   "additionalProperties": false,
   "required": [

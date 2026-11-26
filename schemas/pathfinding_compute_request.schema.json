@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "PathfindingComputeRequest",
-  "description": "Payload of pathfinding.compute.requested: compute the beta and the postures of a climber on a route. job_id is ghosts.id (the row that receives the result in ghosts.path).",
+  "description": "Payload of pathfinding.compute.requested: compute the beta and the postures of a climber on a route. job_id is pathfindings.id (the row that receives the result in pathfindings.result).",
   "type": "object",
   "additionalProperties": false,
   "required": [

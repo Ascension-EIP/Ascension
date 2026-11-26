@@ -14,8 +14,8 @@ Usage (from ``apps/ai``, or ``moon run ai:producer -- <args>``)::
     uv run python src/producer.py advice --job-id <id>
     uv run python src/producer.py seed-route --image path/to/wall.jpg
     uv run python src/producer.py holds --job-id <route_id> --object-key <key>
-    uv run python src/producer.py seed-ghost --route-id <route_id> [--height 175 --arm-span 178]
-    uv run python src/producer.py pathfinding --job-id <ghost_id> [--preference easy]
+    uv run python src/producer.py seed-pathfinding --route-id <route_id> [--height 175 --arm-span 178]
+    uv run python src/producer.py pathfinding --job-id <pathfinding_id> [--preference easy]
 
 Messages are the generated types of ``shared.models``.
 """
@@ -50,8 +50,8 @@ class SeededRoute(NamedTuple):
     user_id: str
 
 
-class SeededGhost(NamedTuple):
-    ghost_id: str  # job id of `pathfinding.compute.requested`
+class SeededPathfinding(NamedTuple):
+    pathfinding_id: str  # job id of `pathfinding.compute.requested`
     user_id: str
 
 
@@ -121,21 +121,21 @@ def seed_route(image: str, db: PostgreSQL | None = None, storage: RustFS | None 
     return SeededRoute(str(route_id), object_key, str(user))
 
 
-def seed_ghost(route_id: str, morphology: ClimberMorphology | None = None, db: PostgreSQL | None = None) -> SeededGhost:
-    """Create a `pending` ghost on an existing route, for the user of the route.
+def seed_pathfinding(route_id: str, morphology: ClimberMorphology | None = None, db: PostgreSQL | None = None) -> SeededPathfinding:
+    """Create a `pending` pathfinding on an existing route, for the user of the route.
 
-    The ghost holds no `ghost_holds` row: every usable hold of the route is then part of its route.
+    The pathfinding holds no `pathfinding_holds` row: every usable hold of the route is then part of its route.
     """
     db = db or PostgreSQL().setup_config().connect()
     morphology = morphology or ClimberMorphology(height_cm=175, arm_span_cm=178)
     row = db.connection.execute("SELECT user_id FROM routes WHERE id = %s", (route_id,)).fetchone()
     if row is None:
         raise ValueError(f"no such route: {route_id}")
-    ghost_id = db.connection.execute(
-        "INSERT INTO ghosts (route_id, user_id, morphology) VALUES (%s, %s, %s::jsonb) RETURNING id",
+    pathfinding_id = db.connection.execute(
+        "INSERT INTO pathfindings (route_id, user_id, morphology) VALUES (%s, %s, %s::jsonb) RETURNING id",
         (route_id, row[0], morphology.model_dump_json(exclude_none=True)),
     ).fetchone()[0]
-    return SeededGhost(str(ghost_id), str(row[0]))
+    return SeededPathfinding(str(pathfinding_id), str(row[0]))
 
 
 def publish(routing_key: RoutingKey, payload: Job | PoseDetectRequest | HoldDetectRequest | PathfindingComputeRequest) -> None:
@@ -161,11 +161,11 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("holds", help="Publish holds.detect.requested (--job-id is the route id).")
     p.add_argument("--job-id", required=True)
     p.add_argument("--object-key", required=True)
-    p = sub.add_parser("seed-ghost", help="Create a pending ghost on an existing route; print ghost_id.")
+    p = sub.add_parser("seed-pathfinding", help="Create a pending pathfinding on an existing route; print pathfinding_id.")
     p.add_argument("--route-id", required=True)
     p.add_argument("--height", type=float, default=175.0)
     p.add_argument("--arm-span", type=float, default=178.0)
-    p = sub.add_parser("pathfinding", help="Publish pathfinding.compute.requested (--job-id is the ghost id).")
+    p = sub.add_parser("pathfinding", help="Publish pathfinding.compute.requested (--job-id is the pathfinding id).")
     p.add_argument("--job-id", required=True)
     p.add_argument("--preference", choices=[p.value for p in BetaPreference])
     return parser
@@ -185,9 +185,9 @@ def main(argv: list[str] | None = None) -> None:
             print(f"route_id={seeded.route_id}\nobject_key={seeded.object_key}")
         elif args.command == "holds":
             publish(RoutingKey.HOLDS_DETECT_REQUESTED, HoldDetectRequest(job_id=args.job_id, object_key=args.object_key))
-        elif args.command == "seed-ghost":
-            seeded = seed_ghost(args.route_id, ClimberMorphology(height_cm=args.height, arm_span_cm=args.arm_span))
-            print(f"ghost_id={seeded.ghost_id}")
+        elif args.command == "seed-pathfinding":
+            seeded = seed_pathfinding(args.route_id, ClimberMorphology(height_cm=args.height, arm_span_cm=args.arm_span))
+            print(f"pathfinding_id={seeded.pathfinding_id}")
         elif args.command == "pathfinding":
             preference = BetaPreference(args.preference) if args.preference else None
             publish(RoutingKey.PATHFINDING_COMPUTE_REQUESTED, PathfindingComputeRequest(job_id=args.job_id, preference=preference))

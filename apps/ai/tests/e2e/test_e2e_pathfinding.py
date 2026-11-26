@@ -5,8 +5,8 @@
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
-"""Photo of a route -> ``holds.detect.requested`` -> route ``success`` with ``wall_plane`` -> `ghosts` row seeded
--> ``pathfinding.compute.requested`` -> ghost ``success`` with a valid ``path``.
+"""Photo of a route -> ``holds.detect.requested`` -> route ``success`` with ``wall_plane`` -> `pathfindings` row seeded
+-> ``pathfinding.compute.requested`` -> pathfinding ``success`` with a valid ``result``.
 
 Real: RabbitMQ, PostgreSQL, RustFS, the worker (consumer, handlers, SQL), the plane fit, the A* search and
 the posture. Fake: the depth model (a wall facing the camera at 3 m) and the hold model (the squares of a
@@ -45,7 +45,7 @@ LADDER = [  # 12 holds 25 px (19 cm at 3 m with f = 400 px) apart, the lowest at
 GAP = [LADDER[0], [[p[0], p[1] - 700] for p in LADDER[1]]]  # two holds 525 cm apart: no beta
 REAL_PHOTO = APP.parents[1] / "docs" / "Ascension" / "resources" / "images" / "deck" / "climb_olivier.jpeg"
 PHOTO_ROWS = "SELECT status, progress, error, wall_plane, wall_angle_deg, image_width, image_height FROM routes WHERE id = %s"
-GHOST_ROWS = "SELECT status, progress, error, path, completed_at, processing_time_ms FROM ghosts WHERE id = %s"
+PATHFINDING_ROWS = "SELECT status, progress, error, result, completed_at, processing_time_ms FROM pathfindings WHERE id = %s"
 
 
 class FakeDepth:
@@ -70,7 +70,7 @@ def fake_models(worker) -> Iterator[None]:
 
 
 @pytest.fixture(scope="module")
-def ghost_observer(observer: Observer) -> Observer:
+def pathfinding_observer(observer: Observer) -> Observer:
     for key in (RoutingKey.HOLDS_DETECT_STATUS, RoutingKey.PATHFINDING_COMPUTE_STATUS):
         observer.channel.queue_bind(queue=observer.queue, exchange="events", routing_key=key)
     return observer
@@ -98,7 +98,7 @@ def seeded_route(db: PostgreSQL, storage: RustFS, photo: Path) -> Iterator[Calla
 
     yield seed
     for route in created:
-        db.connection.execute("DELETE FROM users WHERE id = %s", (route.user_id,))  # cascades to routes, holds and ghosts
+        db.connection.execute("DELETE FROM users WHERE id = %s", (route.user_id,))  # cascades to routes, holds and pathfindings
         storage.client.delete_object(Bucket=storage.config.bucket, Key=route.object_key)
 
 
@@ -107,9 +107,9 @@ def route_row(db: PostgreSQL, route_id: str) -> dict:
     return dict(zip(keys, db.connection.execute(PHOTO_ROWS, (route_id,)).fetchone(), strict=True))
 
 
-def ghost_row(db: PostgreSQL, ghost_id: str) -> dict:
-    keys = ("status", "progress", "error", "path", "completed_at", "processing_time_ms")
-    return dict(zip(keys, db.connection.execute(GHOST_ROWS, (ghost_id,)).fetchone(), strict=True))
+def pathfinding_row(db: PostgreSQL, pathfinding_id: str) -> dict:
+    keys = ("status", "progress", "error", "result", "completed_at", "processing_time_ms")
+    return dict(zip(keys, db.connection.execute(PATHFINDING_ROWS, (pathfinding_id,)).fetchone(), strict=True))
 
 
 def wait_ended(read: Callable[[], dict]) -> dict:
@@ -126,13 +126,13 @@ def detect(db: PostgreSQL, route: producer.SeededRoute, gravity: list[float] | N
 
 
 def compute(db: PostgreSQL, route: producer.SeededRoute, **request) -> tuple[str, dict]:
-    ghost = producer.seed_ghost(route.route_id, ClimberMorphology(height_cm=175, arm_span_cm=178), db)
-    assert ghost_row(db, ghost.ghost_id)["status"] == "pending"
-    producer.publish(RoutingKey.PATHFINDING_COMPUTE_REQUESTED, PathfindingComputeRequest(job_id=ghost.ghost_id, **request))
-    return ghost.ghost_id, wait_ended(lambda: ghost_row(db, ghost.ghost_id))
+    pathfinding = producer.seed_pathfinding(route.route_id, ClimberMorphology(height_cm=175, arm_span_cm=178), db)
+    assert pathfinding_row(db, pathfinding.pathfinding_id)["status"] == "pending"
+    producer.publish(RoutingKey.PATHFINDING_COMPUTE_REQUESTED, PathfindingComputeRequest(job_id=pathfinding.pathfinding_id, **request))
+    return pathfinding.pathfinding_id, wait_ended(lambda: pathfinding_row(db, pathfinding.pathfinding_id))
 
 
-def test_route_then_pathfinding(db: PostgreSQL, seeded_route, ghost_observer: Observer):
+def test_route_then_pathfinding(db: PostgreSQL, seeded_route, pathfinding_observer: Observer):
     route = seeded_route()
     FakeSegmenter.polygons = LADDER
     detected = detect(db, route, gravity=[0.0, 9.8, 0.0])
@@ -141,37 +141,37 @@ def test_route_then_pathfinding(db: PostgreSQL, seeded_route, ghost_observer: Ob
     wall = WallPlane.model_validate(detected["wall_plane"])
     assert len(wall.homography) == 3 and wall.inlier_ratio > 0.99 and wall.angle_deg == pytest.approx(0, abs=0.5)
     assert float(detected["wall_angle_deg"]) == pytest.approx(0, abs=0.5)
-    assert ghost_observer.wait_status(route.route_id, RoutingKey.HOLDS_DETECT_STATUS, "success")
+    assert pathfinding_observer.wait_status(route.route_id, RoutingKey.HOLDS_DETECT_STATUS, "success")
 
     holds = db.connection.execute("SELECT id, contour FROM holds WHERE route_id = %s", (route.route_id,)).fetchall()
     assert len(holds) == len(LADDER)
     lowest = max(holds, key=lambda h: h[1]["bbox"]["y"])  # the user marks the start hold: both hands start on it
     db.connection.execute("UPDATE holds SET start_limbs = 2 WHERE id = %s", (lowest[0],))
 
-    ghost_id, final = compute(db, route, preference="easy")
+    pathfinding_id, final = compute(db, route, preference="easy")
     assert final["status"] == "success" and final["error"] is None and final["progress"] == 100, final
     assert final["completed_at"] is not None and isinstance(final["processing_time_ms"], int)
-    path = PathfindingResult.model_validate(final["path"])
+    path = PathfindingResult.model_validate(final["result"])
     assert (path.image_width, path.image_height) == (WIDTH, HEIGHT) and path.wall_angle_deg == pytest.approx(0, abs=0.5)
     assert len(path.steps) >= 4 and [s.index for s in path.steps] == list(range(len(path.steps)))
     assert all(len(s.landmarks) == 33 for s in path.steps)
     ids = {str(h[0]) for h in holds}
     assert {v for s in path.steps for v in s.holds.model_dump().values() if v} <= ids
     assert path.steps[0].holds.left_hand == path.steps[0].holds.right_hand == str(lowest[0])  # the mark was honoured
-    statuses = ghost_observer.seen(ghost_id, RoutingKey.PATHFINDING_COMPUTE_STATUS)
+    statuses = pathfinding_observer.seen(pathfinding_id, RoutingKey.PATHFINDING_COMPUTE_STATUS)
     assert {"started", "running", "success"} <= set(statuses)
     assert statuses.index("started") < statuses.index("running") < statuses.index("success")
 
 
-def test_a_route_without_wall_fails_the_ghost_with_a_short_message(db: PostgreSQL, seeded_route, ghost_observer: Observer):
+def test_a_route_without_wall_fails_the_pathfinding_with_a_short_message(db: PostgreSQL, seeded_route, pathfinding_observer: Observer):
     route = seeded_route()  # never detected: no wall
-    ghost_id, final = compute(db, route)
-    assert final["status"] == "failed" and final["path"] is None and final["error"] == "Wall geometry missing"
-    assert ghost_observer.wait_status(ghost_id, RoutingKey.PATHFINDING_COMPUTE_STATUS, "failed")
-    assert ghost_observer.take_dead_letter("pathfinding.compute.dlq", ghost_id)
+    pathfinding_id, final = compute(db, route)
+    assert final["status"] == "failed" and final["result"] is None and final["error"] == "Wall geometry missing"
+    assert pathfinding_observer.wait_status(pathfinding_id, RoutingKey.PATHFINDING_COMPUTE_STATUS, "failed")
+    assert pathfinding_observer.take_dead_letter("pathfinding.compute.dlq", pathfinding_id)
 
 
-def test_no_beta_names_the_holds_around_the_gap(db: PostgreSQL, seeded_route, ghost_observer: Observer):
+def test_no_beta_names_the_holds_around_the_gap(db: PostgreSQL, seeded_route, pathfinding_observer: Observer):
     route = seeded_route()
     FakeSegmenter.polygons = GAP
     try:
@@ -180,7 +180,7 @@ def test_no_beta_names_the_holds_around_the_gap(db: PostgreSQL, seeded_route, gh
         FakeSegmenter.polygons = LADDER
     ids = {str(i) for (i,) in db.connection.execute("SELECT id FROM holds WHERE route_id = %s", (route.route_id,)).fetchall()}
     _, final = compute(db, route)
-    assert final["status"] == "failed" and final["path"] is None
+    assert final["status"] == "failed" and final["result"] is None
     assert final["error"].startswith("No beta between holds ") and all(i in final["error"] for i in ids)
 
 

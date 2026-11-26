@@ -63,32 +63,32 @@ class Job:
     def publish(self, key, payload):
         self.calls.append(("publish", str(key), payload.status.value, payload.message))
 
-    def get_ghost_status(self, ghost_id):
+    def get_pathfinding_status(self, pathfinding_id):
         if self.status_error:
             raise self.status_error
         return self.status
 
-    def mark_ghost_started(self, ghost_id):
+    def mark_pathfinding_started(self, pathfinding_id):
         self.calls.append(("db.started",))
         self.status = Status.STARTED
 
-    def update_ghost_progress(self, ghost_id, progress):
+    def update_pathfinding_progress(self, pathfinding_id, progress):
         self.calls.append(("db.progress", progress))
         self.status = Status.RUNNING
 
-    def get_ghost_input(self, ghost_id):
+    def get_pathfinding_input(self, pathfinding_id):
         if self.input_errors:
             raise self.input_errors.pop(0)
-        self.calls.append(("db.input", ghost_id))
+        self.calls.append(("db.input", pathfinding_id))
         return self.data
 
-    def complete_ghost(self, ghost_id, path):
+    def complete_pathfinding(self, pathfinding_id, path):
         if self.complete_errors:
             raise self.complete_errors.pop(0)
         self.calls.append(("db.complete",))
         self.path, self.status = path, Status.SUCCESS
 
-    def fail_ghost(self, ghost_id, message):
+    def fail_pathfinding(self, pathfinding_id, message):
         self.calls.append(("db.fail", message))
         self.status = Status.FAILED
 
@@ -151,13 +151,13 @@ def test_the_selection_and_feet_free_of_the_route_are_used(monkeypatch):
     assert hands <= {"0", "1", "2", "3", "4"} and used
 
 
-def test_redelivery_of_a_computed_ghost_does_nothing(monkeypatch):
+def test_redelivery_of_a_computed_pathfinding_does_nothing(monkeypatch):
     job = Job(status=Status.SUCCESS)
     run(monkeypatch, job)
     assert job.names() == ["ack"]
 
 
-def test_unknown_ghost_fails_with_a_short_message(monkeypatch):
+def test_unknown_pathfinding_fails_with_a_short_message(monkeypatch):
     job = Job()
     job.status_error = PermanentError("job g: no such row")
     run(monkeypatch, job)
@@ -195,7 +195,7 @@ def test_no_usable_hold_fails_with_a_short_message(monkeypatch):
 
 def test_stored_data_that_cannot_be_read_fails_permanently(monkeypatch):
     job = Job()
-    job.input_errors = [PermanentError("ghost g: stored morphology or wall plane is invalid")]
+    job.input_errors = [PermanentError("pathfinding g: stored morphology or wall plane is invalid")]
     run(monkeypatch, job)
     assert failed_message(job) == "Invalid pathfinding data"
 

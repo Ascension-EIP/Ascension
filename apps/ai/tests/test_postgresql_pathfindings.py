@@ -1,6 +1,6 @@
 # @date 2026-11-25
-# @file test_postgresql_ghosts.py
-# @brief Ghost operations of the PostgreSQL service (ghosts, ghost_holds, routes and holds tables).
+# @file test_postgresql_pathfindings.py
+# @brief Pathfinding operations of the PostgreSQL service (pathfindings, pathfinding_holds, routes and holds tables).
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
@@ -54,54 +54,54 @@ def service(**results) -> tuple[PostgreSQL, MagicMock]:
     return db, connection
 
 
-def test_pathfinding_job_updates_target_the_ghosts_table():
-    db, connection = service(**{"UPDATE ghosts": [("g",)]})
-    db.mark_ghost_started("g")
+def test_pathfinding_job_updates_target_the_pathfindings_table():
+    db, connection = service(**{"UPDATE pathfindings": [("g",)]})
+    db.mark_pathfinding_started("g")
     sql, params = connection.execute.call_args.args
-    assert sql.startswith("UPDATE ghosts SET") and "started_at = NOW()" in sql and params == ("started", "g")
-    db.update_ghost_progress("g", 150)
+    assert sql.startswith("UPDATE pathfindings SET") and "started_at = NOW()" in sql and params == ("started", "g")
+    db.update_pathfinding_progress("g", 150)
     assert connection.execute.call_args.args[1] == ("running", 99, "g")
-    db.fail_ghost("g", "Wall geometry missing")
+    db.fail_pathfinding("g", "Wall geometry missing")
     assert connection.execute.call_args.args[1] == ("failed", "Wall geometry missing", "g")
 
 
-def test_complete_ghost_stores_the_path_and_the_status_together():
-    db, connection = service(**{"UPDATE ghosts": [("g",)]})
-    db.complete_ghost("g", PATH)
+def test_complete_pathfinding_stores_the_path_and_the_status_together():
+    db, connection = service(**{"UPDATE pathfindings": [("g",)]})
+    db.complete_pathfinding("g", PATH)
     sql, params = connection.execute.call_args.args
-    assert "path = %s" in sql and "status = %s" in sql  # one statement: chk_ghosts_completed needs both
+    assert "result = %s" in sql and "status = %s" in sql  # one statement: chk_pathfindings_completed needs both
     assert "::INTEGER" in sql  # processing_time_ms is an integer
     assert params[0].obj["steps"][0]["holds"] == {"left_hand": "a"} and params[1:] == ("success", "g")
 
 
-def test_get_ghost_input_reads_the_ghost_the_route_the_holds_and_the_selection():
+def test_get_pathfinding_input_reads_the_pathfinding_the_route_the_holds_and_the_selection():
     hold = ("h1", "unknown", CONTOUR, True, 2, None)
     db, _ = service(
         **{
-            "FROM ghosts": [("r", MORPHOLOGY, 400, 800, True, WALL.model_dump(mode="json"))],
+            "FROM pathfindings": [("r", MORPHOLOGY, 400, 800, True, WALL.model_dump(mode="json"))],
             "FROM holds": [hold, ("h2", "volume", CONTOUR, False, None, 1)],
-            "FROM ghost_holds": [("h1",)],
+            "FROM pathfinding_holds": [("h1",)],
         }
     )
-    ghost = db.get_ghost_input("g")
-    assert ghost.morphology == ClimberMorphology.model_validate(MORPHOLOGY)
-    assert (ghost.image_width, ghost.image_height, ghost.feet_free, ghost.wall) == (400, 800, True, WALL)
-    assert ghost.holds == [
+    pathfinding = db.get_pathfinding_input("g")
+    assert pathfinding.morphology == ClimberMorphology.model_validate(MORPHOLOGY)
+    assert (pathfinding.image_width, pathfinding.image_height, pathfinding.feet_free, pathfinding.wall) == (400, 800, True, WALL)
+    assert pathfinding.holds == [
         {"id": "h1", "type": "unknown", "contour": CONTOUR, "usable": True, "start_limbs": 2, "finish_limbs": None},
         {"id": "h2", "type": "volume", "contour": CONTOUR, "usable": False, "start_limbs": None, "finish_limbs": 1},
     ]
-    assert ghost.selected_ids == ["h1"]
+    assert pathfinding.selected_ids == ["h1"]
 
 
 def test_a_route_without_wall_gives_none():
-    db, _ = service(**{"FROM ghosts": [("r", MORPHOLOGY, 400, 800, False, None)], "FROM holds": [], "FROM ghost_holds": []})
-    assert db.get_ghost_input("g").wall is None
+    db, _ = service(**{"FROM pathfindings": [("r", MORPHOLOGY, 400, 800, False, None)], "FROM holds": [], "FROM pathfinding_holds": []})
+    assert db.get_pathfinding_input("g").wall is None
 
 
-def test_an_unknown_ghost_is_permanent():
-    db, _ = service(**{"FROM ghosts": []})
+def test_an_unknown_pathfinding_is_permanent():
+    db, _ = service(**{"FROM pathfindings": []})
     with pytest.raises(PermanentError):
-        db.get_ghost_input("g")
+        db.get_pathfinding_input("g")
 
 
 @pytest.mark.parametrize(
@@ -110,9 +110,9 @@ def test_an_unknown_ghost_is_permanent():
     ids=["invalid-morphology", "invalid-wall"],
 )
 def test_stored_json_that_does_not_match_the_schema_is_permanent(morphology, wall):
-    db, _ = service(**{"FROM ghosts": [("r", morphology, 400, 800, False, wall)]})
+    db, _ = service(**{"FROM pathfindings": [("r", morphology, 400, 800, False, wall)]})
     with pytest.raises(PermanentError, match="invalid"):
-        db.get_ghost_input("g")
+        db.get_pathfinding_input("g")
 
 
 # --- against a migrated database (moon run ai:e2e, or TEST_POSTGRES_URL) -------------------
@@ -129,8 +129,8 @@ def db():
 
 
 @pytest.fixture
-def ghost(db):
-    """A `pending` ghost on a route with a wall and two holds; deleting its user cascades to everything."""
+def pathfinding(db):
+    """A `pending` pathfinding on a route with a wall and two holds; deleting its user cascades to everything."""
     name = f"t{uuid4().hex[:12]}"
     execute = db.connection.execute
     user = execute(
@@ -151,35 +151,35 @@ def ghost(db):
                 (route, kind, usable, json.dumps(CONTOUR), start, kind),
             ).fetchone()[0]
         )
-    ghost_id = execute(
-        "INSERT INTO ghosts (route_id, user_id, morphology) VALUES (%s, %s, %s::jsonb) RETURNING id",
+    pathfinding_id = execute(
+        "INSERT INTO pathfindings (route_id, user_id, morphology) VALUES (%s, %s, %s::jsonb) RETURNING id",
         (route, user, json.dumps(MORPHOLOGY)),
     ).fetchone()[0]
-    execute("INSERT INTO ghost_holds (ghost_id, hold_id, position) VALUES (%s, %s, 1)", (ghost_id, ids[0]))
-    yield str(ghost_id), [str(i) for i in ids]
+    execute("INSERT INTO pathfinding_holds (pathfinding_id, hold_id, position) VALUES (%s, %s, 1)", (pathfinding_id, ids[0]))
+    yield str(pathfinding_id), [str(i) for i in ids]
     execute("DELETE FROM users WHERE id = %s", (user,))
 
 
 @pytest.mark.integration
 @pytest.mark.skipif(not URL, reason="TEST_POSTGRES_URL not set")
-class TestGhostsAgainstDatabase:
-    def test_full_cycle_and_redelivery(self, db, ghost):
-        ghost_id, _ = ghost
-        assert db.get_ghost_status(ghost_id) == Status.PENDING
-        db.mark_ghost_started(ghost_id)
-        db.update_ghost_progress(ghost_id, 30)
-        db.complete_ghost(ghost_id, PATH)
-        status, progress, path, done, ms = db.connection.execute(
-            "SELECT status, progress, path, completed_at IS NOT NULL, processing_time_ms FROM ghosts WHERE id = %s", (ghost_id,)
+class TestPathfindingsAgainstDatabase:
+    def test_full_cycle_and_redelivery(self, db, pathfinding):
+        pathfinding_id, _ = pathfinding
+        assert db.get_pathfinding_status(pathfinding_id) == Status.PENDING
+        db.mark_pathfinding_started(pathfinding_id)
+        db.update_pathfinding_progress(pathfinding_id, 30)
+        db.complete_pathfinding(pathfinding_id, PATH)
+        status, progress, result, done, ms = db.connection.execute(
+            "SELECT status, progress, result, completed_at IS NOT NULL, processing_time_ms FROM pathfindings WHERE id = %s", (pathfinding_id,)
         ).fetchone()
         assert (status, progress, done) == ("success", 100, True) and isinstance(ms, int)
-        assert PathfindingResult.model_validate(path) == PATH
-        db.mark_ghost_started(ghost_id)  # a redelivered job starts again from a clean row
-        assert db.connection.execute("SELECT status, completed_at FROM ghosts WHERE id = %s", (ghost_id,)).fetchone() == ("started", None)
+        assert PathfindingResult.model_validate(result) == PATH
+        db.mark_pathfinding_started(pathfinding_id)  # a redelivered job starts again from a clean row
+        assert db.connection.execute("SELECT status, completed_at FROM pathfindings WHERE id = %s", (pathfinding_id,)).fetchone() == ("started", None)
 
-    def test_input_of_the_job(self, db, ghost):
-        ghost_id, holds = ghost
-        data = db.get_ghost_input(ghost_id)
+    def test_input_of_the_job(self, db, pathfinding):
+        pathfinding_id, holds = pathfinding
+        data = db.get_pathfinding_input(pathfinding_id)
         assert data.morphology.height_cm == 175 and data.feet_free and data.wall == WALL
         assert (data.image_width, data.image_height) == (400, 800)
         assert sorted(h["id"] for h in data.holds) == sorted(holds)
@@ -187,12 +187,12 @@ class TestGhostsAgainstDatabase:
         assert marked[holds[0]]["start_limbs"] == 2 and marked[holds[1]]["usable"] is False
         assert data.selected_ids == [holds[0]]
 
-    def test_failure_needs_a_message(self, db, ghost):
-        db.fail_ghost(ghost[0], "No beta")
-        assert db.connection.execute("SELECT status, error FROM ghosts WHERE id = %s", (ghost[0],)).fetchone() == ("failed", "No beta")
+    def test_failure_needs_a_message(self, db, pathfinding):
+        db.fail_pathfinding(pathfinding[0], "No beta")
+        assert db.connection.execute("SELECT status, error FROM pathfindings WHERE id = %s", (pathfinding[0],)).fetchone() == ("failed", "No beta")
 
-    def test_unknown_ghost(self, db):
+    def test_unknown_pathfinding(self, db):
         with pytest.raises(PermanentError):
-            db.get_ghost_status(str(uuid4()))
+            db.get_pathfinding_status(str(uuid4()))
         with pytest.raises(PermanentError):
-            db.get_ghost_input(str(uuid4()))
+            db.get_pathfinding_input(str(uuid4()))

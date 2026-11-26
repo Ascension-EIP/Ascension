@@ -61,7 +61,7 @@ type Pause struct {
 	StartMS    int64 `json:"start_ms"`
 }
 
-// Format of ghosts.morphology: the climber body used by the pathfinding.
+// Format of pathfindings.morphology: the climber body used by the pathfinding.
 type ClimberMorphology struct {
 	// Defaults to height_cm.
 	ArmSpanCM    *float64         `json:"arm_span_cm,omitempty"`
@@ -166,14 +166,15 @@ type JobStatus struct {
 }
 
 // Payload of pathfinding.compute.requested: compute the beta and the postures of a climber
-// on a route. job_id is ghosts.id (the row that receives the result in ghosts.path).
+// on a route. job_id is pathfindings.id (the row that receives the result in
+// pathfindings.result).
 type PathfindingComputeRequest struct {
 	JobID      string          `json:"job_id"`
 	Preference *BetaPreference `json:"preference,omitempty"`
 }
 
-// Result of the pathfinding, stored in ghosts.path. Coordinates are pixels of the route
-// photo (y down); landmark names are the keys of Frame.landmarks.
+// Result of the pathfinding, stored in pathfindings.result. Coordinates are pixels of the
+// route photo (y down); landmark names are the keys of Frame.landmarks.
 type PathfindingResult struct {
 	ImageHeight  int64             `json:"image_height"`
 	ImageWidth   int64             `json:"image_width"`

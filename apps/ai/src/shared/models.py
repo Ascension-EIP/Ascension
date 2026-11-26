@@ -123,7 +123,7 @@ class DominantHand(StrEnum):
 
 
 class ClimberMorphology(BaseModel):
-    """Format of ghosts.morphology: the climber body used by the pathfinding."""
+    """Format of pathfindings.morphology: the climber body used by the pathfinding."""
 
     height_cm: float
     arm_span_cm: Optional[float] = None
@@ -272,7 +272,8 @@ class BetaPreference(StrEnum):
 
 class PathfindingComputeRequest(BaseModel):
     """Payload of pathfinding.compute.requested: compute the beta and the postures of a climber
-    on a route. job_id is ghosts.id (the row that receives the result in ghosts.path).
+    on a route. job_id is pathfindings.id (the row that receives the result in
+    pathfindings.result).
     """
     job_id: str
     preference: Optional[BetaPreference] = None
@@ -304,8 +305,8 @@ class PathfindingStep(BaseModel):
 
 
 class PathfindingResult(BaseModel):
-    """Result of the pathfinding, stored in ghosts.path. Coordinates are pixels of the route
-    photo (y down); landmark names are the keys of Frame.landmarks.
+    """Result of the pathfinding, stored in pathfindings.result. Coordinates are pixels of the
+    route photo (y down); landmark names are the keys of Frame.landmarks.
     """
     image_height: int
     image_width: int

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "PathfindingResult",
-  "description": "Result of the pathfinding, stored in ghosts.path. Coordinates are pixels of the route photo (y down); landmark names are the keys of Frame.landmarks.",
+  "description": "Result of the pathfinding, stored in pathfindings.result. Coordinates are pixels of the route photo (y down); landmark names are the keys of Frame.landmarks.",
   "type": "object",
   "additionalProperties": false,
   "required": [

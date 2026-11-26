@@ -43,7 +43,7 @@ _INSERT_HOLD = (
 
 
 class PathfindingInput(NamedTuple):
-    """Everything the pathfinding job reads: the `ghosts` row, its route and the holds of the route."""
+    """Everything the pathfinding job reads: the `pathfindings` row, its route and the holds of the route."""
 
     morphology: ClimberMorphology
     image_width: int
@@ -51,7 +51,7 @@ class PathfindingInput(NamedTuple):
     feet_free: bool
     wall: WallPlane | None
     holds: list[dict]  # rows {id, type, contour, usable, start_limbs, finish_limbs}
-    selected_ids: list[str]  # `ghost_holds`: empty means every usable hold of the route
+    selected_ids: list[str]  # `pathfinding_holds`: empty means every usable hold of the route
 
 
 class PostgreSQL:
@@ -381,60 +381,60 @@ class PostgreSQL:
             route_id, _SET_FAILED, Status.FAILED.value, message, table="routes"
         )
 
-    # Pathfinding job on a `ghosts` row: `ghost_id` is `ghosts.id`, the job id of `pathfinding.compute.requested`.
+    # Pathfinding job on a `pathfindings` row: `pathfinding_id` is `pathfindings.id`, the job id of `pathfinding.compute.requested`.
 
-    def get_ghost_status(self, ghost_id: str) -> Status:
-        """Returns the ghost status (the handler skips a ghost already in `success`)."""
-        (value,) = self._execute("SELECT status FROM ghosts WHERE id = %s", (ghost_id,), ghost_id)
+    def get_pathfinding_status(self, pathfinding_id: str) -> Status:
+        """Returns the pathfinding status (the handler skips a pathfinding already in `success`)."""
+        (value,) = self._execute("SELECT status FROM pathfindings WHERE id = %s", (pathfinding_id,), pathfinding_id)
         return Status(value)
 
-    def mark_ghost_started(self, ghost_id: str) -> None:
-        """Takes the ghost job: resets the state a previous delivery may have left."""
+    def mark_pathfinding_started(self, pathfinding_id: str) -> None:
+        """Takes the pathfinding job: resets the state a previous delivery may have left."""
         self._update(
-            ghost_id,
-            "status = %s, progress = 0, started_at = NOW(), error = NULL, path = NULL,"
+            pathfinding_id,
+            "status = %s, progress = 0, started_at = NOW(), error = NULL, result = NULL,"
             " completed_at = NULL, processing_time_ms = NULL",
             Status.STARTED.value,
-            table="ghosts",
+            table="pathfindings",
         )
 
-    def update_ghost_progress(self, ghost_id: str, progress: int) -> None:
-        """Sets `running` and the progress, capped at 99 (100 is `complete_ghost`)."""
+    def update_pathfinding_progress(self, pathfinding_id: str, progress: int) -> None:
+        """Sets `running` and the progress, capped at 99 (100 is `complete_pathfinding`)."""
         self._update(
-            ghost_id,
+            pathfinding_id,
             _SET_PROGRESS,
             Status.RUNNING.value,
             max(0, min(progress, PROGRESS_MAX_RUNNING)),
-            table="ghosts",
+            table="pathfindings",
         )
 
-    def get_ghost_input(self, ghost_id: str) -> PathfindingInput:
-        """Reads the ghost, its route (size, `feet_free`, wall plane), the holds of the route and `ghost_holds`.
+    def get_pathfinding_input(self, pathfinding_id: str) -> PathfindingInput:
+        """Reads the pathfinding row, its route (size, `feet_free`, wall plane), the holds of the route and `pathfinding_holds`.
 
         Raises:
-            PermanentError: Unknown ghost, or a stored morphology or wall plane that does not match the schema.
+            PermanentError: Unknown pathfinding, or a stored morphology or wall plane that does not match the schema.
         """
         route_id, morphology, width, height, feet_free, wall = self._execute(
             "SELECT g.route_id, g.morphology, r.image_width, r.image_height, r.feet_free, r.wall_plane"
-            " FROM ghosts g JOIN routes r ON r.id = g.route_id WHERE g.id = %s",
-            (ghost_id,),
-            ghost_id,
+            " FROM pathfindings g JOIN routes r ON r.id = g.route_id WHERE g.id = %s",
+            (pathfinding_id,),
+            pathfinding_id,
         )
         try:
             parsed_morphology = ClimberMorphology.model_validate(morphology)
             parsed_wall = None if wall is None else WallPlane.model_validate(wall)
         except ValidationError as error:
-            raise PermanentError(f"ghost {ghost_id}: stored morphology or wall plane is invalid") from error
+            raise PermanentError(f"pathfinding {pathfinding_id}: stored morphology or wall plane is invalid") from error
         holds = self._execute(
             "SELECT id, type, contour, usable, start_limbs, finish_limbs FROM holds WHERE route_id = %s ORDER BY id",
             (route_id,),
-            ghost_id,
+            pathfinding_id,
             many=True,
         )
         selected = self._execute(
-            "SELECT hold_id FROM ghost_holds WHERE ghost_id = %s ORDER BY position NULLS LAST, hold_id",
-            (ghost_id,),
-            ghost_id,
+            "SELECT hold_id FROM pathfinding_holds WHERE pathfinding_id = %s ORDER BY position NULLS LAST, hold_id",
+            (pathfinding_id,),
+            pathfinding_id,
             many=True,
         )
         return PathfindingInput(
@@ -450,17 +450,17 @@ class PostgreSQL:
             [str(h) for (h,) in selected],
         )
 
-    def complete_ghost(self, ghost_id: str, path: PathfindingResult) -> None:
-        """Stores ``path`` and ends the ghost with `success` in one statement (`processing_time_ms` is an integer)."""
+    def complete_pathfinding(self, pathfinding_id: str, result: PathfindingResult) -> None:
+        """Stores ``result`` and ends the pathfinding with `success` in one statement (`processing_time_ms` is an integer)."""
         self._update(
-            ghost_id,
-            "path = %s, status = %s, progress = 100, completed_at = NOW(),"
+            pathfinding_id,
+            "result = %s, status = %s, progress = 100, completed_at = NOW(),"
             " processing_time_ms = (EXTRACT(EPOCH FROM NOW() - started_at) * 1000)::INTEGER",
-            Jsonb(path.model_dump(mode="json", exclude_none=True)),
+            Jsonb(result.model_dump(mode="json", exclude_none=True)),
             Status.SUCCESS.value,
-            table="ghosts",
+            table="pathfindings",
         )
 
-    def fail_ghost(self, ghost_id: str, message: str) -> None:
-        """Ends the ghost with `failed`; `message` must be short, without traceback."""
-        self._update(ghost_id, _SET_FAILED, Status.FAILED.value, message, table="ghosts")
+    def fail_pathfinding(self, pathfinding_id: str, message: str) -> None:
+        """Ends the pathfinding with `failed`; `message` must be short, without traceback."""
+        self._update(pathfinding_id, _SET_FAILED, Status.FAILED.value, message, table="pathfindings")
