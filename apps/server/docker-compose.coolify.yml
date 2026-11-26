@@ -1,8 +1,8 @@
 # Production deployment of the Go API, as a Coolify "Docker Compose" application.
 # Coolify builds this file from the main branch and redeploys it on every push.
 # Values come from the Coolify environment variables: ${VAR:?} marks a required one.
-# The server reads STORAGE_* and QUEUE_*; the Coolify variables keep their MINIO_* and
-# RABBITMQ_* names, so they are mapped here.
+# The server reads STORAGE_* and QUEUE_*; STORAGE_* is preferred, with fallback to legacy
+# Coolify MINIO_* names during migration. RABBITMQ_* names are mapped here.
 # Guide: docs/Ascension/developer/architecture/deployment/api-deployment-guide.md
 services:
   api:
@@ -24,11 +24,11 @@ services:
       - "QUEUE_PORT=${RABBITMQ_PORT:-5672}"
       - "QUEUE_USER=${RABBITMQ_USER:?}"
       - "QUEUE_PASS=${RABBITMQ_PASS:?}"
-      - "STORAGE_ENDPOINT=${MINIO_ENDPOINT:?}"
-      - "STORAGE_REGION=${MINIO_REGION:?}"
-      - "STORAGE_BUCKET=${MINIO_BUCKET:?}"
-      - "STORAGE_ID=${MINIO_ID:?}"
-      - "STORAGE_SECRET=${MINIO_SECRET:?}"
+      - "STORAGE_ENDPOINT=${STORAGE_ENDPOINT:-${MINIO_ENDPOINT:?}}"
+      - "STORAGE_REGION=${STORAGE_REGION:-${MINIO_REGION:?}}"
+      - "STORAGE_BUCKET=${STORAGE_BUCKET:-${MINIO_BUCKET:?}}"
+      - "STORAGE_ID=${STORAGE_ID:-${MINIO_ID:?}}"
+      - "STORAGE_SECRET=${STORAGE_SECRET:-${MINIO_SECRET:?}}"
       - "AUTH_JWT_SECRET=${AUTH_JWT_SECRET:?}"
       - "AUTH_SESSION_SECRET=${AUTH_SESSION_SECRET:?}"
     healthcheck:
@@ -61,9 +61,9 @@ services:
       - "QUEUE_PORT=${RABBITMQ_PORT:-5672}"
       - "QUEUE_USER=${RABBITMQ_USER:?}"
       - "QUEUE_PASS=${RABBITMQ_PASS:?}"
-      - "STORAGE_ENDPOINT=${MINIO_ENDPOINT:?}"
-      - "STORAGE_REGION=${MINIO_REGION:?}"
-      - "STORAGE_BUCKET=${MINIO_BUCKET:?}"
-      - "STORAGE_ID=${MINIO_ID:?}"
-      - "STORAGE_SECRET=${MINIO_SECRET:?}"
+      - "STORAGE_ENDPOINT=${STORAGE_ENDPOINT:-${MINIO_ENDPOINT:?}}"
+      - "STORAGE_REGION=${STORAGE_REGION:-${MINIO_REGION:?}}"
+      - "STORAGE_BUCKET=${STORAGE_BUCKET:-${MINIO_BUCKET:?}}"
+      - "STORAGE_ID=${STORAGE_ID:-${MINIO_ID:?}}"
+      - "STORAGE_SECRET=${STORAGE_SECRET:-${MINIO_SECRET:?}}"
       - "AUTH_SESSION_SECRET=${AUTH_SESSION_SECRET:?}"

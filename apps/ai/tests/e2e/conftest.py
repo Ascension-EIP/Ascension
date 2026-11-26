@@ -121,7 +121,7 @@ def url() -> str:
         _consumers("poses.detect")
     except (AMQPError, OSError) as e:
         pytest.skip(f"RabbitMQ unreachable ({type(e).__name__})")
-    endpoint = os.getenv("RUSTFS_ENDPOINT", "http://localhost:9000")
+    endpoint = os.getenv("STORAGE_ENDPOINT") or os.getenv("RUSTFS_ENDPOINT") or "http://localhost:9000"
     try:
         urllib.request.urlopen(f"{endpoint}/health", timeout=3).close()
     except OSError as e:

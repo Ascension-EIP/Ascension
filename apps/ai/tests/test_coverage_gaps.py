@@ -168,6 +168,8 @@ def test_unreachable_storage_at_startup_is_transient(monkeypatch):
 
 
 def test_storage_config_comes_from_the_environment(monkeypatch):
+    monkeypatch.delenv("STORAGE_ENDPOINT", raising=False)
+    monkeypatch.delenv("STORAGE_BUCKET", raising=False)
     monkeypatch.setenv("RUSTFS_ENDPOINT", "http://s3.test:9")
     monkeypatch.setenv("RUSTFS_BUCKET", "other")
     config = RustFS().setup_config().config
