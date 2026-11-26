@@ -3,7 +3,7 @@ id: 2f73e756-4920-4208-ae1e-6928976f81ec
 ---
 
 :::success
-**Version:** 2.6
+**Version:** 2.8
 :::
 
 ---
@@ -699,6 +699,9 @@ CREATE TABLE routes (
     processing_time_ms INTEGER,
     started_at        TIMESTAMPTZ,
     completed_at      TIMESTAMPTZ,
+    feet_free         BOOLEAN NOT NULL DEFAULT FALSE,
+    wall_angle_deg    NUMERIC(5, 2),
+    wall_plane        JSONB,
     created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
@@ -708,7 +711,9 @@ CREATE TABLE routes (
     CONSTRAINT chk_routes_completed
         CHECK (status <> 'success' OR completed_at IS NOT NULL),
     CONSTRAINT chk_routes_failed
-        CHECK (status <> 'failed' OR error IS NOT NULL)
+        CHECK (status <> 'failed' OR error IS NOT NULL),
+    CONSTRAINT chk_routes_wall_angle
+        CHECK (wall_angle_deg IS NULL OR wall_angle_deg BETWEEN -90 AND 90)
 );
 
 CREATE INDEX idx_routes_user_created ON routes(user_id, created_at DESC);
@@ -721,6 +726,8 @@ Business rules:
 - `color` is the hold colour set by the route setter (used for the colour-based hold selection of F06). It is free text (`red`, `#E53935`) normalised by the app.
 - `image_width` and `image_height` are the reference frame of every hold position and ghost path. The hold detection worker overwrites them with the real size of the photo, so the server may create the route with 0.
 - `status`, `progress`, `error`, `started_at`, `completed_at` and `processing_time_ms` track the hold detection job (queue `holds.detect`, migration `20261124120000_add_hold_detection`). The server creates the route in `pending` and publishes `holds.detect.requested` with `job_id = routes.id`; the worker writes the holds, then `success` or `failed`.
+- `feet_free` tells the ghost computation that every usable hold of the photo can hold a foot. When it is `false`, the feet use the holds selected for the ghost (`ghost_holds`, or every usable hold of the route when the ghost has none).
+- `wall_angle_deg` and `wall_plane` are written by the hold detection worker (migration `20261125120000_add_ghost_pathfinding`) from the depth estimation of the photo. `wall_angle_deg` is `0` for a vertical wall, positive for an overhang and negative for a slab; it is `NULL` when the mobile sent no gravity vector. `wall_plane` has the format of `WallPlane` (`schemas/hold_detect_result.schema.json`): `{"homography": [[...], [...], [...]], "angle_deg": 12.5, "focal_px": 1480.0, "inlier_ratio": 0.82, "model": "..."}`, where `homography` maps photo pixels to centimetres in the wall plane (y up).
 
 ### 7.2 `holds`
 
@@ -740,6 +747,8 @@ CREATE TABLE holds (
     predicted_contour     JSONB,
     color                 JSONB,
     predicted_color       JSONB,
+    start_limbs           SMALLINT,
+    finish_limbs          SMALLINT,
     corrected_at          TIMESTAMPTZ,
     created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -749,7 +758,11 @@ CREATE TABLE holds (
     CONSTRAINT chk_holds_confidence
         CHECK (predicted_confidence IS NULL OR predicted_confidence BETWEEN 0 AND 1),
     CONSTRAINT chk_holds_prediction
-        CHECK (source = 'manual' OR (predicted_type IS NOT NULL AND predicted_confidence IS NOT NULL))
+        CHECK (source = 'manual' OR (predicted_type IS NOT NULL AND predicted_confidence IS NOT NULL)),
+    CONSTRAINT chk_holds_start_limbs
+        CHECK (start_limbs IS NULL OR start_limbs BETWEEN 1 AND 4),
+    CONSTRAINT chk_holds_finish_limbs
+        CHECK (finish_limbs IS NULL OR finish_limbs BETWEEN 1 AND 2)
 );
 
 CREATE INDEX idx_holds_route_id ON holds(route_id);
@@ -765,6 +778,7 @@ Business rules:
 - `contour` is a polygon in image pixel coordinates: `{"points": [{"x": 120, "y": 340}, ...], "bbox": {"x": 100, "y": 320, "w": 60, "h": 45}}`.
 - `color` is the dominant colour of the hold: `{"name": "blue", "rgb": [20, 60, 200], "distance": 3.2}`. `rgb` is reliable for display; `name` is the closest reference colour and a hint only (lower `distance` is closer). `predicted_color` freezes the detected value. Both are `NULL` when the hold is too small to measure.
 - The detector writes `type = predicted_type = 'unknown'` for a hold and `'volume'` for a volume, with `source = 'ai'`. A new detection of the same route replaces the AI holds whose `corrected_at` is `NULL` and keeps the corrected ones.
+- `start_limbs` (1 to 4) and `finish_limbs` (1 to 2) are the start and finish marks of the route, both `NULL` for an ordinary hold. A mark means at least that many limbs are on the hold: the two hands start on start holds, and marks beyond two in total are feet on start holds; the route is finished when every finish hold carries at least `finish_limbs` hands. Without any mark, the ghost computation uses the lowest selected hold as start (`start_limbs = 2`) and the highest as finish (`finish_limbs = 2`). Migration `20261125120000_add_ghost_pathfinding`.
 
 ### 7.3 `ghosts`
 
@@ -800,8 +814,8 @@ CREATE INDEX idx_ghosts_user_id ON ghosts(user_id);
 
 Business rules:
 
-- `morphology` is a snapshot of `user_profiles` and active `user_body_constraints` at request time, so the ghost stays reproducible.
-- `path` is a list of steps with step image references and move details: `{"steps": [{"step": 1, "image_key": "ghosts/uuid/step_1.jpg", "hold_id": "uuid", "action": "Right hand to hold #4", "center_of_mass": {"x": 110, "y": 275}}]}`.
+- `morphology` is a snapshot of `user_profiles` and active `user_body_constraints` at request time, so the ghost stays reproducible. Its format is `GhostMorphology` (`schemas/ghost_morphology.schema.json`): `height_cm` (number, required), `arm_span_cm` (number, defaults to `height_cm`), `dominant_hand` (`left`, `right` or `ambidextrous`) and `constraints`, a list of `{"zone": <BodyZone>, "type": "missing" | "injured"}`. `zone` is a value of the `BodyZone` enum of `schemas/hints.schema.json` (for example `left_wrist`, `right_knee`). The worker maps the zones of an arm (`*_shoulder`, `*_upper_arm`, `*_elbow`, `*_forearm`, `*_wrist`, `*_hand`, `*_fingers`) to the hand of the same side and the zones of a leg (`*_hip`, `*_thigh`, `*_knee`, `*_shin`, `*_ankle`, `*_foot`) to the foot of the same side; the other zones are ignored. A `missing` limb is never used, an `injured` limb pays a cost on each move. `dominant_hand` is read but not used by the search. Example: `{"height_cm": 175, "arm_span_cm": 178, "constraints": [{"zone": "left_wrist", "type": "injured"}]}`.
+- `path` is written by the Ghost Mode worker as a `GhostPath` (`schemas/ghost_path.schema.json`): `image_width` and `image_height` (pixels of the route photo), `wall_angle_deg` (number, or `null` when the wall angle is unknown) and `steps`. Each step has `index`, `moved_limb` (the limb moved to reach the pose, absent at the start step), `holds` (hold id under `left_hand`, `right_hand`, `left_foot` and `right_foot`, `null` when the limb is free), `center_of_mass` (`{"x", "y"}`) and `landmarks` (the 33 MediaPipe landmarks as `{"x", "y"}`, keyed by their lowercase names, the same keys as `Frame.landmarks`). All coordinates are pixels of the route photo with y pointing down, so the client draws the ghost on the photo with the same skeleton rendering as the video. The worker writes the JSON without its `null` fields: a free limb and an unknown `wall_angle_deg` are absent from the stored document, and readers must treat a missing key as `null`. Example of a step: `{"index": 1, "moved_limb": "left_foot", "holds": {"left_hand": "<hold id>", "right_hand": "<hold id>", "left_foot": "<hold id>"}, "center_of_mass": {"x": 306.07, "y": 2226.65}, "landmarks": {"nose": {"x": 310.2, "y": 2130.4}, ...}}` (`...` stands for the 32 other landmarks).
 - Ghost Mode is a premium feature; the quota check happens in the API before the row is created.
 
 ### 7.4 `ghost_holds`
@@ -1373,6 +1387,7 @@ The migration history evolved from the initial prototype schema (`20260905000001
 | `20261030200000`                    | Job status alignment    | `job_status` becomes `pending, started, running, success, failed` (same values as the RabbitMQ statuses). `processing` and `generating_hints` become `running`, `completed` becomes `success`. The `chk_*_completed` checks and `idx_analyses_status` are recreated. The `down` migration maps `started`/`running` back to `processing` and `success` back to `completed`. |
 | `20261030200100`                    | Analyses hints          | Adds `analyses.hints JSONB` (nullable), written by the AI worker (`schemas/hints.schema.json`). `advice TEXT` is kept for the Go server.                                                                                                                                                                                                                                   |
 | `20261112120000`                    | Video session link      | `videos.climbing_session_id` now references `climbing_sessions(id)` instead of `users(id)` (`ON DELETE SET NULL`), since the `videos` migration runs before `climbing_sessions` exists. Values that are not climbing session IDs become `NULL`.                                                                                                                            |
+| `20261125120000`                    | Ghost pathfinding       | Adds `holds.start_limbs` and `holds.finish_limbs` (start and finish marks), `routes.feet_free`, `routes.wall_angle_deg` and `routes.wall_plane` (wall plane estimated by the hold detection job), with the `chk_holds_start_limbs`, `chk_holds_finish_limbs` and `chk_routes_wall_angle` checks. The `down` migration drops them. |
 
 All tables conform to the foreign key constraints, indexes, and check constraints detailed in sections 3 through 10.
 
