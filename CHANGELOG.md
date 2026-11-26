@@ -2,6 +2,222 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.2] - 2026-11-26
+
+### ➕ Additions
+
+- *(ai)* Bundle the hold segmentation model exported to ONNX
+- *(ai)* Add a route photo to try the pathfinding
+
+### ➖ Removals
+
+- *(holds)* Move the hold colour step to the AI worker
+
+### 🏗️ Build System
+
+- *(ai)* Pin mediapipe to 0.10.35
+- *(holds)* Add pyyaml dependency
+- *(ai)* Add onnxruntime to run the hold model on the CPU
+- *(holds)* Add onnx and onnxslim for the model export
+- *(ai)* Keep the training projects out of the worker tests, lint and image
+- *(ai)* Download the metric depth model
+
+### 🐛 Bug Fixes
+
+- *(server)* Apply the database migrations again when the api starts
+- *(server)* Apply the database migrations again when the cron starts
+- *(server)* Give the video contexts migration a current timestamp
+- *(infra)* Pass the new storage and queue names to the local server
+- *(infra)* List the storage and queue variables of the server in the env example
+- *(server)* Correct the name of the storage download expiry variable
+- *(infra)* Use the corrected storage download expiry variable in the env example
+- Bad naming for sonar-setup
+- *(server)* Report a missing storage object without an error
+- *(server)* Analyses CRUD updated for table changes
+- *(server)* Add advice implementation
+- *(server)* Add advice stale cron, cleaner rabbitmq implementation
+- *(server)* Fix unit tests and route param for advices endpoints
+- *(ai)* Store advice in the new advices table
+- *(server)* Analysis/advice row creation before sending ai request
+- Bloquage allowFailure sur le graphe moon
+- *(holds)* Size training defaults for an 8 GB GPU under WSL
+- *(ui)* Disable top safe area padding across application screens
+
+### 💼 Other
+
+- Merge branch 'dev' into feat/holds
+
+### 📚 Documentation
+
+- Update "backup pour gianni"
+- Update "backup pour gianni"
+- Update "backup pour gianni"
+- Trash "backup pour gianni"
+- *(infra)* Document the manual database migrations of the api
+- *(infra)* Document the variable mapping and the cron jobs of the api
+- *(infra)* Describe the aws sdk storage client in the s3 guide
+- *(server)* Draw the analysis status lifecycle with mermaid
+- *(infra)* Describe the migrations applied again on boot
+- *(server)* Fix the upload url method and the rate limits of the routes reference
+- *(server)* Document the video, profile and retry advice routes
+- *(server)* Document the video contexts table in the database schema
+- *(server)* Document the storage and queue variables in the overview
+- *(server)* Describe the storage adapter, variables and cron jobs of the server
+- *(infra)* Update the local environment and compose excerpt of the development guide
+- *(server)* Use the corrected name of the storage download expiry variable
+- *(bills)* Add november 2026 documents and rename october expense file
+- Update "11"
+- *(administrative)* Update expert outreach register with follow-up status
+- *(ascension)* Document october 2026 infrastructure billing and validation
+- *(ci)* Document the test database of the server pipeline
+- *(server)* Explain how to run the integration tests
+- *(ci)* Document the test broker of the server pipeline
+- *(server)* Explain how to run the rabbitmq integration tests
+- *(server)* Document the real statuses of the upload done and download url routes
+- *(ai)* Translate the AI docs to English and link both pipelines in the overview diagram
+- Update "overview"
+- Update "pipeline-2d-decomposition"
+- Update "research-logs"
+- Update "example", "research-logs"
+- Update "example"
+- Update "example"
+- Update "pipeline-details"
+- Update "pipeline-2d-decomposition"
+- Update research log and example files structure
+- Update AI worker documentation and remove obsolete pipeline details
+- Update "research-logs"
+- Update "features-catalog"
+- *(database)* Document the hold detection columns of routes and holds
+- *(ai)* Document the hold detection flow, commands and limits
+- *(holds)* Describe the training tool and how to update the worker model
+- *(ai)* Document the pathfinding plan, commands and limits
+- *(ai)* Add a start guide for each worker module
+- Update "pipeline-2d-decomposition"
+- Update "Worker modules"
+- Update "Worker modules"
+- Update "Pose analysis (MediaPipe)"
+- Update "AI advice"
+- Update "Hold detection"
+- Update "Pathfinding"
+- Update "Pose analysis (MediaPipe)", "Hold detection"
+- Update "Pathfinding"
+- Trash "AI advice", "Pose analysis (MediaPipe)", "Hold detection", "Pathfinding", "Worker modules"
+- Update "pipeline-2d-decomposition"
+- *(ai)* Document the pathfindings tables
+- Update "features-catalog"
+
+### 🔀 Merges
+
+- "docs/api-deployment-migrations" into "dev"
+- "fix/server-boot-migrations" into "dev"
+- "fix/video-contexts-migration-timestamp" into "dev"
+- "docs/server-routes-and-schema" into "dev"
+- "fix/local-server-env-names" into "dev"
+- "test/analysis-and-video-coverage" into "dev"
+- "docs/jenkins-test-database" into "dev"
+- "fix/storage-missing-object" into "dev"
+- "test/rabbitmq-integration" into "dev"
+- "docs/jenkins-test-broker" into "dev"
+- "docs/video-route-statuses" into "dev"
+- "dev" into "dev"
+- "dev" into "dev"
+- "fix/ai-advice-table" into "feat/new-table-for-advice"
+- "feat/new-table-for-advice" into "dev"
+- "dev" into "dev"
+- "feat/holds" into "dev"
+- "feat/holds" into "dev"
+- "dev" into "feat/ai-pathfinding"
+- "feat/ai-pathfinding" into "dev"
+- "feat/mobile-pose-analysis" into "feat/mobile-interface-improvements"
+- "feat/mobile-interface-improvements" into "dev"
+- `dev` into `staging`
+- `staging` into `main`
+
+### 🚀 Features
+
+- *(scripts)* Add support for team members in stand_up script
+- Add coverage for sq analysis
+- *(server)* Comment auto migration at start
+- *(db)* Migration for new advice table
+- *(holds)* Merge Roboflow exports into a hold/volume dataset
+- *(holds)* Name the dominant colour of each detected hold
+- *(schemas)* Add the hold detection request, result and routing keys
+- *(server)* Add the hold detection job columns, hold colours and unknown hold type
+- *(ai)* Segment holds and volumes with the YOLO26-seg model on ONNX Runtime
+- *(ai)* Measure the dominant colour of each hold and name it
+- *(ai)* Chain the hold steps into a validated HoldDetectResult
+- *(ai)* Evaluate the hold colour names on a labelled dataset
+- *(ai)* Load the hold segmenter lazily in the worker runtime
+- *(ai)* Add the holds-detect and holds-colors-eval commands
+- *(ai)* Store the detected holds and the route job state in PostgreSQL
+- *(ai)* Handle holds.detect.requested and store the holds of the route
+- *(ai)* Consume the holds.detect queue
+- *(ai)* Seed a route and publish holds.detect.requested from the producer
+- *(holds)* Export the trained weights to the ONNX model of the worker
+- *(schemas)* Add the pathfinding contract
+- *(database)* Add start and finish marks, free feet and wall plane
+- *(ai)* Add the pathfinding pipeline to the worker
+- *(ui)* Redesign analysis selection screen and update localizations
+- *(auth)* Add biometric authentication support and settings
+- *(mobile)* Add production run task and configuration support
+- *(ci)* Add automated checks for closed issue dates and definition of done
+- *(analysis)* Implement pose analysis and video recording feature on mobile
+- *(analysis)* Localize processing steps and improve video player controls and UX
+- *(ui)* Handle video playback errors and add localizations
+- *(pose-analysis)* Add AI coaching advice integration and real-time processing telemetry in mobile
+
+### 🚚 Restructuring
+
+- *(holds)* Move the hold training tool under apps/ai/training
+- *(ai)* [**breaking**] Rename the ghost computation to pathfinding
+- *(database)* [**breaking**] Rename the ghosts tables to pathfindings
+
+### 🚜 Refactoring
+
+- *(ai)* Share the status SQL fragments of the PostgreSQL service
+- *(ai)* Let fail_job end the job of any table
+- *(ai)* Share the connection and user seeding of the producer
+- *(server)* Remove trailing slashes from api routes and tests
+- *(core)* Standardize environment variables on storage naming convention
+- *(network)* Standardize rabbitmq environment variables to queue prefix
+
+### 🧪 Testing
+
+- *(server)* Pin the foreign key migration test to its versions
+- *(server)* Cover the handlers reached without an authenticated user
+- *(server)* Cover the list failures and the advice retry
+- *(server)* Cover the presign errors of the storage adapter
+- *(server)* Cover the maintenance queries on postgresql
+- *(server)* Run the missing storage object test
+- *(server)* Cover the message flow to the ai worker on rabbitmq
+- *(ai)* Add comprehensive test coverage for postgresql service and data models
+- *(server)* Add comprehensive unit and integration tests for advice feature
+- *(ai)* Cover the hold segmentation, colour and chain steps
+- *(ai)* Run the hold commands in sub-processes with the bundled model
+- *(ai)* Cover the route and hold operations, with and without a database
+- *(ai)* Cover the hold detection handler and its failures
+- *(ai)* Bound the beta search by expanded states instead of seconds
+- *(mobile)* Settle animations in record screen error back-press test
+
+### 🧹 Maintenance
+
+- *(deps)* Update python dependencies
+- Sync pages
+- Sync pages
+- Sync pages
+- Remove unused BACKEND_URL from .env.example
+- *(moon)* Remove root:format dependency from build tasks
+- Sync pages
+- *(ai)* Upgrade default gemini model to gemini-3.5-flash-lite
+- *(holds)* Move holds ignore rules to the root .gitignore
+- *(schemas)* Regenerate the Python and Go shared models
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+- Sync pages
+
 ## [0.3.1] - 2026-11-13
 
 ### 🏗️ Build System
@@ -31,6 +247,10 @@ All notable changes to this project will be documented in this file.
 ### 🚀 Features
 
 - *(ci)* Migrate repository mirroring to dedicated workflow
+
+### 🧹 Maintenance
+
+- *(release)* Update changelog for v0.3.1
 
 ## [0.3.0] - 2026-11-13
 
