@@ -5,6 +5,7 @@ order:
   - Pose analysis (MediaPipe)
   - AI advice
   - Hold detection
+  - Pathfinding
 ---
 
 :::warning
