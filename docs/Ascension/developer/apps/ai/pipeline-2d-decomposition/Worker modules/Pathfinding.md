@@ -20,12 +20,13 @@ It takes a route photo (and a climber's height and arm span) and returns the bet
 
 ```mermaid
 flowchart LR
-    P["route photo"] --> D["pathfinding-depth"] --> W["pathfinding-wall"]
-    H["holds JSON"] --> W
+    P["route photo"] --> W["pathfinding-wall (depth model + holds)"]
+    H["holds JSON (optional)"] --> W
     W --> B["pathfinding-beta"] --> Po["pathfinding-pose"] --> R["PathfindingResult JSON"]
+    P -.-> D["pathfinding-depth (debug)"]
 ```
 
-*Summary: a depth model gives the distances in the photo, the wall plane turns photo pixels into centimetres, an A\* search finds the sequence of holds, and inverse kinematics draws a posture for each step. `pathfinding` runs the last three in one go.*
+*Summary: a depth model gives the distances in the photo, the wall plane turns photo pixels into centimetres, an A\* search finds the sequence of holds, and inverse kinematics draws a posture for each step. `pathfinding` runs the wall, beta and pose steps in one go; `pathfinding-depth` only exports the depth map for debugging.*
 
 Code in `apps/ai/src/worker/_4_pathfinding/`:
 
@@ -46,7 +47,7 @@ From the root of the repository:
 1. Tools: `uv`, `moon`. Docker only for the job.
 2. `cp .env.example .env`. Optional variable: `DEPTH_MODEL_PATH` (default `resources/moge-2-vits-normal.onnx`).
 3. `moon run ai:install`, then `moon run ai:setup`: it downloads the depth model (141 MB, from Hugging Face without a token, SHA-256 checked, skipped if present) and checks the MediaPipe model.
-4. The hold model `apps/ai/resources/holds_seg.onnx` is versioned in git. Both models are needed for `pathfinding`, `pathfinding-wall` and `pathfinding-depth` (depth only). `pathfinding-beta` and `pathfinding-pose` need no model.
+4. The hold model `apps/ai/resources/holds_seg.onnx` is versioned in git. `pathfinding`, `pathfinding-wall` and `pathfinding-depth` need the depth model, and the first two also need the hold model (unless you pass `--holds`). `pathfinding-beta` and `pathfinding-pose` need no model.
 
 ---
 
@@ -75,23 +76,26 @@ uv run worker pathfinding-pose  --input /tmp/ascension/beta.json --holds /tmp/as
   --out /tmp/ascension/steps.json --render /tmp/ascension/steps.jpg --image resources/voie.jpg
 ```
 
-- `pathfinding-depth` prints `focal 2381.4 px, depth median 4.56 m, 97% valid pixels` and writes the depth map in metres (`.npy`). It is a debugging step: the next steps compute it again themselves.
+- `pathfinding-depth` prints `focal 2381.4 px, depth median 4.56 m, 97% valid pixels` and writes the depth map in metres (`.npy`). It is a debugging step: `pathfinding-wall` computes the depth again itself.
 - `pathfinding-wall` detects the holds and the wall plane, and writes the holds JSON with a `wall` key. Pass `--holds <holds-detect output>` to reuse holds you already have (their start and finish marks are kept).
 - `pathfinding-beta` and `pathfinding-pose` only read that JSON: no model, no network.
 
 Climber and route options of `pathfinding-beta` and `pathfinding` (defaults in brackets): `--height` (175) and `--arm-span` (178) in cm, `--morphology <ClimberMorphology JSON>` (overrides both and adds `missing` or `injured` limbs), `--preference easy|power|technique` (easy), `--feet-free` (every usable hold can hold a foot), `--color <name>` and `--selected <ids>` (which holds are the route; default all). On `voie.jpg`, `pathfinding-beta --color yellow --preference technique --feet-free` gives 27 steps instead of 13.
 
-`depth-eval --dataset <folder>` measures the depth model on photos with known distances. The folder holds the photos and an `annotations.json`:
+`depth-eval --dataset <folder>` measures the depth model on photos with known distances. The folder holds the photos and an `annotations.json`, with `a` and `b` in pixels of the photo:
 
 ```json
 [{"image": "voie.jpg", "pairs": [{"a": [300, 2200], "b": [900, 1200], "distance_cm": 120}]}]
 ```
 
 ```bash
+mkdir -p /tmp/ascension/depth-dataset
+cp resources/voie.jpg /tmp/ascension/depth-dataset/
+# write the annotations.json above in /tmp/ascension/depth-dataset/annotations.json, then:
 uv run worker depth-eval --dataset /tmp/ascension/depth-dataset
 ```
 
-It prints, per image then overall, the relative error of the 3D distance between the two pixels. No real annotated dataset exists in the repository: the `distance_cm` above is an invented value used only to check the command (it printed `all: 1 pairs (0 skipped) ...`), so its error means nothing. Measure real distances on a wall to use it.
+It prints, per image then overall, the relative error of the 3D distance between the two pixels. No real annotated dataset exists in the repository: the `distance_cm` above is an invented value used only to check that the command runs (it printed `all: 1 pairs (0 skipped) ...`), so its error means nothing. Measure real distances on a wall to use it.
 
 ---
 
