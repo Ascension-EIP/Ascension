@@ -3,7 +3,7 @@ id: a711b1e1-4dc3-4bfa-b6bd-b96b2c97edc6
 ---
 
 :::warning
-**Version:** 0.3
+**Version:** 0.4
 :::
 
 ---
@@ -77,7 +77,7 @@ flowchart TD
 
 *Résumé du diagramme : la vidéo (A) et la photo (B) sont traitées en parallèle. Le pathfinding (C) tire l'échelle et l'angle du mur de la photo, calcule la bêta à partir des prises validées et la convertit en squelette. La comparaison (D) croise le squelette et la bêta pour générer les conseils. Le client Flutter affiche le squelette, le fantôme et les conseils (E).*
 
-> **Écart avec la documentation existante** : [system-overview.md](../../../architecture/system-overview.md) décrit quatre étapes séquentielles (prises, squelette, conseils, fantôme). La version parallèle ci-dessus est plus proche de ce que le mentor a proposé et évite d'attendre la photo pour analyser la vidéo.
+> **Écart avec la documentation existante** : [globale-architecture.md](../../../architecture/globale-architecture.md) décrit quatre étapes séquentielles (prises, squelette, conseils, fantôme). La version parallèle ci-dessus est plus proche de ce que le mentor a proposé et évite d'attendre la photo pour analyser la vidéo.
 
 ---
 
@@ -134,7 +134,7 @@ Points d'attention :
 
 Cette section décrit le plan v1 du pathfinding, arrêté le 25/11/2026 : contraintes produit, chaîne technique, modèle de données et ordre de réalisation.
 
-Vocabulaire : le **pathfinding** est le calcul (module `_4_pathfinding` du worker, file `pathfinding.compute`, schémas `pathfinding_*`). Le **ghost** (fantôme) est la feature produit qui consomme ce calcul et l'affiche (Ghost Mode, quota, comparaisons) ; la table `ghosts` garde son nom et porte le job (`ghosts.id` est le `job_id`) et son résultat (`ghosts.path`).
+Vocabulaire : le **pathfinding** est le calcul (module `_4_pathfinding` du worker, file `pathfinding.compute`, schémas `pathfinding_*`). Le **ghost** (fantôme) est la feature produit qui consomme ce calcul et l'affiche (Ghost Mode, quota, comparaisons) ; la table `pathfindings` porte le job (`pathfindings.id` est le `job_id`) et son résultat (`pathfindings.result`). Seuls les quotas commerciaux du Ghost Mode gardent le mot (`quota_usages.ghosts_count`, `subscription_plans.monthly_ghost_quota`, `subscription_plans.ghost_mode_enabled`).
 
 Les commandes, l'installation et les jobs de chaque module du worker (pose, conseils, prises, pathfinding) sont décrits dans [Worker modules](worker-modules/readme.md).
 
@@ -167,24 +167,24 @@ flowchart LR
         Wall --> Search["C2 Recherche A*\nétats 4 membres"]
         Profile["Morphologie\n+ contraintes corporelles\n+ préférences"] --> Search
         Search --> IK["C3 Cinématique inverse\n33 landmarks par étape"]
-        IK --> Path[("ghosts.path")]
+        IK --> Path[("pathfindings.result")]
     end
 ```
 
-*Résumé du diagramme : le job de la voie estime la profondeur de la photo, en déduit le plan du mur et place les prises en centimètres avec l'angle du mur. Le job de pathfinding cherche une bêta à partir de ces prises et du profil du grimpeur, puis la convertit en squelettes de 33 points stockés dans `ghosts.path`.*
+*Résumé du diagramme : le job de la voie estime la profondeur de la photo, en déduit le plan du mur et place les prises en centimètres avec l'angle du mur. Le job de pathfinding cherche une bêta à partir de ces prises et du profil du grimpeur, puis la convertit en squelettes de 33 points stockés dans `pathfindings.result`.*
 
 ### 5.3 Entrées et sorties
 
 | Élément | Contenu | Source |
 | --- | --- | --- |
 | **Prises** | Contour, type, couleur. En v1 le type vaut `unknown` ou `volume` | `holds` (bloc B) |
-| **Prises de la voie** | `ghost_holds` du fantôme. Vide : toutes les prises `usable` de la voie | `ghost_holds` (table existante, à remplir par le serveur) |
+| **Prises de la voie** | `pathfinding_holds` du pathfinding. Vide : toutes les prises `usable` de la voie | `pathfinding_holds` (table existante, à remplir par le serveur) |
 | **Marques de départ et d'arrivée** | `start_limbs` (1 à 4) et `finish_limbs` (1 à 2) par prise | Colonnes créées par la migration `20261125120000`, lues par le worker. Saisie dans l'interface : à faire |
 | **Pieds libres** | `routes.feet_free` | Colonne créée, lue par le worker. Saisie dans l'interface : à faire |
 | **Géométrie du mur** | Passage des pixels aux centimètres dans le plan du mur, angle du mur par rapport à la verticale | Brique C1, `routes.wall_plane` et `routes.wall_angle_deg` |
-| **Morphologie** | `height_cm` (obligatoire), `arm_span_cm`, `dominant_hand`, `constraints` (zones `missing` ou `injured`) | `ghosts.morphology`, au format `ClimberMorphology`. La copie depuis `user_profiles` et `user_body_constraints` est à écrire côté serveur |
+| **Morphologie** | `height_cm` (obligatoire), `arm_span_cm`, `dominant_hand`, `constraints` (zones `missing` ou `injured`) | `pathfindings.morphology`, au format `ClimberMorphology`. La copie depuis `user_profiles` et `user_body_constraints` est à écrire côté serveur |
 | **Préférences** | `easy`, `power` ou `technique` | `pathfinding.compute.requested` |
-| **Sortie** | Liste d'étapes : prise par membre, centre de masse, 33 landmarks en pixels de la photo. Ou un échec qui explique pourquoi | `ghosts.path` (format `PathfindingResult`), `ghosts.error` |
+| **Sortie** | Liste d'étapes : prise par membre, centre de masse, 33 landmarks en pixels de la photo. Ou un échec qui explique pourquoi | `pathfindings.result` (format `PathfindingResult`), `pathfindings.error` |
 
 ### 5.4 C1 : échelle et angle du mur
 
@@ -213,7 +213,7 @@ Points d'attention :
 - **L'échelle est probablement sous-estimée, non mesurée.** Du haut du bloc au tapis, le mur mesure 3,4 à 3,5 m d'après le modèle, alors qu'un mur de bloc fait plutôt 4 à 4,5 m : sous-estimation estimée à 15 à 25 %, sans vérité terrain (le haut du mur peut aussi être hors de la photo). Les distances entre prises jaunes (2,6 m entre la plus basse et la plus haute) restent plausibles. Seul `worker depth-eval` sur des distances mesurées tranchera.
 - Un essai ancien hors livrable (seuil abaissé à 0,2 sur l'ancien critère) avait donné un mur sur une image générée, avec des squelettes beaucoup trop grands : il ne vaut pas validation et le nouveau critère le remplace.
 - La v1 suppose un mur plan. Les murs cassés (dièdre, dévers qui se prolonge en toit) demandent plusieurs plans et viendront ensuite.
-- C1 dépend de la photo, pas du grimpeur. Elle tourne dans le job de la voie, à la suite de la détection des prises, et son résultat est stocké sur `routes`. Tous les fantômes de la voie le réutilisent. Un échec de C1 (modèle absent, plan introuvable) ne fait pas échouer la détection : `wall_plane` reste vide et le fantôme échoue ensuite avec « Wall geometry missing ». Seul un `gravity` mal formé fait échouer le job de la voie (« Invalid gravity »).
+- C1 dépend de la photo, pas du grimpeur. Elle tourne dans le job de la voie, à la suite de la détection des prises, et son résultat est stocké sur `routes`. Tous les pathfindings de la voie le réutilisent. Un échec de C1 (modèle absent, plan introuvable) ne fait pas échouer la détection : `wall_plane` reste vide et le fantôme échoue ensuite avec « Wall geometry missing ». Seul un `gravity` mal formé fait échouer le job de la voie (« Invalid gravity »).
 - Temps mesuré sur un CPU de 24 coeurs : environ 2 s pour le modèle sur une photo de 1880 x 2272, environ 4,4 s pour `worker pathfinding-wall`, environ 5 s pour `worker pathfinding` complète sur `voie.jpg`. Le temps sur le CPU du serveur n'est pas mesuré.
 
 ### 5.5 Marques de départ et d'arrivée
@@ -298,13 +298,13 @@ Messages RabbitMQ et file du worker :
 | Élément | Valeur |
 | --- | --- |
 | File | `pathfinding.compute` (et sa file morte `pathfinding.compute.dlq`), créée par le worker au démarrage |
-| Clé de demande | `pathfinding.compute.requested`, payload `{job_id, preference?}` ; `job_id` est `ghosts.id` ; `preference` vaut `easy` (défaut), `power` ou `technique` |
+| Clé de demande | `pathfinding.compute.requested`, payload `{job_id, preference?}` ; `job_id` est `pathfindings.id` ; `preference` vaut `easy` (défaut), `power` ou `technique` |
 | Clé de statut | `pathfinding.compute.status` |
 | Demande de la voie | `holds.detect.requested` reçoit un champ optionnel `gravity` (3 nombres, repère caméra OpenCV : x droite, y bas, z avant) |
 
-Le job de pathfinding réutilise les colonnes de `ghosts` (`status`, `progress`, `morphology`, `path`, `error`, `processing_time_ms`). `morphology` suit le schéma `ClimberMorphology` et `path` le schéma `PathfindingResult`. Les schémas sont dans `schemas/` (`pathfinding_compute_request`, `climber_morphology`, `pathfinding_result`, plus `WallPlane` dans `hold_detect_result`) ; les modèles Python et Go sont générés.
+Le job de pathfinding réutilise les colonnes de `pathfindings` (`status`, `progress`, `morphology`, `result`, `error`, `processing_time_ms`). `morphology` suit le schéma `ClimberMorphology` et `result` le schéma `PathfindingResult`. Les schémas sont dans `schemas/` (`pathfinding_compute_request`, `climber_morphology`, `pathfinding_result`, plus `WallPlane` dans `hold_detect_result`) ; les modèles Python et Go sont générés.
 
-> **Note** : la section 7.3 de [database-schema.md](../../../architecture/specifications/database-schema.md) décrit `ghosts.morphology` (`ClimberMorphology`) et `ghosts.path` (`PathfindingResult`) au format livré. Le worker écrit `path` sans ses champs `null` : un membre libre ou un `wall_angle_deg` inconnu sont absents du JSON stocké, alors que le schéma les déclare obligatoires. Les lecteurs (serveur Go, mobile) doivent traiter une clé absente comme `null`.
+> **Note** : la section 7.3 de [database-schema.md](../../../architecture/specifications/database-schema.md) décrit `pathfindings.morphology` (`ClimberMorphology`) et `pathfindings.result` (`PathfindingResult`) au format livré. Le worker écrit `result` sans ses champs `null` : un membre libre ou un `wall_angle_deg` inconnu sont absents du JSON stocké, alors que le schéma les déclare obligatoires. Les lecteurs (serveur Go, mobile) doivent traiter une clé absente comme `null`.
 
 ### 5.10 Plan de réalisation v1 : état réel
 
@@ -320,10 +320,10 @@ Légende : **Fait** = écrit et couvert par des tests automatiques, **Partiel** 
 | 5. C2 | Fait, essayé sur une vraie voie | `_2_beta.py`, 24 tests sur des échelles synthétiques et murs aléatoires, puis une bêta jaune de 13 étapes sur `voie.jpg`. Pas encore sur 3 ou 4 voies réelles. Limites : sol non modélisé, portées par paires (5 étapes sur 13 avec un appui à 7 à 21 cm de sa prise sur `voie.jpg`), lenteur avec beaucoup de prises (section 5.6) |
 | 6. C3 | Fait, rendu relu sur une vraie voie | `_3_pose.py`, cinématique inverse vers 33 landmarks (section 5.7). Sur `voie.jpg`, squelettes d'échelle crédible par rapport au mur et de proportions humaines ; les 13 étapes sont superposées sur une seule image, illisible en détail |
 | 6. Rendu dans le client | À faire | Le rendu des squelettes sur la photo (`--render` de la CLI) est un outil de contrôle, pas le rendu mobile |
-| Job de pathfinding | Fait, non validé sur du réel | Queue `pathfinding.compute`, handler `pathfinding_compute_request`, écriture de `ghosts.path`. Tourne de bout en bout dans le test e2e (`tests/e2e/test_e2e_pathfinding.py`) avec une profondeur factice (mur face caméra à 3 m) et un faux détecteur de prises. La chaîne de calcul seule (CLI `pathfinding`) a tourné avec les vrais modèles sur `voie.jpg`, sans base ni RabbitMQ |
-| CLI | Fait | `pathfinding-depth`, `pathfinding-wall`, `pathfinding-beta`, `pathfinding-pose`, `pathfinding` (`pathfinding-beta` et `pathfinding` ont `--color` pour choisir la voie par la couleur des prises), `depth-eval`. Producteur : `seed-ghost` (crée une ligne `ghosts`) et `pathfinding` |
+| Job de pathfinding | Fait, non validé sur du réel | Queue `pathfinding.compute`, handler `pathfinding_compute_request`, écriture de `pathfindings.result`. Tourne de bout en bout dans le test e2e (`tests/e2e/test_e2e_pathfinding.py`) avec une profondeur factice (mur face caméra à 3 m) et un faux détecteur de prises. La chaîne de calcul seule (CLI `pathfinding`) a tourné avec les vrais modèles sur `voie.jpg`, sans base ni RabbitMQ |
+| CLI | Fait | `pathfinding-depth`, `pathfinding-wall`, `pathfinding-beta`, `pathfinding-pose`, `pathfinding` (`pathfinding-beta` et `pathfinding` ont `--color` pour choisir la voie par la couleur des prises), `depth-eval`. Producteur : `seed-pathfinding` (crée une ligne `pathfindings`) et `pathfinding` |
 | Image Docker | Partiel | Le `Dockerfile` lance `scripts/download-depth-model.sh`. `docker build` n'a pas été lancé |
-| Serveur Go | À faire | Création du fantôme, remplissage de `ghost_holds` et de `ghosts.morphology`, publication de `pathfinding.compute.requested`, consommation de `pathfinding.compute.status` |
+| Serveur Go | À faire | Création du pathfinding, remplissage de `pathfinding_holds` et de `pathfindings.morphology`, publication de `pathfinding.compute.requested`, consommation de `pathfinding.compute.status` |
 | Mobile | À faire | Validation des marques et de `feet_free`, lecture de l'accéléromètre (`gravity`), rendu du fantôme |
 
 Vérifications faites au moment de cette mise à jour (26/11/2026) : `ruff check src tests` sans erreur, 402 tests passés, 27 désélectionnés (`-m "not e2e and not integration"`), les six sous-commandes répondent à `--help`, `--color` figure dans l'aide de `pathfinding-beta`, et `pathfinding-wall` accepte un mur sur `voie.jpg` et sur les six images du deck (relancé). La commande `pathfinding --color yellow` sur `voie.jpg` donne 13 étapes (relancé). Non rejoué ici : les tests e2e et d'intégration (27 passés pendant l'intégration, sur des conteneurs PostgreSQL, RabbitMQ et RustFS jetables), `moon run ai:e2e`, `docker build`, la précision de l'échelle, la distance des appuis à leurs prises.
@@ -335,7 +335,7 @@ Prochaines étapes, dans l'ordre :
 3. **Dédoublonner les prises** quasi identiques (deux détections à la même position sur `voie.jpg`) : problème de détection, pas de C1.
 4. **Rendu étape par étape** : les 13 squelettes superposés sur une image sont illisibles en détail. Un squelette par image ou une planche contact aide au contrôle, et le rendu mobile reste à écrire.
 5. **Mesures pour `depth-eval`** : annoter 2 ou 3 voies photographiées de face avec des paires de pixels et la distance réelle mesurée (format décrit dans le README du worker), pour mesurer l'erreur d'échelle (échelle de `voie.jpg` probablement trop petite de 15 à 25 %) et revérifier les seuils de C1 sur d'autres voies, plus loin, plus près, en dévers.
-6. **Serveur Go** : créer le fantôme avec sa morphologie, remplir `ghost_holds`, publier et consommer `pathfinding.compute.*`.
+6. **Serveur Go** : créer le pathfinding avec sa morphologie, remplir `pathfinding_holds`, publier et consommer `pathfinding.compute.*`.
 7. **Mobile** : validation des marques et de `feet_free`, `gravity` depuis l'accéléromètre, rendu du fantôme.
 8. Lancer `docker build` du worker et mesurer le temps et la mémoire du job complet sur le serveur cible.
 
@@ -399,7 +399,7 @@ Points d'attention :
 | C2 Recherche A* de la bêta | Fait. Bêta jaune de 13 étapes sur `voie.jpg`. Limites : sol non modélisé (départ sans pieds), portées par paires (5 étapes sur 13 avec un appui à 7 à 21 cm de sa prise ; 8 à 10 % d'étapes inatteignables conjointement sur murs aléatoires), 48 s pour 76 prises sans sélection |
 | C3 Squelette du fantôme | Fait (33 landmarks en pixels de la photo), torse vertical, échelle crédible sur `voie.jpg`, rendu superposé peu lisible |
 | Job de la voie et job de pathfinding (worker) | Fait. La chaîne a tourné avec les vrais modèles sur `voie.jpg` (CLI `pathfinding`, environ 5 s) ; le job de pathfinding entier (base, RabbitMQ) n'est validé qu'avec une profondeur factice (test e2e) |
-| C Serveur Go et mobile | À faire : création du fantôme, `ghost_holds`, `pathfinding.compute.*` ; validation des marques, accéléromètre, rendu du fantôme |
+| C Serveur Go et mobile | À faire : création du pathfinding, `pathfinding_holds`, `pathfinding.compute.*` ; validation des marques, accéléromètre, rendu du fantôme |
 | D1, D2 Alignement et écarts | À explorer |
 | E Rendu | Prévu côté mobile |
 

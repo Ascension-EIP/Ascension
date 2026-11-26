@@ -1,5 +1,5 @@
 :::warning
-**Version:** 0.1
+**Version:** 0.2
 :::
 
 ---
@@ -8,7 +8,7 @@
 
 ## What it does
 
-It takes a route photo (and a climber's height and arm span) and returns the beta of the route as a list of steps. Each step says which hold is under each limb and gives the 33 landmarks of the climber in pixels of the photo, so the app can draw a "ghost" on the photo. Vocabulary: pathfinding is this computation, the ghost is the product feature (Ghost Mode) and `ghosts` is the table that stores the job and its result.
+It takes a route photo (and a climber's height and arm span) and returns the beta of the route as a list of steps. Each step says which hold is under each limb and gives the 33 landmarks of the climber in pixels of the photo, so the app can draw a "ghost" on the photo. Vocabulary: pathfinding is this computation (the Ghost Mode feature displays its result) and `pathfindings` is the table that stores the job and its result.
 
 ---
 
@@ -104,13 +104,13 @@ cd apps/ai
 uv run python src/producer.py seed-route --image resources/voie.jpg        # prints route_id, object_key
 uv run python src/producer.py holds --job-id <route_id> --object-key <object_key>
 # wait for routes.status = success and routes.wall_plane filled, then:
-uv run python src/producer.py seed-ghost --route-id <route_id>             # prints ghost_id
-uv run python src/producer.py pathfinding --job-id <ghost_id> --preference easy
+uv run python src/producer.py seed-pathfinding --route-id <route_id>        # prints pathfinding_id
+uv run python src/producer.py pathfinding --job-id <pathfinding_id> --preference easy
 ```
 
-`seed-ghost` creates a `pending` row of `ghosts` (height 175, arm span 178, options `--height` and `--arm-span`) with no `ghost_holds`: all the usable holds of the route are then the route. `pathfinding` publishes `pathfinding.compute.requested`; `--job-id` is the **ghost id** (`ghosts.id`).
+`seed-pathfinding` creates a `pending` row of `pathfindings` (height 175, arm span 178, options `--height` and `--arm-span`) with no `pathfinding_holds`: all the usable holds of the route are then the route. `pathfinding` publishes `pathfinding.compute.requested`; `--job-id` is the **pathfinding id** (`pathfindings.id`).
 
-Where to read the result: the row of `ghosts` whose id is `ghost_id`. `status` goes `started`, `running` (progress 10, 30), `success` (progress 100). `path` holds the `PathfindingResult`. On failure `error` is short and the message goes to `pathfinding.compute.dlq`: `Wall geometry missing` (no wall plane on the route), `No beta between holds A and B` (no passage between those holds), `Invalid pathfinding data`, `Pathfinding failed`. The worker also publishes `pathfinding.compute.status`.
+Where to read the result: the row of `pathfindings` whose id is `pathfinding_id`. `status` goes `started`, `running` (progress 10, 30), `success` (progress 100). `result` holds the `PathfindingResult`. On failure `error` is short and the message goes to `pathfinding.compute.dlq`: `Wall geometry missing` (no wall plane on the route), `No beta between holds A and B` (no passage between those holds), `Invalid pathfinding data`, `Pathfinding failed`. The worker also publishes `pathfinding.compute.status`.
 
 ---
 

@@ -1,12 +1,12 @@
 :::warning
-**Version:** 1.2
+**Version:** 1.3
 :::
 
 ---
 
 # Ascension AI worker
 
-Python worker of the Ascension monorepo. It turns a climbing video into a 2D analysis (skeleton, joint angles, metrics, movements) and then into coaching hints written by an LLM. It also detects the holds of a route photo (contour, hold or volume, dominant colour), estimates the plane of the wall from that photo, and computes the pathfinding of a climber on a route (beta found by an A* search, then one posture per step). The pathfinding is the computation; the ghost is the Ghost Mode feature that shows its result, and the `ghosts` table is where the job is stored.
+Python worker of the Ascension monorepo. It turns a climbing video into a 2D analysis (skeleton, joint angles, metrics, movements) and then into coaching hints written by an LLM. It also detects the holds of a route photo (contour, hold or volume, dominant colour), estimates the plane of the wall from that photo, and computes the pathfinding of a climber on a route (beta found by an A* search, then one posture per step). The pathfinding is the computation; the ghost is the Ghost Mode feature that shows its result, and the `pathfindings` table is where the job and its result are stored.
 
 The worker consumes jobs from RabbitMQ, downloads the video or the photo from RustFS (S3), writes its progress and results into PostgreSQL, and publishes statuses back on RabbitMQ. Each pipeline step is also a command line sub-command, so it can run without any infrastructure.
 
@@ -54,19 +54,19 @@ flowchart LR
     PathServer["Go server or producer.py"] -->|"pathfinding.compute.requested"| PathQueue["queue pathfinding.compute"]
     PathQueue --> PathSteps["_4_pathfinding beta and postures"]
     HDB --> PathSteps
-    PathSteps --> GDB[("ghosts.path")]
+    PathSteps --> GDB[("pathfindings.result")]
     PathQueue -.->|"pathfinding.compute.status"| Events
 ```
 
-_Summary: the detect job downloads the video, computes the result, stores it in `analyses` and ends the analysis. The advice job is independent: the server requests it for a video, the worker reads the `result` of the latest successful analysis of that video, and stores the hints in `advices.result`. The hold job downloads a route photo, detects its holds, estimates the wall plane (depth model, then plane fit) and stores one `holds` row per hold plus `routes.wall_plane`. The ghost job reads a `pending` ghost, its route and the holds of the route, searches the beta, computes the posture of each step and stores `ghosts.path`. All four publish their statuses._
+_Summary: the detect job downloads the video, computes the result, stores it in `analyses` and ends the analysis. The advice job is independent: the server requests it for a video, the worker reads the `result` of the latest successful analysis of that video, and stores the hints in `advices.result`. The hold job downloads a route photo, detects its holds, estimates the wall plane (depth model, then plane fit) and stores one `holds` row per hold plus `routes.wall_plane`. The pathfinding job reads a `pending` pathfinding, its route and the holds of the route, searches the beta, computes the posture of each step and stores `pathfindings.result`. All four publish their statuses._
 
 | Item           | Value                                                                                                                                                                                                                                                                                                            |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Exchange       | `events` (topic, durable)                                                                                                                                                                                                                                                                                        |
 | Queues         | `poses.detect`, `poses.advice`, `holds.detect`, `pathfinding.compute`, plus a dead-letter queue `<queue>.dlq` bound to the exchange `events.dlx`                                                                                                                                                                 |
-| Consumed keys  | `pose.detect.requested` (payload `{job_id, object_key}`), `pose.advice.requested` (payload `{job_id}`, the video id), `holds.detect.requested` (payload `{job_id, object_key, gravity?}`, `job_id` is the route id), `pathfinding.compute.requested` (payload `{job_id, preference?}`, `job_id` is the ghost id) |
+| Consumed keys  | `pose.detect.requested` (payload `{job_id, object_key}`), `pose.advice.requested` (payload `{job_id}`, the video id), `holds.detect.requested` (payload `{job_id, object_key, gravity?}`, `job_id` is the route id), `pathfinding.compute.requested` (payload `{job_id, preference?}`, `job_id` is the pathfinding id) |
 | Published keys | `pose.detect.status`, `pose.advice.status`, `holds.detect.status`, `pathfinding.compute.status`                                                                                                                                                                                                                  |
-| Statuses       | `pending`, `started`, `running`, `success`, `failed` (messages and the `status` column of `analyses`, `advices`, `routes` and `ghosts`)                                                                                                                                                                          |
+| Statuses       | `pending`, `started`, `running`, `success`, `failed` (messages and the `status` column of `analyses`, `advices`, `routes` and `pathfindings`)                                                                                                                                                                          |
 | Concurrency    | One job at a time per process. Scale by adding replicas                                                                                                                                                                                                                                                          |
 
 Job lifecycle in `analyses`:
@@ -98,7 +98,7 @@ Job lifecycle in `routes` (`routes.id` is the job id; the server creates the rou
 
 The wall plane is computed after the detection, inside the `running` phase. It never fails the job: without the depth model, or when no plane is found, the holds are stored and `routes.wall_plane` stays empty (a warning is logged). A malformed `gravity` is the one exception: the job fails with `Invalid gravity` before any processing.
 
-Job lifecycle of the pathfinding, written in `ghosts` (`ghosts.id` is the job id; the server creates the `ghosts` row in `pending` before publishing):
+Job lifecycle of the pathfinding, written in `pathfindings` (`pathfindings.id` is the job id; the server creates the `pathfindings` row in `pending` before publishing):
 
 | Step               | `status`  | `progress` |
 | ------------------ | --------- | ---------- |
@@ -273,7 +273,7 @@ uv run worker pathfinding-pose  --input /tmp/beta.json --holds /tmp/holds_wall.j
 
 ## Pathfinding
 
-The pathfinding turns the photo of a route and the morphology of a climber into a list of postures. It is the computation behind Ghost Mode: the ghost is the product feature (and the `ghosts` table, which holds the job and its result in `ghosts.path`), the pathfinding is the worker module that produces it. The worker code is in `src/worker/_4_pathfinding/`:
+The pathfinding turns the photo of a route and the morphology of a climber into a list of postures. It is the computation behind Ghost Mode: the ghost is the product feature, the pathfinding is the worker module that produces it (the `pathfindings` table holds the job and its result in `pathfindings.result`). The worker code is in `src/worker/_4_pathfinding/`:
 
 | Module              | Role                                                                                                                                                                                             |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -285,25 +285,25 @@ The pathfinding turns the photo of a route and the morphology of a climber into 
 
 **Wall plane.** The hold job calls the depth model on the photo, fits one plane (200 RANSAC iterations) on the pixels outside the holds, with an inlier threshold of 1.2 % of the median depth (`RANSAC_REL_THRESHOLD`, floor 2 cm), and stores it in `routes.wall_plane` (`homography`, `angle_deg`, `focal_px`, `inlier_ratio`, `model`) and `routes.wall_angle_deg`. The focal length is the one estimated by the model. `gravity` (optional, direction of the floor in the OpenCV camera frame: x right, y down, z forward, three finite numbers, not all zero) gives the angle: 0 vertical, positive overhang, negative slab. Without it `angle_deg` is `null` and the search treats the wall as vertical. The plane is rejected (no wall, a warning) when fewer than 1000 pixels are valid or when the inliers cover less than 20 % of the whole image (`MIN_WALL_COVERAGE`), so the floor and the ceiling visible on the photo do not count against the wall. `inlier_ratio` is the share of the valid pixels within the threshold.
 
-**What the pathfinding job reads.** The `ghosts` row (`morphology`, `route_id`), the route (`image_width`, `image_height`, `feet_free`, `wall_plane`), the holds of the route (`id`, `type`, `contour`, `usable`, `start_limbs`, `finish_limbs`) and `ghost_holds`. `job_id` is `ghosts.id`.
+**What the pathfinding job reads.** The `pathfindings` row (`morphology`, `route_id`), the route (`image_width`, `image_height`, `feet_free`, `wall_plane`), the holds of the route (`id`, `type`, `contour`, `usable`, `start_limbs`, `finish_limbs`) and `pathfinding_holds`. `job_id` is `pathfindings.id`.
 
 | Input                               | Format and rule                                                                                                                                                                                                                                                                                                                            |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ghosts.morphology`                 | `ClimberMorphology`: `height_cm` (required), `arm_span_cm` (defaults to the height), `dominant_hand` (read, not used by the search), `constraints` (`[{zone, type}]`, `type` is `missing` or `injured`)                                                                                                                                    |
+| `pathfindings.morphology`           | `ClimberMorphology`: `height_cm` (required), `arm_span_cm` (defaults to the height), `dominant_hand` (read, not used by the search), `constraints` (`[{zone, type}]`, `type` is `missing` or `injured`)                                                                                                                                    |
 | Body constraints                    | A zone of an arm (`*_shoulder`, `*_upper_arm`, `*_elbow`, `*_forearm`, `*_wrist`, `*_hand`, `*_fingers`) applies to the hand of the same side, a zone of a leg (`*_hip`, `*_thigh`, `*_knee`, `*_shin`, `*_ankle`, `*_foot`) to the foot. `missing` limbs are never used, `injured` limbs pay a cost on each move. Other zones are ignored |
-| `ghost_holds`                       | The holds of the route for this ghost. Empty: every `usable` hold of the route                                                                                                                                                                                                                                                             |
+| `pathfinding_holds`                 | The holds of the route for this pathfinding. Empty: every `usable` hold of the route                                                                                                                                                                                                                                                             |
 | `routes.feet_free`                  | When true, the other `usable` holds of the photo can hold a foot (not a hand)                                                                                                                                                                                                                                                              |
 | `holds.start_limbs`, `finish_limbs` | Marks: 1 to 4 limbs at the start, 1 to 2 hands at the finish. Both hands take the start marks first, the other marks are feet. Without marks, the lowest hold of the route is the start (2) and the highest the finish (2)                                                                                                                 |
 | Hold type                           | Every hold is generic (`unknown`: usable by hands and feet, in every direction, big enough for two hands). Costs come from a table by type, `volume` is penalised for hands                                                                                                                                                                |
 | `pathfinding.compute.requested`     | `preference`: `easy` (default), `power` (fewer, longer moves) or `technique` (short moves, more foot placements)                                                                                                                                                                                                                           |
 
-**What the pathfinding job writes.** `ghosts.path` is a `PathfindingResult`: `image_width`, `image_height`, `wall_angle_deg` and `steps`. Each step has its `index`, the `moved_limb` (absent at the start), the hold id under each limb (`null` when the limb is free), the `center_of_mass` and the 33 `landmarks`, in pixels of the photo (y down). The statuses and the progress are in [Pipeline](#pipeline).
+**What the pathfinding job writes.** `pathfindings.result` is a `PathfindingResult`: `image_width`, `image_height`, `wall_angle_deg` and `steps`. Each step has its `index`, the `moved_limb` (absent at the start), the hold id under each limb (`null` when the limb is free), the `center_of_mass` and the 33 `landmarks`, in pixels of the photo (y down). The statuses and the progress are in [Pipeline](#pipeline).
 
-Failures are permanent, written in `ghosts.error` and dead-lettered to `pathfinding.compute.dlq`:
+Failures are permanent, written in `pathfindings.error` and dead-lettered to `pathfinding.compute.dlq`:
 
 | Message                         | Cause                                                                                               |
 | ------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `Job not found`                 | The `ghosts` row does not exist                                                                     |
+| `Job not found`                 | The `pathfindings` row does not exist                                                                     |
 | `Wall geometry missing`         | `routes.wall_plane` is empty (no depth model at detection time, or no plane found)                  |
 | `Wall geometry invalid`         | The homography is not a finite, invertible 3x3 matrix                                               |
 | `Invalid pathfinding data`      | The stored morphology or wall does not match the schema, or a hold contour, type or mark is invalid |
@@ -315,7 +315,7 @@ The hold job fails with `Invalid gravity` when `gravity` is not three finite num
 
 **`depth-eval`.** It measures the depth model on photos whose real distances are known. `--dataset` is a folder with the photos and an `annotations.json`: a list of `{"image": "<file name>", "pairs": [{"a": [x, y], "b": [x, y], "distance_cm": <real distance>}]}`, with `a` and `b` in pixels of the photo. It prints, per image then overall, the mean and median relative error of the 3D distance between the two pixels (pairs on a pixel without valid depth are counted as skipped). No such dataset exists in the repository yet.
 
-**End-to-end test.** `tests/e2e/test_e2e_pathfinding.py` runs the real worker, RabbitMQ, PostgreSQL and RustFS, with the depth model replaced by a wall facing the camera at 3 m and the hold model by the squares of a drawn ladder (a synthetic photo is no scene for the real models). Scenarios: a route to `success` with `wall_plane`, then a seeded `ghosts` row to `success` with a valid `path`; a route without wall (`ghosts` row `failed` with `Wall geometry missing`); two holds too far apart (`No beta between holds ...`); a wall failure that does not fail the detection; the real models on a real photo, which never fail the detection. `tests/functional/test_cli_pathfinding.py` runs the sub-commands as processes (`pathfinding-beta` and `pathfinding-pose` without any model, the real models on a real photo).
+**End-to-end test.** `tests/e2e/test_e2e_pathfinding.py` runs the real worker, RabbitMQ, PostgreSQL and RustFS, with the depth model replaced by a wall facing the camera at 3 m and the hold model by the squares of a drawn ladder (a synthetic photo is no scene for the real models). Scenarios: a route to `success` with `wall_plane`, then a seeded `pathfindings` row to `success` with a valid `result`; a route without wall (`pathfindings` row `failed` with `Wall geometry missing`); two holds too far apart (`No beta between holds ...`); a wall failure that does not fail the detection; the real models on a real photo, which never fail the detection. `tests/functional/test_cli_pathfinding.py` runs the sub-commands as processes (`pathfinding-beta` and `pathfinding-pose` without any model, the real models on a real photo).
 
 ---
 
@@ -330,10 +330,10 @@ The Go server publishes `pose.detect.requested` itself; it does not publish `hol
 | `uv run python src/producer.py advice --job-id <id>`                         | Publishes `pose.advice.requested` (`--job-id` is the `video_id`)                                                                                                       |
 | `uv run python src/producer.py seed-route --image path/to/wall.jpg`          | Creates a test user and a `pending` route, uploads the photo, prints `route_id=` and `object_key=`                                                                     |
 | `uv run python src/producer.py holds --job-id <route_id> --object-key <key>` | Publishes `holds.detect.requested` (without `gravity`, so the wall angle stays empty)                                                                                  |
-| `uv run python src/producer.py seed-ghost --route-id <route_id>`             | Creates a `pending` `ghosts` row on an existing route, for the user of the route (`--height` 175, `--arm-span` 178), without `ghost_holds`; prints `ghost_id=`         |
-| `uv run python src/producer.py pathfinding --job-id <ghost_id>`              | Publishes `pathfinding.compute.requested` (`--preference` `easy`, `power` or `technique`, optional)                                                                    |
+| `uv run python src/producer.py seed-pathfinding --route-id <route_id>`        | Creates a `pending` `pathfindings` row on an existing route, for the user of the route (`--height` 175, `--arm-span` 178), without `pathfinding_holds`; prints `pathfinding_id=` |
+| `uv run python src/producer.py pathfinding --job-id <pathfinding_id>`         | Publishes `pathfinding.compute.requested` (`--preference` `easy`, `power` or `technique`, optional)                                                                    |
 
-The pathfinding needs a route in `success` with a `wall_plane`: run `seed-route` and `holds`, wait for the route, then `seed-ghost` and `pathfinding`.
+The pathfinding needs a route in `success` with a `wall_plane`: run `seed-route` and `holds`, wait for the route, then `seed-pathfinding` and `pathfinding`.
 
 Through moon: `moon run ai:producer -- seed --video resources/example-2.mp4`.
 
@@ -365,7 +365,7 @@ Where the tests live:
 
 | Path                | Content                                                                                                                                                                                                                                                       |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tests/test_*.py`   | Unit tests with simulated broker, database, storage and LLM (`test_holds.py`, `test_hold_handler.py`, `test_postgresql_routes.py` for the holds; `test_pathfinding_*.py`, `test_postgresql_ghosts.py` and `test_producer_pathfinding.py` for the pathfinding) |
+| `tests/test_*.py`   | Unit tests with simulated broker, database, storage and LLM (`test_holds.py`, `test_hold_handler.py`, `test_postgresql_routes.py` for the holds; `test_pathfinding_*.py`, `test_postgresql_pathfindings.py` and `test_producer_pathfinding.py` for the pathfinding) |
 | `tests/functional/` | The `worker` CLI in sub-processes (`test_cli_pathfinding.py` for the pathfinding sub-commands)                                                                                                                                                                |
 | `tests/e2e/`        | Real services, five scenarios: nominal, invalid payload, missing object, LLM failure, advice rerun; plus five pathfinding scenarios in `test_e2e_pathfinding.py` (see [Pathfinding](#pathfinding))                                                            |
 
@@ -422,9 +422,9 @@ The contract between the worker and the server lives in `schemas/` at the reposi
 - **The metric accuracy of the depth model is not measured.** The 5 to 15 % error target is unverified. The depth model takes about 2 s on a 24-core CPU for a 1880x2272 photo (`pathfinding-wall` about 4.4 s); the time on a server CPU is not measured.
 - **The floor is not modelled.** At the start the feet are free (`null`; only the two hands are placed) and the first move puts one on a hold, possibly the one of a hand.
 - **Reach constraints are checked by pairs.** Hand to hand, hand to foot and foot to foot distances are checked one pair at a time, not jointly by the body. About 8 to 10 % of the steps on random walls are not reachable together; the posture then draws a stretched limb up to about 20 cm from its hold. On `voie.jpg`, 5 steps out of 13 have a wrist or ankle 7 to 21 cm from its hold. A joint feasibility test of the torso in the search is not written.
-- **The A* search is slow with many holds.** 30 hand holds plus 30 foot holds take about 1.2 s, but 76 holds without selection took 48 s. The search stops with `No beta` after 100,000 expansions. In practice the route is the selection of the user (`ghost_holds`), smaller than the photo.
+- **The A* search is slow with many holds.** 30 hand holds plus 30 foot holds take about 1.2 s, but 76 holds without selection took 48 s. The search stops with `No beta` after 100,000 expansions. In practice the route is the selection of the user (`pathfinding_holds`), smaller than the photo.
 - **The posture is simple.** The torso is vertical, the hold is generic (no grip type, no pulling direction), the reach ratios and cost weights are reasonable values not calibrated on real climbers or routes, and the postures are 2D (knees and elbows only bend sideways). The plausibility was tested by geometric properties, not by eye on real routes.
 - **A malformed `gravity` fails the hold job** (`Invalid gravity`) instead of being ignored. The generated Pydantic models do not enforce the array sizes of the schemas, so the worker checks them by hand.
 - **The whole pathfinding job is validated with a fake depth map only.** The CLI chain ran with the real models on `voie.jpg`, but the job (database, RabbitMQ) and the end-to-end test use a fake depth map and a fake hold model. Duplicate detections of the same hold (two holds at the same position on `voie.jpg`) are not merged.
-- **The Go server and the mobile app do not use the pathfinding yet.** The server does not create the `ghosts` row, fill `ghost_holds`, nor publish and consume `pathfinding.compute.*`. The mobile app does not validate the marks, send `gravity` from the accelerometer, nor draw the ghost (the postures).
+- **The Go server and the mobile app do not use the pathfinding yet.** The server does not create the `pathfindings` row, fill `pathfinding_holds`, nor publish and consume `pathfinding.compute.*`. The mobile app does not validate the marks, send `gravity` from the accelerometer, nor draw the ghost (the postures).
 - **The end-to-end test is not in the CI.** It needs `docker compose`. Processing time of `example-2.mp4` (10 s, 1.6 MB) was measured at about 6 s on a CPU, with a simulated LLM. This is a baseline from a single video.

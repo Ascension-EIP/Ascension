@@ -1,5 +1,5 @@
 :::warning
-**Version:** 0.1
+**Version:** 0.2
 :::
 
 ---
@@ -29,7 +29,7 @@ flowchart LR
 | [Pose analysis](pose-analysis.md) | `pose-skeleton`, `pose-filter`, `pose-metrics`, `pose-movements`, `pose-detect` | `pose.detect` (`poses.detect`) | `analyses.result` |
 | [AI advice](ai-advice.md) | `pose-advice` | `pose.advice` (`poses.advice`) | `advices.result` |
 | [Hold detection](hold-detection.md) | `holds-detect`, `holds-colors-eval` | `holds.detect` (`holds.detect`) | `holds` rows, `routes.wall_plane` |
-| [Pathfinding](pathfinding.md) | `pathfinding-depth`, `pathfinding-wall`, `pathfinding-beta`, `pathfinding-pose`, `pathfinding`, `depth-eval` | `pathfinding.compute` (`pathfinding.compute`) | `ghosts.path` |
+| [Pathfinding](pathfinding.md) | `pathfinding-depth`, `pathfinding-wall`, `pathfinding-beta`, `pathfinding-pose`, `pathfinding`, `depth-eval` | `pathfinding.compute` (`pathfinding.compute`) | `pathfindings.result` |
 
 ---
 

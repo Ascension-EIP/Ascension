@@ -3,7 +3,7 @@ id: 2f73e756-4920-4208-ae1e-6928976f81ec
 ---
 
 :::success
-**Version:** 2.8
+**Version:** 2.9
 :::
 
 ---
@@ -26,13 +26,13 @@ The migrations in `apps/server/internal/outbound/postgres/migrations/` (migratio
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Primary keys        | `UUID` generated with `uuidv7()` (time-ordered, native in PostgreSQL 18).                                                                                                           |
 | Timestamps          | Always `TIMESTAMPTZ`. Every mutable table has `created_at` and `updated_at`, the latter maintained by the shared trigger.                                                           |
-| Naming              | `snake_case` for tables and columns. Tables are plural. Join tables are named after both sides (`ghost_holds`).                                                                     |
+| Naming              | `snake_case` for tables and columns. Tables are plural. Join tables are named after both sides (`pathfinding_holds`).                                                                     |
 | Closed value sets   | PostgreSQL `ENUM` types (never free `TEXT`). New values are added with `ALTER TYPE ... ADD VALUE`.                                                                                  |
 | Units               | Encoded in the column name: `_ms`, `_cm`, `_kg`, `_bytes`, `_cents`, `_min`.                                                                                                        |
 | Object storage      | Only the `object_key` is stored. The bucket comes from the server configuration. The storage backend is S3-compatible (RustFS in local/dev, OVHcloud Object Storage in production). |
-| Large AI payloads   | Stored as `JSONB` in PostgreSQL (`analyses.result`, `ghosts.path`). No secondary object storage for results.                                                                        |
+| Large AI payloads   | Stored as `JSONB` in PostgreSQL (`analyses.result`, `pathfindings.result`). No secondary object storage for results.                                                                        |
 | Deletion            | Hard delete with `ON DELETE CASCADE`. Account deactivation is a status, not a deletion.                                                                                             |
-| Async job lifecycle | Every AI-processed entity (`analyses`, `routes` for the hold detection, `ghosts`, `comparisons`) shares the `job_status` enum and the same columns (`status`, `progress`, `error`). |
+| Async job lifecycle | Every AI-processed entity (`analyses`, `routes` for the hold detection, `pathfindings`, `comparisons`) shares the `job_status` enum and the same columns (`status`, `progress`, `error`). |
 | Visibility          | Shareable content (`videos`, `analyses`, `routes`, `climbing_sessions`) carries a `visibility` column using the `visibility` enum.                                                  |
 
 ### 1.3 Feature Coverage
@@ -44,7 +44,7 @@ The migrations in `apps/server/internal/outbound/postgres/migrations/` (migratio
 | F04 Score and progression             | `climbing_sessions`, `analysis_scores`                                                  |
 | F05 Video analysis comparison         | `comparisons`                                                                           |
 | F06 Hold analysis                     | `routes`, `holds`                                                                       |
-| F07 Ghost Mode                        | `routes`, `holds`, `ghosts`, `ghost_holds`                                              |
+| F07 Ghost Mode                        | `routes`, `holds`, `pathfindings`, `pathfinding_holds`                                  |
 | F08 3D mobile experience              | `analyses` (type `3d`)                                                                  |
 | F09 Personalised advice               | `analyses.hints`                                                                        |
 | F10 Coach and training programs       | `goals`, `training_programs`, `training_program_sessions`, `exercises`, `training_logs` |
@@ -70,7 +70,7 @@ erDiagram
     USERS ||--o{ CLIMBING_SESSIONS : climbs
     USERS ||--o{ VIDEOS : uploads
     USERS ||--o{ ROUTES : creates
-    USERS ||--o{ GHOSTS : requests
+    USERS ||--o{ PATHFINDINGS : requests
     USERS ||--o{ GOALS : sets
     USERS ||--o{ TRAINING_LOGS : logs
     USERS ||--o{ FRIENDSHIPS : requests
@@ -90,9 +90,9 @@ erDiagram
     ANALYSES ||--o{ COMPARISONS : compared_in
 
     ROUTES ||--o{ HOLDS : contains
-    ROUTES ||--o{ GHOSTS : generates
-    GHOSTS ||--o{ GHOST_HOLDS : uses
-    HOLDS ||--o{ GHOST_HOLDS : selected_in
+    ROUTES ||--o{ PATHFINDINGS : generates
+    PATHFINDINGS ||--o{ PATHFINDING_HOLDS : uses
+    HOLDS ||--o{ PATHFINDING_HOLDS : selected_in
 
     GOALS ||--o{ TRAINING_PROGRAMS : drives
     TRAINING_PROGRAMS ||--o{ TRAINING_PROGRAM_SESSIONS : schedules
@@ -104,7 +104,7 @@ erDiagram
 
 ```
 
-Summary: `users` is the root of every branch. The video branch (`climbing_sessions` → `videos` → `analyses` → `analysis_scores`) holds the biomechanical analysis and user-to-user same-wall `comparisons`. The route branch (`routes` → `holds` → `ghosts`) holds the Ghost Mode without climbing, strictly decoupled from video analyses and comparisons. The coaching branch (`goals` → `training_programs` → `training_program_sessions` → `exercises`, with `training_logs` for what was actually done) and the business branch (`subscription_plans` → `subscriptions` → `subscription_events`, `quota_usages`) are independent of the AI branches.
+Summary: `users` is the root of every branch. The video branch (`climbing_sessions` → `videos` → `analyses` → `analysis_scores`) holds the biomechanical analysis and user-to-user same-wall `comparisons`. The route branch (`routes` → `holds` → `pathfindings`) holds the Ghost Mode without climbing, strictly decoupled from video analyses and comparisons. The coaching branch (`goals` → `training_programs` → `training_program_sessions` → `exercises`, with `training_logs` for what was actually done) and the business branch (`subscription_plans` → `subscriptions` → `subscription_events`, `quota_usages`) are independent of the AI branches.
 
 ---
 
@@ -134,7 +134,7 @@ The volumetry calculations rely on the business model quotas and observed climbi
 | **`analysis_scores`**                                        | ~150 B             | ~18K rows/yr (~2.7 MB)  | ~180K rows/yr (~27 MB) | ~1.8M rows/yr (~270 MB) | Synthetic numerical scoring derived from analysis.                                                                 |
 | **`routes`**                                                 | ~350 B             | ~600 rows (~210 KB)     | ~6K rows (~2.1 MB)     | ~60K rows (~21 MB)      | Boulders / walls photographed. Photos stored in S3.                                                                |
 | **`holds`**                                                  | ~350 B             | ~24K rows (~8.4 MB)     | ~240K rows (~84 MB)    | ~2.4M rows (~840 MB)    | 30 to 50 holds per route (coordinates + polygon points).                                                           |
-| **`ghosts` + `ghost_holds`**                                 | ~8 KB              | ~3.6K rows (~29 MB)     | ~36K rows (~290 MB)    | ~360K rows (~2.9 GB)    | Contains `ghosts.path` JSONB (beta steps, hold sequences, body center).                                            |
+| **`pathfindings` + `pathfinding_holds`**                     | ~8 KB              | ~3.6K rows (~29 MB)     | ~36K rows (~290 MB)    | ~360K rows (~2.9 GB)    | Contains `pathfindings.result` JSONB (beta steps, hold sequences, body center).                                            |
 | **`training_programs` + `sessions` + `exercises`**           | ~400 B             | ~1.2K rows (~480 KB)    | ~12K rows (~4.8 MB)    | ~120K rows (~48 MB)     | Personalized programs and planned routines.                                                                        |
 | **`training_logs`**                                          | ~250 B             | ~6K rows (~1.5 MB)      | ~60K rows (~15 MB)     | ~600K rows (~150 MB)    | Drills and completed exercises.                                                                                    |
 | **`subscriptions` + `subscription_events` + `quota_usages`** | ~300 B             | ~2.4K rows (~720 KB)    | ~24K rows (~7.2 MB)    | ~240K rows (~72 MB)     | Billing lifecycle, webhook events, and monthly quota counters.                                                     |
@@ -207,7 +207,7 @@ CREATE TYPE tutorial_status AS ENUM ('not_started', 'in_progress', 'completed');
 Notes:
 
 - `hold_type` `unknown` is a hold whose grip type is not known: the hold detector finds holds and volumes but does not classify grips yet.
-- `job_status` is shared by `analyses`, `routes` (hold detection), `ghosts` and `comparisons`, and its values are identical to the statuses published on RabbitMQ (`schemas/job_status.schema.json`): `pending` is set by the server when it creates the row, `started` when the worker picks the job, `running` while it processes it, then `success` or `failed`. There is no separate `generating_hints` value: the advice step is part of `running`.
+- `job_status` is shared by `analyses`, `routes` (hold detection), `pathfindings` and `comparisons`, and its values are identical to the statuses published on RabbitMQ (`schemas/job_status.schema.json`): `pending` is set by the server when it creates the row, `started` when the worker picks the job, `running` while it processes it, then `success` or `failed`. There is no separate `generating_hints` value: the advice step is part of `running`.
 - `grading_system` distinguishes bouldering (`font`, `v_scale`) from route climbing (`french`, `yds`). The grade itself is stored as `TEXT` (`6a+`, `V4`, `7A`).
 - `body_zone` follows the MediaPipe segment layout so that constraints can be mapped directly onto skeleton landmarks.
 
@@ -314,11 +314,11 @@ Business rules:
 
 - The ape index (`arm_span_cm - height_cm`) is derived at read time, never stored.
 - `climbing_level` and `grading_system` are set together. The API converts between systems for display.
-- Profile values are snapshotted into `ghosts.morphology` when a ghost is requested, so that a later profile update does not silently change an existing ghost.
+- Profile values are snapshotted into `pathfindings.morphology` when a pathfinding is requested, so that a later profile update does not silently change an existing pathfinding.
 
 ### 4.3 `user_body_constraints`
 
-Missing or injured body zones declared on the interactive skeleton (F01). Used by analysis, ghost computation, advice generation and training programs.
+Missing or injured body zones declared on the interactive skeleton (F01). Used by analysis, pathfinding computation, advice generation and training programs.
 
 ```sql
 CREATE TABLE user_body_constraints (
@@ -562,7 +562,7 @@ Business rules:
 - `success` is set only after the advice step, so `result` and `completed_at` are always present on a `success` row (enforced by `chk_analyses_completed`). `hints` may stay `NULL` on a `success` row if the LLM call failed: the advice step then publishes `failed` on `pose.advice.status` and can be relaunched with `pose.advice.requested`.
 - `video_id` is currently `UNIQUE` in the real database (migration `20260918172427`): a video can have only one analysis, so a `2d` and a `3d` run, or a retry after a failure, cannot coexist. The intended model is several analyses per video, with no uniqueness on `(video_id, type)`. The constraint is not changed yet (see `task/handoff-server-go.md`); the worker does not depend on it.
 - An analysis has no `climbing_session_id`: it belongs to the climbing session of its video (`videos.climbing_session_id`), and an analysis outside any session is allowed. The server links a video only to a session of the same user (`GET /v1/videos/upload-url`, `POST /v1/sessions/:id/analyses`). Deleting the session sets `videos.climbing_session_id` to `NULL` and keeps the videos and their analyses.
-- `processing_time_ms` is an `INTERVAL` (the Go server reads it as a `time.Duration`), despite its name. The worker writes `NOW() - started_at` when it completes the job. `ghosts` and `comparisons` use an `INTEGER` of milliseconds.
+- `processing_time_ms` is an `INTERVAL` (the Go server reads it as a `time.Duration`), despite its name. The worker writes `NOW() - started_at` when it completes the job. `pathfindings` and `comparisons` use an `INTEGER` of milliseconds.
 - `advice` (`TEXT`) is the legacy free-text advice, still read by the Go server. The worker writes the structured `hints` instead. `advice` will be dropped once the server exposes `hints`.
 - The worker writes `status`, `progress`, `result`, `hints`, `error`, `started_at`, `completed_at` and `processing_time_ms`: the migrations must be applied before it starts.
 - The partial index on `status` keeps the "in-flight jobs" lookup cheap without indexing millions of completed rows.
@@ -674,7 +674,7 @@ The trigger sets `updated_at`, a column the table does not have: any `UPDATE` on
 
 ## 7\. Routes, Holds and Ghost Mode
 
-Recommended split: the route photo is its own entity (`routes`), because it has a life independent of any video. Holds belong to the route. A ghost is a computed path on a route for a given user morphology, producing step-by-step guidance images (F07). A comparison joins two video analyses between climbers/sessions (F05). All storage references are S3 object keys; the bucket is a configuration value and never appears in the schema.
+Recommended split: the route photo is its own entity (`routes`), because it has a life independent of any video. Holds belong to the route. A pathfinding is a computed beta on a route for a given user morphology, the data behind the step-by-step guidance images of Ghost Mode (F07). A comparison joins two video analyses between climbers/sessions (F05). All storage references are S3 object keys; the bucket is a configuration value and never appears in the schema.
 
 ### 7.1 `routes`
 
@@ -724,9 +724,9 @@ CREATE INDEX idx_routes_gym_id ON routes(gym_id);
 Business rules:
 
 - `color` is the hold colour set by the route setter (used for the colour-based hold selection of F06). It is free text (`red`, `#E53935`) normalised by the app.
-- `image_width` and `image_height` are the reference frame of every hold position and ghost path. The hold detection worker overwrites them with the real size of the photo, so the server may create the route with 0.
+- `image_width` and `image_height` are the reference frame of every hold position and pathfinding result. The hold detection worker overwrites them with the real size of the photo, so the server may create the route with 0.
 - `status`, `progress`, `error`, `started_at`, `completed_at` and `processing_time_ms` track the hold detection job (queue `holds.detect`, migration `20261124120000_add_hold_detection`). The server creates the route in `pending` and publishes `holds.detect.requested` with `job_id = routes.id`; the worker writes the holds, then `success` or `failed`.
-- `feet_free` tells the pathfinding that every usable hold of the photo can hold a foot. When it is `false`, the feet use the holds selected for the ghost (`ghost_holds`, or every usable hold of the route when the ghost has none).
+- `feet_free` tells the pathfinding that every usable hold of the photo can hold a foot. When it is `false`, the feet use the holds selected for the pathfinding (`pathfinding_holds`, or every usable hold of the route when the pathfinding has none).
 - `wall_angle_deg` and `wall_plane` are written by the hold detection worker (migration `20261125120000_add_pathfinding`) from the depth estimation of the photo. `wall_angle_deg` is `0` for a vertical wall, positive for an overhang and negative for a slab; it is `NULL` when the mobile sent no gravity vector. `wall_plane` has the format of `WallPlane` (`schemas/hold_detect_result.schema.json`): `{"homography": [[...], [...], [...]], "angle_deg": 12.5, "focal_px": 1480.0, "inlier_ratio": 0.82, "model": "..."}`, where `homography` maps photo pixels to centimetres in the wall plane (y up).
 
 ### 7.2 `holds`
@@ -778,21 +778,21 @@ Business rules:
 - `contour` is a polygon in image pixel coordinates: `{"points": [{"x": 120, "y": 340}, ...], "bbox": {"x": 100, "y": 320, "w": 60, "h": 45}}`.
 - `color` is the dominant colour of the hold: `{"name": "blue", "rgb": [20, 60, 200], "distance": 3.2}`. `rgb` is reliable for display; `name` is the closest reference colour and a hint only (lower `distance` is closer). `predicted_color` freezes the detected value. Both are `NULL` when the hold is too small to measure.
 - The detector writes `type = predicted_type = 'unknown'` for a hold and `'volume'` for a volume, with `source = 'ai'`. A new detection of the same route replaces the AI holds whose `corrected_at` is `NULL` and keeps the corrected ones.
-- `start_limbs` (1 to 4) and `finish_limbs` (1 to 2) are the start and finish marks of the route, both `NULL` for an ordinary hold. A mark means at least that many limbs are on the hold: the two hands start on start holds, and marks beyond two in total are feet on start holds; the route is finished when every finish hold carries at least `finish_limbs` hands. Without any mark, the ghost computation uses the lowest selected hold as start (`start_limbs = 2`) and the highest as finish (`finish_limbs = 2`). Migration `20261125120000_add_pathfinding`.
+- `start_limbs` (1 to 4) and `finish_limbs` (1 to 2) are the start and finish marks of the route, both `NULL` for an ordinary hold. A mark means at least that many limbs are on the hold: the two hands start on start holds, and marks beyond two in total are feet on start holds; the route is finished when every finish hold carries at least `finish_limbs` hands. Without any mark, the pathfinding uses the lowest selected hold as start (`start_limbs = 2`) and the highest as finish (`finish_limbs = 2`). Migration `20261125120000_add_pathfinding`.
 
-### 7.3 `ghosts`
+### 7.3 `pathfindings`
 
 Feasible movement path computed from a route photo, selected holds, and user morphology (F07). Same job lifecycle as `analyses`.
 
 ```sql
-CREATE TABLE ghosts (
+CREATE TABLE pathfindings (
     id                  UUID PRIMARY KEY DEFAULT uuidv7(),
     route_id            UUID NOT NULL REFERENCES routes(id) ON DELETE CASCADE,
     user_id             UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     status              job_status NOT NULL DEFAULT 'pending',
     progress            SMALLINT NOT NULL DEFAULT 0,
     morphology          JSONB NOT NULL,
-    path                JSONB,
+    result              JSONB,
     error               TEXT,
     processing_time_ms  INTEGER,
     started_at          TIMESTAMPTZ,
@@ -800,38 +800,38 @@ CREATE TABLE ghosts (
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    CONSTRAINT chk_ghosts_progress CHECK (progress BETWEEN 0 AND 100),
-    CONSTRAINT chk_ghosts_completed
-        CHECK (status <> 'success' OR (path IS NOT NULL AND completed_at IS NOT NULL)),
-    CONSTRAINT chk_ghosts_failed
+    CONSTRAINT chk_pathfindings_progress CHECK (progress BETWEEN 0 AND 100),
+    CONSTRAINT chk_pathfindings_completed
+        CHECK (status <> 'success' OR (result IS NOT NULL AND completed_at IS NOT NULL)),
+    CONSTRAINT chk_pathfindings_failed
         CHECK (status <> 'failed' OR error IS NOT NULL)
 );
 
-CREATE INDEX idx_ghosts_route_created ON ghosts(route_id, created_at DESC);
-CREATE INDEX idx_ghosts_user_id ON ghosts(user_id);
+CREATE INDEX idx_pathfindings_route_created ON pathfindings(route_id, created_at DESC);
+CREATE INDEX idx_pathfindings_user_id ON pathfindings(user_id);
 
 ```
 
 Business rules:
 
-- `morphology` is a snapshot of `user_profiles` and active `user_body_constraints` at request time, so the ghost stays reproducible. Its format is `ClimberMorphology` (`schemas/climber_morphology.schema.json`): `height_cm` (number, required), `arm_span_cm` (number, defaults to `height_cm`), `dominant_hand` (`left`, `right` or `ambidextrous`) and `constraints`, a list of `{"zone": <BodyZone>, "type": "missing" | "injured"}`. `zone` is a value of the `BodyZone` enum of `schemas/hints.schema.json` (for example `left_wrist`, `right_knee`). The worker maps the zones of an arm (`*_shoulder`, `*_upper_arm`, `*_elbow`, `*_forearm`, `*_wrist`, `*_hand`, `*_fingers`) to the hand of the same side and the zones of a leg (`*_hip`, `*_thigh`, `*_knee`, `*_shin`, `*_ankle`, `*_foot`) to the foot of the same side; the other zones are ignored. A `missing` limb is never used, an `injured` limb pays a cost on each move. `dominant_hand` is read but not used by the search. Example: `{"height_cm": 175, "arm_span_cm": 178, "constraints": [{"zone": "left_wrist", "type": "injured"}]}`.
-- `path` is written by the pathfinding job of the worker (queue `pathfinding.compute`, `job_id` is `ghosts.id`) as a `PathfindingResult` (`schemas/pathfinding_result.schema.json`): `image_width` and `image_height` (pixels of the route photo), `wall_angle_deg` (number, or `null` when the wall angle is unknown) and `steps`. Each step has `index`, `moved_limb` (the limb moved to reach the pose, absent at the start step), `holds` (hold id under `left_hand`, `right_hand`, `left_foot` and `right_foot`, `null` when the limb is free), `center_of_mass` (`{"x", "y"}`) and `landmarks` (the 33 MediaPipe landmarks as `{"x", "y"}`, keyed by their lowercase names, the same keys as `Frame.landmarks`). All coordinates are pixels of the route photo with y pointing down, so the client draws the ghost on the photo with the same skeleton rendering as the video. The worker writes the JSON without its `null` fields: a free limb and an unknown `wall_angle_deg` are absent from the stored document, and readers must treat a missing key as `null`. Example of a step: `{"index": 1, "moved_limb": "left_foot", "holds": {"left_hand": "<hold id>", "right_hand": "<hold id>", "left_foot": "<hold id>"}, "center_of_mass": {"x": 306.07, "y": 2226.65}, "landmarks": {"nose": {"x": 310.2, "y": 2130.4}, ...}}` (`...` stands for the 32 other landmarks).
+- `morphology` is a snapshot of `user_profiles` and active `user_body_constraints` at request time, so the pathfinding stays reproducible. Its format is `ClimberMorphology` (`schemas/climber_morphology.schema.json`): `height_cm` (number, required), `arm_span_cm` (number, defaults to `height_cm`), `dominant_hand` (`left`, `right` or `ambidextrous`) and `constraints`, a list of `{"zone": <BodyZone>, "type": "missing" | "injured"}`. `zone` is a value of the `BodyZone` enum of `schemas/hints.schema.json` (for example `left_wrist`, `right_knee`). The worker maps the zones of an arm (`*_shoulder`, `*_upper_arm`, `*_elbow`, `*_forearm`, `*_wrist`, `*_hand`, `*_fingers`) to the hand of the same side and the zones of a leg (`*_hip`, `*_thigh`, `*_knee`, `*_shin`, `*_ankle`, `*_foot`) to the foot of the same side; the other zones are ignored. A `missing` limb is never used, an `injured` limb pays a cost on each move. `dominant_hand` is read but not used by the search. Example: `{"height_cm": 175, "arm_span_cm": 178, "constraints": [{"zone": "left_wrist", "type": "injured"}]}`.
+- `result` is written by the pathfinding job of the worker (queue `pathfinding.compute`, `job_id` is `pathfindings.id`) as a `PathfindingResult` (`schemas/pathfinding_result.schema.json`): `image_width` and `image_height` (pixels of the route photo), `wall_angle_deg` (number, or `null` when the wall angle is unknown) and `steps`. Each step has `index`, `moved_limb` (the limb moved to reach the pose, absent at the start step), `holds` (hold id under `left_hand`, `right_hand`, `left_foot` and `right_foot`, `null` when the limb is free), `center_of_mass` (`{"x", "y"}`) and `landmarks` (the 33 MediaPipe landmarks as `{"x", "y"}`, keyed by their lowercase names, the same keys as `Frame.landmarks`). All coordinates are pixels of the route photo with y pointing down, so the client draws the ghost overlay on the photo with the same skeleton rendering as the video. The worker writes the JSON without its `null` fields: a free limb and an unknown `wall_angle_deg` are absent from the stored document, and readers must treat a missing key as `null`. Example of a step: `{"index": 1, "moved_limb": "left_foot", "holds": {"left_hand": "<hold id>", "right_hand": "<hold id>", "left_foot": "<hold id>"}, "center_of_mass": {"x": 306.07, "y": 2226.65}, "landmarks": {"nose": {"x": 310.2, "y": 2130.4}, ...}}` (`...` stands for the 32 other landmarks).
 - Ghost Mode is a premium feature; the quota check happens in the API before the row is created.
 
-### 7.4 `ghost_holds`
+### 7.4 `pathfinding_holds`
 
-The holds selected by the user for a given ghost computation (F07).
+The holds selected by the user for a given pathfinding computation (F07).
 
 ```sql
-CREATE TABLE ghost_holds (
-    ghost_id  UUID NOT NULL REFERENCES ghosts(id) ON DELETE CASCADE,
-    hold_id   UUID NOT NULL REFERENCES holds(id) ON DELETE CASCADE,
-    position  SMALLINT,
+CREATE TABLE pathfinding_holds (
+    pathfinding_id  UUID NOT NULL REFERENCES pathfindings(id) ON DELETE CASCADE,
+    hold_id         UUID NOT NULL REFERENCES holds(id) ON DELETE CASCADE,
+    position        SMALLINT,
 
-    PRIMARY KEY (ghost_id, hold_id)
+    PRIMARY KEY (pathfinding_id, hold_id)
 );
 
-CREATE INDEX idx_ghost_holds_hold_id ON ghost_holds(hold_id);
+CREATE INDEX idx_pathfinding_holds_hold_id ON pathfinding_holds(hold_id);
 
 ```
 
@@ -1236,7 +1236,7 @@ CREATE TABLE quota_usages (
 
 Business rules:
 
-- The API increments the counter in the same transaction that creates the `analyses` or `ghosts` row (`INSERT ... ON CONFLICT DO UPDATE`). A failed job does not refund the quota.
+- The API increments the counter in the same transaction that creates the `analyses` or `pathfindings` row (`INSERT ... ON CONFLICT DO UPDATE`). A failed job does not refund the quota.
 - The quota limit comes from the current plan (`subscription_plans.monthly_analysis_quota`); the remaining count is `limit - analyses_count`.
 - Periods are calendar months. No cron reset is needed: a new month simply creates a new row.
 
@@ -1326,14 +1326,14 @@ SELECT DATE_TRUNC('week', started_at)::DATE AS week,
 
 ```
 
-Route with its current holds and latest ghost:
+Route with its current holds and latest pathfinding:
 
 ```sql
 SELECT r.*,
        (SELECT json_agg(h ORDER BY h.created_at) FROM holds h WHERE h.route_id = r.id) AS holds,
-       (SELECT g.path FROM ghosts g
+       (SELECT g.result FROM pathfindings g
          WHERE g.route_id = r.id AND g.user_id = $2 AND g.status = 'success'
-         ORDER BY g.created_at DESC LIMIT 1) AS ghost_path
+         ORDER BY g.created_at DESC LIMIT 1) AS pathfinding_result
   FROM routes r
  WHERE r.id = $1;
 
@@ -1380,7 +1380,7 @@ The migration history evolved from the initial prototype schema (`20260905000001
 | `20260918183204` – `20260918183601` | Sessions & Videos       | Tables `climbing_sessions` and `videos` (with `object_key`, `size_bytes`, `duration_ms`, `content_type`, `fps`, `visibility`, `retained`).                                                                                                                                                                                                                                 |
 | `20260918183756` – `20260918184024` | Analyses & Scores       | Tables `analyses` (with `status` enum, `processing_time_ms` INTERVAL, `result` JSONB, `advice` TEXT) and `analysis_scores`. `hints` JSONB is added by `20261030200100`.                                                                                                                                                                                                    |
 | `20260918184203` – `20260918184715` | Routes & Holds          | Tables `routes` and `holds` (with classification, coordinates, polygon points).                                                                                                                                                                                                                                                                                            |
-| `20260918184918` – `20260918185521` | Ghosts & Comparisons    | Tables `ghosts`, `ghost_holds`, and `comparisons` (with metrics and trajectory comparison data). *Note:* the historical `20260918214857_create_comparaisons_table.up.sql` migration still references legacy `ghost_id` and must be superseded by a follow-up migration matching section 7.5 (`base_analysis_id` / `compared_analysis_id`). |
+| `20260918184918` – `20260918185521` | Ghosts & Comparisons    | Tables `ghosts`, `ghost_holds`, and `comparisons` (with metrics and trajectory comparison data), renamed by `20261126120000`. *Note:* the historical `20260918214857_create_comparaisons_table.up.sql` migration still references a legacy `ghost_id` (now `pathfinding_id`, see `20261126120000`) and must be superseded by a follow-up migration matching section 7.5 (`base_analysis_id` / `compared_analysis_id`). |
 | `20260918221841` – `20260918222129` | Coaching & Training     | Tables `goals`, `training_programs`, `training_program_sessions`, `exercises`, and `training_logs`.                                                                                                                                                                                                                                                                        |
 | `20260918222236` – `20260918222340` | Social & Community      | Tables `friendships` and `follows`.                                                                                                                                                                                                                                                                                                                                        |
 | `20260918222453` – `20260918222653` | Subscriptions & Quotas  | Tables `subscription_plans`, `subscriptions`, `subscription_events`, and `quota_usages`.                                                                                                                                                                                                                                                                                   |
@@ -1388,6 +1388,7 @@ The migration history evolved from the initial prototype schema (`20260905000001
 | `20261030200100`                    | Analyses hints          | Adds `analyses.hints JSONB` (nullable), written by the AI worker (`schemas/hints.schema.json`). `advice TEXT` is kept for the Go server.                                                                                                                                                                                                                                   |
 | `20261112120000`                    | Video session link      | `videos.climbing_session_id` now references `climbing_sessions(id)` instead of `users(id)` (`ON DELETE SET NULL`), since the `videos` migration runs before `climbing_sessions` exists. Values that are not climbing session IDs become `NULL`.                                                                                                                            |
 | `20261125120000`                    | Pathfinding             | Adds `holds.start_limbs` and `holds.finish_limbs` (start and finish marks), `routes.feet_free`, `routes.wall_angle_deg` and `routes.wall_plane` (wall plane estimated by the hold detection job), with the `chk_holds_start_limbs`, `chk_holds_finish_limbs` and `chk_routes_wall_angle` checks. The `down` migration drops them. |
+| `20261126120000`                    | Pathfinding rename      | Renames `ghosts` to `pathfindings` (column `path` becomes `result`), `ghost_holds` to `pathfinding_holds` (column `ghost_id` becomes `pathfinding_id`) and `comparisons.ghost_id` to `pathfinding_id`, with their indexes, constraints, foreign keys and trigger. `quota_usages.ghosts_count`, `subscription_plans.monthly_ghost_quota` and `subscription_plans.ghost_mode_enabled` (commercial Ghost Mode quota) are unchanged. The `down` migration restores the old names. |
 
 All tables conform to the foreign key constraints, indexes, and check constraints detailed in sections 3 through 10.
 

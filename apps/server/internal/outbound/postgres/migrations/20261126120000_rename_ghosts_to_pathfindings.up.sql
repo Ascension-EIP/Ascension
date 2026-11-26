@@ -1,5 +1,5 @@
--- The pathfinding computes the beta (hold under each limb, step by step) and stores it; Ghost is a separate
--- block, downstream, that turns a beta into postures. The tables follow the computation:
+-- The pathfinding computes the beta (hold under each limb, step by step) and the postures of each step,
+-- and stores them. The tables follow the computation:
 -- ghosts -> pathfindings (path -> result, like analyses.result and advices.result),
 -- ghost_holds -> pathfinding_holds, ghost_id -> pathfinding_id (also in comparisons).
 -- quota_usages.ghosts_count and subscription_plans.*ghost* are the commercial Ghost Mode quota: unchanged.
