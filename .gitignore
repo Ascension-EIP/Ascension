@@ -93,6 +93,12 @@ apps/ai/training/holds/datasets/*
 apps/ai/training/holds/runs/
 
 # =============================================================================
+# Ghost mode (depth model downloaded by apps/ai/scripts/download-depth-model.sh)
+# =============================================================================
+apps/ai/resources/moge-2-vits-normal.onnx
+apps/ai/resources/moge-2-vits-normal.onnx.part
+
+# =============================================================================
 # Go
 # =============================================================================
 go.work
