@@ -1,0 +1,90 @@
+############################ CONFIGURATION ####################################
+name: ascension-check-closed-issue
+
+on:
+  issues:
+    types: [closed]
+
+permissions:
+  issues: write
+  contents: read
+  repository-projects: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number }}
+  cancel-in-progress: false
+###############################################################################
+
+
+
+############################ JOBS #############################################
+jobs:
+  ########################## CHECK DEFINITION OF DONE #########################
+  check_definition_of_done:
+    runs-on: ubuntu-latest
+    if: github.repository == 'Ascension-EIP/Ascension'
+
+    ######################## STEPS ############################################
+    steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        continue-on-error: true
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout repo
+        uses: actions/checkout@v7
+        with:
+          token: ${{ steps.generate_token.outputs.token || secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Verify Definition of Done
+        run: .github/scripts/check_issue_dod
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token || secrets.PROJECT_TOKEN || secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
+          GITHUB_ACTIONS: true
+  #############################################################################
+
+
+
+  ########################## CHECK PROJECT DATES ##############################
+  check_project_dates:
+    runs-on: ubuntu-latest
+    if: github.repository == 'Ascension-EIP/Ascension'
+
+    ######################## STEPS ############################################
+    steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v3
+        continue-on-error: true
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout repo
+        uses: actions/checkout@v7
+        with:
+          token: ${{ steps.generate_token.outputs.token || secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Verify GitHub Project Dates
+        run: .github/scripts/check_issue_dates
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token || secrets.PROJECT_TOKEN || secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
+          GITHUB_ACTIONS: true
+  #############################################################################
+
+###############################################################################

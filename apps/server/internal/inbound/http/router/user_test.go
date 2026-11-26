@@ -35,8 +35,8 @@ func createUserBody(username string) map[string]any {
 func TestUserEndpointsRequireAnAdmin(t *testing.T) {
 	id := uuid.NewV7().String()
 	routes := []struct{ method, path string }{
-		{http.MethodPost, "/v1/users/"},
-		{http.MethodGet, "/v1/users/"},
+		{http.MethodPost, "/v1/users"},
+		{http.MethodGet, "/v1/users"},
 		{http.MethodGet, "/v1/users/" + id},
 		{http.MethodPut, "/v1/users/" + id},
 		{http.MethodDelete, "/v1/users/" + id},
@@ -67,7 +67,7 @@ func TestUserAdminLifecycle(t *testing.T) {
 	token := adminToken(api)
 
 	var created userBody
-	expect(t, api.do(http.MethodPost, "/v1/users/", token, createUserBody("climber1")), http.StatusCreated, &created)
+	expect(t, api.do(http.MethodPost, "/v1/users", token, createUserBody("climber1")), http.StatusCreated, &created)
 	if created.Username != "climber1" || created.Role != "coach" || created.Status != string(model.UserStatusActive) {
 		t.Fatalf("created = %+v, want an active coach climber1", created)
 	}
@@ -79,7 +79,7 @@ func TestUserAdminLifecycle(t *testing.T) {
 	}
 
 	var list []userBody
-	expect(t, api.do(http.MethodGet, "/v1/users/", token, nil), http.StatusOK, &list)
+	expect(t, api.do(http.MethodGet, "/v1/users", token, nil), http.StatusOK, &list)
 	if len(list) != 1 || list[0].ID != created.ID {
 		t.Errorf("list = %+v, want the created user", list)
 	}
@@ -105,10 +105,10 @@ func TestUserAdminInvalidRequests(t *testing.T) {
 	api := newTestAPI(t, memrepo.New())
 	token := adminToken(api)
 
-	expect(t, api.do(http.MethodPost, "/v1/users/", token, "{"), http.StatusBadRequest, nil)
+	expect(t, api.do(http.MethodPost, "/v1/users", token, "{"), http.StatusBadRequest, nil)
 	missing := createUserBody("climber1")
 	delete(missing, "role")
-	expect(t, api.do(http.MethodPost, "/v1/users/", token, missing), http.StatusBadRequest, nil)
+	expect(t, api.do(http.MethodPost, "/v1/users", token, missing), http.StatusBadRequest, nil)
 
 	expect(t, api.do(http.MethodGet, "/v1/users/not-a-uuid", token, nil), http.StatusBadRequest, nil)
 	expect(t, api.do(http.MethodPut, "/v1/users/not-a-uuid", token, map[string]any{}), http.StatusBadRequest, nil)
@@ -124,7 +124,7 @@ func TestUserAdminRejectsInvalidUser(t *testing.T) {
 
 	body := createUserBody("climber1")
 	body["role"] = "superuser"
-	expect(t, api.do(http.MethodPost, "/v1/users/", token, body), http.StatusUnprocessableEntity, nil)
+	expect(t, api.do(http.MethodPost, "/v1/users", token, body), http.StatusUnprocessableEntity, nil)
 }
 
 func TestUserAdminUnknownUser(t *testing.T) {
@@ -141,7 +141,7 @@ func TestUserAdminPartialUpdate(t *testing.T) {
 	token := adminToken(api)
 
 	var created userBody
-	expect(t, api.do(http.MethodPost, "/v1/users/", token, createUserBody("climber1")), http.StatusCreated, &created)
+	expect(t, api.do(http.MethodPost, "/v1/users", token, createUserBody("climber1")), http.StatusCreated, &created)
 
 	var updated userBody
 	expect(t, api.do(http.MethodPut, "/v1/users/"+created.ID.String(), token, map[string]any{"first_name": "Janja"}), http.StatusOK, &updated)

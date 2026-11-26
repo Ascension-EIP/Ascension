@@ -23,9 +23,12 @@ class ApiEndpoints {
   // Video & Analysis
   static const String requestUploadUrl = '/v1/videos/upload-url';
   static const String uploadComplete = '/v1/videos/upload-done';
+  static String uploadCompleteWithId(String id) => '/v1/videos/upload-done/$id';
+  static String videoDownloadUrl(String id) => '/v1/videos/download-url/$id';
   static const String analyses = '/v1/analysis';
   static String analysisDetails(String id) => '/v1/analysis/$id';
-  static String retryAdvice(String id) => '/v1/analysis/$id/retry-advice';
+  static String adviceDetails(String videoId) => '/v1/advices/$videoId';
+  static String retryAdvice(String id) => '/v1/advices/$id/retry';
 
   // Climb sessions
   static const String climbSessions = '/v1/sessions';

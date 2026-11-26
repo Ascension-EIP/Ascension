@@ -39,7 +39,7 @@ func TestListsAnswer500WhenTheRepositoryFails(t *testing.T) {
 	api := newTestAPI(t, failingListRepo{memrepo.New()})
 	token := api.token(uuid.NewV7())
 
-	for _, path := range []string{"/v1/videos/", "/v1/analysis"} {
+	for _, path := range []string{"/v1/videos", "/v1/analysis"} {
 		var body struct {
 			Error string `json:"error"`
 		}
