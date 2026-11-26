@@ -10,7 +10,7 @@ Python worker of the Ascension monorepo. It turns a climbing video into a 2D ana
 
 The worker consumes jobs from RabbitMQ, downloads the video or the photo from RustFS (S3), writes its progress and results into PostgreSQL, and publishes statuses back on RabbitMQ. Each pipeline step is also a command line sub-command, so it can run without any infrastructure.
 
-This README describes the code as it is today. The pathfinding (wall plane, beta, postures) is implemented and was run with the real models on one route photo, with an unmeasured metric scale (see [Pathfinding](#pathfinding) and [Known limits](#known-limits)). Route grouping, the server and mobile parts of Ghost Mode, and 3D are not implemented: see [pipeline-2d-decomposition.md](../../docs/Ascension/developer/apps/ai/pipeline-2d-decomposition.md).
+This README describes the code as it is today. The pathfinding (wall plane, beta, postures) is implemented and was run with the real models on one route photo, with an unmeasured metric scale (see [Pathfinding](#pathfinding) and [Known limits](#known-limits)). Route grouping, the server and mobile parts of Ghost Mode, and 3D are not implemented: see [pipeline-2d-decomposition.md](../../docs/Ascension/developer/apps/ai/pipeline-2d-decomposition/readme.md).
 
 ---
 

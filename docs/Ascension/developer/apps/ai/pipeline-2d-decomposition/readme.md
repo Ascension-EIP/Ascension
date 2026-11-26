@@ -77,7 +77,7 @@ flowchart TD
 
 *Résumé du diagramme : la vidéo (A) et la photo (B) sont traitées en parallèle. Le pathfinding (C) tire l'échelle et l'angle du mur de la photo, calcule la bêta à partir des prises validées et la convertit en squelette. La comparaison (D) croise le squelette et la bêta pour générer les conseils. Le client Flutter affiche le squelette, le fantôme et les conseils (E).*
 
-> **Écart avec la documentation existante** : [system-overview.md](../../architecture/system-overview.md) décrit quatre étapes séquentielles (prises, squelette, conseils, fantôme). La version parallèle ci-dessus est plus proche de ce que le mentor a proposé et évite d'attendre la photo pour analyser la vidéo.
+> **Écart avec la documentation existante** : [system-overview.md](../../../architecture/system-overview.md) décrit quatre étapes séquentielles (prises, squelette, conseils, fantôme). La version parallèle ci-dessus est plus proche de ce que le mentor a proposé et évite d'attendre la photo pour analyser la vidéo.
 
 ---
 
@@ -135,6 +135,8 @@ Points d'attention :
 Cette section décrit le plan v1 du pathfinding, arrêté le 25/11/2026 : contraintes produit, chaîne technique, modèle de données et ordre de réalisation.
 
 Vocabulaire : le **pathfinding** est le calcul (module `_4_pathfinding` du worker, file `pathfinding.compute`, schémas `pathfinding_*`). Le **ghost** (fantôme) est la feature produit qui consomme ce calcul et l'affiche (Ghost Mode, quota, comparaisons) ; la table `ghosts` garde son nom et porte le job (`ghosts.id` est le `job_id`) et son résultat (`ghosts.path`).
+
+Les commandes, l'installation et les jobs de chaque module du worker (pose, conseils, prises, pathfinding) sont décrits dans [Worker modules](worker-modules/readme.md).
 
 > **État au 26/11/2026** : le calcul côté worker IA (`apps/ai`) est écrit et testé (C1, C2, C3, job de la voie, job de pathfinding, commandes de la CLI). Après calibration de C1, la pipeline réelle (vrais modèles de prises et de profondeur) a tourné de bout en bout sur une vraie photo de voie (`apps/ai/resources/voie.jpg`) : mur accepté, 39 prises, bêta jaune de 13 étapes, environ 5 s la commande complète sur un CPU de 24 coeurs. Ce résultat n'est **pas une validation** : une seule photo, échelle du mur probablement sous-estimée et non mesurée, 5 étapes sur 13 avec un appui à 7 à 21 cm de sa prise (faisabilité par paires). Le job de pathfinding entier (base, RabbitMQ) n'a tourné qu'avec une profondeur factice (test e2e). Le serveur Go et le mobile ne sont pas commencés. Le détail est en section 5.10 et en section 8.
 
@@ -302,7 +304,7 @@ Messages RabbitMQ et file du worker :
 
 Le job de pathfinding réutilise les colonnes de `ghosts` (`status`, `progress`, `morphology`, `path`, `error`, `processing_time_ms`). `morphology` suit le schéma `ClimberMorphology` et `path` le schéma `PathfindingResult`. Les schémas sont dans `schemas/` (`pathfinding_compute_request`, `climber_morphology`, `pathfinding_result`, plus `WallPlane` dans `hold_detect_result`) ; les modèles Python et Go sont générés.
 
-> **Note** : la section 7.3 de [database-schema.md](../../architecture/specifications/database-schema.md) décrit `ghosts.morphology` (`ClimberMorphology`) et `ghosts.path` (`PathfindingResult`) au format livré. Le worker écrit `path` sans ses champs `null` : un membre libre ou un `wall_angle_deg` inconnu sont absents du JSON stocké, alors que le schéma les déclare obligatoires. Les lecteurs (serveur Go, mobile) doivent traiter une clé absente comme `null`.
+> **Note** : la section 7.3 de [database-schema.md](../../../architecture/specifications/database-schema.md) décrit `ghosts.morphology` (`ClimberMorphology`) et `ghosts.path` (`PathfindingResult`) au format livré. Le worker écrit `path` sans ses champs `null` : un membre libre ou un `wall_angle_deg` inconnu sont absents du JSON stocké, alors que le schéma les déclare obligatoires. Les lecteurs (serveur Go, mobile) doivent traiter une clé absente comme `null`.
 
 ### 5.10 Plan de réalisation v1 : état réel
 
