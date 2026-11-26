@@ -12,7 +12,7 @@ id: 77b2e606-18dc-4dcf-a76a-b38ba6afcb63
 
 ## What it does
 
-It takes a climbing video and returns one JSON: the 33 body landmarks of every frame, joint angles, speeds, and a list of movements and pauses. The result is stored as `analyses.result` and is what the [AI advice](page:placeholder) module reads.
+It takes a climbing video and returns one JSON: the 33 body landmarks of every frame, joint angles, speeds, and a list of movements and pauses. The result is stored as `analyses.result` and is what the [AI advice](AI%20advice.md) module reads.
 
 ---
 
@@ -65,7 +65,7 @@ uv run worker pose-movements --input /tmp/ascension/metrics.json  --out /tmp/asc
 
 Each command prints `Wrote <file>` when it ends. Add `--render /tmp/ascension/result.mp4` to `pose-skeleton` or `pose-detect` to also write the video with the skeleton drawn.
 
-What you get for `example-2.mp4`: `result.json` holds `frames` (309), `fps` (about 30), `width` 480, `height` 854, `metrics`, `movements` (14) and `pauses` (0). `movements.json` is the same result as `result.json` (the chain ends with the same step).
+What you get for `example-2.mp4`: `result.json` holds `frames` (309), `fps` (about 30), `width` 480, `height` 854, `metrics`, `movements` (14) and `pauses` (0). The content of `movements.json` is the same as `result.json` (same data, the file layout can differ).
 
 Useful options (defaults in brackets): `pose-filter --min-visibility (0.5) --max-gap (5) --window (5)`, `pose-metrics --bent-arm (0.8)`, `pose-movements --move-speed (0.8) --stop-speed (0.4) --merge-gap (150) --min-move (100) --min-pause (500)`.
 

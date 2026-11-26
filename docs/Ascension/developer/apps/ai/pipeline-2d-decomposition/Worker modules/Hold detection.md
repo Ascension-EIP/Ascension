@@ -12,7 +12,7 @@ id: b151bf69-da5e-4770-8df0-19c29dfe0abd
 
 ## What it does
 
-It takes a photo of a climbing wall and returns the holds it finds: for each hold a polygon contour, a type (`unknown` or `volume`; grip types are not classified yet) and a dominant colour with a colour name. In the job version it also estimates the plane of the wall (see [Pathfinding](page:placeholder)) and stores it on the route.
+It takes a photo of a climbing wall and returns the holds it finds: for each hold a polygon contour, a type (`unknown` or `volume`; grip types are not classified yet) and a dominant colour with a colour name. In the job version it also estimates the plane of the wall (see [Pathfinding](Pathfinding.md)) and stores it on the route.
 
 ---
 
