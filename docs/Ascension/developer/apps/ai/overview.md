@@ -12,7 +12,7 @@ id: a521a93c-f811-4150-a388-1a7238a7242c
 
 The AI worker (`apps/ai`, Python 3.11, managed with `uv`) does the heavy lifting outside the API: it fetches a climber's video, computes the 2D analysis and produces advice. It never talks directly to the mobile app. It consumes RabbitMQ jobs, reads the video from RustFS (S3), writes its progress and results to PostgreSQL, and publishes its statuses on RabbitMQ.
 
-Today, only the 2D video pipeline exists: route reading (photo), pathfinding, Ghost Mode and 3D are not implemented. The details of each building block, its thresholds and its limits are in [pipeline-2d-decomposition.md](pipeline-2d-decomposition.md). Installation, environment variables, commands and tests are in the [worker README](../../../../../apps/ai/README.md).
+Today, only the 2D video pipeline exists: route reading (photo), pathfinding, Ghost Mode and 3D are not implemented. The details of each building block, its thresholds and its limits are in [pipeline-2d-decomposition.md](pipeline-2d-decomposition/readme.md). Installation, environment variables, commands and tests are in the [worker README](../../../../../apps/ai/README.md).
 
 ---
 
@@ -38,7 +38,7 @@ The Go server publishes `pose.detect.requested` when an analysis is created. It 
 
 ## AI flow diagram
 
-*Summary: the app uploads the video directly to RustFS, then the API publishes the job. The worker analyzes the video, writes the result and the advice to PostgreSQL and publishes its statuses. The photo pipeline (Ghost Mode) is planned, not implemented. Both pipelines use the same blocks as the* [2D pipeline decomposition](pipeline-2d-decomposition.md) *and run in parallel. They meet in block D: the alignment of the video with the photo (D1) and the comparison of the skeleton with the beta (D2) feed the advice (D3). The validated holds (B5) feed the pathfinding (C). The mobile app renders the skeleton overlay and the advice (E1) and the ghost overlay (E2).*
+*Summary: the app uploads the video directly to RustFS, then the API publishes the job. The worker analyzes the video, writes the result and the advice to PostgreSQL and publishes its statuses. The photo pipeline (Ghost Mode) is planned, not implemented. Both pipelines use the same blocks as the* [2D pipeline decomposition](pipeline-2d-decomposition/readme.md) *and run in parallel. They meet in block D: the alignment of the video with the photo (D1) and the comparison of the skeleton with the beta (D2) feed the advice (D3). The validated holds (B5) feed the pathfinding (C). The mobile app renders the skeleton overlay and the advice (E1) and the ghost overlay (E2).*
 
 ```mermaid
 flowchart TD
