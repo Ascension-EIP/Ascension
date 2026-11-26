@@ -465,7 +465,7 @@ Ce document distingue aussi ce qui est :
 
 **Niveau de maturité dans la roadmap**
 
-- MVP fonctionnel en ATP. → vraiment pas sur de le faire
+- MVP fonctionnel en ATP ou après EIP (ce cas est à réétudier).
 
 ---
 
