@@ -108,4 +108,4 @@ End-to-end tests use the real services (`moon run ai:e2e`). Set `TEST_POSTGRES_U
 
 ## Reference
 
-The full reference of the worker is `apps/ai/README.md`. The design of the whole 2D pipeline is the parent page, [pipeline-2d-decomposition](../pipeline-2d-decomposition.md).
+The full reference of the worker is `apps/ai/README.md`. The design of the whole 2D pipeline is the parent page, [pipeline-2d-decomposition](../readme.md).
