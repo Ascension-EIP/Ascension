@@ -3,7 +3,7 @@ id: 4cbce549-9094-417a-bc9f-fc1da18b7d3e
 ---
 
 :::warning
-**Version:** 0.1
+**Version:** 0.2
 :::
 
 # Registre de prise de contact et échanges avec les experts
@@ -14,9 +14,9 @@ Ce document centralise le registre des prises de contact avec les experts techni
 
 ## Registre de suivi (Outreach Register)
 
-| Expert             | Profil / Affiliation                                                      | Canal & origine                                                       | Premier contact | Statut                | Détails                                    |
-| :----------------- | :------------------------------------------------------------------------ | :-------------------------------------------------------------------- | :-------------- | :-------------------- | :----------------------------------------- |
-| **Lionel Reveret** | Directeur de recherche, INRIA Grenoble Rhône-Alpes (projet PerfAnalytics) | Mise en relation par Ilyes Talbi (mentor EIP, ancien stagiaire IRMES) | 09/11/2026      | En attente de réponse | [Voir les échanges](#lionel-reveret-inria) |
+| Expert             | Profil / Affiliation                                                      | Canal & origine                                                       | Premier contact | Statut                                                                           | Détails                                    |
+| :----------------- | :------------------------------------------------------------------------ | :-------------------------------------------------------------------- | :-------------- | :------------------------------------------------------------------------------- | :----------------------------------------- |
+| **Lionel Reveret** | Directeur de recherche, INRIA Grenoble Rhône-Alpes (projet PerfAnalytics) | Mise en relation par Ilyes Talbi (mentor EIP, ancien stagiaire IRMES) | 09/11/2026      | En attente de réponse (suivi intermédiaire à J+3 auprès du mentor le 13/11/2026) | [Voir les échanges](#lionel-reveret-inria) |
 
 ---
 
@@ -69,3 +69,29 @@ Ce document centralise le registre des prises de contact avec les experts techni
 >
 > Merci d'avance, et au plaisir d'avoir de tes nouvelles,  
 > Ilyes
+
+### 3. Suivi intermédiaire auprès du mentor (délai de 3 jours sans réponse)
+
+Conformément au processus convenu lors du suivi de mentorat (point d'étape à J+3 sans retour de l'expert, puis décision à J+10 d'un contact alternatif), Nicolas Toro a transmis un message de suivi au mentor technique pour faire le point sur la prise de contact et proposer une relance directe si nécessaire.
+
+| Métadonnée | Détail                                                                                                                                                                                                                                   |
+| :--------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Date**   | Vendredi 13 novembre 2026 à 08:51 (heure de Paris / 16:51 +0900)                                                                                                                                                                         |
+| **De**     | ascension `<ascension.eip@gmail.com>` (Nicolas TORO)                                                                                                                                                                                     |
+| **À**      | Ilyes TALBI `<ilyestalbi75@gmail.com>`                                                                                                                                                                                                   |
+| **Cc**     | Nicolas Toro `<nicolas.toro@epitech.eu>`, Christophe Vandevoir `<christophe.vandevoir@epitech.eu>`, Gianni Tuero `<gianni.tuero@epitech.eu>`, Lou Pellegrino `<lou.pellegrino@epitech.eu>`, Olivier Pouech `<olivier.pouech@epitech.eu>` |
+| **Objet**  | Rendez-vous avec Lionel REVERET - Groupe EIP Ascension                                                                                                                                                                                   |
+
+> Bonjour Ilyes,
+>
+> J'espère que tu vas bien.
+>
+> Je te contacte pour t'informer que je n'ai toujours pas reçu de retour de Lionel. Comme convenu, je t'en fais part après ce délai de 3 jours et je te préviendrai si je n'ai toujours pas de réponse dans 10 jours.
+>
+> Si tu le souhaites, je peux essayer de le relancer directement de mon côté.
+>
+> Passe une bonne journée.
+>
+> Cordialement,  
+> **Nicolas TORO**  
+> _Chef d'équipe de l'EIP Ascension_

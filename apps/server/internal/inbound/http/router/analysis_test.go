@@ -1,6 +1,6 @@
 // @date 2026-11-13
 // @file analysis_test.go
-// @brief Endpoint tests of POST /v1/analysis, GET /v1/analysis/:id and retry-advice through the real router.
+// @brief Endpoint tests of POST /v1/analysis and GET /v1/analysis/:id through the real router.
 // @project Ascension
 // @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>
 // @copyright (c) 2026 Ascension
@@ -36,9 +36,8 @@ func analysisRequest(videoID uuid.UUID) map[string]any {
 func TestAnalysisEndpointsRequireAuthentication(t *testing.T) {
 	id := uuid.NewV7().String()
 	routes := []struct{ method, path string }{
-		{http.MethodPost, "/v1/analysis/"},
+		{http.MethodPost, "/v1/analysis"},
 		{http.MethodGet, "/v1/analysis/" + id},
-		{http.MethodPost, "/v1/analysis/" + id + "/retry-advice"},
 	}
 
 	for _, route := range routes {
@@ -58,7 +57,7 @@ func TestCreateAndGetAnalysis(t *testing.T) {
 	video := putCompletedVideo(repo, userID)
 
 	var created analysisBody
-	expect(t, api.do(http.MethodPost, "/v1/analysis/", token, analysisRequest(video.ID)), http.StatusAccepted, &created)
+	expect(t, api.do(http.MethodPost, "/v1/analysis", token, analysisRequest(video.ID)), http.StatusAccepted, &created)
 	if created.VideoID != video.ID || created.Type != "2d" || created.Visibility != "friends" || created.Status != string(model.JobStatusPending) {
 		t.Fatalf("created = %+v, want a pending 2d analysis of the video", created)
 	}
@@ -99,7 +98,7 @@ func TestCreateAnalysisInvalidBodies(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			api := newTestAPI(t, memrepo.New())
-			expect(t, api.do(http.MethodPost, "/v1/analysis/", api.token(uuid.NewV7()), tt.body), http.StatusBadRequest, nil)
+			expect(t, api.do(http.MethodPost, "/v1/analysis", api.token(uuid.NewV7()), tt.body), http.StatusBadRequest, nil)
 		})
 	}
 }
@@ -111,7 +110,7 @@ func TestCreateAnalysisQueueFailure(t *testing.T) {
 	video := putCompletedVideo(repo, userID)
 	api.queue.err = errors.New("broker down")
 
-	expect(t, api.do(http.MethodPost, "/v1/analysis/", api.token(userID), analysisRequest(video.ID)), http.StatusInternalServerError, nil)
+	expect(t, api.do(http.MethodPost, "/v1/analysis", api.token(userID), analysisRequest(video.ID)), http.StatusInternalServerError, nil)
 }
 
 func TestCreateAnalysisRefusesOtherAndPendingVideos(t *testing.T) {
@@ -126,7 +125,7 @@ func TestCreateAnalysisRefusesOtherAndPendingVideos(t *testing.T) {
 	others := putCompletedVideo(repo, uuid.NewV7())
 
 	for _, videoID := range []uuid.UUID{pending.ID, others.ID, uuid.NewV7()} {
-		if rec := api.do(http.MethodPost, "/v1/analysis/", token, analysisRequest(videoID)); rec.Code < 400 {
+		if rec := api.do(http.MethodPost, "/v1/analysis", token, analysisRequest(videoID)); rec.Code < 400 {
 			t.Errorf("analysis of video %v: status = %d, want an error", videoID, rec.Code)
 		}
 	}
@@ -146,15 +145,15 @@ func TestCreateAnalysisErrorStatuses(t *testing.T) {
 
 	body := analysisRequest(video.ID)
 	body["type"] = "4d"
-	expect(t, api.do(http.MethodPost, "/v1/analysis/", token, body), http.StatusUnprocessableEntity, nil)
+	expect(t, api.do(http.MethodPost, "/v1/analysis", token, body), http.StatusUnprocessableEntity, nil)
 
 	pending := putCompletedVideo(repo, userID)
 	pending.Status = model.VideoStatusPending
 	repo.PutVideo(pending)
-	expect(t, api.do(http.MethodPost, "/v1/analysis/", token, analysisRequest(pending.ID)), http.StatusConflict, nil)
+	expect(t, api.do(http.MethodPost, "/v1/analysis", token, analysisRequest(pending.ID)), http.StatusConflict, nil)
 
 	others := putCompletedVideo(repo, uuid.NewV7())
-	expect(t, api.do(http.MethodPost, "/v1/analysis/", token, analysisRequest(others.ID)), http.StatusNotFound, nil)
+	expect(t, api.do(http.MethodPost, "/v1/analysis", token, analysisRequest(others.ID)), http.StatusNotFound, nil)
 }
 
 func TestGetAnalysisInvalidID(t *testing.T) {
@@ -162,7 +161,6 @@ func TestGetAnalysisInvalidID(t *testing.T) {
 	token := api.token(uuid.NewV7())
 
 	expect(t, api.do(http.MethodGet, "/v1/analysis/not-a-uuid", token, nil), http.StatusBadRequest, nil)
-	expect(t, api.do(http.MethodPost, "/v1/analysis/not-a-uuid/retry-advice", token, nil), http.StatusBadRequest, nil)
 }
 
 func TestGetUnknownAnalysis(t *testing.T) {
@@ -181,13 +179,6 @@ func TestAnalysisOfAnotherUserIsHidden(t *testing.T) {
 	video := putCompletedVideo(repo, ownerID)
 
 	var created analysisBody
-	expect(t, api.do(http.MethodPost, "/v1/analysis/", api.token(ownerID), analysisRequest(video.ID)), http.StatusAccepted, &created)
+	expect(t, api.do(http.MethodPost, "/v1/analysis", api.token(ownerID), analysisRequest(video.ID)), http.StatusAccepted, &created)
 	expect(t, api.do(http.MethodGet, "/v1/analysis/"+created.ID.String(), api.token(uuid.NewV7()), nil), http.StatusNotFound, nil)
-}
-
-func TestRetryAdviceOfUnknownAnalysis(t *testing.T) {
-	knownBug(t, "AnalysisService.RetryAdvice is a TODO: it answers 204 for any ID and retries nothing")
-
-	api := newTestAPI(t, memrepo.New())
-	expect(t, api.do(http.MethodPost, "/v1/analysis/"+uuid.NewV7().String()+"/retry-advice", api.token(uuid.NewV7()), nil), http.StatusNotFound, nil)
 }

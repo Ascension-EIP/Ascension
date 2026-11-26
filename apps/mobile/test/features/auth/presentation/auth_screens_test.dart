@@ -14,6 +14,8 @@ import 'package:mobile/core/errors/failures.dart';
 import 'package:mobile/core/l10n/app_localizations.dart';
 import 'package:mobile/core/storage/local_storage_service.dart';
 import 'package:mobile/core/utils/result.dart';
+import 'package:mobile/core/services/biometric_service.dart';
+import 'package:mobile/core/storage/secure_storage_service.dart';
 import 'package:mobile/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:mobile/features/auth/domain/entities/auth_session.dart';
 import 'package:mobile/features/auth/domain/entities/user.dart';
@@ -22,6 +24,8 @@ import 'package:mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:mobile/features/auth/presentation/screens/register_screen.dart';
 import 'package:mobile/features/auth/presentation/screens/welcome_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../helpers/test_helper.dart';
 
 class FakeAuthRepository implements AuthRepository {
   Result<AuthSession>? loginResult;
@@ -107,6 +111,10 @@ Widget createTestableWidget({
     overrides: [
       sharedPreferencesProvider.overrideWithValue(prefs),
       authRepositoryProvider.overrideWithValue(repo),
+      secureStorageServiceProvider.overrideWithValue(
+        MockSecureStorageService(),
+      ),
+      biometricServiceProvider.overrideWithValue(MockBiometricService()),
     ],
     child: MaterialApp(
       locale: const Locale('en'),

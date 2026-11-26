@@ -46,7 +46,7 @@ def test_optional_vars_use_defaults(monkeypatch: pytest.MonkeyPatch):
     assert settings.broker.host == "localhost"
     assert settings.storage.bucket == "videos"
     assert settings.ai.active_pose_pipeline == "pose_analysis_2d"
-    assert settings.ai.gemini_model == "gemini-3.1-flash-lite"
+    assert settings.ai.gemini_model == "gemini-3.5-flash-lite"
     assert settings.worker.log_level == "INFO"
 
 

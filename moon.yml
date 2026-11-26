@@ -73,7 +73,7 @@ tasks:
 
   sonar-setup:
     command: "python3"
-    args: ["scripts/setup-sonarqube.py"]
+    args: ["scripts/setup_sonarqube.py"]
     options:
       cache: false
 
@@ -84,6 +84,9 @@ tasks:
       - "sonar-scanner"
       - "-Dsonar.host.url=$SONAR_HOST_URL"
       - "-Dsonar.login=$SONAR_TOKEN"
+    deps:
+      - "server:coverage"
+      - "ai:coverage"
     options:
       cache: false
       envFile: true

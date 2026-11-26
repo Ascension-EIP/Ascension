@@ -79,7 +79,7 @@ To change them, edit `apps/ai/docker-compose.coolify.yml`: the next deployment a
 | `RUSTFS_ENDPOINT`, `RUSTFS_REGION`, `RUSTFS_BUCKET`                  | `https://s3.gra.io.cloud.ovh.net`, `gra`, `ascension-videos`                       |
 | `RUSTFS_ACCESS_KEY`, `RUSTFS_SECRET_KEY`                             | Keys of the OVHcloud user `ascension-app`, as for the API                          |
 | `LLM_API_KEY`                                                        | Gemini API key                                                                     |
-| `LLM_BASE_URL`, `LLM_MODEL`                                          | Optional: Gemini OpenAI-compatible endpoint and `gemini-3.1-flash-lite` by default |
+| `LLM_BASE_URL`, `LLM_MODEL`                                          | Optional: Gemini OpenAI-compatible endpoint and `gemini-3.5-flash-lite` by default |
 
 Without `LLM_API_KEY`, the analysis still ends in `success`, without advice. A new key is applied by a redeployment.
 
@@ -95,10 +95,6 @@ The contract is versioned in the `schemas/` folder of the repository.
 | `pose.detect.status`, `pose.advice.status` | none yet       | `{job_id, status}`     | The worker, at every step            |
 
 `job_id` is the `id` of the `analyses` row, which the API creates before publishing. A job that fails for good goes to `poses.detect.dlq` or `poses.advice.dlq`.
-
-:::danger
-**Known issue (12 November 2026):** the API does not follow this contract yet. `POST /v1/analysis` fails with `struct doesn't have corresponding row field hints`, and the API publishes `{analysis_id, video_url}` to the `vision.skeleton` queue, which no worker reads. Until the API is fixed, an analysis requested from the mobile app never reaches the worker.
-:::
 
 ---
 

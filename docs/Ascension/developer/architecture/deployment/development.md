@@ -3,7 +3,7 @@ id: ab77caf4-081b-4c22-8817-d8570baadf55
 ---
 
 :::success
-**Version:** 2.5
+**Version:** 2.6
 :::
 
 ---
@@ -231,30 +231,23 @@ POSTGRES_PARAMS="sslmode=disable"
 POSTGRES_MIGRATION=true
 POSTGRES_DB_URL=postgres://ascension:ascension@localhost:5432/ascension
 
-# RabbitMQ
-RABBITMQ_HOST=localhost
-RABBITMQ_PORT=5672
-RABBITMQ_USER=ascension
-RABBITMQ_PASS=ascension
-RABBITMQ_TLS=false
+# Object storage, shared by the Go server, AI worker, and RustFS container (docker-compose.yml)
+STORAGE_PORT=9000
+STORAGE_ENDPOINT=http://localhost:9000
+STORAGE_REGION=us-east-1
+STORAGE_BUCKET=videos
+STORAGE_ID=ascension
+STORAGE_SECRET=ascension
+STORAGE_UPLOAD_EXP=1h
+STORAGE_DOWNLOAD_EXP=1h
 
-# RustFS (S3-compatible storage), read by the AI worker
-RUSTFS_ENDPOINT=http://localhost:9000
-RUSTFS_ACCESS_KEY=ascension
-RUSTFS_SECRET_KEY=ascension
-RUSTFS_BUCKET=videos
-
-# Legacy MINIO_* names, still read by the Go server and by docker-compose.
-# Their values must stay equal to the RUSTFS_* ones above.
-MINIO_ENDPOINT=http://localhost:9000
-MINIO_ID=ascension
-MINIO_SECRET=ascension
-MINIO_BUCKET=videos
-MINIO_SSL=false
-MINIO_ROOT_USER=ascension
-MINIO_ROOT_PASSWORD=ascension
-MINIO_HOST=minio
-MINIO_PORT=9000
+# RabbitMQ, shared by the Go server, AI worker, and RabbitMQ container (docker-compose.yml)
+QUEUE_HOST=localhost
+QUEUE_PORT=5672
+QUEUE_USER=ascension
+QUEUE_PASS=ascension
+QUEUE_TLS=false
+QUEUE_EXCHANGE_EVENT=events
 
 # Backend Server
 PORT=8080
@@ -273,11 +266,11 @@ LOG_PRETTY=false
 PYTHONUNBUFFERED=1
 LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
 LLM_API_KEY=your_llm_api_key_here
-LLM_MODEL=gemini-3.1-flash-lite
+LLM_MODEL=gemini-3.5-flash-lite
 
 # Read by the scripts in .github/scripts (commit and PR review tooling), not by the AI worker
 GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_MODEL=gemini-3.1-flash-lite
+GEMINI_MODEL=gemini-3.5-flash-lite
 
 ```
 
@@ -506,15 +499,15 @@ This file orchestrates all services from the `apps/` directory:
 ```yaml
 services:
   rustfs:
-    image: rustfs/rustfs:1.0.4
+    image: rustfs/rustfs:1.0.5
     container_name: ascension-rustfs
     restart: unless-stopped
     ports:
-      - "${MINIO_PORT:-9000}:9000"
+      - "${STORAGE_PORT:-9000}:9000"
       - "9001:9001"
     environment:
-      RUSTFS_ACCESS_KEY: ${MINIO_ID:-ascension}
-      RUSTFS_SECRET_KEY: ${MINIO_SECRET:-ascension}
+      RUSTFS_ACCESS_KEY: ${STORAGE_ID:-ascension}
+      RUSTFS_SECRET_KEY: ${STORAGE_SECRET:-ascension}
     volumes:
       - rustfs_data:/data
     networks:
@@ -579,9 +572,23 @@ services:
       - "${PORT:-8080}:8080"
     env_file: .env
     environment:
+      - PORT=8080
       - POSTGRES_HOST=postgresql
-      - RABBITMQ_HOST=rabbitmq
-      - MINIO_ENDPOINT=http://rustfs:${MINIO_PORT:-9000}
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-ascension}
+      - POSTGRES_USER=${POSTGRES_USER:-ascension}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-ascension}
+      - POSTGRES_PARAMS=${POSTGRES_PARAMS:-sslmode=disable}
+      - QUEUE_HOST=rabbitmq
+      - QUEUE_PORT=5672
+      - QUEUE_USER=${RABBITMQ_DEFAULT_USER:-${QUEUE_USER:-ascension}}
+      - QUEUE_PASS=${RABBITMQ_DEFAULT_PASS:-${QUEUE_PASS:-ascension}}
+      - QUEUE_TLS=false
+      - STORAGE_ENDPOINT=http://rustfs:9000
+      - STORAGE_REGION=${STORAGE_REGION:-us-east-1}
+      - STORAGE_BUCKET=${STORAGE_BUCKET:-videos}
+      - STORAGE_ID=${STORAGE_ID:-ascension}
+      - STORAGE_SECRET=${STORAGE_SECRET:-ascension}
     networks:
       - ascension-network
     depends_on:
@@ -605,12 +612,22 @@ services:
       - prod
     env_file: .env
     environment:
+      - PYTHONUNBUFFERED=1
       - POSTGRES_HOST=postgresql
-      - POSTGRES_DB_URL=postgres://${POSTGRES_USER:-ascension}:${POSTGRES_PASSWORD:-ascension}@postgresql:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-ascension}
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER:-ascension}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-ascension}
+      - POSTGRES_DB=${POSTGRES_DB:-ascension}
+      - POSTGRES_DB_URL=postgres://${POSTGRES_USER:-ascension}:${POSTGRES_PASSWORD:-ascension}@postgresql:5432/${POSTGRES_DB:-ascension}
       - RABBITMQ_HOST=rabbitmq
-      - RUSTFS_ENDPOINT=http://rustfs:${MINIO_PORT:-9000}
-      - RUSTFS_ACCESS_KEY=${MINIO_ID:-ascension}
-      - RUSTFS_SECRET_KEY=${MINIO_SECRET:-ascension}
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=${RABBITMQ_DEFAULT_USER:-${RABBITMQ_USER:-ascension}}
+      - RABBITMQ_PASS=${RABBITMQ_DEFAULT_PASS:-${RABBITMQ_PASS:-ascension}}
+      - STORAGE_ENDPOINT=http://rustfs:9000
+      - STORAGE_ID=${STORAGE_ID:-ascension}
+      - STORAGE_SECRET=${STORAGE_SECRET:-ascension}
+      - STORAGE_BUCKET=${STORAGE_BUCKET:-videos}
+      - STORAGE_REGION=${STORAGE_REGION:-us-east-1}
     networks:
       - ascension-network
     depends_on:
@@ -806,7 +823,7 @@ Key views:
 
 Open browser: [http://localhost:9001](http://localhost:9001)
 
-Login (the values of `MINIO_ID` and `MINIO_SECRET`, passed to RustFS by Docker Compose):
+Login (the values of `STORAGE_ID` and `STORAGE_SECRET`, passed to RustFS by Docker Compose):
 
 - Username: `ascension`
 - Password: `ascension`

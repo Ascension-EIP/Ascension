@@ -1,4 +1,4 @@
-// @date 2026-11-13
+// @date 2026-11-14
 // @file app.go
 // @brief File description.
 // @project Ascension
@@ -40,7 +40,7 @@ func Run(cfg config.Config) {
 	// } else {
 	// 	slog.Info("migration completed successfully")
 	// }
-
+	//
 	storage, err := rustfs.New(cfg.Storage)
 	if err != nil {
 		slog.Error("failed to create a new minio storage", slog.String("err", err.Error()))
@@ -59,6 +59,7 @@ func Run(cfg config.Config) {
 	authS := service.NewAuthService(&jwtS, &sessionS, &userS, &userProfileS, &repo)
 	videoS := service.NewVideoService(cfg.Video, cfg.Storage, &storage, &repo, &repo)
 	analysisS := service.NewAnalysisService(cfg.Storage, &repo, &repo, &queue)
+	adviceS := service.NewAdviceService(cfg.Storage, &repo, &repo, &queue)
 	climbingSessionS := service.NewClimbingSessionService(&repo, &repo, &repo)
 	bodyConstraintS := service.NewUserBodyConstraintService(&repo)
 	friendshipS := service.NewFriendshipService(&repo)
@@ -70,6 +71,7 @@ func Run(cfg config.Config) {
 	authH := handler.NewAuthHandler(&authS)
 	videoH := handler.NewVideoHandler(&videoS)
 	analysisH := handler.NewAnalysisHandler(&analysisS)
+	adviceH := handler.NewAdviceHandler(&adviceS)
 	userProfileH := handler.NewUserProfileHandler(&userProfileS)
 	climbingSessionH := handler.NewClimbingSessionHandler(&climbingSessionS)
 	bodyConstraintH := handler.NewUserBodyConstraintHandler(&bodyConstraintS)
@@ -87,6 +89,7 @@ func Run(cfg config.Config) {
 		&authH,
 		&videoH,
 		&analysisH,
+		&adviceH,
 		&userProfileH,
 		&climbingSessionH,
 		&bodyConstraintH,

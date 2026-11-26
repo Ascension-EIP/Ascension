@@ -76,9 +76,30 @@ class World:
             raise PermanentError("no result")
         return self.result
 
-    def save_hints(self, job_id, hints):
-        self.calls.append(("db.save_hints",))
+    # advice (job_id is the video id)
+    def get_advice_status(self, job_id):
+        return self.status
+
+    def mark_advice_started(self, job_id):
+        self.calls.append(("db.advice_started",))
+        self.status = Status.STARTED
+
+    def get_video_result(self, job_id):
+        return self.get_result(job_id)
+
+    def update_advice_progress(self, job_id, p):
+        self.calls.append(("db.progress", p))
+        self.progress.append(p)
+        self.status = Status.RUNNING
+
+    def complete_advice(self, job_id, hints):
+        self.calls.append(("db.complete_advice",))
         self.hints = hints
+        self.status = Status.SUCCESS
+
+    def fail_advice(self, job_id, message):
+        self.calls.append(("db.fail_advice", message))
+        self.status = Status.FAILED
 
     def complete(self, job_id):
         self.calls.append(("db.complete",))
@@ -149,7 +170,7 @@ def statuses(w):
     return [c for c in w.calls if c[0] == "publish"]
 
 
-def test_detect_success_ends_at_85_running_then_completed(monkeypatch):
+def test_detect_success_stores_the_result_then_completes(monkeypatch):
     w = World()
     install(monkeypatch, w)
     detect(w)
@@ -164,13 +185,13 @@ def test_detect_success_ends_at_85_running_then_completed(monkeypatch):
     assert names[-5:] == [
         "db.progress",
         "db.save_result",
+        "db.complete",
         "pose.detect.status=success",
-        "pose.detect.completed=",
         "ack",
     ]
     assert w.progress == [5, *range(10, 71, 5), 80]  # one write per 5%, then 80 (steps done)
-    assert w.status == Status.RUNNING and w.result == RESULT  # stored (85), analysis not over
-    assert "db.complete" not in names and "db.fail" not in names
+    assert w.status == Status.SUCCESS and w.result == RESULT  # advice is a separate job
+    assert "db.fail" not in names and "pose.detect.completed=" not in names
 
 
 def test_failed_progress_write_does_not_fail_the_job(monkeypatch):
@@ -182,15 +203,7 @@ def test_failed_progress_write_does_not_fail_the_job(monkeypatch):
     names = w.names()
     assert w.progress == [5, 80] and w.result == RESULT  # computation kept, result stored
     assert "db.fail" not in names and "nack" not in names and names[-1] == "ack"
-    assert "pose.detect.completed=" in names
-
-
-def test_detect_publishes_completed_job_after_success(monkeypatch):
-    w = World()
-    install(monkeypatch, w)
-    detect(w)
-    keys = [c[1] for c in statuses(w)]
-    assert keys[-2:] == ["pose.detect.status", "pose.detect.completed"]
+    assert names[-3:] == ["db.complete", "pose.detect.status=success", "ack"]
 
 
 def test_missing_video_fails_once_and_is_dead_lettered(monkeypatch):
@@ -253,17 +266,17 @@ def test_detect_redelivery_of_a_finished_job_does_nothing(monkeypatch):
     assert w.names() == ["ack"]
 
 
-def test_advice_success_writes_hints_then_completes(monkeypatch):
-    w = World(status=Status.RUNNING, result=RESULT)
+def test_advice_success_stores_hints_in_one_write(monkeypatch):
+    w = World(status=Status.PENDING, result=RESULT)
     install(monkeypatch, w)
     advice(w)
     assert w.names() == [
+        "db.advice_started",
         "pose.advice.status=started",
         "db.progress",
         "pose.advice.status=running",
         "llm",
-        "db.save_hints",
-        "db.complete",
+        "db.complete_advice",
         "pose.advice.status=success",
         "ack",
     ]
@@ -278,43 +291,33 @@ def test_advice_success_writes_hints_then_completes(monkeypatch):
         ({"llm_configured": False}, "LLM not configured"),
     ],
 )
-def test_llm_failure_ends_in_success_without_hints(monkeypatch, kwargs, message):
-    w = World(status=Status.RUNNING, result=RESULT, **kwargs)
+def test_llm_failure_fails_the_advice_and_acks(monkeypatch, kwargs, message):
+    w = World(status=Status.PENDING, result=RESULT, **kwargs)
     install(monkeypatch, w)
     advice(w)
     names = w.names()
-    assert names[-3:] == ["db.complete", "pose.advice.status=failed", "ack"]
-    assert "db.save_hints" not in names and "db.fail" not in names
-    assert w.status == Status.SUCCESS and w.hints is None
+    assert names[-3:] == ["db.fail_advice", "pose.advice.status=failed", "ack"]
+    assert "db.complete_advice" not in names and "db.fail" not in names
+    assert w.status == Status.FAILED and w.hints is None
+    assert ("db.fail_advice", message) in w.calls
     assert ("publish", "pose.advice.status", "failed", message) in w.calls
     assert SECRET not in repr(w.calls)
 
 
-def test_failed_relaunch_keeps_previous_hints_and_success(monkeypatch):
-    w = World(status=Status.SUCCESS, result=RESULT, llm_error=TransientError("down"))
-    install(monkeypatch, w)
-    advice(w)
-    assert w.hints == "previous" and w.status == Status.SUCCESS
-    assert w.names() == ["pose.advice.status=started", "llm", "llm", "llm", "pose.advice.status=failed", "ack"]  # 3 LLM tries
-
-
-def test_successful_relaunch_does_not_reset_the_analysis(monkeypatch):
+def test_advice_redelivery_of_a_finished_advice_does_nothing(monkeypatch):
     w = World(status=Status.SUCCESS, result=RESULT)
     install(monkeypatch, w)
     advice(w)
-    names = w.names()
-    assert "db.progress" not in names and "db.complete" not in names
-    assert "pose.advice.status=running" not in names
-    assert names[-3:] == ["db.save_hints", "pose.advice.status=success", "ack"]
-    assert w.status == Status.SUCCESS and w.hints != "previous"
+    assert w.names() == ["ack"]
 
 
-def test_advice_without_result_fails_once_and_is_dead_lettered(monkeypatch):
-    w = World(status=Status.RUNNING, result=None)
+def test_advice_without_analysis_result_fails_once_and_is_dead_lettered(monkeypatch):
+    w = World(status=Status.PENDING, result=None)
     install(monkeypatch, w)
     advice(w)
-    assert w.names() == ["pose.advice.status=started", "db.fail", "pose.advice.status=failed", "nack"]
-    assert ("db.fail", "Result not found") in w.calls
+    assert w.names() == ["db.advice_started", "pose.advice.status=started", "db.fail_advice", "pose.advice.status=failed", "nack"]
+    assert ("db.fail_advice", "Result not found") in w.calls
+    assert "db.fail" not in w.names()
 
 
 def test_no_status_message_contains_a_traceback(monkeypatch):

@@ -10,7 +10,7 @@ from contextlib import ExitStack
 from common.utils.broker import consume
 from common.utils.errors import with_retry
 from common.utils.logger import log
-from shared.models import Job, JobStatus, PoseDetectRequest, RoutingKey, Status
+from shared.models import JobStatus, PoseDetectRequest, RoutingKey, Status
 from worker.handlers.failure import fail_job
 from worker.runtime import get_broker, get_db, get_storage
 
@@ -22,7 +22,7 @@ PROGRESS_STEPS_DONE = 80
 
 @consume(PoseDetectRequest)
 def pose_detect_request(payload: PoseDetectRequest):
-    """Analyse the video and store ``result``; the analysis stays ``running`` until advice.
+    """Analyse the video and store ``result`` and end the analysis in ``success`` (advice is a separate job).
 
     Network operations are retried here (``with_retry``); the MediaPipe run never is.
     A definitive failure is reported once, then `PermanentError` is raised so the
@@ -68,7 +68,7 @@ def pose_detect_request(payload: PoseDetectRequest):
         # Filter and metrics (75) and movements (80) are one fast call in `detect_pose`.
         with_retry(lambda: db.update_progress(job_id, PROGRESS_STEPS_DONE))
         with_retry(lambda: db.save_result(job_id, result))
+        with_retry(lambda: db.complete(job_id))
         broker.publish(RoutingKey.POSE_DETECT_STATUS, JobStatus(job_id=job_id, status=Status.SUCCESS))
-        broker.publish(RoutingKey.POSE_DETECT_COMPLETED, Job(job_id=job_id))
     except Exception as exc:
         raise fail_job(job_id, RoutingKey.POSE_DETECT_STATUS, stage, exc) from exc

@@ -4,11 +4,11 @@ services:
     container_name: ascension-rustfs
     restart: unless-stopped
     ports:
-      - "${MINIO_PORT:-9000}:9000"
+      - "${STORAGE_PORT:-9000}:9000"
       - "9001:9001"
     environment:
-      RUSTFS_ACCESS_KEY: ${MINIO_ID:-ascension}
-      RUSTFS_SECRET_KEY: ${MINIO_SECRET:-ascension}
+      RUSTFS_ACCESS_KEY: ${STORAGE_ID:-ascension}
+      RUSTFS_SECRET_KEY: ${STORAGE_SECRET:-ascension}
     volumes:
       - rustfs_data:/data
     networks:
@@ -24,11 +24,11 @@ services:
     container_name: ascension-rabbitmq
     restart: unless-stopped
     ports:
-      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${QUEUE_PORT:-5672}:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-ascension}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-ascension}
+      RABBITMQ_DEFAULT_USER: ${QUEUE_USER:-ascension}
+      RABBITMQ_DEFAULT_PASS: ${QUEUE_PASS:-ascension}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
@@ -69,9 +69,23 @@ services:
       - "${PORT:-8080}:8080"
     env_file: .env
     environment:
+      - PORT=8080
       - POSTGRES_HOST=postgresql
-      - RABBITMQ_HOST=rabbitmq
-      - MINIO_ENDPOINT=http://rustfs:${MINIO_PORT:-9000}
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-ascension}
+      - POSTGRES_USER=${POSTGRES_USER:-ascension}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-ascension}
+      - POSTGRES_PARAMS=${POSTGRES_PARAMS:-sslmode=disable}
+      - QUEUE_HOST=rabbitmq
+      - QUEUE_PORT=5672
+      - QUEUE_USER=${QUEUE_USER:-ascension}
+      - QUEUE_PASS=${QUEUE_PASS:-ascension}
+      - QUEUE_TLS=false
+      - STORAGE_ENDPOINT=http://rustfs:9000
+      - STORAGE_REGION=${STORAGE_REGION:-us-east-1}
+      - STORAGE_BUCKET=${STORAGE_BUCKET:-videos}
+      - STORAGE_ID=${STORAGE_ID:-ascension}
+      - STORAGE_SECRET=${STORAGE_SECRET:-ascension}
     networks:
       - ascension-network
     depends_on:
@@ -95,12 +109,22 @@ services:
       - prod
     env_file: .env
     environment:
+      - PYTHONUNBUFFERED=1
       - POSTGRES_HOST=postgresql
-      - POSTGRES_DB_URL=postgres://${POSTGRES_USER:-ascension}:${POSTGRES_PASSWORD:-ascension}@postgresql:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-ascension}
-      - RABBITMQ_HOST=rabbitmq
-      - RUSTFS_ENDPOINT=http://rustfs:${MINIO_PORT:-9000}
-      - RUSTFS_ACCESS_KEY=${MINIO_ID:-ascension}
-      - RUSTFS_SECRET_KEY=${MINIO_SECRET:-ascension}
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER:-ascension}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-ascension}
+      - POSTGRES_DB=${POSTGRES_DB:-ascension}
+      - POSTGRES_DB_URL=postgres://${POSTGRES_USER:-ascension}:${POSTGRES_PASSWORD:-ascension}@postgresql:5432/${POSTGRES_DB:-ascension}
+      - QUEUE_HOST=rabbitmq
+      - QUEUE_PORT=5672
+      - QUEUE_USER=${QUEUE_USER:-ascension}
+      - QUEUE_PASS=${QUEUE_PASS:-ascension}
+      - STORAGE_ENDPOINT=http://rustfs:9000
+      - STORAGE_ID=${STORAGE_ID:-ascension}
+      - STORAGE_SECRET=${STORAGE_SECRET:-ascension}
+      - STORAGE_BUCKET=${STORAGE_BUCKET:-videos}
+      - STORAGE_REGION=${STORAGE_REGION:-gra}
     networks:
       - ascension-network
     depends_on:

@@ -21,6 +21,7 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/shared"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/testutil/memrepo"
 	"github.com/robfig/cron/v3"
 )
@@ -44,10 +45,18 @@ func (failingRepo) ListAnalysisByFilter(context.Context, model.AnalysisFilter, m
 	return nil, errRepo
 }
 
+func (failingRepo) ListAdviceByFilter(context.Context, model.AdviceFilter, model.Pagination) ([]model.Advice, error) {
+	return nil, errRepo
+}
+
 // noQueue drops the analysis jobs.
 type noQueue struct{}
 
-func (noQueue) PublishPoseDetectRequested(context.Context, []byte) error { return nil }
+func (noQueue) PublishPoseDetectRequested(context.Context, shared.PoseDetectRequest) error {
+	return nil
+}
+
+func (noQueue) PublishPoseAdviceRequested(context.Context, shared.Job) error { return nil }
 
 // captureLogs sends the default slog output to a buffer for the test.
 func captureLogs(t *testing.T) *bytes.Buffer {
@@ -100,6 +109,7 @@ type fullRepo interface {
 	model.VideoRepository
 	model.ClimbingSessionRepository
 	model.AnalysisRepository
+	model.AdviceRepository
 	model.QuotaUsageRepository
 }
 
@@ -147,6 +157,15 @@ var jobCases = []jobCase{
 		register: func(c *cron.Cron, repo fullRepo) error {
 			s := service.NewAnalysisService(config.StorageConfig{}, repo, repo, noQueue{})
 			return AnalysisStaleDetection(c, context.Background(), &s)
+		},
+	},
+	{
+		name:   "AdviceStaleDetection",
+		spec:   "* * * * *",
+		logged: "failed to detect stale advice",
+		register: func(c *cron.Cron, repo fullRepo) error {
+			s := service.NewAdviceService(config.StorageConfig{}, repo, repo, noQueue{})
+			return AdviceStaleDetection(c, context.Background(), &s)
 		},
 	},
 }

@@ -1,0 +1,6 @@
+# Target classes of the hold detector.
+# `python -m holds merge` maps every source class onto these and writes the
+# training config to datasets/holds/data.yaml (with an absolute dataset path).
+names:
+  0: hold
+  1: volume

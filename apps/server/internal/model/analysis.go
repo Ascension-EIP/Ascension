@@ -61,14 +61,12 @@ type Analysis struct {
 	Visibility       Visibility
 	Progress         int16
 	Result           *shared.AnalysisResult
-	Advice           *string
 	Error            *string
 	ProcessingTimeMS *time.Duration
 	StartedAt        *time.Time
 	CompletedAt      *time.Time
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
-	Hints            *shared.Hints
 }
 
 // AnalysisSummary is the light view of an analysis used in lists: it leaves out the
@@ -107,14 +105,12 @@ type AnalysisPartial struct {
 	Visibility       *Visibility
 	Progress         *int16
 	Result           **shared.AnalysisResult
-	Advice           **string
 	Error            **string
 	ProcessingTimeMS **time.Duration
 	StartedAt        **time.Time
 	CompletedAt      **time.Time
 	CreatedAt        *time.Time
 	UpdatedAt        *time.Time
-	Hints            **shared.Hints
 }
 
 type AnalysisConfig struct {

@@ -1,8 +1,8 @@
-// @date 2026-09-24
+// @date 2026-11-14
 // @file upload.go
 // @brief File description.
 // @project Ascension
-// @author DimitriLaPoudre <lou.pellegrino@epitech.eu>
+// @author Christophe Vandevoir <christophe.vandevoir@epitech.eu>, DimitriLaPoudre <lou.pellegrino@epitech.eu>
 // @copyright (c) 2026 Ascension
 // @status done
 package rustfs
@@ -63,6 +63,11 @@ func (s *RustFSStorage) FileExist(ctx context.Context, objectKey string) (bool, 
 		Key:    &objectKey,
 	})
 	if err != nil {
+		// HEAD has no response body, so S3 answers a missing object with a bare 404,
+		// which the SDK reports as NotFound; NoSuchKey only comes with a body.
+		if _, ok := errors.AsType[*types.NotFound](err); ok {
+			return false, nil
+		}
 		if _, ok := errors.AsType[*types.NoSuchKey](err); ok {
 			return false, nil
 		}

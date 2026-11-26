@@ -15,6 +15,12 @@ import (
 )
 
 func TestRowConversionsCopyEveryField(t *testing.T) {
+	t.Run("advice", func(t *testing.T) {
+		var row Advice
+		fillDistinct(&row)
+		checkFields(t, row, row.ToAdvice(), nil)
+	})
+
 	t.Run("analysis", func(t *testing.T) {
 		var row Analysis
 		fillDistinct(&row)
@@ -72,6 +78,9 @@ func TestRowConversionsCopyEveryField(t *testing.T) {
 
 func TestRowListConversions(t *testing.T) {
 	t.Run("empty lists stay non-nil", func(t *testing.T) {
+		if got := AdvicesToAdvices(nil); got == nil || len(got) != 0 {
+			t.Errorf("AdvicesToAdvices(nil) = %#v, want []", got)
+		}
 		if got := AnalysesToAnalyses(nil); got == nil || len(got) != 0 {
 			t.Errorf("AnalysesToAnalyses(nil) = %#v, want []", got)
 		}
@@ -104,6 +113,7 @@ func TestRowListConversions(t *testing.T) {
 	t.Run("lists keep the order", func(t *testing.T) {
 		a, b := uuid.NewV7(), uuid.NewV7()
 
+		advices := AdvicesToAdvices([]Advice{{ID: a}, {ID: b}})
 		analyses := AnalysesToAnalyses([]Analysis{{ID: a}, {ID: b}})
 		summaries := AnalysisSummariesToAnalysisSummaries([]AnalysisSummary{{ID: a}, {ID: b}})
 		sessions := ClimbingSessionsToClimbingSessions([]ClimbingSession{{ID: a}, {ID: b}})
@@ -112,6 +122,7 @@ func TestRowListConversions(t *testing.T) {
 		videos := VideosToVideos([]Video{{ID: a}, {ID: b}})
 
 		for name, ids := range map[string][]uuid.UUID{
+			"advices":     {advices[0].ID, advices[1].ID},
 			"analyses":    {analyses[0].ID, analyses[1].ID},
 			"summaries":   {summaries[0].ID, summaries[1].ID},
 			"sessions":    {sessions[0].ID, sessions[1].ID},

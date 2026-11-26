@@ -75,11 +75,22 @@ class InMemorySecureStorageService extends SecureStorageService {
   @override
   Future<String?> getUserId() async => userId;
 
+  String? savedIdentifier;
+
+  @override
+  Future<void> saveSavedIdentifier(String identifier) async {
+    savedIdentifier = identifier;
+  }
+
+  @override
+  Future<String?> getSavedIdentifier() async => savedIdentifier;
+
   @override
   Future<void> clearAuthData() async {
     accessToken = null;
     refreshToken = null;
     userId = null;
+    savedIdentifier = null;
   }
 }
 

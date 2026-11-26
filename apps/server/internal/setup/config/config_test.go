@@ -1,4 +1,4 @@
-// @date 2026-11-13
+// @date 2026-11-14
 // @file config_test.go
 // @brief Unit tests of the environment configuration: required variables, defaults and DSNs.
 // @project Ascension
@@ -33,7 +33,7 @@ var requiredEnv = map[string]string{
 // does not leak into the tests.
 var optionalEnv = []string{
 	"POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_PARAMS",
-	"STORAGE_UPLOAD_EXP", "STORAGE_DOWNLAOD_EXP",
+	"STORAGE_UPLOAD_EXP", "STORAGE_DOWNLOAD_EXP",
 	"QUEUE_HOST", "QUEUE_PORT", "QUEUE_TLS", "QUEUE_EXCHANGE_EVENT",
 	"VIDEO_RETENTION",
 	"AUTH_JWT_EXP", "AUTH_JWT_SECRET", "AUTH_SESSION_EXP", "AUTH_SESSION_REMEMBER_EXP", "AUTH_SESSION_SECRET",
@@ -108,7 +108,7 @@ func TestLoadOverrides(t *testing.T) {
 	t.Setenv("POSTGRES_HOST", "db.internal")
 	t.Setenv("POSTGRES_PORT", "6543")
 	t.Setenv("STORAGE_UPLOAD_EXP", "15m")
-	t.Setenv("STORAGE_DOWNLAOD_EXP", "2h")
+	t.Setenv("STORAGE_DOWNLOAD_EXP", "2h")
 	t.Setenv("QUEUE_TLS", "true")
 	t.Setenv("AUTH_JWT_SECRET", "a-real-secret")
 	t.Setenv("PORT", "9090")

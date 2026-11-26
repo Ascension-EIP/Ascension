@@ -21,6 +21,10 @@ import 'package:mobile/features/auth/domain/repositories/auth_repository.dart';
 import 'package:mobile/features/climb_session/data/repositories/climb_session_repository_impl.dart';
 import 'package:mobile/features/climb_session/domain/entities/climb_session.dart';
 import 'package:mobile/features/climb_session/domain/repositories/climb_session_repository.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:mobile/core/services/biometric_service.dart';
+import 'package:mobile/core/storage/secure_storage_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TestAuthRepository implements AuthRepository {
@@ -247,6 +251,87 @@ class TestClimbSessionRepository implements ClimbSessionRepository {
   }
 }
 
+class MockSecureStorageService extends SecureStorageService {
+  MockSecureStorageService() : super(const FlutterSecureStorage());
+
+  final Map<String, String> _data = {};
+
+  @override
+  Future<void> saveTokens({
+    required String accessToken,
+    required String refreshToken,
+  }) async {
+    _data['access'] = accessToken;
+    _data['refresh'] = refreshToken;
+  }
+
+  @override
+  Future<String?> getAccessToken() async => _data['access'];
+
+  @override
+  Future<String?> getRefreshToken() async => _data['refresh'];
+
+  @override
+  Future<void> saveUserId(String userId) async {
+    _data['userId'] = userId;
+  }
+
+  @override
+  Future<String?> getUserId() async => _data['userId'];
+
+  @override
+  Future<void> saveSavedIdentifier(String identifier) async {
+    _data['identifier'] = identifier;
+  }
+
+  @override
+  Future<String?> getSavedIdentifier() async => _data['identifier'];
+
+  @override
+  Future<void> setBiometricEnabled(bool enabled) async {
+    _data['biometricEnabled'] = enabled.toString();
+  }
+
+  @override
+  Future<void> saveBiometricPassword(String password) async {
+    _data['biometricPassword'] = password;
+  }
+
+  @override
+  Future<String?> getBiometricPassword() async => _data['biometricPassword'];
+
+  @override
+  Future<void> clearBiometricCredentials() async {
+    _data.remove('biometricPassword');
+    _data.remove('biometricEnabled');
+  }
+
+  @override
+  Future<void> clearAuthData() async {
+    _data.clear();
+  }
+}
+
+class MockBiometricService extends BiometricService {
+  MockBiometricService()
+    : super(
+        localAuth: LocalAuthentication(),
+        secureStorage: MockSecureStorageService(),
+      );
+
+  @override
+  Future<bool> isDeviceSupported() async => false;
+
+  @override
+  Future<bool> isBiometricEnabled() async => false;
+
+  @override
+  Future<bool> hasSavedBiometrics() async => false;
+
+  @override
+  Future<bool> authenticate({required String localizedReason}) async => false;
+}
+
 Widget createTestableWidget({
   required Widget child,
   SharedPreferences? prefs,
@@ -260,6 +345,10 @@ Widget createTestableWidget({
     overrides: [
       if (prefs != null) sharedPreferencesProvider.overrideWithValue(prefs),
       if (repo != null) authRepositoryProvider.overrideWithValue(repo),
+      secureStorageServiceProvider.overrideWithValue(
+        MockSecureStorageService(),
+      ),
+      biometricServiceProvider.overrideWithValue(MockBiometricService()),
       climbSessionRepositoryProvider.overrideWithValue(
         climbSessionRepo ?? TestClimbSessionRepository(),
       ),

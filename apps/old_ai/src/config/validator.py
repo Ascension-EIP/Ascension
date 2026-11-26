@@ -60,7 +60,7 @@ def load_ai_settings(load_env: bool = True) -> AISettings:
     return AISettings(
         active_pose_pipeline=os.getenv("ACTIVE_POSE_PIPELINE", "pose_analysis_2d"),
         gemini_api_key=os.getenv("GEMINI_API_KEY"),
-        gemini_model=os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite"),
+        gemini_model=os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite"),
         mediapipe_model_path=default_model_path,
         sam3d_checkpoint_path=default_ckpt,
         sam3d_mhr_path=default_mhr,

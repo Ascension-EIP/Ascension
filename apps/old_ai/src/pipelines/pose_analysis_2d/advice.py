@@ -51,7 +51,7 @@ def summarize_for_ai(full_data: dict[str, Any], sample_rate: int = 15) -> list[d
 class Advice2DGenerator:
     """Coaching advice generator tailored to 2D skeleton movements."""
 
-    def __init__(self, api_key: str | None = None, model_name: str = "gemini-3.1-flash-lite"):
+    def __init__(self, api_key: str | None = None, model_name: str = "gemini-3.5-flash-lite"):
         self.api_key = api_key
         self.model_name = model_name
 
