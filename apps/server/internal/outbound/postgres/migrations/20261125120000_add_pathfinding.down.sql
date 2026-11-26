@@ -1,4 +1,4 @@
--- Undo 20261125120000_add_ghost_pathfinding.
+-- Undo 20261125120000_add_pathfinding.
 BEGIN;
 
 ALTER TABLE routes

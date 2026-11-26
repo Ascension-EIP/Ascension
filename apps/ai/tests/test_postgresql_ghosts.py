@@ -14,13 +14,13 @@ import pytest
 
 from common.utils.errors import PermanentError
 from services.postgresql import PostgreSQL
-from shared.models import GhostMorphology, GhostPath, Status, WallPlane
+from shared.models import ClimberMorphology, PathfindingResult, Status, WallPlane
 
 URL = os.getenv("TEST_POSTGRES_URL")
 WALL = WallPlane(focal_px=2500.0, homography=[[0.1, 0, 0], [0, -0.1, 50], [0, 0, 1]], inlier_ratio=0.93, model="m", angle_deg=5.0)
 CONTOUR = {"points": [{"x": 1, "y": 2}, {"x": 5, "y": 2}, {"x": 5, "y": 6}], "bbox": {"x": 1, "y": 2, "w": 4, "h": 4}}
 MORPHOLOGY = {"height_cm": 175, "arm_span_cm": 178, "constraints": [{"type": "injured", "zone": "left_hand"}]}
-PATH = GhostPath.model_validate(
+PATH = PathfindingResult.model_validate(
     {
         "image_width": 400,
         "image_height": 800,
@@ -54,7 +54,7 @@ def service(**results) -> tuple[PostgreSQL, MagicMock]:
     return db, connection
 
 
-def test_ghost_job_updates_target_the_ghosts_table():
+def test_pathfinding_job_updates_target_the_ghosts_table():
     db, connection = service(**{"UPDATE ghosts": [("g",)]})
     db.mark_ghost_started("g")
     sql, params = connection.execute.call_args.args
@@ -84,7 +84,7 @@ def test_get_ghost_input_reads_the_ghost_the_route_the_holds_and_the_selection()
         }
     )
     ghost = db.get_ghost_input("g")
-    assert ghost.morphology == GhostMorphology.model_validate(MORPHOLOGY)
+    assert ghost.morphology == ClimberMorphology.model_validate(MORPHOLOGY)
     assert (ghost.image_width, ghost.image_height, ghost.feet_free, ghost.wall) == (400, 800, True, WALL)
     assert ghost.holds == [
         {"id": "h1", "type": "unknown", "contour": CONTOUR, "usable": True, "start_limbs": 2, "finish_limbs": None},
@@ -173,7 +173,7 @@ class TestGhostsAgainstDatabase:
             "SELECT status, progress, path, completed_at IS NOT NULL, processing_time_ms FROM ghosts WHERE id = %s", (ghost_id,)
         ).fetchone()
         assert (status, progress, done) == ("success", 100, True) and isinstance(ms, int)
-        assert GhostPath.model_validate(path) == PATH
+        assert PathfindingResult.model_validate(path) == PATH
         db.mark_ghost_started(ghost_id)  # a redelivered job starts again from a clean row
         assert db.connection.execute("SELECT status, completed_at FROM ghosts WHERE id = %s", (ghost_id,)).fetchone() == ("started", None)
 

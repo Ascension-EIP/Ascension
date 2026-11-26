@@ -61,14 +61,8 @@ type Pause struct {
 	StartMS    int64 `json:"start_ms"`
 }
 
-// Payload of ghosts.compute.requested: compute the ghost of a route. job_id is ghosts.id.
-type GhostComputeRequest struct {
-	JobID      string          `json:"job_id"`
-	Preference *BetaPreference `json:"preference,omitempty"`
-}
-
-// Format of ghosts.morphology.
-type GhostMorphology struct {
+// Format of ghosts.morphology: the climber body used by the pathfinding.
+type ClimberMorphology struct {
 	// Defaults to height_cm.
 	ArmSpanCM    *float64         `json:"arm_span_cm,omitempty"`
 	Constraints  []BodyConstraint `json:"constraints,omitempty"`
@@ -79,38 +73,6 @@ type GhostMorphology struct {
 type BodyConstraint struct {
 	Type ConstraintType `json:"type"`
 	Zone BodyZone       `json:"zone"`
-}
-
-// Format of ghosts.path. Coordinates are pixels of the route photo (y down); landmark names
-// are the keys of Frame.landmarks.
-type GhostPath struct {
-	ImageHeight  int64       `json:"image_height"`
-	ImageWidth   int64       `json:"image_width"`
-	Steps        []GhostStep `json:"steps"`
-	WallAngleDeg *float64    `json:"wall_angle_deg"`
-}
-
-// One pose of the ghost. moved_limb is the limb moved to reach it, absent for the start
-// step.
-type GhostStep struct {
-	CenterOfMass GhostPoint            `json:"center_of_mass"`
-	Holds        GhostHolds            `json:"holds"`
-	Index        int64                 `json:"index"`
-	Landmarks    map[string]GhostPoint `json:"landmarks"`
-	MovedLimb    *Limb                 `json:"moved_limb,omitempty"`
-}
-
-type GhostPoint struct {
-	X float64 `json:"x"`
-	Y float64 `json:"y"`
-}
-
-// Hold id under each limb, null when the limb is free.
-type GhostHolds struct {
-	LeftFoot  *string `json:"left_foot"`
-	LeftHand  *string `json:"left_hand"`
-	RightFoot *string `json:"right_foot"`
-	RightHand *string `json:"right_hand"`
 }
 
 type Hints struct {
@@ -203,6 +165,45 @@ type JobStatus struct {
 	Status  Status  `json:"status"`
 }
 
+// Payload of pathfinding.compute.requested: compute the beta and the postures of a climber
+// on a route. job_id is ghosts.id (the row that receives the result in ghosts.path).
+type PathfindingComputeRequest struct {
+	JobID      string          `json:"job_id"`
+	Preference *BetaPreference `json:"preference,omitempty"`
+}
+
+// Result of the pathfinding, stored in ghosts.path. Coordinates are pixels of the route
+// photo (y down); landmark names are the keys of Frame.landmarks.
+type PathfindingResult struct {
+	ImageHeight  int64             `json:"image_height"`
+	ImageWidth   int64             `json:"image_width"`
+	Steps        []PathfindingStep `json:"steps"`
+	WallAngleDeg *float64          `json:"wall_angle_deg"`
+}
+
+// One pose of the climber along the beta. moved_limb is the limb moved to reach it, absent
+// for the start step.
+type PathfindingStep struct {
+	CenterOfMass Point2D            `json:"center_of_mass"`
+	Holds        StepHolds          `json:"holds"`
+	Index        int64              `json:"index"`
+	Landmarks    map[string]Point2D `json:"landmarks"`
+	MovedLimb    *Limb              `json:"moved_limb,omitempty"`
+}
+
+type Point2D struct {
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
+}
+
+// Hold id under each limb, null when the limb is free.
+type StepHolds struct {
+	LeftFoot  *string `json:"left_foot"`
+	LeftHand  *string `json:"left_hand"`
+	RightFoot *string `json:"right_foot"`
+	RightHand *string `json:"right_hand"`
+}
+
 type PoseDetectRequest struct {
 	JobID     string `json:"job_id"`
 	ObjectKey string `json:"object_key"`
@@ -215,16 +216,6 @@ const (
 	LimbLeftHand  Limb = "left_hand"
 	LimbRightFoot Limb = "right_foot"
 	LimbRightHand Limb = "right_hand"
-)
-
-// Style of the beta: easy (easiest), power (fewer and longer moves), technique (short
-// moves, more foot placements). The worker defaults to easy.
-type BetaPreference string
-
-const (
-	BetaPreferenceTechnique BetaPreference = "technique"
-	Easy                    BetaPreference = "easy"
-	Power                   BetaPreference = "power"
 )
 
 type ConstraintType string
@@ -313,16 +304,26 @@ const (
 	Success Status = "success"
 )
 
+// Style of the beta: easy (easiest), power (fewer and longer moves), technique (short
+// moves, more foot placements). The worker defaults to easy.
+type BetaPreference string
+
+const (
+	BetaPreferenceTechnique BetaPreference = "technique"
+	Easy                    BetaPreference = "easy"
+	Power                   BetaPreference = "power"
+)
+
 type RoutingKey string
 
 const (
-	GhostsComputeRequested RoutingKey = "ghosts.compute.requested"
-	GhostsComputeStatus    RoutingKey = "ghosts.compute.status"
-	HoldsDetectRequested   RoutingKey = "holds.detect.requested"
-	HoldsDetectStatus      RoutingKey = "holds.detect.status"
-	PoseAdviceRequested    RoutingKey = "pose.advice.requested"
-	PoseAdviceStatus       RoutingKey = "pose.advice.status"
-	PoseDetectCompleted    RoutingKey = "pose.detect.completed"
-	PoseDetectRequested    RoutingKey = "pose.detect.requested"
-	PoseDetectStatus       RoutingKey = "pose.detect.status"
+	HoldsDetectRequested        RoutingKey = "holds.detect.requested"
+	HoldsDetectStatus           RoutingKey = "holds.detect.status"
+	PathfindingComputeRequested RoutingKey = "pathfinding.compute.requested"
+	PathfindingComputeStatus    RoutingKey = "pathfinding.compute.status"
+	PoseAdviceRequested         RoutingKey = "pose.advice.requested"
+	PoseAdviceStatus            RoutingKey = "pose.advice.status"
+	PoseDetectCompleted         RoutingKey = "pose.detect.completed"
+	PoseDetectRequested         RoutingKey = "pose.detect.requested"
+	PoseDetectStatus            RoutingKey = "pose.detect.status"
 )

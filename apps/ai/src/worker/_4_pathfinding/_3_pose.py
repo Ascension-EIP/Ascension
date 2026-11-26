@@ -1,17 +1,17 @@
 # @date 2026-11-25
 # @file _3_pose.py
-# @brief C3: plausible 33-landmark posture from the 4 contacts of a ghost step (2-segment inverse kinematics).
+# @brief C3: plausible 33-landmark posture from the 4 contacts of a pathfinding step (2-segment inverse kinematics).
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
-"""Posture of the ghost from the four contact points of a step.
+"""Posture of the climber from the four contact points of a step.
 
 Wall plane in centimetres, x to the right, y upwards. The climber faces the wall and is seen from behind:
 the climber's left side is on the left of the image (smaller x).
 
 The names are kept local (importing the MediaPipe skeleton module would load MediaPipe at start-up);
-``tests/test_ghost_pose.py`` compares them with ``mediapipe`` ``PoseLandmark``.
+``tests/test_pathfinding_pose.py`` compares them with ``mediapipe`` ``PoseLandmark``.
 """
 
 import itertools
@@ -182,7 +182,7 @@ def _nearest_in_discs(p: Point, discs: list[tuple[Point, float]]) -> Point | Non
 
 
 def pose_from_contacts(contacts: dict[Limb, Point | None], height_cm: float) -> dict[str, Point]:
-    """Rebuild a plausible 33-landmark posture from the contacts of one ghost step.
+    """Rebuild a plausible 33-landmark posture from the contacts of one pathfinding step.
 
     Torso heuristic (``ponytail:`` a vertical torso, no lean, no collision test; a pelvis-and-shoulders
     optimisation would be the upgrade): the torso centre starts at the weighted barycentre of the contacts

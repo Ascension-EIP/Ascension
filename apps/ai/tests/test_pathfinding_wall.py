@@ -1,6 +1,6 @@
 # @date 2026-11-25
-# @file test_ghost_wall.py
-# @brief Tests of the wall geometry (ghost step C1) on synthetic planes seen by a known camera.
+# @file test_pathfinding_wall.py
+# @brief Tests of the wall geometry (pathfinding step C1) on synthetic planes seen by a known camera.
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 import pytest
 
-from worker._4_ghost import _0_wall as wall
+from worker._4_pathfinding import _0_wall as wall
 
 W, H, FOCAL = 640, 480, 800.0
 CX, CY = W / 2, H / 2

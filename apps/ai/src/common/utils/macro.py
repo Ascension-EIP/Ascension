@@ -7,8 +7,8 @@
 # @status done
 from common.models.broker import Bind
 from shared.models import RoutingKey
-from worker.handlers.ghost_compute_request import ghost_compute_request
 from worker.handlers.hold_detect_request import hold_detect_request
+from worker.handlers.pathfinding_compute_request import pathfinding_compute_request
 from worker.handlers.pose_advice_request import pose_advice_request
 from worker.handlers.pose_detect_request import pose_detect_request
 
@@ -29,8 +29,8 @@ BROKER_BINDINGS: list[Bind] = [
         callback=hold_detect_request,
     ),
     Bind(
-        queue="ghosts.compute",
-        routing_key=RoutingKey.GHOSTS_COMPUTE_REQUESTED,
-        callback=ghost_compute_request,
+        queue="pathfinding.compute",
+        routing_key=RoutingKey.PATHFINDING_COMPUTE_REQUESTED,
+        callback=pathfinding_compute_request,
     ),
 ]

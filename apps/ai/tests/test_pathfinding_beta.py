@@ -1,6 +1,6 @@
 # @date 2026-11-25
-# @file test_ghost_beta.py
-# @brief Tests of the ghost beta search (A* over the four-limb states).
+# @file test_pathfinding_beta.py
+# @brief Tests of the pathfinding beta search (A* over the four-limb states).
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
@@ -16,12 +16,12 @@ from shared.models import (
     BetaPreference,
     BodyConstraint,
     BodyZone,
+    ClimberMorphology,
     ConstraintType,
-    GhostMorphology,
     HoldType,
     Limb,
 )
-from worker._4_ghost._2_beta import (
+from worker._4_pathfinding._2_beta import (
     MAX_FOOT_FOOT_RATIO,
     MAX_HAND_FOOT_RATIO,
     MAX_HAND_HAND_RATIO,
@@ -89,7 +89,7 @@ def test_no_beta_error_is_a_permanent_error():
 
 
 def test_body_from_morphology_maps_zones_to_limbs():
-    m = GhostMorphology(
+    m = ClimberMorphology(
         height_cm=170,
         constraints=[
             BodyConstraint(type=ConstraintType.MISSING, zone=BodyZone.LEFT_FOREARM),
@@ -106,7 +106,7 @@ def test_body_from_morphology_maps_zones_to_limbs():
 
 
 def test_body_from_morphology_keeps_arm_span_and_missing_wins_over_injured():
-    m = GhostMorphology(
+    m = ClimberMorphology(
         height_cm=170,
         arm_span_cm=178,
         constraints=[

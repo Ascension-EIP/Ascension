@@ -10,7 +10,7 @@
     "pose.advice.status",
     "holds.detect.requested",
     "holds.detect.status",
-    "ghosts.compute.requested",
-    "ghosts.compute.status"
+    "pathfinding.compute.requested",
+    "pathfinding.compute.status"
   ]
 }

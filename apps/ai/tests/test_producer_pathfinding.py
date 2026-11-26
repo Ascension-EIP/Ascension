@@ -1,6 +1,6 @@
 # @date 2026-11-25
-# @file test_producer_ghost.py
-# @brief The ghost part of the producer: seed a ghost on a route, publish ghosts.compute.requested.
+# @file test_producer_pathfinding.py
+# @brief The pathfinding part of the producer: seed a ghost on a route, publish pathfinding.compute.requested.
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
@@ -13,8 +13,8 @@ import pytest
 import producer
 from shared.models import (
     BetaPreference,
-    GhostComputeRequest,
-    GhostMorphology,
+    ClimberMorphology,
+    PathfindingComputeRequest,
     RoutingKey,
 )
 
@@ -27,23 +27,23 @@ def sent(monkeypatch):
     return broker
 
 
-def test_producer_ghost_publishes_a_typed_request(sent):
-    producer.main(["ghost", "--job-id", "g"])
-    sent.publish.assert_called_once_with(RoutingKey.GHOSTS_COMPUTE_REQUESTED, GhostComputeRequest(job_id="g"))
+def test_producer_pathfinding_publishes_a_typed_request(sent):
+    producer.main(["pathfinding", "--job-id", "g"])
+    sent.publish.assert_called_once_with(RoutingKey.PATHFINDING_COMPUTE_REQUESTED, PathfindingComputeRequest(job_id="g"))
     sent.connection.close.assert_called_once()
 
 
-def test_producer_ghost_carries_the_preference(sent):
-    producer.main(["ghost", "--job-id", "g", "--preference", "power"])
+def test_producer_pathfinding_carries_the_preference(sent):
+    producer.main(["pathfinding", "--job-id", "g", "--preference", "power"])
     sent.publish.assert_called_once_with(
-        RoutingKey.GHOSTS_COMPUTE_REQUESTED, GhostComputeRequest(job_id="g", preference=BetaPreference.POWER)
+        RoutingKey.PATHFINDING_COMPUTE_REQUESTED, PathfindingComputeRequest(job_id="g", preference=BetaPreference.POWER)
     )
 
 
 def test_seed_ghost_inserts_a_pending_ghost_on_the_user_of_the_route():
     db = MagicMock()
     db.connection.execute.return_value.fetchone.side_effect = [("user-id",), ("ghost-id",)]
-    seeded = producer.seed_ghost("route-id", GhostMorphology(height_cm=180, arm_span_cm=183), db)
+    seeded = producer.seed_ghost("route-id", ClimberMorphology(height_cm=180, arm_span_cm=183), db)
     assert seeded == producer.SeededGhost("ghost-id", "user-id")
     select, insert = (c.args for c in db.connection.execute.call_args_list)
     assert "FROM routes" in select[0] and select[1] == ("route-id",)

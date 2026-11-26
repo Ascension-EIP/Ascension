@@ -18,10 +18,10 @@ from common.models.database import DatabaseModel
 from common.utils.errors import PermanentError, TransientError, throw_if_none
 from shared.models import (
     AnalysisResult,
-    GhostMorphology,
-    GhostPath,
+    ClimberMorphology,
     Hints,
     HoldDetectResult,
+    PathfindingResult,
     Status,
     WallPlane,
 )
@@ -42,10 +42,10 @@ _INSERT_HOLD = (
 )
 
 
-class GhostInput(NamedTuple):
-    """Everything the ghost job reads: the ghost, its route and the holds of the route."""
+class PathfindingInput(NamedTuple):
+    """Everything the pathfinding job reads: the `ghosts` row, its route and the holds of the route."""
 
-    morphology: GhostMorphology
+    morphology: ClimberMorphology
     image_width: int
     image_height: int
     feet_free: bool
@@ -381,7 +381,7 @@ class PostgreSQL:
             route_id, _SET_FAILED, Status.FAILED.value, message, table="routes"
         )
 
-    # Ghost computation: `ghost_id` is `ghosts.id`, the job id of `ghosts.compute.requested`.
+    # Pathfinding job on a `ghosts` row: `ghost_id` is `ghosts.id`, the job id of `pathfinding.compute.requested`.
 
     def get_ghost_status(self, ghost_id: str) -> Status:
         """Returns the ghost status (the handler skips a ghost already in `success`)."""
@@ -408,7 +408,7 @@ class PostgreSQL:
             table="ghosts",
         )
 
-    def get_ghost_input(self, ghost_id: str) -> GhostInput:
+    def get_ghost_input(self, ghost_id: str) -> PathfindingInput:
         """Reads the ghost, its route (size, `feet_free`, wall plane), the holds of the route and `ghost_holds`.
 
         Raises:
@@ -421,7 +421,7 @@ class PostgreSQL:
             ghost_id,
         )
         try:
-            parsed_morphology = GhostMorphology.model_validate(morphology)
+            parsed_morphology = ClimberMorphology.model_validate(morphology)
             parsed_wall = None if wall is None else WallPlane.model_validate(wall)
         except ValidationError as error:
             raise PermanentError(f"ghost {ghost_id}: stored morphology or wall plane is invalid") from error
@@ -437,7 +437,7 @@ class PostgreSQL:
             ghost_id,
             many=True,
         )
-        return GhostInput(
+        return PathfindingInput(
             parsed_morphology,
             width,
             height,
@@ -450,7 +450,7 @@ class PostgreSQL:
             [str(h) for (h,) in selected],
         )
 
-    def complete_ghost(self, ghost_id: str, path: GhostPath) -> None:
+    def complete_ghost(self, ghost_id: str, path: PathfindingResult) -> None:
         """Stores ``path`` and ends the ghost with `success` in one statement (`processing_time_ms` is an integer)."""
         self._update(
             ghost_id,

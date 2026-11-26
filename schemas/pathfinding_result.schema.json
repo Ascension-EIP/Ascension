@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "GhostPath",
-  "description": "Format of ghosts.path. Coordinates are pixels of the route photo (y down); landmark names are the keys of Frame.landmarks.",
+  "title": "PathfindingResult",
+  "description": "Result of the pathfinding, stored in ghosts.path. Coordinates are pixels of the route photo (y down); landmark names are the keys of Frame.landmarks.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -26,12 +26,12 @@
     "steps": {
       "type": "array",
       "items": {
-        "$ref": "#/definitions/GhostStep"
+        "$ref": "#/definitions/PathfindingStep"
       }
     }
   },
   "definitions": {
-    "GhostPoint": {
+    "Point2D": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -47,7 +47,7 @@
         }
       }
     },
-    "GhostHolds": {
+    "StepHolds": {
       "description": "Hold id under each limb, null when the limb is free.",
       "type": "object",
       "additionalProperties": false,
@@ -84,7 +84,7 @@
         }
       }
     },
-    "GhostStep": {
+    "PathfindingStep": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -101,19 +101,19 @@
           "$ref": "analysis_result.schema.json#/definitions/Limb"
         },
         "holds": {
-          "$ref": "#/definitions/GhostHolds"
+          "$ref": "#/definitions/StepHolds"
         },
         "center_of_mass": {
-          "$ref": "#/definitions/GhostPoint"
+          "$ref": "#/definitions/Point2D"
         },
         "landmarks": {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/definitions/GhostPoint"
+            "$ref": "#/definitions/Point2D"
           }
         }
       },
-      "description": "One pose of the ghost. moved_limb is the limb moved to reach it, absent for the start step."
+      "description": "One pose of the climber along the beta. moved_limb is the limb moved to reach it, absent for the start step."
     }
   }
 }

@@ -8,7 +8,7 @@
 from common.utils.errors import PermanentError, TransientError
 from common.utils.logger import log
 from shared.models import JobStatus, RoutingKey, Status
-from worker._4_ghost._2_beta import NoBetaError
+from worker._4_pathfinding._2_beta import NoBetaError
 from worker.runtime import get_broker, get_db
 
 # (stage, is_transient) -> short message stored in the database and sent in statuses.
@@ -26,12 +26,12 @@ _MESSAGES = {
     ("holds", False): "Unreadable photo",
     ("model", False): "Hold model unavailable",
     ("gravity", False): "Invalid gravity",
-    # Ghost computation
+    # Pathfinding computation
     ("input", True): "Database unavailable",
-    ("input", False): "Invalid ghost data",
+    ("input", False): "Invalid pathfinding data",
     ("wall", False): "Wall geometry missing",
     ("wall_shape", False): "Wall geometry invalid",
-    ("ghost", False): "Ghost computation failed",
+    ("pathfinding", False): "Pathfinding failed",
 }
 
 # Table of the job -> name of the `PostgreSQL` method that ends it in `failed`.

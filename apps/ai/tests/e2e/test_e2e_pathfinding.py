@@ -1,12 +1,12 @@
 # @date 2026-11-25
-# @file test_e2e_ghost.py
-# @brief End-to-end ghost flow on the real RabbitMQ, PostgreSQL and RustFS: hold detection with wall, then ghost computation.
+# @file test_e2e_pathfinding.py
+# @brief End-to-end pathfinding flow on the real RabbitMQ, PostgreSQL and RustFS: hold detection with wall, then pathfinding.
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
-"""Photo of a route -> ``holds.detect.requested`` -> route ``success`` with ``wall_plane`` -> ghost seeded
--> ``ghosts.compute.requested`` -> ghost ``success`` with a valid ``path``.
+"""Photo of a route -> ``holds.detect.requested`` -> route ``success`` with ``wall_plane`` -> `ghosts` row seeded
+-> ``pathfinding.compute.requested`` -> ghost ``success`` with a valid ``path``.
 
 Real: RabbitMQ, PostgreSQL, RustFS, the worker (consumer, handlers, SQL), the plane fit, the A* search and
 the posture. Fake: the depth model (a wall facing the camera at 3 m) and the hold model (the squares of a
@@ -25,10 +25,10 @@ import producer
 from services.postgresql import PostgreSQL
 from services.rustfs import RustFS
 from shared.models import (
-    GhostComputeRequest,
-    GhostMorphology,
-    GhostPath,
+    ClimberMorphology,
     HoldDetectRequest,
+    PathfindingComputeRequest,
+    PathfindingResult,
     RoutingKey,
     WallPlane,
 )
@@ -71,7 +71,7 @@ def fake_models(worker) -> Iterator[None]:
 
 @pytest.fixture(scope="module")
 def ghost_observer(observer: Observer) -> Observer:
-    for key in (RoutingKey.HOLDS_DETECT_STATUS, RoutingKey.GHOSTS_COMPUTE_STATUS):
+    for key in (RoutingKey.HOLDS_DETECT_STATUS, RoutingKey.PATHFINDING_COMPUTE_STATUS):
         observer.channel.queue_bind(queue=observer.queue, exchange="events", routing_key=key)
     return observer
 
@@ -82,7 +82,7 @@ def photo(tmp_path_factory) -> Path:
     image = np.full((HEIGHT, WIDTH, 3), 150, np.uint8)
     for polygon in LADDER:
         cv2.fillPoly(image, [np.array(polygon, np.int32)], (200, 60, 20))
-    path = tmp_path_factory.mktemp("ghost") / "wall.png"
+    path = tmp_path_factory.mktemp("pathfinding") / "wall.png"
     cv2.imwrite(str(path), image)
     return path
 
@@ -126,13 +126,13 @@ def detect(db: PostgreSQL, route: producer.SeededRoute, gravity: list[float] | N
 
 
 def compute(db: PostgreSQL, route: producer.SeededRoute, **request) -> tuple[str, dict]:
-    ghost = producer.seed_ghost(route.route_id, GhostMorphology(height_cm=175, arm_span_cm=178), db)
+    ghost = producer.seed_ghost(route.route_id, ClimberMorphology(height_cm=175, arm_span_cm=178), db)
     assert ghost_row(db, ghost.ghost_id)["status"] == "pending"
-    producer.publish(RoutingKey.GHOSTS_COMPUTE_REQUESTED, GhostComputeRequest(job_id=ghost.ghost_id, **request))
+    producer.publish(RoutingKey.PATHFINDING_COMPUTE_REQUESTED, PathfindingComputeRequest(job_id=ghost.ghost_id, **request))
     return ghost.ghost_id, wait_ended(lambda: ghost_row(db, ghost.ghost_id))
 
 
-def test_route_then_ghost(db: PostgreSQL, seeded_route, ghost_observer: Observer):
+def test_route_then_pathfinding(db: PostgreSQL, seeded_route, ghost_observer: Observer):
     route = seeded_route()
     FakeSegmenter.polygons = LADDER
     detected = detect(db, route, gravity=[0.0, 9.8, 0.0])
@@ -151,14 +151,14 @@ def test_route_then_ghost(db: PostgreSQL, seeded_route, ghost_observer: Observer
     ghost_id, final = compute(db, route, preference="easy")
     assert final["status"] == "success" and final["error"] is None and final["progress"] == 100, final
     assert final["completed_at"] is not None and isinstance(final["processing_time_ms"], int)
-    path = GhostPath.model_validate(final["path"])
+    path = PathfindingResult.model_validate(final["path"])
     assert (path.image_width, path.image_height) == (WIDTH, HEIGHT) and path.wall_angle_deg == pytest.approx(0, abs=0.5)
     assert len(path.steps) >= 4 and [s.index for s in path.steps] == list(range(len(path.steps)))
     assert all(len(s.landmarks) == 33 for s in path.steps)
     ids = {str(h[0]) for h in holds}
     assert {v for s in path.steps for v in s.holds.model_dump().values() if v} <= ids
     assert path.steps[0].holds.left_hand == path.steps[0].holds.right_hand == str(lowest[0])  # the mark was honoured
-    statuses = ghost_observer.seen(ghost_id, RoutingKey.GHOSTS_COMPUTE_STATUS)
+    statuses = ghost_observer.seen(ghost_id, RoutingKey.PATHFINDING_COMPUTE_STATUS)
     assert {"started", "running", "success"} <= set(statuses)
     assert statuses.index("started") < statuses.index("running") < statuses.index("success")
 
@@ -167,8 +167,8 @@ def test_a_route_without_wall_fails_the_ghost_with_a_short_message(db: PostgreSQ
     route = seeded_route()  # never detected: no wall
     ghost_id, final = compute(db, route)
     assert final["status"] == "failed" and final["path"] is None and final["error"] == "Wall geometry missing"
-    assert ghost_observer.wait_status(ghost_id, RoutingKey.GHOSTS_COMPUTE_STATUS, "failed")
-    assert ghost_observer.take_dead_letter("ghosts.compute.dlq", ghost_id)
+    assert ghost_observer.wait_status(ghost_id, RoutingKey.PATHFINDING_COMPUTE_STATUS, "failed")
+    assert ghost_observer.take_dead_letter("pathfinding.compute.dlq", ghost_id)
 
 
 def test_no_beta_names_the_holds_around_the_gap(db: PostgreSQL, seeded_route, ghost_observer: Observer):

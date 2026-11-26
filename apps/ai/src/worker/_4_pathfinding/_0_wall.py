@@ -5,7 +5,7 @@
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
-"""Wall geometry (ghost step C1).
+"""Wall geometry (pathfinding step C1).
 
 A metric depth map becomes a point cloud in the OpenCV camera frame (x right, y down, z forward,
 metres). A plane fitted on the points outside the holds is the wall, written `n . X + d = 0` with

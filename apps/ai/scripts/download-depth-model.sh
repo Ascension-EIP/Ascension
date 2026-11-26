@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Downloads the metric depth model of the ghost mode (MoGe-2 ViT-S, ONNX, MIT):
+# Downloads the metric depth model of the pathfinding (MoGe-2 ViT-S, ONNX, MIT):
 # https://huggingface.co/Ruicheng/moge-2-vits-normal-onnx
 # Public file, no token needed. Not versioned (134 MB): run from apps/ai, like download-model.sh.
 set -euo pipefail

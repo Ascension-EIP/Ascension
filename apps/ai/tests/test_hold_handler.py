@@ -200,7 +200,7 @@ def test_unexpected_detection_error_has_no_detail_in_the_status(monkeypatch):
     assert failed == [("publish", "holds.detect.status", "failed", "Analysis failed")]
 
 
-# --- wall geometry (ghost mode) --------------------------------------------------------------
+# --- wall geometry (pathfinding) --------------------------------------------------------------
 
 import logging
 

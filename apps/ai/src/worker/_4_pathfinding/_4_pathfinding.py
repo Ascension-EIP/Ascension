@@ -1,16 +1,16 @@
 # @date 2026-11-25
-# @file _4_ghost.py
-# @brief Ghost chain: holds of a photo -> wall plane -> beta -> posture of each step in photo pixels.
+# @file _4_pathfinding.py
+# @brief Pathfinding chain: holds of a photo -> wall plane -> beta -> posture of each step in photo pixels.
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
 # @status done
-"""Ghost chain, without broker, database or storage.
+"""Pathfinding chain, without broker, database or storage.
 
 Units: pixels of the photo (y down) on the outside, centimetres in the wall plane (y up) inside.
-The CLI sub-commands and the ``ghosts.compute`` handler both go through these functions.
+The CLI sub-commands and the ``pathfinding.compute`` handler both go through these functions.
 
-Beta JSON (output of ``ghost-beta``, input of ``ghost-pose``)::
+Beta JSON (output of ``pathfinding-beta``, input of ``pathfinding-pose``)::
 
     {"height_cm": 175.0, "preference": "easy", "wall_angle_deg": 12.0,
      "steps": [{"holds": {"left_hand": "0", "right_hand": "1", "left_foot": null, "right_foot": null},
@@ -30,27 +30,27 @@ import numpy as np
 from common.utils.errors import PermanentError
 from shared.models import (
     BetaPreference,
-    GhostHolds,
-    GhostMorphology,
-    GhostPath,
-    GhostPoint,
-    GhostStep,
+    ClimberMorphology,
     HoldContour,
     HoldType,
     Limb,
+    PathfindingResult,
+    PathfindingStep,
+    Point2D,
+    StepHolds,
     WallPlane,
 )
-from worker._4_ghost._0_wall import estimate_wall, to_image, to_wall
-from worker._4_ghost._2_beta import (
+from worker._4_pathfinding._0_wall import estimate_wall, to_image, to_wall
+from worker._4_pathfinding._2_beta import (
     LIMBS,
     Hold,
     Step,
     body_from_morphology,
     find_beta,
 )
-from worker._4_ghost._3_pose import center_of_mass, pose_from_contacts
+from worker._4_pathfinding._3_pose import center_of_mass, pose_from_contacts
 
-#: Photo-sized skeleton links (MediaPipe landmark names) drawn by `render_ghost`.
+#: Photo-sized skeleton links (MediaPipe landmark names) drawn by `render_pathfinding`.
 BONES = (
     ("left_shoulder", "right_shoulder"),
     ("left_hip", "right_hip"),
@@ -217,12 +217,12 @@ def build_holds(
     return built
 
 
-def find_ghost_beta(
+def find_beta_for_route(
     holds_px: list[PhotoHold],
     wall: WallPlane,
     feet_free: bool,
     selected_ids: Sequence[str] | None,
-    morphology: GhostMorphology,
+    morphology: ClimberMorphology,
     preference: BetaPreference,
 ) -> list[Step]:
     """Holds of the photo and morphology to the beta (see `find_beta`).
@@ -235,11 +235,11 @@ def find_ghost_beta(
     return find_beta(holds, body_from_morphology(morphology), preference, wall.angle_deg)
 
 
-def pose_steps(steps: list[Step], holds_px: list[PhotoHold], wall: WallPlane, height_cm: float, image_size: tuple[int, int]) -> GhostPath:
+def pose_steps(steps: list[Step], holds_px: list[PhotoHold], wall: WallPlane, height_cm: float, image_size: tuple[int, int]) -> PathfindingResult:
     """Posture of every step of a beta, in photo pixels.
 
     Args:
-        steps: Output of `find_ghost_beta`.
+        steps: Output of `find_beta_for_route`.
         holds_px: The holds of the photo (the beta refers to their ids).
         wall: Wall plane; its homography moves the postures from cm back to pixels.
         height_cm: Climber height.
@@ -262,38 +262,38 @@ def pose_steps(steps: list[Step], holds_px: list[PhotoHold], wall: WallPlane, he
         if not np.isfinite(points).all():
             raise PermanentError(f"step {index}: the posture does not project on the photo")
         out.append(
-            GhostStep(
+            PathfindingStep(
                 index=index,
-                holds=GhostHolds(**{limb.value: step.holds.get(limb) for limb in LIMBS}),
+                holds=StepHolds(**{limb.value: step.holds.get(limb) for limb in LIMBS}),
                 moved_limb=step.moved,
-                landmarks={n: GhostPoint(x=round(float(x), 2), y=round(float(y), 2)) for n, (x, y) in zip(names, points[:-1], strict=True)},
-                center_of_mass=GhostPoint(x=round(float(points[-1][0]), 2), y=round(float(points[-1][1]), 2)),
+                landmarks={n: Point2D(x=round(float(x), 2), y=round(float(y), 2)) for n, (x, y) in zip(names, points[:-1], strict=True)},
+                center_of_mass=Point2D(x=round(float(points[-1][0]), 2), y=round(float(points[-1][1]), 2)),
             )
         )
-    return GhostPath(image_width=image_size[0], image_height=image_size[1], wall_angle_deg=wall.angle_deg, steps=out)
+    return PathfindingResult(image_width=image_size[0], image_height=image_size[1], wall_angle_deg=wall.angle_deg, steps=out)
 
 
-def compute_ghost(
+def compute_pathfinding(
     holds_px: list[PhotoHold],
     wall: WallPlane,
     feet_free: bool,
     selected_ids: Sequence[str] | None,
-    morphology: GhostMorphology,
+    morphology: ClimberMorphology,
     preference: BetaPreference,
     image_size: tuple[int, int],
-) -> GhostPath:
-    """Whole chain: holds, wall and morphology to the ghost path in photo pixels.
+) -> PathfindingResult:
+    """Whole chain: holds, wall and morphology to the pathfinding result in photo pixels.
 
     Raises:
         PermanentError: Invalid input (wall, holds).
         NoBetaError: No beta exists.
     """
-    steps = find_ghost_beta(holds_px, wall, feet_free, selected_ids, morphology, preference)
+    steps = find_beta_for_route(holds_px, wall, feet_free, selected_ids, morphology, preference)
     return pose_steps(steps, holds_px, wall, morphology.height_cm, image_size)
 
 
 def beta_to_json(steps: list[Step], height_cm: float, preference: BetaPreference, wall_angle_deg: float | None = None) -> dict:
-    """Beta as the JSON passed from ``ghost-beta`` to ``ghost-pose`` (format in the module docstring)."""
+    """Beta as the JSON passed from ``pathfinding-beta`` to ``pathfinding-pose`` (format in the module docstring)."""
     return {
         "height_cm": height_cm,
         "preference": preference.value,
@@ -321,7 +321,7 @@ def beta_from_json(data: dict) -> tuple[list[Step], float]:
     return steps, height
 
 
-def render_ghost(image: np.ndarray, path: GhostPath) -> np.ndarray:
+def render_pathfinding(image: np.ndarray, path: PathfindingResult) -> np.ndarray:
     """Copy of the photo with the skeleton of every step drawn on it, from blue (start) to red (finish)."""
     out = image.copy()
     scale = max(image.shape[:2]) / 1000

@@ -17,7 +17,7 @@ tasks:
     deps:
       - 'setup-depth'
 
-  # Ghost mode depth model (134 MB, not versioned, not cached by moon): skipped when already present.
+  # Pathfinding depth model (134 MB, not versioned, not cached by moon): skipped when already present.
   setup-depth:
     command: 'bash'
     args: ['scripts/download-depth-model.sh']

@@ -73,22 +73,6 @@ class AnalysisResult(BaseModel):
     pauses: Optional[list[Pause]] = None
 
 
-class BetaPreference(StrEnum):
-    """Style of the beta: easy (easiest), power (fewer and longer moves), technique (short
-    moves, more foot placements). The worker defaults to easy.
-    """
-    EASY = "easy"
-    POWER = "power"
-    TECHNIQUE = "technique"
-
-
-class GhostComputeRequest(BaseModel):
-    """Payload of ghosts.compute.requested: compute the ghost of a route. job_id is ghosts.id."""
-
-    job_id: str
-    preference: Optional[BetaPreference] = None
-
-
 class ConstraintType(StrEnum):
     INJURED = "injured"
     MISSING = "missing"
@@ -138,8 +122,8 @@ class DominantHand(StrEnum):
     RIGHT = "right"
 
 
-class GhostMorphology(BaseModel):
-    """Format of ghosts.morphology."""
+class ClimberMorphology(BaseModel):
+    """Format of ghosts.morphology: the climber body used by the pathfinding."""
 
     height_cm: float
     arm_span_cm: Optional[float] = None
@@ -147,41 +131,6 @@ class GhostMorphology(BaseModel):
 
     constraints: Optional[list[BodyConstraint]] = None
     dominant_hand: Optional[DominantHand] = None
-
-
-class GhostPoint(BaseModel):
-    x: float
-    y: float
-
-
-class GhostHolds(BaseModel):
-    """Hold id under each limb, null when the limb is free."""
-
-    left_foot: Optional[str] = None
-    left_hand: Optional[str] = None
-    right_foot: Optional[str] = None
-    right_hand: Optional[str] = None
-
-
-class GhostStep(BaseModel):
-    """One pose of the ghost. moved_limb is the limb moved to reach it, absent for the start
-    step.
-    """
-    center_of_mass: GhostPoint
-    holds: GhostHolds
-    index: int
-    landmarks: dict[str, GhostPoint]
-    moved_limb: Optional[Limb] = None
-
-
-class GhostPath(BaseModel):
-    """Format of ghosts.path. Coordinates are pixels of the route photo (y down); landmark names
-    are the keys of Frame.landmarks.
-    """
-    image_height: int
-    image_width: int
-    steps: list[GhostStep]
-    wall_angle_deg: Optional[float] = None
 
 
 class FocusArea(StrEnum):
@@ -312,16 +261,68 @@ class JobStatus(BaseModel):
     message: Optional[str] = None
 
 
+class BetaPreference(StrEnum):
+    """Style of the beta: easy (easiest), power (fewer and longer moves), technique (short
+    moves, more foot placements). The worker defaults to easy.
+    """
+    EASY = "easy"
+    POWER = "power"
+    TECHNIQUE = "technique"
+
+
+class PathfindingComputeRequest(BaseModel):
+    """Payload of pathfinding.compute.requested: compute the beta and the postures of a climber
+    on a route. job_id is ghosts.id (the row that receives the result in ghosts.path).
+    """
+    job_id: str
+    preference: Optional[BetaPreference] = None
+
+
+class Point2D(BaseModel):
+    x: float
+    y: float
+
+
+class StepHolds(BaseModel):
+    """Hold id under each limb, null when the limb is free."""
+
+    left_foot: Optional[str] = None
+    left_hand: Optional[str] = None
+    right_foot: Optional[str] = None
+    right_hand: Optional[str] = None
+
+
+class PathfindingStep(BaseModel):
+    """One pose of the climber along the beta. moved_limb is the limb moved to reach it, absent
+    for the start step.
+    """
+    center_of_mass: Point2D
+    holds: StepHolds
+    index: int
+    landmarks: dict[str, Point2D]
+    moved_limb: Optional[Limb] = None
+
+
+class PathfindingResult(BaseModel):
+    """Result of the pathfinding, stored in ghosts.path. Coordinates are pixels of the route
+    photo (y down); landmark names are the keys of Frame.landmarks.
+    """
+    image_height: int
+    image_width: int
+    steps: list[PathfindingStep]
+    wall_angle_deg: Optional[float] = None
+
+
 class PoseDetectRequest(BaseModel):
     job_id: str
     object_key: str
 
 
 class RoutingKey(StrEnum):
-    GHOSTS_COMPUTE_REQUESTED = "ghosts.compute.requested"
-    GHOSTS_COMPUTE_STATUS = "ghosts.compute.status"
     HOLDS_DETECT_REQUESTED = "holds.detect.requested"
     HOLDS_DETECT_STATUS = "holds.detect.status"
+    PATHFINDING_COMPUTE_REQUESTED = "pathfinding.compute.requested"
+    PATHFINDING_COMPUTE_STATUS = "pathfinding.compute.status"
     POSE_ADVICE_REQUESTED = "pose.advice.requested"
     POSE_ADVICE_STATUS = "pose.advice.status"
     POSE_DETECT_COMPLETED = "pose.detect.completed"

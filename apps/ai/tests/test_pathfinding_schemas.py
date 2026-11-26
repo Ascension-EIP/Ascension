@@ -1,6 +1,6 @@
 # @date 2026-11-25
-# @file test_ghost_schemas.py
-# @brief Contract tests of the ghost pathfinding schemas (generated models).
+# @file test_pathfinding_schemas.py
+# @brief Contract tests of the pathfinding schemas (generated models).
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
@@ -15,13 +15,13 @@ from shared import models
 from shared.models import (
     BetaPreference,
     BodyZone,
-    GhostComputeRequest,
-    GhostMorphology,
-    GhostPath,
-    GhostStep,
+    ClimberMorphology,
     HoldDetectRequest,
     HoldDetectResult,
     Limb,
+    PathfindingComputeRequest,
+    PathfindingResult,
+    PathfindingStep,
     RoutingKey,
     WallPlane,
 )
@@ -44,47 +44,47 @@ def _schema(name):
     return json.loads((SCHEMAS / f"{name}.schema.json").read_text())
 
 
-def test_ghost_path_validates():
-    path = GhostPath.model_validate(PATH)
-    assert isinstance(path.steps[0], GhostStep)
+def test_pathfinding_path_validates():
+    path = PathfindingResult.model_validate(PATH)
+    assert isinstance(path.steps[0], PathfindingStep)
     assert path.steps[0].moved_limb is Limb.LEFT_HAND
     assert path.steps[0].landmarks["nose"].x == 1.0
 
 
-def test_ghost_path_start_step_has_no_moved_limb():
+def test_pathfinding_path_start_step_has_no_moved_limb():
     start = {k: v for k, v in STEP.items() if k != "moved_limb"}
-    assert GhostPath.model_validate({**PATH, "steps": [start]}).steps[0].moved_limb is None
+    assert PathfindingResult.model_validate({**PATH, "steps": [start]}).steps[0].moved_limb is None
 
 
-def test_ghost_path_rejects_unknown_limb():
+def test_pathfinding_path_rejects_unknown_limb():
     with pytest.raises(ValidationError):
-        GhostPath.model_validate({**PATH, "steps": [{**STEP, "moved_limb": "head"}]})
+        PathfindingResult.model_validate({**PATH, "steps": [{**STEP, "moved_limb": "head"}]})
 
 
-def test_ghost_morphology_minimal_and_full():
-    assert GhostMorphology.model_validate({"height_cm": 175}).constraints is None
+def test_pathfinding_morphology_minimal_and_full():
+    assert ClimberMorphology.model_validate({"height_cm": 175}).constraints is None
     full = {
         "height_cm": 175,
         "arm_span_cm": 180,
         "dominant_hand": "ambidextrous",
         "constraints": [{"zone": "left_elbow", "type": "injured"}, {"zone": "right_foot", "type": "missing"}],
     }
-    assert GhostMorphology.model_validate(full).constraints[0].zone is BodyZone.LEFT_ELBOW
+    assert ClimberMorphology.model_validate(full).constraints[0].zone is BodyZone.LEFT_ELBOW
 
 
-def test_ghost_morphology_requires_height_and_valid_constraint():
+def test_pathfinding_morphology_requires_height_and_valid_constraint():
     with pytest.raises(ValidationError):
-        GhostMorphology.model_validate({})
+        ClimberMorphology.model_validate({})
     with pytest.raises(ValidationError):
-        GhostMorphology.model_validate({"height_cm": 175, "constraints": [{"zone": "left_elbow", "type": "sad"}]})
+        ClimberMorphology.model_validate({"height_cm": 175, "constraints": [{"zone": "left_elbow", "type": "sad"}]})
 
 
-def test_ghost_compute_request_preference_is_optional():
-    assert GhostComputeRequest.model_validate({"job_id": "x"}).preference is None
-    assert GhostComputeRequest.model_validate({"job_id": "x", "preference": "power"}).preference is BetaPreference.POWER
+def test_pathfinding_compute_request_preference_is_optional():
+    assert PathfindingComputeRequest.model_validate({"job_id": "x"}).preference is None
+    assert PathfindingComputeRequest.model_validate({"job_id": "x", "preference": "power"}).preference is BetaPreference.POWER
     assert {p.value for p in BetaPreference} == {"easy", "power", "technique"}
     with pytest.raises(ValidationError):
-        GhostComputeRequest.model_validate({"job_id": "x", "preference": "fast"})
+        PathfindingComputeRequest.model_validate({"job_id": "x", "preference": "fast"})
 
 
 def test_hold_detect_request_gravity_is_optional():
@@ -112,8 +112,8 @@ def test_schema_bounds_that_generated_models_do_not_enforce():
 
 
 def test_new_routing_keys():
-    assert RoutingKey("ghosts.compute.requested") is RoutingKey.GHOSTS_COMPUTE_REQUESTED
-    assert RoutingKey("ghosts.compute.status") is RoutingKey.GHOSTS_COMPUTE_STATUS
+    assert RoutingKey("pathfinding.compute.requested") is RoutingKey.PATHFINDING_COMPUTE_REQUESTED
+    assert RoutingKey("pathfinding.compute.status") is RoutingKey.PATHFINDING_COMPUTE_STATUS
 
 
 def test_no_renamed_duplicate_types():

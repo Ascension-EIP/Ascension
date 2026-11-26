@@ -1,6 +1,6 @@
 # @date 2026-11-25
-# @file test_ghost_chain.py
-# @brief Unit tests of the ghost chain: photo holds -> beta -> posture in photo pixels (synthetic photo, known homography).
+# @file test_pathfinding_chain.py
+# @brief Unit tests of the pathfinding chain: photo holds -> beta -> posture in photo pixels (synthetic photo, known homography).
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
@@ -13,22 +13,22 @@ import pytest
 from common.utils.errors import PermanentError
 from shared.models import (
     BetaPreference,
-    GhostMorphology,
-    GhostPath,
+    ClimberMorphology,
     HoldType,
     Limb,
+    PathfindingResult,
     WallPlane,
 )
-from worker._4_ghost import _4_ghost as chain
-from worker._4_ghost._0_wall import to_image, to_wall
-from worker._4_ghost._2_beta import NoBetaError
-from worker._4_ghost._3_pose import LANDMARK_NAMES, pose_from_contacts
+from worker._4_pathfinding import _4_pathfinding as chain
+from worker._4_pathfinding._0_wall import to_image, to_wall
+from worker._4_pathfinding._2_beta import NoBetaError
+from worker._4_pathfinding._3_pose import LANDMARK_NAMES, pose_from_contacts
 
 SCALE = 0.5  # cm per pixel
 WIDTH, HEIGHT = 400, 800  # photo: 200 cm x 400 cm of wall
 HOMOGRAPHY = [[SCALE, 0, 0], [0, -SCALE, HEIGHT * SCALE], [0, 0, 1]]  # pixels (y down) -> cm (y up)
 WALL = WallPlane(focal_px=1000.0, homography=HOMOGRAPHY, inlier_ratio=0.95, model="fake", angle_deg=12.0)
-MORPHOLOGY = GhostMorphology(height_cm=175, arm_span_cm=178)
+MORPHOLOGY = ClimberMorphology(height_cm=175, arm_span_cm=178)
 
 
 def square(x_cm: float, y_cm: float, side_cm: float = 10.0) -> np.ndarray:
@@ -46,7 +46,7 @@ def ladder(n: int = 12, marks: dict | None = None) -> list[chain.PhotoHold]:
 
 
 def compute(holds, selected=None, feet_free=False, preference=BetaPreference.EASY, morphology=MORPHOLOGY):
-    return chain.compute_ghost(holds, WALL, feet_free, selected, morphology, preference, (WIDTH, HEIGHT))
+    return chain.compute_pathfinding(holds, WALL, feet_free, selected, morphology, preference, (WIDTH, HEIGHT))
 
 
 # --- holds in the wall plane ---------------------------------------------------------------
@@ -95,9 +95,9 @@ def test_duplicate_hold_ids_are_rejected():
 # --- the chain -----------------------------------------------------------------------------
 
 
-def test_compute_ghost_returns_a_valid_path_in_photo_pixels():
+def test_compute_pathfinding_returns_a_valid_path_in_photo_pixels():
     path = compute(ladder())
-    GhostPath.model_validate(path.model_dump())  # the generated model accepts it
+    PathfindingResult.model_validate(path.model_dump())  # the generated model accepts it
     assert (path.image_width, path.image_height, path.wall_angle_deg) == (WIDTH, HEIGHT, 12.0)
     assert len(path.steps) >= 4
     assert [s.index for s in path.steps] == list(range(len(path.steps)))
@@ -163,15 +163,15 @@ def test_the_preference_reaches_the_search():
     assert len(power.steps) <= len(easy.steps)
 
 
-def test_beta_then_pose_equals_compute_ghost():
+def test_beta_then_pose_equals_compute_pathfinding():
     holds = ladder()
-    steps = chain.find_ghost_beta(holds, WALL, False, None, MORPHOLOGY, BetaPreference.EASY)
+    steps = chain.find_beta_for_route(holds, WALL, False, None, MORPHOLOGY, BetaPreference.EASY)
     assert chain.pose_steps(steps, holds, WALL, MORPHOLOGY.height_cm, (WIDTH, HEIGHT)) == compute(holds)
 
 
 def test_beta_json_round_trip():
     holds = ladder()
-    steps = chain.find_ghost_beta(holds, WALL, False, None, MORPHOLOGY, BetaPreference.EASY)
+    steps = chain.find_beta_for_route(holds, WALL, False, None, MORPHOLOGY, BetaPreference.EASY)
     data = chain.beta_to_json(steps, MORPHOLOGY.height_cm, BetaPreference.EASY)
     back, height = chain.beta_from_json(data)
     assert back == steps and height == 175
@@ -260,6 +260,6 @@ def test_a_depth_map_of_another_size_than_the_photo_is_refused():
 def test_render_draws_the_skeletons_on_a_copy_of_the_photo():
     path = compute(ladder())
     photo = np.full((HEIGHT, WIDTH, 3), 120, np.uint8)
-    out = chain.render_ghost(photo, path)
+    out = chain.render_pathfinding(photo, path)
     assert out.shape == photo.shape and not np.array_equal(out, photo)
     assert (photo == 120).all()  # the input is untouched

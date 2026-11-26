@@ -1,6 +1,6 @@
 # @date 2026-11-25
-# @file test_ghost_depth.py
-# @brief Tests of the metric depth estimator (ghost step C1) with a fake ONNX session, and of its CLI commands.
+# @file test_pathfinding_depth.py
+# @brief Tests of the metric depth estimator (pathfinding step C1) with a fake ONNX session, and of its CLI commands.
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 
 from worker import cli, runtime
-from worker._4_ghost import _1_depth as depth_mod
+from worker._4_pathfinding import _1_depth as depth_mod
 
 # Synthetic camera: a plane 3 m away, seen with a 600 px focal on a 160x120 image.
 TRUE_FOCAL_PX, PLANE_M = 600.0, 3.0
@@ -228,27 +228,27 @@ def test_depth_eval_command_fails_cleanly_without_annotations(tmp_path, fake_run
     assert exit_info.value.code == 1
 
 
-def test_ghost_depth_command_writes_the_depth_in_metres_and_prints_the_focal(tmp_path, fake_runtime, capsys):
+def test_pathfinding_depth_command_writes_the_depth_in_metres_and_prints_the_focal(tmp_path, fake_runtime, capsys):
     cv2.imwrite(str(tmp_path / "wall.jpg"), photo(160, 120))
     out, render = tmp_path / "depth.npy", tmp_path / "depth.png"
-    cli.main(["ghost-depth", "--image", str(tmp_path / "wall.jpg"), "--out", str(out), "--render", str(render)])
+    cli.main(["pathfinding-depth", "--image", str(tmp_path / "wall.jpg"), "--out", str(out), "--render", str(render)])
     depth = np.load(out)
     assert depth.shape == (120, 160) and depth.dtype == np.float32 and depth[0, 0] == PLANE_M
     assert cv2.imread(str(render)).shape == (120, 160, 3)
     assert f"focal {TRUE_FOCAL_PX:.1f} px" in capsys.readouterr().out
 
 
-def test_ghost_depth_command_without_render_writes_only_the_depth(tmp_path, fake_runtime):
+def test_pathfinding_depth_command_without_render_writes_only_the_depth(tmp_path, fake_runtime):
     cv2.imwrite(str(tmp_path / "wall.jpg"), photo(160, 120))
-    cli.main(["ghost-depth", "--image", str(tmp_path / "wall.jpg"), "--out", str(tmp_path / "depth.npy")])
+    cli.main(["pathfinding-depth", "--image", str(tmp_path / "wall.jpg"), "--out", str(tmp_path / "depth.npy")])
     assert sorted(p.name for p in tmp_path.iterdir()) == ["depth.npy", "wall.jpg"]
 
 
-def test_ghost_depth_command_rejects_a_file_that_is_not_an_image(tmp_path, fake_runtime):
+def test_pathfinding_depth_command_rejects_a_file_that_is_not_an_image(tmp_path, fake_runtime):
     bad = tmp_path / "wall.jpg"
     bad.write_text("not an image")
     with pytest.raises(SystemExit) as exit_info:
-        cli.main(["ghost-depth", "--image", str(bad), "--out", str(tmp_path / "depth.npy")])
+        cli.main(["pathfinding-depth", "--image", str(bad), "--out", str(tmp_path / "depth.npy")])
     assert exit_info.value.code == 1
     assert not (tmp_path / "depth.npy").exists()
 

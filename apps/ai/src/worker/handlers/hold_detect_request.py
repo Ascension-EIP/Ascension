@@ -32,13 +32,13 @@ PROGRESS_DETECTION_START = 10
 
 
 def _estimate_wall(photo_path: str, result: HoldDetectResult, gravity: list[float] | None, route_id: str) -> WallPlane | None:
-    """Wall plane of the photo for the ghost mode, or ``None``: a failure here never fails the detection."""
+    """Wall plane of the photo for the pathfinding, or ``None``: a failure here never fails the detection."""
     try:
         import numpy as np
 
         from worker._3_holds._0_hold_detect import read_image
-        from worker._4_ghost._1_depth import depth_model_path
-        from worker._4_ghost._4_ghost import estimate_photo_wall
+        from worker._4_pathfinding._1_depth import depth_model_path
+        from worker._4_pathfinding._4_pathfinding import estimate_photo_wall
 
         polygons = [np.array([(p.x, p.y) for p in hold.contour.points]) for hold in result.holds]
         model = Path(depth_model_path()).stem
@@ -66,7 +66,7 @@ def hold_detect_request(payload: HoldDetectRequest):
     try:
         if payload.gravity is not None:
             stage = "gravity"
-            from worker._4_ghost._4_ghost import validate_gravity
+            from worker._4_pathfinding._4_pathfinding import validate_gravity
 
             validate_gravity(payload.gravity)
             stage = "db"

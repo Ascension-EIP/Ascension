@@ -1,4 +1,4 @@
--- Ghost pathfinding (AI worker, queue ghosts.compute).
+-- Pathfinding (AI worker, queue pathfinding.compute): start and finish marks, free feet, wall plane, result in ghosts.path.
 -- holds gets the start and finish marks of the route: how many limbs start on (1 to 4) or must
 -- finish on (1 to 2) the hold. NULL means the hold is not a start or finish hold.
 -- routes gets feet_free (every usable hold of the photo can hold a foot) and the wall plane

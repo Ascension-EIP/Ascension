@@ -1,6 +1,6 @@
 # @date 2026-11-25
 # @file _2_beta.py
-# @brief C2 of the ghost: A* search of a feasible beta over four-limb states.
+# @brief C2 of the pathfinding: A* search of a feasible beta over four-limb states.
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
@@ -20,8 +20,8 @@ from dataclasses import dataclass
 from common.utils.errors import PermanentError
 from shared.models import (
     BetaPreference,
+    ClimberMorphology,
     ConstraintType,
-    GhostMorphology,
     HoldType,
     Limb,
 )
@@ -138,8 +138,8 @@ def _limb_of_zone(zone: str) -> Limb | None:
     return None
 
 
-def body_from_morphology(morphology: GhostMorphology) -> Body:
-    """Build the `Body` of a ghost morphology (zones mapped to limbs)."""
+def body_from_morphology(morphology: ClimberMorphology) -> Body:
+    """Build the `Body` of a climber morphology (zones mapped to limbs)."""
     limbs = {c.type: set() for c in morphology.constraints or []}
     for c in morphology.constraints or []:
         limb = _limb_of_zone(c.zone.value)

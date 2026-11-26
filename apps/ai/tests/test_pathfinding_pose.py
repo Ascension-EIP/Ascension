@@ -1,6 +1,6 @@
 # @date 2026-11-25
-# @file test_ghost_pose.py
-# @brief Unit tests of the ghost posture reconstruction (inverse kinematics from 4 contacts).
+# @file test_pathfinding_pose.py
+# @brief Unit tests of the pathfinding posture reconstruction (inverse kinematics from 4 contacts).
 # @project Ascension
 # @author Gianni TUERO <gianni.tuero@epitech.eu>
 # @copyright (c) 2026 Ascension
@@ -8,7 +8,11 @@
 import math
 
 from shared.models import Limb
-from worker._4_ghost._3_pose import LANDMARK_NAMES, center_of_mass, pose_from_contacts
+from worker._4_pathfinding._3_pose import (
+    LANDMARK_NAMES,
+    center_of_mass,
+    pose_from_contacts,
+)
 
 H = 175.0
 ARM1, ARM2 = 0.186 * H, 0.146 * H
