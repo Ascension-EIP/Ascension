@@ -54,7 +54,7 @@ def summarize_3d_for_ai(full_data: dict[str, Any], sample_rate: int = 15) -> lis
 class Advice3DGenerator:
     """Coaching advice generator tailored to 3D spatial body posture."""
 
-    def __init__(self, api_key: str | None = None, model_name: str = "gemini-3.1-flash-lite"):
+    def __init__(self, api_key: str | None = None, model_name: str = "gemini-3.5-flash-lite"):
         self.api_key = api_key
         self.model_name = model_name
 

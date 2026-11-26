@@ -112,8 +112,8 @@ def url() -> str:
     url = postgres_url()
     try:
         with psycopg.connect(url, connect_timeout=3) as c:
-            c.execute("SELECT hints FROM analyses LIMIT 0")
-    except psycopg.errors.UndefinedColumn:
+            c.execute("SELECT 1 FROM advices LIMIT 0")
+    except psycopg.errors.UndefinedTable:
         pytest.skip("PostgreSQL: migrations not applied (moon run server:migrate)")
     except psycopg.Error as e:
         pytest.skip(f"PostgreSQL unreachable ({type(e).__name__}); set TEST_POSTGRES_URL or POSTGRES_*")
@@ -121,7 +121,7 @@ def url() -> str:
         _consumers("poses.detect")
     except (AMQPError, OSError) as e:
         pytest.skip(f"RabbitMQ unreachable ({type(e).__name__})")
-    endpoint = os.getenv("RUSTFS_ENDPOINT", "http://localhost:9000")
+    endpoint = os.getenv("STORAGE_ENDPOINT") or os.getenv("RUSTFS_ENDPOINT") or "http://localhost:9000"
     try:
         urllib.request.urlopen(f"{endpoint}/health", timeout=3).close()
     except OSError as e:

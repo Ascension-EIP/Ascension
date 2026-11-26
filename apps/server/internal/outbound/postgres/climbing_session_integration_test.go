@@ -1,4 +1,4 @@
-// @date 2026-11-12
+// @date 2026-11-14
 // @file climbing_session_integration_test.go
 // @brief PostgreSQL integration tests of the climbing session repository, the video link and its migration.
 // @project Ascension
@@ -257,7 +257,9 @@ func TestFixVideosClimbingSessionForeignKeyMigration(t *testing.T) {
 	t.Cleanup(func() { m.Close() })
 
 	// Back to the schema before the migration, where videos.climbing_session_id referenced users(id).
-	if err := m.Steps(-1); err != nil {
+	// Versions are explicit so that later migrations do not shift the one under test.
+	const beforeFix, fix = 20261030200100, 20261112120000
+	if err := m.Migrate(beforeFix); err != nil {
 		t.Fatalf("migrate down: %v", err)
 	}
 	assertForeignKeyTarget(t, db, "videos_climbing_session_id_fkey", "users")
@@ -273,7 +275,7 @@ func TestFixVideosClimbingSessionForeignKeyMigration(t *testing.T) {
 	}
 	linkedVideo := db.CreateVideo(t, userID, &sessionOwner)
 
-	if err := m.Steps(1); err != nil {
+	if err := m.Migrate(fix); err != nil {
 		t.Fatalf("migrate up: %v", err)
 	}
 	assertForeignKeyTarget(t, db, "videos_climbing_session_id_fkey", "climbing_sessions")

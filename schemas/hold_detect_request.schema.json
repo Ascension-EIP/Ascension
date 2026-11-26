@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HoldDetectRequest",
+  "description": "Payload of holds.detect.requested: detect the holds of a route photo. job_id is routes.id.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["job_id", "object_key"],
+  "properties": {
+    "job_id": { "type": "string" },
+    "object_key": { "type": "string" },
+    "gravity": {
+      "description": "Direction of the ground in the camera frame of the photo (OpenCV axes: x right, y down, z forward), any norm; sent by the mobile from the accelerometer.",
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 3,
+      "maxItems": 3
+    }
+  }
+}

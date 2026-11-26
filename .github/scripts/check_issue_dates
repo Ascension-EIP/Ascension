@@ -1,0 +1,328 @@
+#!/usr/bin/env python3
+"""
+Script validating that Start Date and End Date are set in GitHub Projects upon issue closure.
+Reopens the issue and leaves a comment mentioning the closer if:
+- The issue is not linked to any GitHub Project, OR
+- The Start Date is missing, OR
+- The End Date is missing.
+"""
+
+import json
+import os
+import sys
+import unicodedata
+import urllib.error
+import urllib.request
+
+
+is_github_actions = os.environ.get("GITHUB_ACTIONS") == "true"
+
+
+def log_notice(msg: str):
+    prefix = "::notice::" if is_github_actions else ""
+    print(f"{prefix}{msg}")
+
+
+def log_warning(msg: str):
+    prefix = "::warning::" if is_github_actions else ""
+    print(f"{prefix}{msg}")
+
+
+def log_error(msg: str):
+    prefix = "::error::" if is_github_actions else ""
+    print(f"{prefix}{msg}")
+
+
+def send_api_request(url: str, method: str = "GET", data: dict = None, token: str = None) -> tuple[int, dict]:
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "Ascension-Issue-Dates-Checker",
+    }
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+
+    encoded_data = json.dumps(data).encode("utf-8") if data is not None else None
+    if encoded_data:
+        headers["Content-Type"] = "application/json"
+
+    req = urllib.request.Request(url, data=encoded_data, method=method, headers=headers)
+    try:
+        with urllib.request.urlopen(req) as resp:
+            content = resp.read().decode("utf-8")
+            return resp.status, json.loads(content) if content else {}
+    except urllib.error.HTTPError as err:
+        err_body = err.read().decode("utf-8")
+        try:
+            parsed = json.loads(err_body)
+        except Exception:
+            parsed = {"raw": err_body}
+        return err.code, parsed
+
+
+def query_graphql(token: str, query: str, variables: dict) -> tuple[int, dict]:
+    url = "https://api.github.com/graphql"
+    return send_api_request(url, method="POST", data={"query": query, "variables": variables}, token=token)
+
+
+def reopen_issue(token: str, repo: str, issue_number: int):
+    url = f"https://api.github.com/repos/{repo}/issues/{issue_number}"
+    status, res = send_api_request(url, method="PATCH", data={"state": "open"}, token=token)
+    if status in (200, 201):
+        log_notice(f"Issue #{issue_number} successfully reopened.")
+    else:
+        log_error(f"Failed to reopen issue #{issue_number} (HTTP {status}): {res}")
+
+
+def post_comment(token: str, repo: str, issue_number: int, comment: str):
+    url = f"https://api.github.com/repos/{repo}/issues/{issue_number}/comments"
+    status, res = send_api_request(url, method="POST", data={"body": comment}, token=token)
+    if status in (200, 201):
+        log_notice(f"Comment successfully posted on issue #{issue_number}.")
+    else:
+        log_error(f"Failed to post comment on issue #{issue_number} (HTTP {status}): {res}")
+
+
+def normalize_text(text: str) -> str:
+    if not text:
+        return ""
+    norm = unicodedata.normalize("NFKD", text).encode("ASCII", "ignore").decode("utf-8")
+    return norm.strip().lower()
+
+
+def evaluate_project_dates(project_items: list) -> dict:
+    if not project_items:
+        return {
+            "in_project": False,
+            "has_start_date": False,
+            "has_end_date": False,
+            "start_date": None,
+            "end_date": None,
+            "project_name": None,
+        }
+
+    best_result = None
+
+    for item in project_items:
+        project_title = item.get("project", {}).get("title") or "GitHub Project"
+        field_values = item.get("fieldValues", {}).get("nodes", [])
+
+        start_date = None
+        end_date = None
+
+        for val_node in field_values:
+            field = val_node.get("field", {})
+            field_name = field.get("name", "")
+            norm_name = normalize_text(field_name)
+
+            val = None
+            typename = val_node.get("__typename")
+            if typename == "ProjectV2ItemFieldDateValue":
+                val = val_node.get("date")
+            elif typename == "ProjectV2ItemFieldIterationValue":
+                val = val_node.get("startDate")
+            elif typename == "ProjectV2ItemFieldTextValue":
+                val = val_node.get("text")
+            elif typename == "ProjectV2ItemFieldSingleSelectValue":
+                val = val_node.get("name")
+
+            if val:
+                # Check for start date matching keywords
+                if any(k in norm_name for k in ["start", "debut"]):
+                    start_date = val
+                # Check for end date matching keywords
+                elif any(k in norm_name for k in ["end", "fin", "due", "target", "deadline"]):
+                    end_date = val
+
+        has_start = bool(start_date)
+        has_end = bool(end_date)
+
+        current_res = {
+            "in_project": True,
+            "has_start_date": has_start,
+            "has_end_date": has_end,
+            "start_date": start_date,
+            "end_date": end_date,
+            "project_name": project_title,
+        }
+
+        # If a project has both dates, return immediately as success
+        if has_start and has_end:
+            return current_res
+
+        if best_result is None or (has_start or has_end):
+            best_result = current_res
+
+    return best_result or {
+        "in_project": True,
+        "has_start_date": False,
+        "has_end_date": False,
+        "start_date": None,
+        "end_date": None,
+        "project_name": project_items[0].get("project", {}).get("title", "GitHub Project"),
+    }
+
+
+def main():
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if not token:
+        log_error("Missing GITHUB_TOKEN or GH_TOKEN environment variable.")
+        sys.exit(1)
+
+    event_path = os.environ.get("GITHUB_EVENT_PATH")
+    if not event_path or not os.path.exists(event_path):
+        log_error("GITHUB_EVENT_PATH is not set or file does not exist.")
+        sys.exit(1)
+
+    with open(event_path, "r", encoding="utf-8") as f:
+        event = json.load(f)
+
+    repo_full = event.get("repository", {}).get("full_name")
+    issue = event.get("issue")
+    if not issue or not repo_full or "/" not in repo_full:
+        log_error("Missing issue or repository data in GitHub event payload.")
+        sys.exit(1)
+
+    owner, repo = repo_full.split("/", 1)
+    issue_number = issue.get("number")
+    closer = (
+        event.get("sender", {}).get("login")
+        or issue.get("closed_by", {}).get("login")
+        or "contributeur"
+    )
+
+    log_notice(f"Checking GitHub Project dates for closed issue #{issue_number} by @{closer}")
+
+    graphql_query = """
+    query($owner: String!, $repo: String!, $issue_number: Int!) {
+      repository(owner: $owner, name: $repo) {
+        issue(number: $issue_number) {
+          projectItems(first: 20) {
+            nodes {
+              id
+              project {
+                id
+                title
+                number
+              }
+              fieldValues(first: 50) {
+                nodes {
+                  __typename
+                  ... on ProjectV2ItemFieldDateValue {
+                    date
+                    field {
+                      ... on ProjectV2FieldCommon {
+                        name
+                        dataType
+                      }
+                    }
+                  }
+                  ... on ProjectV2ItemFieldIterationValue {
+                    startDate
+                    duration
+                    title
+                    field {
+                      ... on ProjectV2FieldCommon {
+                        name
+                        dataType
+                      }
+                    }
+                  }
+                  ... on ProjectV2ItemFieldTextValue {
+                    text
+                    field {
+                      ... on ProjectV2FieldCommon {
+                        name
+                        dataType
+                      }
+                    }
+                  }
+                  ... on ProjectV2ItemFieldSingleSelectValue {
+                    name
+                    field {
+                      ... on ProjectV2FieldCommon {
+                        name
+                        dataType
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    """
+
+    status, gql_response = query_graphql(token, graphql_query, {
+        "owner": owner,
+        "repo": repo,
+        "issue_number": issue_number,
+    })
+
+    if status != 200 or "errors" in gql_response:
+        errors = gql_response.get("errors", [])
+        error_messages = [e.get("message", "") for e in errors]
+        # Check if error is due to scope
+        if any("read:project" in m or "INSUFFICIENT_SCOPES" in m for m in error_messages):
+            log_warning(
+                "GITHUB_TOKEN lacks 'read:project' scope to query GitHub Projects v2. "
+                "Ensure APP_ID/APP_PRIVATE_KEY or a token with 'read:project' is configured."
+            )
+            # In case of missing scopes on runner token, we cannot determine project dates.
+            # Do not block workflow with crash, but warn visibly.
+            sys.exit(0)
+        else:
+            log_error(f"GraphQL request failed (HTTP {status}): {gql_response}")
+            sys.exit(1)
+
+    issue_data = gql_response.get("data", {}).get("repository", {}).get("issue")
+    if not issue_data:
+        log_error(f"Could not retrieve issue #{issue_number} from GraphQL data.")
+        sys.exit(1)
+
+    project_items = issue_data.get("projectItems", {}).get("nodes", [])
+    eval_result = evaluate_project_dates(project_items)
+
+    # Success: both dates are present in project
+    if eval_result["has_start_date"] and eval_result["has_end_date"]:
+        log_notice(
+            f"Issue #{issue_number} has both Start Date ({eval_result['start_date']}) "
+            f"and End Date ({eval_result['end_date']}) in project '{eval_result['project_name']}'."
+        )
+        sys.exit(0)
+
+    # Failure: Not in project or missing date(s)
+    log_warning(f"Issue #{issue_number} closed without complete GitHub Project dates.")
+
+    if not eval_result["in_project"]:
+        details = (
+            "❌ **Cette issue n'est rattachée à aucun GitHub Project.**\n\n"
+            "Merci de l'ajouter au GitHub Project de l'équipe et de renseigner sa date de début et sa date de fin."
+        )
+    else:
+        start_desc = f"✅ `{eval_result['start_date']}`" if eval_result["has_start_date"] else "❌ **Manquante**"
+        end_desc = f"✅ `{eval_result['end_date']}`" if eval_result["has_end_date"] else "❌ **Manquante**"
+        details = (
+            f"Projet associé : **{eval_result['project_name']}**\n\n"
+            f"- **Date de début** : {start_desc}\n"
+            f"- **Date de fin** : {end_desc}"
+        )
+
+    comment = (
+        f"Bonjour @{closer},\n\n"
+        "Cette issue a été **réouverte automatiquement**.\n\n"
+        "⚠️ **La date de début et la date de fin doivent impérativement être renseignées sur l'issue.**\n\n"
+        f"{details}\n\n"
+        "Il est absolument obligatoire d'indiquer la **date de début** et la **date de fin** "
+        "(paramètres du GitHub Project) avant de pouvoir clore cette issue."
+    )
+
+    reopen_issue(token, repo_full, issue_number)
+    post_comment(token, repo_full, issue_number, comment)
+    sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

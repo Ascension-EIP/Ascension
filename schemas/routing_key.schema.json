@@ -7,6 +7,10 @@
     "pose.detect.completed",
     "pose.advice.requested",
     "pose.detect.status",
-    "pose.advice.status"
+    "pose.advice.status",
+    "holds.detect.requested",
+    "holds.detect.status",
+    "pathfinding.compute.requested",
+    "pathfinding.compute.status"
   ]
 }

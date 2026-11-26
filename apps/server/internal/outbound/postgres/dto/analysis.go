@@ -23,7 +23,6 @@ type Analysis struct {
 	Status           model.JobStatus        `db:"status"`
 	Visibility       model.Visibility       `db:"visibility"`
 	Result           *shared.AnalysisResult `db:"result"`
-	Advice           *string                `db:"advice"`
 	Error            *string                `db:"error"`
 	Progress         int16                  `db:"progress"`
 	ProcessingTimeMS *time.Duration         `db:"processing_time_ms"`
@@ -31,7 +30,6 @@ type Analysis struct {
 	CompletedAt      *time.Time             `db:"completed_at"`
 	CreatedAt        time.Time              `db:"created_at"`
 	UpdatedAt        time.Time              `db:"updated_at"`
-	Hints            *shared.Hints          `db:"hints"`
 }
 
 func (a Analysis) ToAnalysis() model.Analysis {
@@ -43,14 +41,12 @@ func (a Analysis) ToAnalysis() model.Analysis {
 		Visibility:       a.Visibility,
 		Progress:         a.Progress,
 		Result:           a.Result,
-		Advice:           a.Advice,
 		Error:            a.Error,
 		ProcessingTimeMS: a.ProcessingTimeMS,
 		StartedAt:        a.StartedAt,
 		CompletedAt:      a.CompletedAt,
 		CreatedAt:        a.CreatedAt,
 		UpdatedAt:        a.UpdatedAt,
-		Hints:            a.Hints,
 	}
 }
 

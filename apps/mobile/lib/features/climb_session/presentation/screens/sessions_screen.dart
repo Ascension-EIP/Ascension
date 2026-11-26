@@ -70,256 +70,252 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
 
     return FScaffold(
       header: FHeader(title: Text(context.tr('sessions.title'))),
-      child: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () =>
-              ref.read(climbSessionControllerProvider.notifier).loadSessions(),
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 540),
-              child: Skeletonizer(
-                enabled: state.isLoading,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Main Action: Start new session OR Resume active session
-                    if (hasActive && activeSession != null)
-                      _ActiveSessionCard(
-                        session: activeSession,
-                        formattedDuration: state.formattedActiveDuration,
-                        onPress: () => unawaited(
-                          context.pushNamed(AppRoute.activeSession.name),
-                        ),
-                      ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.04)
-                    else
-                      FButton(
-                        onPress: () => unawaited(
-                          context.pushNamed(AppRoute.newSession.name),
-                        ),
-                        prefix: const Padding(
-                          padding: EdgeInsets.only(right: 8),
-                          child: Icon(FLucideIcons.play, size: 16),
-                        ),
-                        child: Text(context.tr('sessions.startNew')),
-                      ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.04),
+      child: RefreshIndicator(
+        onRefresh: () =>
+            ref.read(climbSessionControllerProvider.notifier).loadSessions(),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 540),
+            child: Skeletonizer(
+              enabled: state.isLoading,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Main Action: Start new session OR Resume active session
+                  if (hasActive && activeSession != null)
+                    _ActiveSessionCard(
+                      session: activeSession,
+                      formattedDuration: state.formattedActiveDuration,
+                      onPress: () => unawaited(
+                        context.pushNamed(AppRoute.activeSession.name),
+                      ),
+                    ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.04)
+                  else
+                    FButton(
+                      onPress: () => unawaited(
+                        context.pushNamed(AppRoute.newSession.name),
+                      ),
+                      prefix: const Padding(
+                        padding: EdgeInsets.only(right: 8),
+                        child: Icon(FLucideIcons.play, size: 16),
+                      ),
+                      child: Text(context.tr('sessions.startNew')),
+                    ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.04),
 
-                    const SizedBox(height: 28),
+                  const SizedBox(height: 28),
 
-                    // Section 1: Sessions précédentes with Sort filter
-                    Wrap(
-                      alignment: WrapAlignment.spaceBetween,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 8,
-                      runSpacing: 8,
+                  // Section 1: Sessions précédentes with Sort filter
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      Text(
+                        context.tr('sessions.previous'),
+                        style: context.theme.typography.body.md.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Skeleton.ignore(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              context.tr('sessions.sortBy'),
+                              style: context.theme.typography.body.xs.copyWith(
+                                color: context.theme.colors.mutedForeground,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            PopupMenuButton<_SessionFilter>(
+                              initialValue: _selectedFilter,
+                              onSelected: (filter) =>
+                                  setState(() => _selectedFilter = filter),
+                              color: context.theme.colors.background,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                side: BorderSide(
+                                  color: context.theme.colors.border,
+                                ),
+                              ),
+                              itemBuilder: (context) => [
+                                PopupMenuItem(
+                                  value: _SessionFilter.all,
+                                  child: Text(
+                                    context.tr('sessions.sort.all'),
+                                    style: context.theme.typography.body.sm
+                                        .copyWith(
+                                          fontWeight:
+                                              _selectedFilter ==
+                                                  _SessionFilter.all
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                        ),
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: _SessionFilter.friends,
+                                  child: Text(
+                                    context.tr('sessions.sort.friends'),
+                                    style: context.theme.typography.body.sm
+                                        .copyWith(
+                                          fontWeight:
+                                              _selectedFilter ==
+                                                  _SessionFilter.friends
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                        ),
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: _SessionFilter.public,
+                                  child: Text(
+                                    context.tr('sessions.sort.public'),
+                                    style: context.theme.typography.body.sm
+                                        .copyWith(
+                                          fontWeight:
+                                              _selectedFilter ==
+                                                  _SessionFilter.public
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                        ),
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: _SessionFilter.private,
+                                  child: Text(
+                                    context.tr('sessions.sort.private'),
+                                    style: context.theme.typography.body.sm
+                                        .copyWith(
+                                          fontWeight:
+                                              _selectedFilter ==
+                                                  _SessionFilter.private
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                        ),
+                                  ),
+                                ),
+                              ],
+                              child: _FilterChip(
+                                label: _filterLabel(context, _selectedFilter),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  if (filteredSessions.isEmpty)
+                    FCard(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 24,
+                        ),
+                        child: Center(
+                          child: Text(
+                            context.tr('sessions.empty'),
+                            style: context.theme.typography.body.sm.copyWith(
+                              color: context.theme.colors.mutedForeground,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    Column(
                       children: [
-                        Text(
-                          context.tr('sessions.previous'),
-                          style: context.theme.typography.body.md.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Skeleton.ignore(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                context.tr('sessions.sortBy'),
-                                style: context.theme.typography.body.xs
-                                    .copyWith(
-                                      color:
-                                          context.theme.colors.mutedForeground,
-                                    ),
-                              ),
-                              const SizedBox(width: 6),
-                              PopupMenuButton<_SessionFilter>(
-                                initialValue: _selectedFilter,
-                                onSelected: (filter) =>
-                                    setState(() => _selectedFilter = filter),
-                                color: context.theme.colors.background,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  side: BorderSide(
-                                    color: context.theme.colors.border,
-                                  ),
-                                ),
-                                itemBuilder: (context) => [
-                                  PopupMenuItem(
-                                    value: _SessionFilter.all,
-                                    child: Text(
-                                      context.tr('sessions.sort.all'),
-                                      style: context.theme.typography.body.sm
-                                          .copyWith(
-                                            fontWeight:
-                                                _selectedFilter ==
-                                                    _SessionFilter.all
-                                                ? FontWeight.bold
-                                                : FontWeight.normal,
-                                          ),
-                                    ),
-                                  ),
-                                  PopupMenuItem(
-                                    value: _SessionFilter.friends,
-                                    child: Text(
-                                      context.tr('sessions.sort.friends'),
-                                      style: context.theme.typography.body.sm
-                                          .copyWith(
-                                            fontWeight:
-                                                _selectedFilter ==
-                                                    _SessionFilter.friends
-                                                ? FontWeight.bold
-                                                : FontWeight.normal,
-                                          ),
-                                    ),
-                                  ),
-                                  PopupMenuItem(
-                                    value: _SessionFilter.public,
-                                    child: Text(
-                                      context.tr('sessions.sort.public'),
-                                      style: context.theme.typography.body.sm
-                                          .copyWith(
-                                            fontWeight:
-                                                _selectedFilter ==
-                                                    _SessionFilter.public
-                                                ? FontWeight.bold
-                                                : FontWeight.normal,
-                                          ),
-                                    ),
-                                  ),
-                                  PopupMenuItem(
-                                    value: _SessionFilter.private,
-                                    child: Text(
-                                      context.tr('sessions.sort.private'),
-                                      style: context.theme.typography.body.sm
-                                          .copyWith(
-                                            fontWeight:
-                                                _selectedFilter ==
-                                                    _SessionFilter.private
-                                                ? FontWeight.bold
-                                                : FontWeight.normal,
-                                          ),
-                                    ),
-                                  ),
-                                ],
-                                child: _FilterChip(
-                                  label: _filterLabel(context, _selectedFilter),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        for (int i = 0; i < filteredSessions.length; i++) ...[
+                          _PreviousSessionCard(session: filteredSessions[i])
+                              .animate()
+                              .fadeIn(
+                                duration: 250.ms,
+                                delay: (30 * i).ms,
+                                curve: Curves.easeOut,
+                              )
+                              .slideY(begin: 0.03, end: 0),
+                          if (i < filteredSessions.length - 1)
+                            const SizedBox(height: 10),
+                        ],
                       ],
                     ),
 
-                    const SizedBox(height: 12),
+                  const SizedBox(height: 28),
+                  const Divider(),
+                  const SizedBox(height: 20),
 
-                    if (filteredSessions.isEmpty)
-                      FCard(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 24,
-                          ),
-                          child: Center(
-                            child: Text(
-                              context.tr('sessions.empty'),
-                              style: context.theme.typography.body.sm.copyWith(
-                                color: context.theme.colors.mutedForeground,
-                              ),
+                  // Section 2: Démarrer une analyse Button
+                  FButton(
+                    variant: FButtonVariant.outline,
+                    onPress: _handleStartAnalysis,
+                    prefix: const Padding(
+                      padding: EdgeInsets.only(right: 8),
+                      child: Icon(FLucideIcons.scan, size: 16),
+                    ),
+                    child: Text(context.tr('sessions.startAnalysisButton')),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Section 2.b: Analyses précédentes
+                  Text(
+                    context.tr('sessions.previousAnalysesTitle'),
+                    style: context.theme.typography.body.md.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  if (state.previousAnalyses.isEmpty)
+                    FCard(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 20,
+                        ),
+                        child: Center(
+                          child: Text(
+                            context.tr('sessions.noPreviousAnalyses'),
+                            style: context.theme.typography.body.sm.copyWith(
+                              color: context.theme.colors.mutedForeground,
                             ),
                           ),
                         ),
-                      )
-                    else
-                      Column(
-                        children: [
-                          for (int i = 0; i < filteredSessions.length; i++) ...[
-                            _PreviousSessionCard(session: filteredSessions[i])
-                                .animate()
-                                .fadeIn(
-                                  duration: 250.ms,
-                                  delay: (30 * i).ms,
-                                  curve: Curves.easeOut,
-                                )
-                                .slideY(begin: 0.03, end: 0),
-                            if (i < filteredSessions.length - 1)
-                              const SizedBox(height: 10),
-                          ],
+                      ),
+                    )
+                  else
+                    Column(
+                      children: [
+                        for (
+                          int i = 0;
+                          i < state.previousAnalyses.length;
+                          i++
+                        ) ...[
+                          _PreviousAnalysisCard(
+                                analysis: state.previousAnalyses[i],
+                              )
+                              .animate()
+                              .fadeIn(
+                                duration: 250.ms,
+                                delay: (30 * i).ms,
+                                curve: Curves.easeOut,
+                              )
+                              .slideY(begin: 0.03, end: 0),
+                          if (i < state.previousAnalyses.length - 1)
+                            const SizedBox(height: 10),
                         ],
-                      ),
-
-                    const SizedBox(height: 28),
-                    const Divider(),
-                    const SizedBox(height: 20),
-
-                    // Section 2: Démarrer une analyse Button
-                    FButton(
-                      variant: FButtonVariant.outline,
-                      onPress: _handleStartAnalysis,
-                      prefix: const Padding(
-                        padding: EdgeInsets.only(right: 8),
-                        child: Icon(FLucideIcons.scan, size: 16),
-                      ),
-                      child: Text(context.tr('sessions.startAnalysisButton')),
+                      ],
                     ),
 
-                    const SizedBox(height: 24),
-
-                    // Section 2.b: Analyses précédentes
-                    Text(
-                      context.tr('sessions.previousAnalysesTitle'),
-                      style: context.theme.typography.body.md.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    if (state.previousAnalyses.isEmpty)
-                      FCard(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 20,
-                          ),
-                          child: Center(
-                            child: Text(
-                              context.tr('sessions.noPreviousAnalyses'),
-                              style: context.theme.typography.body.sm.copyWith(
-                                color: context.theme.colors.mutedForeground,
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
-                    else
-                      Column(
-                        children: [
-                          for (
-                            int i = 0;
-                            i < state.previousAnalyses.length;
-                            i++
-                          ) ...[
-                            _PreviousAnalysisCard(
-                                  analysis: state.previousAnalyses[i],
-                                )
-                                .animate()
-                                .fadeIn(
-                                  duration: 250.ms,
-                                  delay: (30 * i).ms,
-                                  curve: Curves.easeOut,
-                                )
-                                .slideY(begin: 0.03, end: 0),
-                            if (i < state.previousAnalyses.length - 1)
-                              const SizedBox(height: 10),
-                          ],
-                        ],
-                      ),
-
-                    const SizedBox(height: 20),
-                  ],
-                ),
+                  const SizedBox(height: 20),
+                ],
               ),
             ),
           ),

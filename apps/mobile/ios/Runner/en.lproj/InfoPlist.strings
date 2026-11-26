@@ -1,0 +1,2 @@
+/* Face ID permission description */
+"NSFaceIDUsageDescription" = "Authenticate to sign in to your Ascension account securely.";

@@ -1,10 +1,3 @@
-# @date 2026-11-01
-# @file models.py
-# @brief File description.
-# @project Ascension
-# @author Gianni TUERO <gianni.tuero@epitech.eu>
-# @copyright (c) 2026 Ascension
-# @status done
 from pydantic import BaseModel
 from typing import Optional
 from enum import StrEnum
@@ -80,6 +73,11 @@ class AnalysisResult(BaseModel):
     pauses: Optional[list[Pause]] = None
 
 
+class ConstraintType(StrEnum):
+    INJURED = "injured"
+    MISSING = "missing"
+
+
 class BodyZone(StrEnum):
     HEAD = "head"
     LEFT_ANKLE = "left_ankle"
@@ -113,6 +111,28 @@ class BodyZone(StrEnum):
     TORSO = "torso"
 
 
+class BodyConstraint(BaseModel):
+    type: ConstraintType
+    zone: BodyZone
+
+
+class DominantHand(StrEnum):
+    AMBIDEXTROUS = "ambidextrous"
+    LEFT = "left"
+    RIGHT = "right"
+
+
+class ClimberMorphology(BaseModel):
+    """Format of pathfindings.morphology: the climber body used by the pathfinding."""
+
+    height_cm: float
+    arm_span_cm: Optional[float] = None
+    """Defaults to height_cm."""
+
+    constraints: Optional[list[BodyConstraint]] = None
+    dominant_hand: Optional[DominantHand] = None
+
+
 class FocusArea(StrEnum):
     ENDURANCE = "endurance"
     FLEXIBILITY = "flexibility"
@@ -138,6 +158,91 @@ class Hints(BaseModel):
     summary: str
 
 
+class HoldDetectRequest(BaseModel):
+    """Payload of holds.detect.requested: detect the holds of a route photo. job_id is routes.id."""
+
+    job_id: str
+    object_key: str
+    gravity: Optional[list[float]] = None
+    """Direction of the ground in the camera frame of the photo (OpenCV axes: x right, y down, z
+    forward), any norm; sent by the mobile from the accelerometer.
+    """
+
+
+class HoldColor(BaseModel):
+    """Dominant colour of the hold. rgb is reliable for display; name is the closest reference
+    colour and is less reliable (distance: lower is closer).
+    """
+    distance: float
+    name: str
+    rgb: list[int]
+
+
+class HoldBox(BaseModel):
+    h: float
+    w: float
+    x: float
+    y: float
+
+
+class HoldPoint(BaseModel):
+    x: float
+    y: float
+
+
+class HoldContour(BaseModel):
+    """Same format as holds.contour: polygon of the hold and its bounding box."""
+
+    bbox: HoldBox
+    points: list[HoldPoint]
+
+
+class HoldType(StrEnum):
+    """Values of the hold_type enum of the database. The detector only returns unknown (any
+    hold) and volume.
+    """
+    CRIMP = "crimp"
+    EDGE = "edge"
+    FOOTHOLD = "foothold"
+    JUG = "jug"
+    PINCH = "pinch"
+    POCKET = "pocket"
+    SLOPER = "sloper"
+    UNKNOWN = "unknown"
+    VOLUME = "volume"
+
+
+class DetectedHold(BaseModel):
+    confidence: float
+    contour: HoldContour
+    type: HoldType
+    color: Optional[HoldColor] = None
+
+
+class WallPlane(BaseModel):
+    """Plane of the wall estimated from the photo. homography maps photo pixels to centimetres
+    in the wall plane (y up).
+    """
+    focal_px: float
+    homography: list[list[float]]
+    inlier_ratio: float
+    model: str
+    """Name of the depth model."""
+
+    angle_deg: Optional[float] = None
+    """Wall angle: 0 vertical, > 0 overhang, < 0 slab; null when the gravity is unknown."""
+
+
+class HoldDetectResult(BaseModel):
+    """Holds detected on a route photo. Coordinates are pixels of the original photo
+    (image_width x image_height). The worker stores each hold as one row of the holds table.
+    """
+    holds: list[DetectedHold]
+    image_height: int
+    image_width: int
+    wall: Optional[WallPlane] = None
+
+
 class Job(BaseModel):
     job_id: str
 
@@ -156,12 +261,69 @@ class JobStatus(BaseModel):
     message: Optional[str] = None
 
 
+class BetaPreference(StrEnum):
+    """Style of the beta: easy (easiest), power (fewer and longer moves), technique (short
+    moves, more foot placements). The worker defaults to easy.
+    """
+    EASY = "easy"
+    POWER = "power"
+    TECHNIQUE = "technique"
+
+
+class PathfindingComputeRequest(BaseModel):
+    """Payload of pathfinding.compute.requested: compute the beta and the postures of a climber
+    on a route. job_id is pathfindings.id (the row that receives the result in
+    pathfindings.result).
+    """
+    job_id: str
+    preference: Optional[BetaPreference] = None
+
+
+class Point2D(BaseModel):
+    x: float
+    y: float
+
+
+class StepHolds(BaseModel):
+    """Hold id under each limb, null when the limb is free."""
+
+    left_foot: Optional[str] = None
+    left_hand: Optional[str] = None
+    right_foot: Optional[str] = None
+    right_hand: Optional[str] = None
+
+
+class PathfindingStep(BaseModel):
+    """One pose of the climber along the beta. moved_limb is the limb moved to reach it, absent
+    for the start step.
+    """
+    center_of_mass: Point2D
+    holds: StepHolds
+    index: int
+    landmarks: dict[str, Point2D]
+    moved_limb: Optional[Limb] = None
+
+
+class PathfindingResult(BaseModel):
+    """Result of the pathfinding, stored in pathfindings.result. Coordinates are pixels of the
+    route photo (y down); landmark names are the keys of Frame.landmarks.
+    """
+    image_height: int
+    image_width: int
+    steps: list[PathfindingStep]
+    wall_angle_deg: Optional[float] = None
+
+
 class PoseDetectRequest(BaseModel):
     job_id: str
     object_key: str
 
 
 class RoutingKey(StrEnum):
+    HOLDS_DETECT_REQUESTED = "holds.detect.requested"
+    HOLDS_DETECT_STATUS = "holds.detect.status"
+    PATHFINDING_COMPUTE_REQUESTED = "pathfinding.compute.requested"
+    PATHFINDING_COMPUTE_STATUS = "pathfinding.compute.status"
     POSE_ADVICE_REQUESTED = "pose.advice.requested"
     POSE_ADVICE_STATUS = "pose.advice.status"
     POSE_DETECT_COMPLETED = "pose.detect.completed"

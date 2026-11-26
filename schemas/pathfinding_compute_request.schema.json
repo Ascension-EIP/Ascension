@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PathfindingComputeRequest",
+  "description": "Payload of pathfinding.compute.requested: compute the beta and the postures of a climber on a route. job_id is pathfindings.id (the row that receives the result in pathfindings.result).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "job_id"
+  ],
+  "properties": {
+    "job_id": {
+      "type": "string"
+    },
+    "preference": {
+      "$ref": "#/definitions/BetaPreference"
+    }
+  },
+  "definitions": {
+    "BetaPreference": {
+      "description": "Style of the beta: easy (easiest), power (fewer and longer moves), technique (short moves, more foot placements). The worker defaults to easy.",
+      "type": "string",
+      "enum": [
+        "easy",
+        "power",
+        "technique"
+      ]
+    }
+  }
+}

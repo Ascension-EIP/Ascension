@@ -55,11 +55,11 @@ class RustFS:
 
     def setup_config(self) -> Self:
         self.config = StorageModel(
-            endpoint=os.getenv("RUSTFS_ENDPOINT", "http://localhost:9000"),
-            access_key=os.getenv("RUSTFS_ACCESS_KEY", "ascension"),
-            secret_key=os.getenv("RUSTFS_SECRET_KEY", "ascension"),
-            bucket=os.getenv("RUSTFS_BUCKET", "videos"),
-            region=os.getenv("RUSTFS_REGION", "us-east-1"),
+            endpoint=os.getenv("STORAGE_ENDPOINT") or os.getenv("RUSTFS_ENDPOINT") or "http://localhost:9000",
+            access_key=os.getenv("STORAGE_ID") or os.getenv("RUSTFS_ACCESS_KEY") or "ascension",
+            secret_key=os.getenv("STORAGE_SECRET") or os.getenv("RUSTFS_SECRET_KEY") or "ascension",
+            bucket=os.getenv("STORAGE_BUCKET") or os.getenv("RUSTFS_BUCKET") or "videos",
+            region=os.getenv("STORAGE_REGION") or os.getenv("RUSTFS_REGION") or "us-east-1",
         )
         throw_if_none(self.config)
         log.info("Storage config: %s bucket=%s", self.config.endpoint, self.config.bucket)

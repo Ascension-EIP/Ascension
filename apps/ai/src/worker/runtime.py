@@ -20,6 +20,8 @@ if TYPE_CHECKING:
     from services.rabbitmq import Broker
     from services.rustfs import RustFS
     from worker._1_mediapipe._1_pose_skeleton import PoseSkeleton
+    from worker._3_holds._1_hold_segment import HoldSegmenter
+    from worker._4_pathfinding._1_depth import DepthEstimator
 
 
 @lru_cache(maxsize=1)
@@ -48,6 +50,22 @@ def get_pose_skeleton() -> "PoseSkeleton":
     from worker._1_mediapipe._1_pose_skeleton import PoseSkeleton
 
     return PoseSkeleton()
+
+
+@lru_cache(maxsize=1)
+def get_hold_segmenter() -> "HoldSegmenter":
+    """Load the hold model on first use; raises `FileNotFoundError` when HOLDS_MODEL_PATH points nowhere."""
+    from worker._3_holds._1_hold_segment import HoldSegmenter, model_path
+
+    return HoldSegmenter(model_path())
+
+
+@lru_cache(maxsize=1)
+def get_depth_estimator() -> "DepthEstimator":
+    """Load the depth model on first use; raises `FileNotFoundError` when DEPTH_MODEL_PATH points nowhere."""
+    from worker._4_pathfinding._1_depth import DepthEstimator, depth_model_path
+
+    return DepthEstimator(depth_model_path())
 
 
 @lru_cache(maxsize=1)

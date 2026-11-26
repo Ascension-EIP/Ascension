@@ -3,7 +3,7 @@ id: 2f835188-7fa7-46eb-84ab-0f2bcdda5321
 ---
 
 :::success
-**Version:** 1.3
+**Version:** 1.6
 :::
 
 ---
@@ -54,16 +54,14 @@ apps/server/
 ├── cmd/
 │   ├── server/
 │   │   └── main.go     # API Server HTTP entry point
-│   ├── cron/
-│   │   └── main.go     # Background cron worker (session & video cleanup)
-│   └── migrate/
-│       └── main.go     # Standalone CLI tool to execute DB migrations
+│   └── cron/
+│       └── main.go     # Background cron worker (cleanups, stale analyses)
 └── internal/
     ├── app/            # App lifecycle, DI wiring, and graceful shutdown
     ├── inbound/        # HTTP layer — Gin router, handlers, DTOs, middlewares
-    ├── job/            # Scheduled job definitions (expired sessions/videos)
+    ├── job/            # Scheduled job definitions (cleanups, stale analyses)
     ├── model/          # Domain entities, validation rules, and repository ports
-    ├── outbound/       # Infrastructure adapters — pgx, rabbitmq, minio
+    ├── outbound/       # Infrastructure adapters — pgx, rabbitmq, rustfs (AWS SDK for Go v2)
     ├── service/        # Domain business logic (analysis, auth, jwt, user, video)
     └── setup/          # Configuration loading (env) and structured logger (slog)
 
@@ -88,28 +86,32 @@ Copy `.env.example` to `.env` at the repository root and fill in the values. The
 | `POSTGRES_PASSWORD` | ✅ | — | PostgreSQL database password |
 | `POSTGRES_PARAMS` | ❌ | `sslmode=disable` | Connection query parameters |
 
-### Storage (`MINIO_*`)
+### Storage (`STORAGE_*`)
 
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
-| `MINIO_ENDPOINT` | ✅ | — | Object storage URL (e.g. `http://localhost:9000`) |
-| `MINIO_ID` | ✅ | — | Access key / Root user |
-| `MINIO_SECRET` | ✅ | — | Secret key / Root password |
-| `MINIO_BUCKET` | ✅ | — | Target bucket for video uploads |
-| `MINIO_SSL` | ❌ | `false` | Enable TLS/SSL |
-| `MINIO_UPLOAD_EXP` | ❌ | `1h` | Presigned PUT URL validity duration |
-| `MINIO_DOWNLAOD_EXP` | ❌ | `1h` | Presigned GET URL validity duration |
+| `STORAGE_ENDPOINT` | ✅ | — | Object storage URL with its scheme (e.g. `http://localhost:9000`): `https://` enables TLS |
+| `STORAGE_REGION` | ✅ | — | Signing region: any value for RustFS, `gra` for OVHcloud Object Storage |
+| `STORAGE_ID` | ✅ | — | Access key |
+| `STORAGE_SECRET` | ✅ | — | Secret key |
+| `STORAGE_BUCKET` | ✅ | — | Target bucket for video uploads |
+| `STORAGE_UPLOAD_EXP` | ❌ | `1h` | Presigned PUT URL validity duration |
+| `STORAGE_DOWNLOAD_EXP` | ❌ | `1h` | Presigned GET URL validity duration |
 
-### Message Broker (`RABBITMQ_*`)
+The AI worker reads its own `RUSTFS_*` variables for the same storage. In production, Coolify keeps the `MINIO_*` names and the compose file maps them to `STORAGE_*`, see the [API Deployment Guide](../../architecture/deployment/api-deployment-guide.md).
+
+### Message Broker (`QUEUE_*`)
 
 | Variable | Required | Default | Description |
 | --- | --- | --- | --- |
-| `RABBITMQ_HOST` | ❌ | `localhost` | RabbitMQ host |
-| `RABBITMQ_PORT` | ❌ | `5672` | RabbitMQ AMQP port |
-| `RABBITMQ_USER` | ✅ | — | RabbitMQ username |
-| `RABBITMQ_PASS` | ✅ | — | RabbitMQ password |
-| `RABBITMQ_TLS` | ❌ | `false` | Enable TLS connection |
-| `RABBITMQ_EXCHANGE` | ❌ | `events` | Topic exchange shared with the AI worker: analysis jobs are published with the `pose.detect.requested` routing key |
+| `QUEUE_HOST` | ❌ | `localhost` | RabbitMQ host |
+| `QUEUE_PORT` | ❌ | `5672` | RabbitMQ AMQP port |
+| `QUEUE_USER` | ✅ | — | RabbitMQ username |
+| `QUEUE_PASS` | ✅ | — | RabbitMQ password |
+| `QUEUE_TLS` | ❌ | `false` | Enable TLS connection |
+| `QUEUE_EXCHANGE_EVENT` | ❌ | `events` | Topic exchange shared with the AI worker: analysis jobs are published with the `pose.detect.requested` routing key |
+
+The AI worker reads its own `RABBITMQ_*` variables for the same broker.
 
 ### Auth & Tokens (`AUTH_*`)
 
@@ -233,6 +235,30 @@ moon run server:test
 go test ./...
 
 ```
+
+The integration tests (files named `*_integration_test.go`) need real services, and are skipped without them:
+
+- the PostgreSQL tests need `TEST_DATABASE_DSN`. Each test gets a fresh database, created from that server with every migration applied;
+- the RabbitMQ tests (message flow to the AI worker) need `TEST_RABBITMQ_URL`. They purge the job queues, so never point them at a broker in use.
+
+Throwaway containers are enough:
+
+```bash
+docker run -d --rm --name test-postgres -e POSTGRES_USER=ascension -e POSTGRES_PASSWORD=ascension \
+  -e POSTGRES_DB=ascension -p 55432:5432 postgres:18-alpine
+docker run -d --rm --name test-rabbitmq -e RABBITMQ_DEFAULT_USER=ascension -e RABBITMQ_DEFAULT_PASS=ascension \
+  -p 55672:5672 rabbitmq:4-alpine
+# Wait until RabbitMQ accepts connections, as its own user (as root, the check breaks the broker start)
+until docker exec -u rabbitmq test-rabbitmq rabbitmq-diagnostics -q check_port_connectivity >/dev/null 2>&1; do sleep 1; done
+TEST_DATABASE_DSN="postgres://ascension:ascension@localhost:55432/ascension?sslmode=disable" \
+TEST_RABBITMQ_URL="amqp://ascension:ascension@localhost:55672/" go test ./...
+docker stop test-postgres test-rabbitmq
+
+```
+
+Jenkins runs them the same way, next to a throwaway PostgreSQL and RabbitMQ of its own (see the [Jenkins and SonarQube guide](../../git/jenkins-sonarqube-guide.md)).
+
+Some tests describe a bug that is not fixed yet: they are skipped by default, and `RUN_KNOWN_BUGS=1 go test ./...` runs them to show them failing.
 
 ---
 

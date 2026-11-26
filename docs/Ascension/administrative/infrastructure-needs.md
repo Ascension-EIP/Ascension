@@ -197,6 +197,11 @@ L'attribution du nom de domaine `ascension.fr` est indispensable pour :
 
 **Total Option B : ~296,68 \$ HT pour la première année (soit une économie d'environ 92 \$ / an tout en bénéficiant d'un stockage illimité).**
 
+:::success
+**Validation CIME & Pédagogique :**
+L'Option B a été officiellement approuvée par Lisa NAY et Romaric MOY le 09/10/2026. L'historique du ticket support et les pièces de remboursement sont documentés dans le dossier [Factures & Note de frais - Octobre 2026](../resources/bills/26-10/readme.md#2-ticket-support-epitech--ticket5300095578).
+:::
+
 ---
 
 ### Liens sources officiels

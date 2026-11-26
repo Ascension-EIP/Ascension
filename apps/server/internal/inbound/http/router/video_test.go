@@ -67,7 +67,7 @@ func TestVideoEndpointsRequireAuthentication(t *testing.T) {
 		{http.MethodPost, "/v1/videos/upload-url"},
 		{http.MethodPut, "/v1/videos/upload-done/" + id},
 		{http.MethodGet, "/v1/videos/download-url/" + id},
-		{http.MethodGet, "/v1/videos/"},
+		{http.MethodGet, "/v1/videos"},
 		{http.MethodGet, "/v1/videos/" + id},
 	}
 
@@ -85,9 +85,9 @@ func TestVideoEndpointsAreRateLimited(t *testing.T) {
 	token := api.token(uuid.NewV7())
 
 	for range 10 {
-		expect(t, api.do(http.MethodGet, "/v1/videos/", token, nil), http.StatusOK, nil)
+		expect(t, api.do(http.MethodGet, "/v1/videos", token, nil), http.StatusOK, nil)
 	}
-	expect(t, api.do(http.MethodGet, "/v1/videos/", token, nil), http.StatusTooManyRequests, nil)
+	expect(t, api.do(http.MethodGet, "/v1/videos", token, nil), http.StatusTooManyRequests, nil)
 }
 
 func TestVideoUploadLifecycle(t *testing.T) {
@@ -234,7 +234,7 @@ func TestListVideos(t *testing.T) {
 	putCompletedVideo(repo, uuid.NewV7())
 
 	var list []videoBody
-	expect(t, api.do(http.MethodGet, "/v1/videos/", token, nil), http.StatusOK, &list)
+	expect(t, api.do(http.MethodGet, "/v1/videos", token, nil), http.StatusOK, &list)
 	if len(list) != 3 {
 		t.Fatalf("%d videos, want the user's 3", len(list))
 	}
@@ -245,13 +245,13 @@ func TestListVideos(t *testing.T) {
 	}
 
 	var page []videoBody
-	expect(t, api.do(http.MethodGet, "/v1/videos/?limit=2&offset=0", token, nil), http.StatusOK, &page)
+	expect(t, api.do(http.MethodGet, "/v1/videos?limit=2&offset=0", token, nil), http.StatusOK, &page)
 	if len(page) != 2 {
 		t.Errorf("limit=2: %d videos, want 2", len(page))
 	}
 
 	for _, query := range []string{"limit=0", "limit=21", "offset=-1", "limit=abc"} {
-		expect(t, api.do(http.MethodGet, "/v1/videos/?"+query, token, nil), http.StatusBadRequest, nil)
+		expect(t, api.do(http.MethodGet, "/v1/videos?"+query, token, nil), http.StatusBadRequest, nil)
 	}
 }
 

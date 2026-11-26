@@ -134,6 +134,7 @@ class ActiveSessionScreen extends ConsumerWidget {
         ],
       ),
       child: SafeArea(
+        top: false,
         child: Column(
           children: [
             Expanded(

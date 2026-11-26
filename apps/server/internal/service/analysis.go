@@ -9,7 +9,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -46,28 +45,16 @@ func (s *AnalysisService) TriggerAnalysis(ctx context.Context, userID uuid.UUID,
 		return model.Analysis{}, model.ErrVideoUploading
 	}
 
-	var analysis model.Analysis
-	if err := s.analysisR.WithTransaction(ctx, func(ctx context.Context) error {
-		analysis, err = s.analysisR.CreateAnalysis(ctx, model.Analysis{VideoID: analysisConfig.VideoID, Type: analysisConfig.Type, Visibility: analysisConfig.Visibility})
-		if err != nil {
-			return err
-		}
+	analysis, err := s.analysisR.CreateAnalysis(ctx, model.Analysis{VideoID: analysisConfig.VideoID, Type: analysisConfig.Type, Visibility: analysisConfig.Visibility})
+	if err != nil {
+		return model.Analysis{}, err
+	}
 
-		data, err := json.Marshal(
-			shared.PoseDetectRequest{
-				JobID:     analysis.ID.String(),
-				ObjectKey: video.ObjectKey,
-			})
-		if err != nil {
-			return err
-		}
-
-		if err := s.queue.PublishPoseDetectRequested(ctx, data); err != nil {
-			return err
-		}
-
-		return nil
+	if err := s.queue.PublishPoseDetectRequested(ctx, shared.PoseDetectRequest{
+		JobID:     analysis.ID.String(),
+		ObjectKey: video.ObjectKey,
 	}); err != nil {
+		_, _ = s.analysisR.UpdateAnalysis(ctx, model.AnalysisPartial{ID: analysis.ID, Status: new(model.JobStatusFailed), Error: new(new("failed to publish job: " + err.Error()))})
 		return model.Analysis{}, err
 	}
 
@@ -118,11 +105,4 @@ func (s *AnalysisService) AnalysisStaleDetection(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func (s *AnalysisService) RetryAdvice(ctx context.Context, id uuid.UUID) (model.Analysis, error) {
-	// s.analysisR.GetAnalysisByFilter(ctx, model.AnalysisFilter{ID: new(id), Status: new(model.JobStatusFailed)})
-	// TODO
-
-	return model.Analysis{}, nil
 }

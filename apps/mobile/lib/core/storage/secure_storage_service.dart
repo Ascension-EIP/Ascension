@@ -34,6 +34,33 @@ class SecureStorageService {
 
   Future<String?> getUserId() => _storage.read(key: StorageKeys.userId);
 
+  Future<void> saveSavedIdentifier(String identifier) =>
+      _storage.write(key: StorageKeys.savedIdentifier, value: identifier);
+
+  Future<String?> getSavedIdentifier() =>
+      _storage.read(key: StorageKeys.savedIdentifier);
+
+  Future<bool> isBiometricEnabled() async {
+    final value = await _storage.read(key: StorageKeys.biometricEnabled);
+    return value == 'true';
+  }
+
+  Future<void> setBiometricEnabled(bool enabled) => _storage.write(
+    key: StorageKeys.biometricEnabled,
+    value: enabled.toString(),
+  );
+
+  Future<void> saveBiometricPassword(String password) =>
+      _storage.write(key: StorageKeys.biometricPassword, value: password);
+
+  Future<String?> getBiometricPassword() =>
+      _storage.read(key: StorageKeys.biometricPassword);
+
+  Future<void> clearBiometricCredentials() async {
+    await _storage.delete(key: StorageKeys.biometricPassword);
+    await _storage.delete(key: StorageKeys.biometricEnabled);
+  }
+
   Future<void> clearAuthData() async {
     await _storage.delete(key: StorageKeys.accessToken);
     await _storage.delete(key: StorageKeys.refreshToken);

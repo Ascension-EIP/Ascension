@@ -1,0 +1,89 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+language: 'python'
+
+project:
+  name: 'holds'
+  description: 'Climbing hold detection and route reading (YOLO26-seg)'
+
+tasks:
+  setup:
+    command: 'bash'
+    args: ['scripts/download-model.sh']
+    inputs:
+      - 'scripts/download-model.sh'
+    outputs:
+      - 'models/yolo26n-seg.pt'
+      - 'models/yolo26s-seg.pt'
+
+  install:
+    command: 'uv'
+    args: ['sync']
+    inputs:
+      - 'pyproject.toml'
+      - 'uv.lock'
+
+  lint:
+    command: 'uv'
+    args: ['run', 'ruff', 'check', 'src', 'tests']
+    inputs:
+      - '**/*.py'
+      - 'pyproject.toml'
+    deps:
+      - 'install'
+
+  test:
+    command: 'uv'
+    args: ['run', 'pytest', '-p', 'no:cacheprovider']
+    inputs:
+      - '**/*.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+    options:
+      allowFailure: true
+    deps:
+      - 'install'
+
+  check:
+    command: 'uv'
+    args: ['run', 'python', '-m', 'holds', 'check']
+    options:
+      cache: false
+    deps:
+      - 'install'
+
+  merge:
+    command: 'uv'
+    args: ['run', 'python', '-m', 'holds', 'merge']
+    options:
+      cache: false
+    deps:
+      - 'install'
+
+  train:
+    command: 'uv'
+    args: ['run', 'python', '-m', 'holds', 'train']
+    env:
+      PYTORCH_CUDA_ALLOC_CONF: 'expandable_segments:True'
+    options:
+      cache: false
+      persistent: true
+    deps:
+      - 'install'
+      - 'setup'
+
+  # Writes the ONNX model of the AI worker (apps/ai/resources/holds_seg.onnx) from runs/holds.
+  export:
+    command: 'uv'
+    args: ['run', 'python', '-m', 'holds', 'export']
+    options:
+      cache: false
+    deps:
+      - 'install'
+
+  clean:
+    script: |
+      rm -rf .venv .ruff_cache .pytest_cache
+      find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+    options:
+      cache: false

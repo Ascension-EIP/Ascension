@@ -78,10 +78,25 @@ apps/ai/src/tools/
 .nox/
 .coverage
 .coverage.*
+coverage.xml
 htmlcov/
 pose_landmarker.task
 worker.pid
 biomechanics.json
+
+# =============================================================================
+# Holds (hold detection: datasets, model weights, training runs)
+# =============================================================================
+apps/ai/training/holds/models/*.pt
+apps/ai/training/holds/datasets/*
+!apps/ai/training/holds/datasets/.gitkeep
+apps/ai/training/holds/runs/
+
+# =============================================================================
+# Ghost mode (depth model downloaded by apps/ai/scripts/download-depth-model.sh)
+# =============================================================================
+apps/ai/resources/moge-2-vits-normal.onnx
+apps/ai/resources/moge-2-vits-normal.onnx.part
 
 # =============================================================================
 # Go
@@ -150,4 +165,5 @@ Runner/GeneratedPluginRegistrant.*
 # =============================================================================
 TODO.md
 pipeline.md
+scraped_videos/
 task/

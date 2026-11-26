@@ -1,4 +1,4 @@
-// @date 2026-11-13
+// @date 2026-11-14
 // @file rustfs_test.go
 // @brief Unit tests of the S3 storage adapter against a local fake S3 server.
 // @project Ascension
@@ -205,8 +205,6 @@ func TestFileExist(t *testing.T) {
 	})
 
 	t.Run("reports a missing object without error", func(t *testing.T) {
-		knownbug.Skip(t, "HEAD returns types.NotFound, not types.NoSuchKey, so a missing object is an error")
-
 		storage, _ := newTestStorage(t, map[string]int{objectPath: http.StatusNotFound})
 
 		exists, err := storage.FileExist(context.Background(), "users/42/video.mp4")
@@ -246,4 +244,15 @@ func TestDelete(t *testing.T) {
 			t.Fatal("Delete() error = nil, want the storage error")
 		}
 	})
+}
+
+func TestPresignRejectsAnEmptyKey(t *testing.T) {
+	storage, _ := newTestStorage(t, nil)
+
+	if u, _, err := storage.PresignedUploadURL(context.Background(), ""); err == nil {
+		t.Errorf("PresignedUploadURL(\"\") = %v, want an error", u)
+	}
+	if u, _, err := storage.PresignedDownloadURL(context.Background(), ""); err == nil {
+		t.Errorf("PresignedDownloadURL(\"\") = %v, want an error", u)
+	}
 }

@@ -73,5 +73,13 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Authenticate to sign in to your Ascension account securely.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Ascension a besoin d'accéder à votre caméra pour filmer vos sessions de grimpe.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Ascension a besoin d'accéder à votre galerie pour sélectionner une vidéo de grimpe à analyser.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Ascension a besoin d'accéder au microphone pendant l'enregistrement vidéo.</string>
 </dict>
 </plist>

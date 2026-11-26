@@ -3,7 +3,7 @@ id: 8a400878-485e-480a-b6c4-a7bc4cd0e4be
 ---
 
 :::success
-**Version:** 1.2
+**Version:** 1.3
 :::
 
 ---
@@ -116,7 +116,7 @@ Implements the domain ports defined in `internal/model/ports.go`:
 | --- | --- | --- |
 | `internal/outbound/postgres/` | PostgreSQL adapter using `pgxpool` | `UserRepository`, `SessionRepository`, `VideoRepository`, `AnalysisRepository`, `TransactionManager` |
 | `internal/outbound/rabbitmq/` | RabbitMQ adapter using `amqp091-go` | `AnalysisQueue` |
-| `internal/outbound/minio/` | S3 adapter using `minio-go/v7` SDK (connects to RustFS & OVHcloud S3) | `VideoStorage` |
+| `internal/outbound/rustfs/` | S3 adapter using the AWS SDK for Go v2 (connects to RustFS & OVHcloud S3) | `VideoStorage` |
 
 ---
 
@@ -126,9 +126,15 @@ Implements the domain ports defined in `internal/model/ports.go`:
 
 Background maintenance workers orchestrated via `robfig/cron/v3`:
 
-- `ClearExpiredSessions`: Purges expired or revoked refresh sessions daily.
-- `ClearUploadExpiredVideos`: Cleans up abandoned presigned video uploads hourly.
-- `ClearExpiredVideos`: Purges completed videos that have passed retention and were not marked `retained`.
+| Job | Schedule | Role |
+| --- | --- | --- |
+| `ClearExpiredSessions` | Daily at midnight | Purges expired or revoked refresh sessions |
+| `ClearUploadExpiredVideos` | Daily at midnight | Cleans up abandoned presigned video uploads |
+| `ClearExpiredVideos` | Daily at midnight | Purges completed videos that have passed retention and were not marked `retained` |
+| `ClearOldQuotaUsage` | Monthly, on the 1st at 03:00 | Deletes the quota usage periods older than 24 months |
+| `AnalysisStaleDetection` | Every minute | Marks as `failed` ("Job processing timed out") the analyses still `pending` 15 minutes after their creation |
+
+The cron connects to PostgreSQL, the object storage and RabbitMQ when it starts, and applies the pending migrations like the API.
 
 ---
 
@@ -217,7 +223,7 @@ apps/server/
     ├── outbound/                       # Infrastructure adapters
     │   ├── postgres/                   # PostgreSQL storage repository (pgx implementation)
     │   ├── rabbitmq/                   # RabbitMQ message broker adapter
-    │   └── minio/                      # S3 object storage adapter (RustFS / OVHcloud S3)
+    │   └── rustfs/                     # S3 object storage adapter (RustFS / OVHcloud S3)
     └── setup/
         ├── config/                     # Environment configuration loader
         └── logger/                     # Structured logger constructor (slog)
@@ -244,8 +250,9 @@ Database schema migrations are applied automatically at server startup or on dem
 The server parses all environment variables through `internal/setup/config/config.go` with domain-specific prefixes:
 
 - `POSTGRES_*` : Database host, port, database name (`POSTGRES_DB`), user, password, and SSL parameters.
-- `MINIO_*` : Object storage configuration (RustFS in dev, OVHcloud S3 in prod): endpoint, credentials, bucket name, and URL expiration durations.
-- `RABBITMQ_*` : Message broker host, port, user, password, TLS, and queue names.
+- `STORAGE_*` : Object storage configuration (RustFS in dev, OVHcloud S3 in prod): endpoint, signing region, credentials, bucket name, and URL expiration durations.
+- `QUEUE_*` : Message broker host, port, user, password, TLS, and the name of the topic exchange shared with the AI worker.
+- `VIDEO_*` : Video retention duration.
 - `AUTH_*` : JWT and session secret keys and expiration durations.
 - `PORT` & `HTTPS` : HTTP server listener configuration.
 - `LOG_LEVEL` & `LOG_PRETTY` : Logging verbosity and formatting.

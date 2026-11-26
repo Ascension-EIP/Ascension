@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HoldDetectResult",
+  "description": "Holds detected on a route photo. Coordinates are pixels of the original photo (image_width x image_height). The worker stores each hold as one row of the holds table.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["image_width", "image_height", "holds"],
+  "properties": {
+    "image_width": { "type": "integer" },
+    "image_height": { "type": "integer" },
+    "holds": { "type": "array", "items": { "$ref": "#/definitions/DetectedHold" } },
+    "wall": { "$ref": "#/definitions/WallPlane" }
+  },
+  "definitions": {
+    "HoldType": {
+      "description": "Values of the hold_type enum of the database. The detector only returns unknown (any hold) and volume.",
+      "type": "string",
+      "enum": ["jug", "crimp", "sloper", "pinch", "pocket", "edge", "volume", "foothold", "unknown"]
+    },
+    "HoldPoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      }
+    },
+    "HoldBox": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "w", "h"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "w": { "type": "number" },
+        "h": { "type": "number" }
+      }
+    },
+    "HoldContour": {
+      "description": "Same format as holds.contour: polygon of the hold and its bounding box.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["points", "bbox"],
+      "properties": {
+        "points": { "type": "array", "items": { "$ref": "#/definitions/HoldPoint" } },
+        "bbox": { "$ref": "#/definitions/HoldBox" }
+      }
+    },
+    "HoldColor": {
+      "description": "Dominant colour of the hold. rgb is reliable for display; name is the closest reference colour and is less reliable (distance: lower is closer).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "rgb", "distance"],
+      "properties": {
+        "name": { "type": "string" },
+        "rgb": { "type": "array", "items": { "type": "integer" }, "minItems": 3, "maxItems": 3 },
+        "distance": { "type": "number" }
+      }
+    },
+    "WallPlane": {
+      "description": "Plane of the wall estimated from the photo. homography maps photo pixels to centimetres in the wall plane (y up).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["homography", "angle_deg", "focal_px", "inlier_ratio", "model"],
+      "properties": {
+        "homography": {
+          "type": "array",
+          "items": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "angle_deg": {
+          "description": "Wall angle: 0 vertical, > 0 overhang, < 0 slab; null when the gravity is unknown.",
+          "type": ["number", "null"]
+        },
+        "focal_px": { "type": "number" },
+        "inlier_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "model": { "description": "Name of the depth model.", "type": "string" }
+      }
+    },
+    "DetectedHold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "confidence", "contour"],
+      "properties": {
+        "type": { "$ref": "#/definitions/HoldType" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "contour": { "$ref": "#/definitions/HoldContour" },
+        "color": { "$ref": "#/definitions/HoldColor" }
+      }
+    }
+  }
+}

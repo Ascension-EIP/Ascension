@@ -46,7 +46,7 @@ func TestFailingRequestsAnswerAnError(t *testing.T) {
 		{"unknown login", http.MethodPost, "/v1/auth/login", "", map[string]any{"identifier": "nobody@example.com", "password": "correct-horse"}},
 		{"unknown refresh token", http.MethodPut, "/v1/auth/refresh", "", map[string]any{"refresh_token": "unknown"}},
 		{"unknown user", http.MethodGet, "/v1/users/" + unknown, admin, nil},
-		{"invalid user role", http.MethodPost, "/v1/users/", admin, map[string]any{"username": "climber2", "first_name": "A", "last_name": "B", "email": "a@b.co", "password": "correct-horse", "role": "root"}},
+		{"invalid user role", http.MethodPost, "/v1/users", admin, map[string]any{"username": "climber2", "first_name": "A", "last_name": "B", "email": "a@b.co", "password": "correct-horse", "role": "root"}},
 		{"invalid user update", http.MethodPut, "/v1/users/" + registered.User.ID.String(), admin, map[string]any{"username": "short", "email": "a@b.co", "password": "correct-horse", "role": "user", "status": "active"}},
 		{"missing profile", http.MethodGet, "/v1/profile", token, nil},
 		{"empty profile update", http.MethodPut, "/v1/profile", registered.AccessToken, map[string]any{}},
@@ -54,7 +54,7 @@ func TestFailingRequestsAnswerAnError(t *testing.T) {
 		{"unknown video", http.MethodGet, "/v1/videos/" + unknown, token, nil},
 		{"pending download", http.MethodGet, "/v1/videos/download-url/" + pending.ID.String(), token, nil},
 		{"upload not done", http.MethodPut, "/v1/videos/upload-done/" + pending.ID.String(), token, nil},
-		{"invalid analysis type", http.MethodPost, "/v1/analysis/", token, map[string]any{"video_id": pending.ID, "type": "4d", "visibility": "private"}},
+		{"invalid analysis type", http.MethodPost, "/v1/analysis", token, map[string]any{"video_id": pending.ID, "type": "4d", "visibility": "private"}},
 		{"unknown analysis", http.MethodGet, "/v1/analysis/" + unknown, token, nil},
 	}
 
