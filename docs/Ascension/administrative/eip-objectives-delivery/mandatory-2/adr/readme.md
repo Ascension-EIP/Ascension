@@ -1,5 +1,11 @@
 ---
 id: 37d45310-5f38-441d-88ec-2867f797f32a
+sort: custom
+order:
+  - adr-001-backend-migration-rust-to-go
+  - adr-002-object-storage-minio-to-rustfs-and-ovh-s3
+  - adr-004-cloud-hosting-hetzner-to-ovhcloud
+  - adr-003-decoupled-ai-and-product-scope-pivot
 ---
 
 :::success
