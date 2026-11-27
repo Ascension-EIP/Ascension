@@ -3,7 +3,7 @@ id: f32ab647-fe53-4973-bf92-83f5cb24ca9a
 ---
 
 :::warning
-**Version:** 0.1
+**Version:** 0.2
 :::
 
 ---
@@ -32,6 +32,23 @@ Code in `apps/ai/src/worker/_2_advice/pose_advice.py` and `apps/ai/src/services/
 3. The `LLM` service calls any OpenAI-compatible API. The answer is validated against the `Hints` schema.
 
 To change the model, change only the three `LLM_*` variables. No call to a real provider has been tested yet.
+
+---
+
+## Models and algorithms
+
+**There is no model of our own here.** The advice comes from a large language model (LLM) that we call as a service: it is not trained or fine-tuned by us, and the module only does prompt engineering and validation around it.
+
+| Part | Technique |
+| --- | --- |
+| Input | A numeric summary of the analysis (angles, speeds, measurement coverage per limb), not the video |
+| Model | Any chat model behind an OpenAI-compatible API. The example configuration is Google's `gemini-3.5-flash-lite`, a small, fast and cheap model |
+| Output control | JSON mode (`response_format: json_object`) makes the answer valid JSON, then it is validated against the `Hints` schema |
+| Failure | Network errors, timeouts, 408, 429, 5xx, and empty or unparsable answers are transient: the caller retries them with `with_retry`. Anything else fails the job at once |
+
+**Why numbers and not video.** The LLM only reads text. Giving it the video would need a multimodal model, which costs more and mixes two sources of error (the model looking at the pixels, and the coach reasoning on them). Here the pose model has already measured, and the LLM only reasons on measures. The weak spot moves to the prompt: it says to use only the given data and never to invent holds, and the summary flags a limb seen on too few frames as unreliable so that the LLM does not coach on a guess.
+
+**What to remember.** The hints are as good as the metrics of the [pose module](pose-analysis.md). The sampling parameters (temperature and so on) are not set, so they are the provider's defaults, and the answers are not identical from one call to the next.
 
 ---
 

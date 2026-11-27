@@ -1,5 +1,5 @@
 :::warning
-**Version:** 1.3
+**Version:** 1.4
 :::
 
 ---
@@ -209,8 +209,8 @@ Every step runs on its own: no RabbitMQ, no database, no storage. The output of 
 | `uv run worker pathfinding-depth` | `--image`                                               | `--out` depth map `.npy` (metres, `NaN` where invalid)     | `--render` writes a coloured picture of the depth map. Prints the focal length, the median depth and the share of valid pixels       |
 | `uv run worker pathfinding-wall`  | `--image`                                               | `--out` holds JSON plus the `wall` plane                   | `--holds` (a `holds-detect` output, its `start_limbs` and `finish_limbs` marks are kept; default: detect them), `--gravity GX GY GZ` |
 | `uv run worker pathfinding-beta`  | `--input` (`pathfinding-wall` output)                   | `--out` beta JSON (hold under each limb at each step)      | Climber options below                                                                                                                |
-| `uv run worker pathfinding-pose`  | `--input` (beta), `--holds` (`pathfinding-wall` output) | `--out` `PathfindingResult` JSON                           | `--render` with `--image` writes the photo with the skeletons drawn                                                                  |
-| `uv run worker pathfinding`       | `--image`                                               | `--out` `PathfindingResult` JSON (the three steps chained) | `--render`, `--holds`, `--gravity` and the climber options below                                                                     |
+| `uv run worker pathfinding-pose`  | `--input` (beta), `--holds` (`pathfinding-wall` output) | `--out` `PathfindingResult` JSON                           | `--render` with `--image` writes a folder (the path without its extension) with one picture per step                                                                  |
+| `uv run worker pathfinding`       | `--image`                                               | `--out` `PathfindingResult` JSON (the three steps chained) | `--render` (one picture per step in a folder), `--holds`, `--gravity` and the climber options below                                                                     |
 | `uv run worker depth-eval`        | `--dataset`                                             | Relative error of the 3D distances, per image and overall  | Folder with the photos and `annotations.json`, see [Pathfinding](#pathfinding)                                                       |
 | `uv run worker pose-skeleton`     | `--video`                                               | `--out` raw skeleton JSON                                  | `--render` writes a video with the skeleton drawn                                                                                    |
 | `uv run worker pose-filter`       | `--input`                                               | `--out` filtered JSON                                      | `--min-visibility` (0.5), `--max-gap` (5 frames), `--window` (5 frames)                                                              |

@@ -321,12 +321,16 @@ def beta_from_json(data: dict) -> tuple[list[Step], float]:
     return steps, height
 
 
-def render_pathfinding(image: np.ndarray, path: PathfindingResult) -> np.ndarray:
-    """Copy of the photo with the skeleton of every step drawn on it, from blue (start) to red (finish)."""
-    out = image.copy()
+def render_pathfinding(image: np.ndarray, path: PathfindingResult) -> list[np.ndarray]:
+    """One copy of the photo per step, each with only that step's skeleton and a ``step i/n`` caption.
+
+    The colour goes from blue (start) to red (finish) so the pictures stay comparable side by side.
+    """
     scale = max(image.shape[:2]) / 1000
     count = max(1, len(path.steps) - 1)
+    frames = []
     for step in path.steps:
+        out = image.copy()
         t = step.index / count
         color = (int(255 * (1 - t)), 60, int(255 * t))  # BGR
         pts = {n: (round(p.x), round(p.y)) for n, p in step.landmarks.items()}
@@ -336,4 +340,9 @@ def render_pathfinding(image: np.ndarray, path: PathfindingResult) -> np.ndarray
             if hold is not None:
                 name = limb.replace("_hand", "_wrist").replace("_foot", "_ankle")
                 cv2.circle(out, pts[name], max(2, round(4 * scale)), color, -1, cv2.LINE_AA)
-    return out
+        label = f"step {step.index + 1}/{len(path.steps)}"
+        org, font, size = (round(20 * scale), round(image.shape[0] * 0.9)), cv2.FONT_HERSHEY_SIMPLEX, scale
+        cv2.putText(out, label, org, font, size, (0, 0, 0), max(1, round(6 * scale)), cv2.LINE_AA)  # outline, readable on any photo
+        cv2.putText(out, label, org, font, size, (255, 255, 255), max(1, round(2 * scale)), cv2.LINE_AA)
+        frames.append(out)
+    return frames

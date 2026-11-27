@@ -3,7 +3,7 @@ id: dcf8684a-af1d-41b1-9927-ab8ba684a157
 ---
 
 :::warning
-**Version:** 0.1
+**Version:** 0.2
 :::
 
 ---
@@ -34,6 +34,25 @@ Code in `apps/ai/src/worker/_1_mediapipe/`:
 5. `_0_pose_detect.py`: chains the four steps.
 
 Limit: the hands are often not visible on `example-2.mp4`, so the movements of the hands are unreliable on that video.
+
+---
+
+## Models and algorithms
+
+| Step | Technique | Learned model? |
+| --- | --- | --- |
+| `pose-skeleton` | MediaPipe PoseLandmarker (BlazePose family), neural network on the CPU | Yes, not trained by us |
+| `pose-filter` | Linear interpolation of short gaps, centred moving average | No |
+| `pose-metrics` | Geometry: joint angles, distances normalised by the torso length | No |
+| `pose-movements` | Speed thresholds with hysteresis | No |
+
+**The model.** The PoseLandmarker bundle (`.task` file) holds TensorFlow Lite networks in two stages. A detector first finds the person in the frame, then a landmark network looks at the crop and regresses 33 body keypoints. For each keypoint it returns `x` and `y` (normalised in the image), `z` (a relative depth, with the hips as origin) and `visibility` (the probability that the point is seen and not guessed behind something). It is a general-purpose pose model: we do not train or fine-tune it on climbing.
+
+**Video mode.** We run it in `VIDEO` mode, which needs increasing timestamps. After the first detection the pose is tracked from one frame to the next and the detector only runs again when the track is lost, which is faster and steadier than detecting on each frame. The three confidence thresholds are set to 0.1 on purpose: a climber with a twisted or inverted body is often scored low, so the model keeps its guess and `pose-filter` decides later what to trust (`--min-visibility`, 0.5 by default). Three sizes of the model are in `apps/ai/resources/`: `lite` (5.8 MB), `full` (9.4 MB, the default) and `heavy` (31 MB). A heavier one is more accurate and slower. Choose it with `POSE_MODEL_PATH`.
+
+**What the rest does.** Everything after the model is plain signal processing, with no learning: the metrics only use `x` and `y` (the 2D image), and speeds are measured in torso lengths per second so that they do not depend on how far the camera is. A movement starts when the speed goes above 0.8 and ends when it falls below 0.4 (two thresholds, so that a speed hovering around one value does not cut a movement into pieces).
+
+**What to remember.** The quality of everything downstream depends on the keypoints. A limb hidden by the body, the wall or a bad angle gives a wrong or missing point, and the 2D view cannot tell a limb close to the camera from a far one.
 
 ---
 

@@ -3,7 +3,7 @@ id: 282258ab-dfed-4a69-b90a-48ec06388bf5
 ---
 
 :::warning
-**Version:** 0.2
+**Version:** 0.3
 :::
 
 ---
@@ -40,6 +40,34 @@ Known limits: the metric scale is not measured (it is probably 15 to 25 % too sm
 
 ---
 
+## Models and algorithms
+
+| Step | Technique | Learned model? |
+| --- | --- | --- |
+| `_1_depth` | MoGe-2 ViT-S, metric monocular depth, ONNX Runtime on the CPU | Yes, not trained by us |
+| `_0_wall` | RANSAC plane fit, homography | No |
+| `_2_beta` | A\* search over the state of four limbs | No |
+| `_3_pose` | Two-segment inverse kinematics | No |
+
+Only the depth step learns anything. The beta and the postures are deterministic algorithms: the same input always gives the same output, and a wrong result can be debugged by reading a cost or a constraint.
+
+**Depth from one photo.** MoGe-2 is a Vision Transformer (here the small variant, ViT-S). It cuts the photo into patches, turns them into tokens, and a transformer predicts for each pixel a 3D point. The distance is not measured: the model guesses it from what it learned about scenes, the sizes of things and the perspective. This is why a single photo gives centimetres at all, and also why the scale is the weak point: a guess is wrong by a factor, not by a few millimetres. The exported ONNX file only holds the raw forward pass. Its outputs are a point map known up to a shift of the depth and of the focal length, a validity mask, the normals and a metric scale. The worker redoes the post-processing of the reference code in numpy: it searches the shift that makes the points consistent with a pinhole camera (the focal length has a closed form for each shift, so only the shift is searched, on a log grid and then refined), and applies the scale. The photo is shrunk to 640 pixels on its long side and the model gets 1800 tokens, more tokens are finer and slower on the CPU. If the focal fit fails, a 69 degrees field of view (a typical phone) is used.
+
+**Plane of the wall.** The depth map is turned into a cloud of 3D points with the focal length. RANSAC then repeats 200 times: draw three points, make a plane, count the points close to it. The plane with the most inliers is the wall. The holds are left out of the fit (they stick out of the wall), the distance counted as "close" is 1.2 % of the median depth (at least 2 cm, a depth model is noisy in proportion to the distance), and a fit is refused when its inliers cover less than 20 % of the image. The wall is assumed to be a plane: a corner or a curved wall is not handled. The result is a homography, a 3 x 3 matrix that moves a pixel of the photo to a point of the wall in centimetres, and back. The angle of the wall comes from the optional gravity vector.
+
+**The beta is a shortest-path search.** A state is the hold under each of the four limbs, and a move changes one limb. A\* explores the states by increasing cost, guided by a heuristic that never over-estimates the remaining cost (every move costs at least the base of the preference), so that the first path found to the finish is the cheapest for the cost model. Two kinds of rules:
+
+- Hard rules: reach limits as fractions of the body, from Drillis and Contini (1966) and Winter: hand to hand at most 0.8 of the arm span, hand to foot at most 0.9 of the height, foot to foot at most 0.6 of the height.
+- Costs, which the preference (`easy`, `power`, `technique`) changes: a foot leaving the wall, a foot left without a hold, a move of an injured limb, an overhanging wall, a small hand hold.
+
+The search stops after 100 000 explored states and fails with `search limit reached`, so a big route cannot block the worker. The reach limits are checked by pairs of limbs, not on the whole body at once: this is why a few steps put a limb a few centimetres from its hold.
+
+**Postures by inverse kinematics.** For each step, the four contacts are known and the body has to be found. The torso position is fitted first (a weighted centre of the contacts, then up to 50 corrections so that each limb can reach its contact without folding or being fully stretched). Then each arm and leg is solved as two segments with the law of cosines: given the shoulder or hip, the hand or foot, and the two lengths, the bend of the elbow or knee follows. Segment lengths are fractions of the height (Drillis and Contini). A limb without a contact hangs a little bent. The head and the fingers are placed at fixed offsets from the body, to fill the 33 MediaPipe landmarks. The postures are plausible, not measured: there is no balance model and no force.
+
+**The render.** `--render <path>` writes a folder named after the path without its extension: with `--render /tmp/ascension/route.jpg` you get `/tmp/ascension/route/step-01.jpg`, `step-02.jpg`, and so on, one picture per step. Each shows only the skeleton of its step, with the number of the step in the corner, and the colour goes from blue (start) to red (finish) so that the pictures can be compared side by side.
+
+---
+
 ## Prerequisites
 
 From the root of the repository:
@@ -64,7 +92,7 @@ uv run worker pathfinding --image resources/voie.jpg --out /tmp/ascension/pathfi
   --render /tmp/ascension/pathfinding.jpg --gravity 0 1 0 --color yellow
 ```
 
-It prints `Wall: 0.7 deg, inliers 48%`, `Beta: 13 steps` and `Wrote ... (13 steps)`. `pathfinding.json` is a `PathfindingResult`: `image_width`, `image_height`, `wall_angle_deg` and `steps`. Each step has `index`, `moved_limb`, `holds` (hold id under each limb), `center_of_mass` and 33 `landmarks`. `pathfinding.jpg` is the photo with the skeletons drawn.
+It prints `Wall: 0.7 deg, inliers 48%`, `Beta: 13 steps` and `Wrote ... (13 steps)`. `pathfinding.json` is a `PathfindingResult`: `image_width`, `image_height`, `wall_angle_deg` and `steps`. Each step has `index`, `moved_limb`, `holds` (hold id under each limb), `center_of_mass` and 33 `landmarks`. `--render /tmp/ascension/pathfinding.jpg` writes the folder `/tmp/ascension/pathfinding/` with one picture per step (`step-01.jpg` to `step-13.jpg`), each with only the skeleton of that step.
 
 The same, step by step (the final JSON is identical to the one above):
 

@@ -233,11 +233,12 @@ def test_pathfinding_pose_writes_a_valid_pathfinding_path(path_json):
     assert all(len(s.landmarks) == 33 for s in path.steps)
 
 
-def test_pathfinding_pose_renders_on_the_photo(tmp_path, beta, holds_wall, photo):
-    render = tmp_path / "render.png"
-    assert worker("pathfinding-pose", "--input", beta, "--holds", holds_wall, "--out", tmp_path / "p.json", "--render", render, "--image", photo) == 0
-    image = cv2.imread(str(render))
-    assert image.shape == (HEIGHT, WIDTH, 3) and (image != 140).any()
+def test_pathfinding_pose_renders_one_picture_per_step_in_a_folder(tmp_path, beta, holds_wall, photo):
+    assert worker("pathfinding-pose", "--input", beta, "--holds", holds_wall, "--out", tmp_path / "p.json", "--render", tmp_path / "render.png", "--image", photo) == 0
+    steps = len(json.loads((tmp_path / "p.json").read_text())["steps"])
+    pictures = sorted((tmp_path / "render").glob("step-*.png"))
+    assert [p.name for p in pictures] == [f"step-{n:02d}.png" for n in range(1, steps + 1)]
+    assert all(cv2.imread(str(p)).shape == (HEIGHT, WIDTH, 3) and (cv2.imread(str(p)) != 140).any() for p in pictures)
 
 
 def test_pathfinding_pose_render_needs_the_photo(tmp_path, beta, holds_wall):
@@ -255,7 +256,9 @@ def test_the_three_steps_chained_give_the_result_of_pathfinding(tmp_path, photo,
     render = tmp_path / "pathfinding.png"
     assert worker("pathfinding", "--image", photo, "--holds", holds_file, "--out", out, "--render", render) == 0
     assert PathfindingResult.model_validate_json(out.read_text()) == PathfindingResult.model_validate_json(path_json.read_text())
-    assert cv2.imread(str(render)).shape == (HEIGHT, WIDTH, 3)
+    pictures = sorted((tmp_path / "pathfinding").glob("step-*.png"))
+    assert len(pictures) == len(PathfindingResult.model_validate_json(out.read_text()).steps)
+    assert cv2.imread(str(pictures[0])).shape == (HEIGHT, WIDTH, 3)
 
 
 def test_pathfinding_without_holds_detects_them(tmp_path, photo):

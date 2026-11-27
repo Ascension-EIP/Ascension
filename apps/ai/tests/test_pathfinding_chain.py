@@ -257,9 +257,11 @@ def test_a_depth_map_of_another_size_than_the_photo_is_refused():
 # --- render --------------------------------------------------------------------------------
 
 
-def test_render_draws_the_skeletons_on_a_copy_of_the_photo():
+def test_render_draws_one_picture_per_step_on_copies_of_the_photo():
     path = compute(ladder())
     photo = np.full((HEIGHT, WIDTH, 3), 120, np.uint8)
-    out = chain.render_pathfinding(photo, path)
-    assert out.shape == photo.shape and not np.array_equal(out, photo)
+    frames = chain.render_pathfinding(photo, path)
+    assert len(frames) == len(path.steps) > 1
+    assert all(f.shape == photo.shape and not np.array_equal(f, photo) for f in frames)
+    assert not np.array_equal(frames[0], frames[-1])  # one skeleton per picture, they do not overlap
     assert (photo == 120).all()  # the input is untouched

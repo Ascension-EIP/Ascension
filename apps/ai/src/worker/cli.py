@@ -108,14 +108,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--input", required=True, help="Output of pathfinding-beta.")
     p.add_argument("--holds", required=True, help="Output of pathfinding-wall.")
     p.add_argument("--out", required=True)
-    p.add_argument("--render", help="Also write the photo with the skeletons drawn on it (needs --image).")
+    p.add_argument("--render", help="Also write one picture per step in a folder named after this path, without its extension (needs --image).")
     p.add_argument("--image")
     p.set_defaults(run=_pathfinding_pose)
 
     p = sub.add_parser("pathfinding", help="Route photo -> PathfindingResult JSON: pathfinding-wall, pathfinding-beta and pathfinding-pose in one go.")
     p.add_argument("--image", required=True)
     p.add_argument("--out", required=True)
-    p.add_argument("--render", help="Also write the photo with the skeletons drawn on it.")
+    p.add_argument("--render", help="Also write one picture per step in a folder named after this path, without its extension.")
     p.add_argument("--holds", help="Holds JSON (HoldDetectResult, holds may carry start_limbs/finish_limbs). Default: detect them.")
     p.add_argument("--gravity", type=float, nargs=3, metavar=("GX", "GY", "GZ"), help="Direction of the floor, camera frame.")
     _climber_options(p)
@@ -373,8 +373,13 @@ def _write_pathfinding(args: argparse.Namespace, path, image_path: str | None) -
 
     Path(args.out).write_text(path.model_dump_json(exclude_none=True))
     log.info("Wrote %s (%d steps)", args.out, len(path.steps))
-    if args.render:
-        cv2.imwrite(args.render, render_pathfinding(read_image(image_path), path))
+    if args.render:  # `--render out/route.jpg` writes out/route/step-01.jpg, step-02.jpg, ...
+        render = Path(args.render)
+        folder = render.with_suffix("")
+        folder.mkdir(parents=True, exist_ok=True)
+        for number, frame in enumerate(render_pathfinding(read_image(image_path), path), 1):
+            cv2.imwrite(str(folder / f"step-{number:02d}{render.suffix or '.jpg'}"), frame)
+        log.info("Wrote %s", folder)
 
 
 def _pathfinding_pose(args: argparse.Namespace) -> None:

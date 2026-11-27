@@ -3,7 +3,7 @@ id: 2f53fa4e-ab2b-4b41-8d65-c54fb20a0f1e
 ---
 
 :::warning
-**Version:** 0.1
+**Version:** 0.2
 :::
 
 ---
@@ -33,6 +33,26 @@ Code in `apps/ai/src/worker/_3_holds/`:
 3. `_0_hold_detect.py`: chains both steps. `evaluate.py` measures the colour accuracy (`holds-colors-eval`).
 
 The job `holds.detect` is in `apps/ai/src/worker/handlers/hold_detect_request.py`. After the detection it calls the depth model and stores `routes.wall_plane`. This never fails the job: without the depth model the holds are stored and the wall plane stays empty.
+
+---
+
+## Models and algorithms
+
+| Step | Technique | Learned model? |
+| --- | --- | --- |
+| `_1_hold_segment` | Instance segmentation, YOLO26-seg (Ultralytics) exported to ONNX | Yes, trained by the team |
+| `_2_hold_color` | Colour statistics in the CIELAB space, nearest reference colour | No |
+| Wall plane (job only) | Depth model, then a plane fit: see [Pathfinding](pathfinding.md) | Yes (depth), no (fit) |
+
+**The segmentation model.** YOLO is a single-pass convolutional network: one look at the image gives every object. The `-seg` variant also gives the shape of each object, not only a box. The photo is resized to fit 1024 x 1024 (the ratio is kept, the rest is padded with grey 114, as at training time). The network predicts 21 504 candidates, on three grids of different scales so that small and large holds are both found. For each candidate it outputs a box, a score for each of the 2 classes (`hold` and `volume`) and 32 mask coefficients. A second output holds 32 small "prototype" masks shared by the whole image. The mask of a candidate is the sum of the prototypes weighted by its 32 coefficients, cut to its box and thresholded at 0.5. The candidates then go through non-maximum suppression (a candidate that overlaps a better one of the same class by more than 70 % is dropped), and each mask is turned into a polygon.
+
+**Why ONNX.** The model is trained with PyTorch and Ultralytics in `apps/ai/training/holds` on datasets from Roboflow that are merged into one (`holds:merge`), then exported to ONNX (`holds:export`). The worker only needs ONNX Runtime on the CPU, so it installs neither PyTorch nor Ultralytics. The post-processing above is rewritten in numpy to give the same holds as the training tool.
+
+**A low threshold on purpose.** The confidence threshold is 0.10. Small footholds score low, and the user checks the holds afterwards, so a false hold costs one tap to remove while a missed hold is lost.
+
+**The colour is not learned.** Pixels of the mask are summarised in CIELAB, a colour space where lightness and colour are separate. The mask is shrunk so that the wall around the hold does not count, the colour is the median of the 10 % most saturated pixels (chalk washes colours out), the lightness is the 25th percentile (chalk is lighter than the hold), and the tint of the lighting is corrected with the wall around the holds. The result is named after the closest colour of a fixed palette. It was measured at about 83 % correct names in a gym that the palette was calibrated on, and about 60 % in a new gym (red and orange, green and yellow, chalked black and cream are mixed up). The `rgb` is reliable, the name is a hint.
+
+**What to remember.** The model has two classes. It does not tell a crimp from a sloper, so `type` is only `unknown` or `volume`.
 
 ---
 
