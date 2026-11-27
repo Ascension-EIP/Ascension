@@ -10,7 +10,6 @@ projects:
   old_ai: 'apps/old_ai'
   server: 'apps/server'
   mobile: 'apps/mobile'
-  old_mobile: 'apps/old_mobile'
 
 vcs:
   client: 'git'
