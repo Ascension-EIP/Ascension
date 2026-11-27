@@ -1,3 +1,7 @@
+---
+id: 37d45310-5f38-441d-88ec-2867f797f32a
+---
+
 :::success
 **Version:** 1.0
 :::
@@ -12,7 +16,7 @@ Son objectif est de conserver la trace écrite du **raisonnement** derrière cha
 
 ---
 
-## 1. Exigences académiques EIP
+## 1\. Exigences académiques EIP
 
 - **Volume minimum :** au moins **4 décisions structurantes** consignées entre octobre et mai.
 - **Options pesées :** au moins **2 alternatives réellement évaluées** pour chaque décision, avec des critères explicites.
@@ -21,7 +25,7 @@ Son objectif est de conserver la trace écrite du **raisonnement** derrière cha
 
 ---
 
-## 2. Cycle de vie d'un ADR
+## 2\. Cycle de vie d'un ADR
 
 Le diagramme ci-dessous illustre le cycle de vie d'une fiche de décision technique, de sa proposition jusqu'à son acceptation ou son remplacement éventuel par une nouvelle décision.
 
@@ -34,19 +38,19 @@ flowchart LR
 
 ---
 
-## 3. Registre des décisions
+## 3\. Registre des décisions
 
 | ID | Date | Décision | Statut | Révision ? |
 | --- | --- | --- | --- | --- |
-| [ADR-001](./adr-001-postgresql-hybrid-persistence.md) | 2026-03-02 | Choix de PostgreSQL 18 comme base de données hybride (relationnel + JSONB) | Accepté | Non |
-| [ADR-002](./adr-002-rabbitmq-async-job-broker.md) | 2026-03-02 | Choix de RabbitMQ (AMQP) pour l'orchestration asynchrone des tâches IA | Accepté | Non |
-| [ADR-003](./adr-003-backend-migration-rust-to-go.md) | 2026-04-01 | Migration du backend API Gateway de Rust (Axum) vers Go (Gin) | Accepté | Oui (remplace Rust) |
-| [ADR-004](./adr-004-object-storage-minio-to-rustfs-and-ovh-s3.md) | 2026-09-24 | Remplacement de MinIO par RustFS (dev) et OVHcloud Object Storage (prod) | Accepté | Oui (remplace MinIO) |
-| [ADR-005](./adr-005-cloud-hosting-hetzner-to-ovhcloud.md) | 2026-10-15 | Transition de l'hébergement cloud de Hetzner vers OVHcloud (VPS-4 + S3) | Accepté | Oui (remplace Hetzner) |
+| [ADR-001](adr-001-postgresql-hybrid-persistence.md) | 2026-03-02 | Choix de PostgreSQL 18 comme base de données hybride (relationnel + JSONB) | Accepté | Non |
+| [ADR-002](adr-002-rabbitmq-async-job-broker.md) | 2026-03-02 | Choix de RabbitMQ (AMQP) pour l'orchestration asynchrone des tâches IA | Accepté | Non |
+| [ADR-003](adr-003-backend-migration-rust-to-go.md) | 2026-04-01 | Migration du backend API Gateway de Rust (Axum) vers Go (Gin) | Accepté | Oui (remplace Rust) |
+| [ADR-004](adr-004-object-storage-minio-to-rustfs-and-ovh-s3.md) | 2026-09-24 | Remplacement de MinIO par RustFS (dev) et OVHcloud Object Storage (prod) | Accepté | Oui (remplace MinIO) |
+| [ADR-005](adr-005-cloud-hosting-hetzner-to-ovhcloud.md) | 2026-10-15 | Transition de l'hébergement cloud de Hetzner vers OVHcloud (VPS-4 + S3) | Accepté | Oui (remplace Hetzner) |
 
 ---
 
-## 4. Gabarit type (Template)
+## 4\. Gabarit type (Template)
 
 Toute nouvelle décision structurante doit être enregistrée dans ce dossier sous la forme `adr-XXX-titre-court.md` en suivant la structure ci-dessous :
 
@@ -97,6 +101,6 @@ Impact positif et surtout compromis assumés : dépendances introduites, complex
 
 ---
 
-## 5. Entrées du journal
+## 5\. Entrées du journal
 
-:::subpages cards 3
+:::subpages cards 1
