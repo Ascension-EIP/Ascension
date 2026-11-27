@@ -86,7 +86,7 @@ What it is for: it carries the trace of the reasoning, not just the result.
 | Item                    | Due                                                                            | Deliverable                                                                            |
 | ----------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
 | Architecture            | First version before end of November, updated at every structuring change      | [Architecture diagram and data diagram, up to date](architecture-and-data-diagrams.md) |
-| Decision record         | Fed October to May, 4 decisions minimum                                        | Complete dated record                                                                  |
+| Decision record         | Fed October to May, 4 decisions minimum                                        | [Complete dated record](adr/readme.md)                                                 |
 | Technical documentation | First version before end of December, corrected after the reproducibility test | README, API and operations documentation                                               |
 | Pipeline                | Running before end of December                                                 | Link to the run history                                                                |
 | Code quality            | Baseline in December, final measurement in May                                 | Initial and final static analysis reports, debt log                                    |
@@ -97,7 +97,7 @@ What it is for: it carries the trace of the reasoning, not just the result.
 ### What you submit
 
 - [Architecture diagram, up to date, and data diagram](architecture-and-data-diagrams.md)
-- Complete dated record of technical decisions
+- [Complete dated record of technical decisions](adr/readme.md)
 - README, API documentation and operations documentation
 - Link to the pipeline run history
 - Initial and final static analysis reports
