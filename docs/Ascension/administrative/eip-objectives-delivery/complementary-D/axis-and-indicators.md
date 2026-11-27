@@ -1,3 +1,7 @@
+---
+id: e0fc3689-6981-4255-a627-ec82bfb00ebd
+---
+
 :::success
 **Version:** 1.0
 :::
@@ -6,14 +10,14 @@
 
 ---
 
-## 1. Axe prioritaire retenu
+## 1\. Axe prioritaire retenu
 
 - **Axe officiel du guide EIP :** Temps de réponse et d'exécution (*Response or execution time*).
 - **Périmètre ciblé :** Les **pipelines IA du worker Python exécutés sur CPU** (analyse de pose 2D, détection/segmentation des prises et calcul du Mode Fantôme).
 
 ---
 
-## 2. Justification du choix
+## 2\. Justification du choix
 
 ### 2.1 Pourquoi cet axe est critique pour Ascension
 
@@ -36,11 +40,11 @@ Sans mesure ni optimisation structurée :
 
 ---
 
-## 3. Indicateurs retenus et objectifs chiffrés
+## 3\. Indicateurs retenus et objectifs chiffrés
 
 > **Note de lecture :** `p95` (95e percentile) signifie que **95 % des exécutions** sont plus rapides que la valeur indiquée (seuls les 5 % les plus lents la dépassent). `RTF` (*Real-Time Factor*, ou facteur temps réel) correspond au ratio **temps de calcul / durée de la vidéo** (un `RTF` de `1,0x` signifie que l'analyse est au moins aussi rapide que la durée réelle de la vidéo).
 
-| # | Indicateur | Formule | Outil de mesure | Conditions de mesure | Objectif fin d'année | Justification de la cible |
+| \# | Indicateur | Formule | Outil de mesure | Conditions de mesure | Objectif fin d'année | Justification de la cible |
 | --- | --- | --- | --- | --- | --- | --- |
 | **1** | **Facteur temps réel — Analyse de pose 2D (`RTF`, temps de calcul / durée vidéo)** | `RTF = t_pipeline_pose / d_video` | Instrumentation Python (`time.perf_counter()`) + profiling (`cProfile` / `py-spy`) | Jeu fixe de 5 vidéos d'escalade 1080p à 30 fps (durée 15 à 30 s), exécutées sur le VPS CPU de référence, 5 répétitions (médiane et p95) | **`RTF <= 1,0x`** en p95 (95 % des cas) | Une vidéo de 30 s est analysée en moins de 30 s (au moins aussi rapide que le temps réel), ce qui reste confortable le temps de redescendre du mur et de reprendre son téléphone. |
 | **2** | **Latence détection & segmentation des prises (`holds.detect`)** | `t_total = t_yolo_onnx + t_couleurs` (en secondes) | Commande CLI `holds-detect` instrumentée (`time.perf_counter()`) | Jeu fixe de 20 photos de murs réels (résolution smartphone standard), exécutées sur le VPS CPU de référence, 5 répétitions (médiane et p95) | **`< 5,0 s`** en p95 (95 % des cas) | Temps d'attente court après prise de photo pour afficher les prises détectées et laisser l'utilisateur valider sa voie, avec une marge réaliste face à la charge du VPS CPU. |
@@ -48,7 +52,7 @@ Sans mesure ni optimisation structurée :
 
 ---
 
-## 4. Garde-fous de non-régression
+## 4\. Garde-fous de non-régression
 
 Conformément aux exigences du guide EIP, chaque boucle d'optimisation sera validée non seulement par la suite de tests existante, mais aussi par des indicateurs de non-régression mesurés avant et après chaque changement :
 
@@ -61,17 +65,7 @@ Conformément aux exigences du guide EIP, chaque boucle d'optimisation sera vali
 
 ---
 
-## 5. Pistes d'optimisation envisagées pour les boucles futures
-
-Sans préjuger du diagnostic qui sera établi par profiling en février, plusieurs leviers isolés sont déjà identifiés pour les boucles 1 (mars) et 2 (mai) :
-
-- **Analyse de pose 2D (`_1_mediapipe`) :** réglage de la résolution de décodage OpenCV, sélection du modèle MediaPipe / cadence d'échantillonnage adaptative (frame-skipping sur phases statiques), parallélisation lecture/inférence.
-- **Détection des prises (`_3_holds`) :** tuning des threads `onnxruntime` sur CPU, quantification INT8/FP16 du modèle YOLO26-seg, vectorisation de l'extraction de couleurs (`_2_hold_color.py`).
-- **Mode Fantôme (`_4_pathfinding`) :** optimisation/redimensionnement de l'estimation de profondeur métrique (`_1_depth.py`), amélioration des heuristiques et de l'élagage dans la recherche bêta (`_2_beta.py`).
-
----
-
-## 6. Prochaines étapes (calendrier EIP)
+## 5\. Prochaines étapes (calendrier EIP)
 
 | Étape | Échéance | Action prévue |
 | --- | --- | --- |
