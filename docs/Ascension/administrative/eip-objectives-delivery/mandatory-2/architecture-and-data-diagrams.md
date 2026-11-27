@@ -10,7 +10,7 @@ id: 278636a7-ef36-464d-83b7-b9eeb6602f96
 
 ---
 
-## 1. Schéma d'architecture globale du système
+## 1\. Schéma d'architecture globale du système
 
 Ce diagramme présente l'architecture événementielle d'Ascension : l'application mobile Flutter dialogue avec l'API Gateway Go/Gin en REST (upload direct vers S3 via URL présignée, soumission asynchrone via RabbitMQ et récupération des résultats par polling), tandis qu'un worker IA Python unique traite les 4 files de tâches (`poses.detect`, `poses.advice`, `holds.detect`, `pathfinding.compute`) et persiste les résultats dans PostgreSQL.
 
@@ -77,7 +77,7 @@ graph TD
 
 ---
 
-## 2. Diagramme de séquence de bout en bout pour l'analyse de pose et les conseils
+## 2\. Diagramme de séquence de bout en bout pour l'analyse de pose et les conseils
 
 Ce diagramme détaille le cycle complet d'une vidéo de grimpe : upload direct sur S3, lancement asynchrone de l'analyse de pose (`POST /v1/analysis`), génération découplée des conseils personnalisés (`POST /v1/advices/:id` via Gemini) et rendu local (*edge rendering*) sur l'application Flutter.
 
@@ -144,7 +144,7 @@ sequenceDiagram
 
 ---
 
-## 3. Schéma d'hébergement et d'infrastructure cloud
+## 3\. Schéma d'hébergement et d'infrastructure cloud
 
 Ce schéma illustre le déploiement de production sur OVHcloud : un VPS-4 à Milan administré par Coolify et exposé via Traefik, hébergeant les conteneurs applicatifs (API Go, Cron Go, Worker IA unique, RabbitMQ 4.4.0, PostgreSQL 18) ainsi que l'usine logicielle (Jenkins, SonarQube, n8n), couplé au stockage objet S3 OVHcloud à Gravelines.
 
@@ -224,7 +224,7 @@ flowchart TB
 
 ---
 
-## 4. Schéma de données (Data Diagram)
+## 4\. Schéma de données (Data Diagram)
 
 Ce diagramme entité-association reflète le schéma PostgreSQL 18 issu des migrations actives, incluant la table `ADVICES` découplée de `ANALYSES`, le renommage de `GHOSTS` / `GHOST_HOLDS` en `PATHFINDINGS` / `PATHFINDING_HOLDS` et la table `VIDEO_CONTEXTS`.
 
@@ -278,35 +278,49 @@ erDiagram
 
 ---
 
-## 5. Schéma de la pipeline IA
+## 5\. Schéma de la pipeline IA
 
-Ce diagramme détaille les traitements exécutés par le worker IA Python : la pipeline d'analyse de pose (MediaPipe + métriques + conseils LLM découplés) et la pipeline Mode Fantôme (segmentation YOLO26-seg en ONNX, couleur dominante en espace CIELAB, estimation de profondeur métrique MoGe-2 ViT-S en ONNX et plan du mur, puis pathfinding A* et calcul des postures rendues côté mobile).
+Ce diagramme reprend la décomposition en 5 blocs de la pipeline IA 2D : la vidéo (A) et la photo de la voie (B) sont traitées en parallèle, le pathfinding (C) estime le plan du mur, calcule la bêta A\* et génère le squelette fantôme, la comparaison et les conseils (D) croisent l'analyse et la bêta (les conseils LLM tournent déjà directement depuis le bloc A ; le clustering B4, l'alignement D1 et la comparaison D2 sont en pointillés car prévus), et le client Flutter assure le rendu mobile (E).
 
 ```mermaid
 flowchart TD
-    subgraph A ["Analyse de pose & Conseils"]
-        A1["Vidéo grimpeur (S3)"] --> A2["Squelette MediaPipe<br/>33 points par image"]
-        A2 --> A3["Filtrage, angles articulaires & vitesses"]
-        A3 --> A4["Découpage en mouvements & pauses"]
-        A4 -->|"Job découplé (poses.advice)"| A5["Conseils personnalisés LLM<br/>(OpenAI-compatible)"]
+    subgraph A ["A. Analyse vidéo"]
+        A1["A1 Vidéo du grimpeur"] --> A2["A2 Squelette MediaPipe<br/>33 points par image"]
+        A2 --> A3["A3 Angles et métriques"]
+        A3 --> A4["A4 Découpage en mouvements"]
     end
 
-    subgraph B ["Mode Fantôme (Détection & Pathfinding)"]
-        B1["Photo de la voie (S3)"] --> B2["Segmentation prises & volumes<br/>(YOLO26-seg / ONNX Runtime)"]
-        B2 --> B3["Couleur dominante<br/>(espace CIELAB)"]
-        B1 --> B4["Profondeur métrique monoculaire<br/>(MoGe-2 ViT-S / ONNX Runtime)"]
-        B3 --> B5["Estimation du plan du mur<br/>& homographie pixels → cm"]
-        B4 --> B5
-        B5 --> B6["Validation prises, départ/fin<br/>+ Morphologie grimpeur"]
-        B6 --> B7["Pathfinding A* (bêta réalisable)<br/>& calcul des postures par étape"]
+    subgraph B ["B. Lecture de voie"]
+        B1["B1 Photo de la voie"] --> B2["B2 Détection des prises<br/>YOLO26-seg (ONNX)"]
+        B2 --> B3["B3 Couleur dominante<br/>CIELAB (OpenCV)"]
+        B3 -.-> B4["B4 Clustering par voie<br/>(prévu)"]
+        B4 -.-> B5["B5 Validation utilisateur"]
+        B3 --> B5
     end
 
-    subgraph C ["Rendu mobile (Edge Rendering)"]
-        C1["Canvas CustomPainter<br/>Overlay squelette & conseils"]
-        C2["Visionneuse pas-à-pas<br/>Mode Fantôme"]
+    subgraph C ["C. Pathfinding"]
+        C1["C1 Échelle et angle du mur<br/>profondeur métrique MoGe-2 (ONNX)"] --> C2["C2 Calcul de la bêta<br/>A* sur 4 membres"]
+        C2 --> C3["C3 Squelette du fantôme<br/>33 landmarks"]
     end
 
-    A4 --> C1
-    A5 --> C1
-    B7 --> C2
+    subgraph D ["D. Comparaison et conseils"]
+        D1["D1 Alignement vidéo et photo<br/>(prévu)"] -.-> D2["D2 Écarts vidéo et bêta<br/>(prévu)"]
+        D2 -.-> D3["D3 Conseils LLM<br/>(modèle externe OpenAI-compatible)"]
+    end
+
+    subgraph E ["E. Rendu mobile Flutter"]
+        E1["E1 Overlay squelette & conseils"]
+        E2["E2 Overlay fantôme"]
+    end
+
+    B1 --> C1
+    B5 --> C2
+    C3 --> E2
+    C3 -.-> D2
+    A4 -.-> D2
+    A4 --> D3
+    A2 -.-> D1
+    B1 -.-> D1
+    A2 --> E1
+    D3 --> E1
 ```
