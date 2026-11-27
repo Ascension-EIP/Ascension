@@ -8,7 +8,7 @@ id: 80020647-8de2-459b-a847-0e340d712867
 
 ---
 
-# ADR-004 : Remplacement de MinIO par RustFS (dev) et OVHcloud Object Storage (prod)
+# ADR-002 : Remplacement de MinIO par RustFS (dev) et OVHcloud Object Storage (prod)
 
 - **Date :** 2026-09-24
 - **Statut :** Accepté *(Révision de la décision initiale de mars 2026)*

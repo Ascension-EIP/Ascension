@@ -8,7 +8,7 @@ id: 08a48135-bf64-4076-b570-a9bef453acc7
 
 ---
 
-# ADR-005 : Transition de l'hébergement cloud de Hetzner vers OVHcloud (VPS-4 + S3)
+# ADR-004 : Transition de l'hébergement cloud de Hetzner vers OVHcloud (VPS-4 + S3)
 
 - **Date :** 2026-10-15
 - **Statut :** Accepté *(Révision de la décision initiale de mars 2026)*

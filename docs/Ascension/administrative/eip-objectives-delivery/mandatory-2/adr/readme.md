@@ -42,11 +42,10 @@ flowchart LR
 
 | ID | Date | Décision | Statut | Révision ? |
 | --- | --- | --- | --- | --- |
-| [ADR-001](adr-001-postgresql-hybrid-persistence.md) | 2026-03-02 | Choix de PostgreSQL 18 comme base de données hybride (relationnel + JSONB) | Accepté | Non |
-| [ADR-002](adr-002-rabbitmq-async-job-broker.md) | 2026-03-02 | Choix de RabbitMQ (AMQP) pour l'orchestration asynchrone des tâches IA | Accepté | Non |
-| [ADR-003](adr-003-backend-migration-rust-to-go.md) | 2026-04-01 | Migration du backend API Gateway de Rust (Axum) vers Go (Gin) | Accepté | Oui (remplace Rust) |
-| [ADR-004](adr-004-object-storage-minio-to-rustfs-and-ovh-s3.md) | 2026-09-24 | Remplacement de MinIO par RustFS (dev) et OVHcloud Object Storage (prod) | Accepté | Oui (remplace MinIO) |
-| [ADR-005](adr-005-cloud-hosting-hetzner-to-ovhcloud.md) | 2026-10-15 | Transition de l'hébergement cloud de Hetzner vers OVHcloud (VPS-4 + S3) | Accepté | Oui (remplace Hetzner) |
+| [ADR-001](adr-001-backend-migration-rust-to-go.md) | 2026-04-01 | Migration du backend API Gateway de Rust (Axum) vers Go (Gin) | Accepté | Oui (remplace Rust) |
+| [ADR-002](adr-002-object-storage-minio-to-rustfs-and-ovh-s3.md) | 2026-09-24 | Remplacement de MinIO par RustFS (dev) et OVHcloud Object Storage (prod) | Accepté | Oui (remplace MinIO) |
+| [ADR-003](adr-003-decoupled-ai-and-product-scope-pivot.md) | 2026-09-26 | Découplage des pipelines IA (Pose 2D vidéo vs Mode Fantôme photo) et recentrage BTP/ATP | Accepté | Oui (remplace l'architecture couplée) |
+| [ADR-004](adr-004-cloud-hosting-hetzner-to-ovhcloud.md) | 2026-10-15 | Transition de l'hébergement cloud de Hetzner vers OVHcloud (VPS-4 + S3) | Accepté | Oui (remplace Hetzner) |
 
 ---
 

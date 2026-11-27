@@ -8,7 +8,7 @@ id: 37d89e71-19d8-4853-a576-c3c9cfb7112a
 
 ---
 
-# ADR-003 : Migration du backend API Gateway de Rust (Axum) vers Go (Gin)
+# ADR-001 : Migration du backend API Gateway de Rust (Axum) vers Go (Gin)
 
 - **Date :** 2026-04-01
 - **Statut :** Accepté *(Révision de la décision initiale de mars 2026)*
