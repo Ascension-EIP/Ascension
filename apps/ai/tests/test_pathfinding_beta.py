@@ -270,7 +270,9 @@ def test_technique_places_the_feet_more_often_than_power():
 
 def test_find_beta_is_deterministic():
     holds = ladder(n=9, step=60.0)
-    assert find_beta(holds, body(175)) == find_beta(holds, body(175))
+    first = find_beta(holds, body(175))
+    second = find_beta(holds, body(175))
+    assert first == second
 
 
 def test_overhang_does_not_change_feasibility_and_costs_more_for_hands():
