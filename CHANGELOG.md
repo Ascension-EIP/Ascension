@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.3] - 2026-11-27
+
+### 🐛 Bug Fixes
+
+- *(docker)* Revert python base image to 3.11-slim
+
+### 🔀 Merges
+
+- `dev` into `staging`
+- `staging` into `main`
+
+### 🧪 Testing
+
+- Ensure find_beta is deterministic
+
 ## [0.3.2] - 2026-11-26
 
 ### ➕ Additions
@@ -217,6 +232,7 @@ All notable changes to this project will be documented in this file.
 - Sync pages
 - Sync pages
 - Sync pages
+- *(release)* Update changelog for v0.3.2
 
 ## [0.3.1] - 2026-11-13
 
